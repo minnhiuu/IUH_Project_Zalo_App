@@ -2,24 +2,24 @@ import { Container, EmptyState, Header } from '@/components';
 import React from 'react';
 import { View } from 'react-native';
 
-export default function MessagesScreen() {
+export default function ContactsScreen() {
   return (
     <Container safeAreaEdges={['top']}>
       <Header
-        title="Tin nhắn"
-        rightIcon="search-outline"
+        title="Danh bạ"
+        rightIcon="person-add-outline"
         onRightPress={() => {
-          // TODO: Implement search
+          // TODO: Implement add contact
         }}
       />
       <View className="flex-1">
         <EmptyState
-          icon="chatbubbles-outline"
-          title="Chưa có tin nhắn"
-          description="Bắt đầu trò chuyện với bạn bè ngay nào!"
-          actionLabel="Tìm bạn bè"
+          icon="people-outline"
+          title="Chưa có liên hệ"
+          description="Thêm bạn bè để bắt đầu trò chuyện"
+          actionLabel="Thêm bạn"
           onAction={() => {
-            // TODO: Navigate to find friends
+            // TODO: Navigate to add contact
           }}
         />
       </View>
