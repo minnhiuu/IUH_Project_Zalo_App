@@ -1,39 +1,65 @@
-// Auth types
+// ============================================
+// Auth Types - Core authentication types
+// ============================================
+
+// Login payload - matches backend LoginRequest
 export interface LoginPayload {
-  phone: string;
+  email: string;
   password: string;
+  deviceId: string;
+  deviceType: 'WEB' | 'MOBILE'; // Backend only accepts WEB or MOBILE
 }
 
+// Register payload - matches backend RegisterInitRequest (2-step with OTP)
 export interface RegisterPayload {
-  phone: string;
+  email: string;
   password: string;
+  confirmPassword: string;
   fullName: string;
-  otp: string;
+  phoneNumber?: string;
 }
 
+// Register verify payload - matches backend RegisterVerifyRequest (Step 2)
+export interface RegisterVerifyPayload {
+  email: string;
+  otp: string;
+  deviceId: string;
+  deviceType: 'WEB' | 'MOBILE'; // Backend only accepts WEB or MOBILE
+}
+
+// Auth tokens (camelCase - used in app)
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
+  tokenType: string;
   expiresIn: number;
 }
 
+// Backend API response format (snake_case from JSON)
+export interface TokenApiResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+  expires_in: number;
+}
+
+// Auth response after login/register
 export interface AuthResponse {
-  user: import('./user.types').User;
+  user?: import('./user.types').User;
   tokens: AuthTokens;
 }
 
-export interface OTPPayload {
-  phone: string;
-  type: 'register' | 'reset_password' | 'verify';
+// Form data types (used in schema validation)
+export interface LoginFormData {
+  email: string;
+  password: string;
 }
 
-export interface ResetPasswordPayload {
-  phone: string;
-  otp: string;
-  newPassword: string;
-}
-
-export interface ChangePasswordPayload {
-  currentPassword: string;
-  newPassword: string;
+export interface RegisterFormData {
+  email: string;
+  password: string;
+  confirmPassword: string;
+  fullName: string;
+  email?: string;
+  otp?: string;
 }

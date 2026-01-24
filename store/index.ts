@@ -1,4 +1,10 @@
 // Export all stores here
-// Example:
-// export { useAuthStore } from './authStore';
-// export { useUserStore } from './userStore';
+export { 
+  useAuthStore, 
+  selectUser,
+  selectIsAuthenticated,
+  selectIsLoading,
+  selectIsInitialized,
+  selectError,
+  selectTokens,
+} from './authStore';

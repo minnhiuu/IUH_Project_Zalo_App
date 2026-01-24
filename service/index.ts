@@ -1,4 +1,3 @@
 // Export all services here
-// Example:
-// export { authService } from './authService';
-// export { userService } from './userService';
+// Auth service is now in features/auth/api
+export { authApi } from '@/features/auth';

@@ -1,14 +1,36 @@
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import * as SecureStore from 'expo-secure-store';
-import apiConfig from './apiConfig';
+import i18n from '@/i18n';
+import apiConfig, { API_ENDPOINTS } from './apiConfig';
 
+// Create axios instance
 const axiosInstance = axios.create({
   baseURL: apiConfig.apiUrl,
-  timeout: 30000,
+  timeout: apiConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
+    'Accept': 'application/json',
   },
 });
+
+// Flag to prevent multiple refresh attempts
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (token: string | null) => void;
+  reject: (error: AxiosError) => void;
+}> = [];
+
+// Process queued requests after token refresh
+const processQueue = (error: AxiosError | null, token: string | null = null) => {
+  failedQueue.forEach((promise) => {
+    if (error) {
+      promise.reject(error);
+    } else {
+      promise.resolve(token);
+    }
+  });
+  failedQueue = [];
+};
 
 // Request interceptor - Add auth token
 axiosInstance.interceptors.request.use(
@@ -35,52 +57,111 @@ axiosInstance.interceptors.response.use(
   },
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const t = i18n.t;
 
     // Handle 401 Unauthorized - Token expired
     if (error.response?.status === 401 && !originalRequest._retry) {
+      // Avoid refreshing for the refresh endpoint itself
+      if (originalRequest.url?.includes(API_ENDPOINTS.AUTH.REFRESH)) {
+        return Promise.reject(error);
+      }
+
+      if (isRefreshing) {
+        // Queue this request to retry after refresh completes
+        return new Promise((resolve, reject) => {
+          failedQueue.push({
+            resolve: (token) => {
+              if (token && originalRequest.headers) {
+                originalRequest.headers.Authorization = `Bearer ${token}`;
+              }
+              resolve(axiosInstance(originalRequest));
+            },
+            reject: (err) => {
+              reject(err);
+            },
+          });
+        });
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
         const refreshToken = await SecureStore.getItemAsync('refresh_token');
         
-        if (refreshToken) {
-          const response = await axios.post(`${apiConfig.apiUrl}/auth/refresh-token`, {
-            refreshToken,
-          });
+        if (!refreshToken) {
+          throw new Error(t('auth.refresh.refreshFailed'));
+        }
 
-          if (response.data.success) {
-            const { accessToken, refreshToken: newRefreshToken } = response.data.data.tokens;
-            
-            await SecureStore.setItemAsync('access_token', accessToken);
-            await SecureStore.setItemAsync('refresh_token', newRefreshToken);
+        // Call refresh endpoint directly (not through interceptor)
+        const response = await axios.post(`${apiConfig.apiUrl}${API_ENDPOINTS.AUTH.REFRESH}`, {
+          refreshToken,
+        });
 
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            }
+        if (response.data.success) {
+          const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+          
+          await SecureStore.setItemAsync('access_token', accessToken);
+          await SecureStore.setItemAsync('refresh_token', newRefreshToken);
 
-            return axiosInstance(originalRequest);
+          // Process queued requests with new token
+          processQueue(null, accessToken);
+
+          // Retry original request
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           }
+
+          return axiosInstance(originalRequest);
+        } else {
+          throw new Error(t('auth.refresh.refreshFailed'));
         }
       } catch (refreshError) {
-        // Refresh failed - clear tokens and redirect to login
+        // Refresh failed - clear tokens
+        processQueue(refreshError as AxiosError, null);
+        
         await SecureStore.deleteItemAsync('access_token');
         await SecureStore.deleteItemAsync('refresh_token');
         
-        // You can emit an event here to handle logout in the app
         console.error('Token refresh failed:', refreshError);
+        
+        // Return error with localized message
+        return Promise.reject(new Error(t('auth.errors.sessionExpired')));
+      } finally {
+        isRefreshing = false;
       }
     }
 
-    // Handle other errors
+    // Handle other errors with i18n
     if (error.response) {
-      // Server responded with error status
-      const errorMessage = (error.response.data as any)?.message || 'Đã có lỗi xảy ra';
+      const status = error.response.status;
+      const data = error.response.data as { message?: string };
+      
+      let errorMessage: string;
+      
+      switch (status) {
+        case 400:
+          errorMessage = data?.message || t('common.error');
+          break;
+        case 403:
+          errorMessage = t('auth.errors.unauthorized');
+          break;
+        case 404:
+          errorMessage = data?.message || t('common.error');
+          break;
+        case 429:
+          errorMessage = t('auth.errors.tooManyAttempts');
+          break;
+        case 500:
+        default:
+          errorMessage = t('auth.errors.serverError');
+          break;
+      }
+      
       console.error('API Error:', errorMessage);
     } else if (error.request) {
-      // Request was made but no response
-      console.error('Network Error: Không thể kết nối đến server');
+      console.error('Network Error:', t('common.networkError'));
     } else {
-      // Something else happened
       console.error('Error:', error.message);
     }
 

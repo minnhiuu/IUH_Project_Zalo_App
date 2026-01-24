@@ -1,3 +1,3 @@
-export { default as apiConfig } from './apiConfig';
-export { default as axiosInstance } from './axiosInstance';
-
+export { default as apiConfig, API_ENDPOINTS } from './apiConfig';
+// axiosInstance moved to lib/http.ts
+export { default as http } from '@/lib/http';
