@@ -5,8 +5,10 @@ import type { LoginFormData, RegisterFormData } from '@/types/auth.types';
 const PHONE_REGEX = /^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/;
 
 // Password requirements
-const PASSWORD_MIN_LENGTH = 6;
+const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_MAX_LENGTH = 50;
+// Password must contain: at least 8 chars, 1 uppercase, 1 number, 1 special char
+const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
 
 export interface ValidationResult {
   isValid: boolean;
@@ -54,6 +56,13 @@ export const authSchema = {
     
     if (value.length > PASSWORD_MAX_LENGTH) {
       return { isValid: false, error: t('auth.validation.passwordMaxLength') };
+    }
+    
+    if (!PASSWORD_REGEX.test(value)) {
+      return { 
+        isValid: false, 
+        error: 'Mật khẩu phải có ít nhất 8 ký tự, 1 chữ hoa, 1 số và 1 ký tự đặc biệt' 
+      };
     }
     
     return { isValid: true };
@@ -110,6 +119,24 @@ export const authSchema = {
     
     if (!/^\d{6}$/.test(value)) {
       return { isValid: false, error: t('auth.validation.otpInvalid') };
+    }
+    
+    return { isValid: true };
+  },
+
+  /**
+   * Validate email
+   */
+  email: (value: string): ValidationResult => {
+    const t = i18n.t;
+    
+    if (!value) {
+      return { isValid: false, error: t('auth.validation.emailRequired') };
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(value)) {
+      return { isValid: false, error: t('auth.validation.emailInvalid') };
     }
     
     return { isValid: true };

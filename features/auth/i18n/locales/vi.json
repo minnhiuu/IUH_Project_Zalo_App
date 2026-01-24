@@ -77,7 +77,11 @@
     "fullNameMinLength": "Tên phải có ít nhất 2 ký tự",
     "fullNameMaxLength": "Tên không được vượt quá 50 ký tự",
     "captchaRequired": "Vui lòng nhập mã kiểm tra",
-    "captchaInvalid": "Mã kiểm tra không đúng"
+    "captchaInvalid": "Mã kiểm tra không đúng",
+    "emailRequired": "Vui lòng nhập email",
+    "emailInvalid": "Email không hợp lệ",
+    "otpRequired": "Vui lòng nhập mã OTP",
+    "otpInvalid": "Mã OTP phải là 6 chữ số"
   },
   "errors": {
     "invalidCredentials": "Số điện thoại hoặc mật khẩu không đúng",
@@ -87,5 +91,23 @@
     "tooManyAttempts": "Quá nhiều lần thử. Vui lòng thử lại sau.",
     "sessionExpired": "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
     "serverError": "Lỗi máy chủ. Vui lòng thử lại sau."
+  },
+  "forgotPassword": {
+    "title": "Quên mật khẩu",
+    "instruction": "Nhập email của bạn để nhận mã xác thực\nvà đặt lại mật khẩu",
+    "resetInstruction": "Mã xác thực đã được gửi đến\n{{email}}\n\nVui lòng nhập mã và mật khẩu mới",
+    "email": "Email",
+    "emailPlaceholder": "Nhập email của bạn",
+    "otp": "Mã xác thực OTP",
+    "otpPlaceholder": "Nhập mã 6 chữ số",
+    "newPassword": "Mật khẩu mới",
+    "newPasswordPlaceholder": "Nhập mật khẩu mới",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "confirmPasswordPlaceholder": "Nhập lại mật khẩu mới",
+    "continue": "Tiếp tục",
+    "confirm": "Xác nhận",
+    "back": "Quay lại đăng nhập",
+    "otpSent": "Mã OTP đã được gửi",
+    "resetSuccess": "Đặt lại mật khẩu thành công"
   }
 }

@@ -58,6 +58,7 @@ export const Input = forwardRef<TextInput, InputProps>(
             secureTextEntry={isPassword && !showPassword}
             onFocus={() => setIsFocused(true)}
             onBlur={() => setIsFocused(false)}
+            style={{ letterSpacing: 0 }}
             {...props}
           />
           {isPassword ? (

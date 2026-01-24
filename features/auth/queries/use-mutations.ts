@@ -8,7 +8,7 @@ import { authKeys } from './keys';
 import { useAuthStore } from '@/store';
 import { handleErrorApi } from '@/utils/error-handler';
 import { getRefreshToken } from '@/lib/http';
-import type { LoginPayload, RegisterPayload, RegisterVerifyPayload, AuthResponse, AuthTokens } from '@/types/auth.types';
+import type { LoginPayload, RegisterPayload, RegisterVerifyPayload, AuthResponse, AuthTokens, ForgotPasswordPayload, ResetPasswordPayload } from '@/types/auth.types';
 
 /**
  * Login mutation hook
@@ -221,6 +221,80 @@ export const useRefreshTokenMutation = () => {
         text1: t('auth.refresh.refreshFailed'),
         visibilityTime: 3000,
       });
+    },
+  });
+};
+
+
+export const useForgotPasswordMutation = () => {
+  const { t } = useTranslation();
+  const { setLoading, setError } = useAuthStore();
+
+  return useMutation({
+    mutationKey: authKeys.forgotPassword(),
+    mutationFn: (body: ForgotPasswordPayload) => authApi.forgotPassword(body),
+    
+    onMutate: () => {
+      setLoading(true);
+      setError(null);
+    },
+    
+    onSuccess: (data) => {
+      Toast.show({
+        type: 'success',
+        text1: t('Gửi OTP thành công'),
+        text2: data.message,
+        visibilityTime: 3000,
+      });
+    },
+    
+    onError: (error: Error) => {
+      setError(error.message);
+      handleErrorApi({ error });
+    },
+    
+    onSettled: () => {
+      setLoading(false);
+    },
+  });
+};
+
+
+export const useResetPasswordMutation = () => {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const { loginSuccess, setLoading, setError } = useAuthStore();
+
+  return useMutation({
+    mutationKey: authKeys.resetPassword(),
+    mutationFn: (body: ResetPasswordPayload) => authApi.resetPassword(body),
+    
+    onMutate: () => {
+      setLoading(true);
+      setError(null);
+    },
+    
+    onSuccess: (data: AuthResponse) => {
+      loginSuccess(data.tokens, data.user);
+      queryClient.invalidateQueries({ queryKey: authKeys.user() });
+      
+      Toast.show({
+        type: 'success',
+        text1: t('Đã đặt lại mật khẩu thành công'),
+        visibilityTime: 2000,
+      });
+      
+      router.replace('/(tabs)');
+    },
+    
+    onError: (error: Error) => {
+      setError(error.message);
+      handleErrorApi({ error });
+    },
+    
+    onSettled: () => {
+      setLoading(false);
     },
   });
 };

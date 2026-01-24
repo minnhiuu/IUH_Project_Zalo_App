@@ -77,7 +77,11 @@
     "fullNameMinLength": "Name must be at least 2 characters",
     "fullNameMaxLength": "Name must not exceed 50 characters",
     "captchaRequired": "Please enter verification code",
-    "captchaInvalid": "Verification code is incorrect"
+    "captchaInvalid": "Verification code is incorrect",
+    "emailRequired": "Please enter email",
+    "emailInvalid": "Invalid email address",
+    "otpRequired": "Please enter OTP code",
+    "otpInvalid": "OTP must be 6 digits"
   },
   "errors": {
     "invalidCredentials": "Invalid phone number or password",
@@ -87,5 +91,23 @@
     "tooManyAttempts": "Too many attempts. Please try again later.",
     "sessionExpired": "Session expired. Please login again.",
     "serverError": "Server error. Please try again later."
+  },
+  "forgotPassword": {
+    "title": "Forgot Password",
+    "instruction": "Enter your email to receive\nverification code and reset password",
+    "resetInstruction": "Verification code has been sent to\n{{email}}\n\nPlease enter the code and new password",
+    "email": "Email",
+    "emailPlaceholder": "Enter your email",
+    "otp": "OTP Verification Code",
+    "otpPlaceholder": "Enter 6-digit code",
+    "newPassword": "New Password",
+    "newPasswordPlaceholder": "Enter new password",
+    "confirmPassword": "Confirm Password",
+    "confirmPasswordPlaceholder": "Re-enter new password",
+    "continue": "Continue",
+    "confirm": "Confirm",
+    "back": "Back to login",
+    "otpSent": "OTP code has been sent",
+    "resetSuccess": "Password reset successful"
   }
 }

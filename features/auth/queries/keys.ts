@@ -28,4 +28,8 @@ export const authKeys = {
   user: () => [...authKeys.all(), 'user'] as const,
 
   currentUser: () => [...authKeys.user(), 'current'] as const,
+
+  forgotPassword: () => [...authKeys.all(), 'forgot-password'] as const,
+
+  resetPassword: () => [...authKeys.all(), 'reset-password'] as const,
 };

@@ -58,3 +58,29 @@ export interface RegisterFormData {
   fullName: string;
   otp?: string;
 }
+
+// Forgot password payload - Step 1: Request OTP
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+// Reset password payload - Step 2: Reset with OTP
+export interface ResetPasswordPayload {
+  email: string;
+  otp: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+// Forgot password form data
+export interface ForgotPasswordFormData {
+  email: string;
+}
+
+// Reset password form data
+export interface ResetPasswordFormData {
+  email: string;
+  otp: string;
+  newPassword: string;
+  confirmPassword: string;
+}

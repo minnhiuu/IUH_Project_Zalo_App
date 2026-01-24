@@ -8,6 +8,8 @@ import type {
   TokenApiResponse,
   RegisterPayload,
   RegisterVerifyPayload,
+  ForgotPasswordPayload,
+  ResetPasswordPayload,
 } from '@/types/auth.types';
 import type { ApiResponse } from '@/types/common.types';
 import type { User } from '@/types/user.types';
@@ -154,7 +156,7 @@ export const authApi = {
    */
   logout: async (refreshToken?: string): Promise<void> => {
     try {
-      // Call backend logout if refresh token is available
+   
       if (refreshToken) {
         await http.post(API_ENDPOINTS.AUTH.LOGOUT, { refreshToken });
       }
@@ -162,9 +164,59 @@ export const authApi = {
       console.warn('[authApi] Logout API failed, clearing local tokens anyway:', error);
     }
     
-    // Always clear local tokens
+
     await clearTokens();
     await storage.remove('user_data');
+  },
+
+
+  forgotPassword: async (payload: ForgotPasswordPayload): Promise<{ message: string; email: string }> => {
+    console.log('ForgotPassword request payload:', JSON.stringify(payload, null, 2));
+    
+    try {
+      const response = await http.post<ApiResponse<{ message: string; email: string; expires_in: number }>>(
+        API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
+        payload
+      );
+      
+      console.log('ForgotPassword response:', JSON.stringify(response.data, null, 2));
+      
+      return {
+        message: response.data.data.message,
+        email: response.data.data.email,
+      };
+    } catch (error: any) {
+      console.error('ForgotPassword error:', error.response?.data || error.message);
+      throw error;
+    }
+  },
+
+  /**
+   * Reset password - Step 2: Reset with OTP
+   * POST /auth/reset-password
+   */
+  resetPassword: async (payload: ResetPasswordPayload): Promise<AuthResponse> => {
+    console.log('ResetPassword request payload:', JSON.stringify(payload, null, 2));
+    
+    try {
+      const response = await http.post<ApiResponse<TokenApiResponse>>(
+        API_ENDPOINTS.AUTH.RESET_PASSWORD,
+        payload
+      );
+      
+      console.log('ResetPassword response:', JSON.stringify(response.data, null, 2));
+      
+      const tokens = transformTokenResponse(response.data.data);
+      
+      // Store tokens
+      await setAccessToken(tokens.accessToken);
+      await setRefreshToken(tokens.refreshToken);
+      
+      return { tokens };
+    } catch (error: any) {
+      console.error('ResetPassword error:', error.response?.data || error.message);
+      throw error;
+    }
   },
 
   /**
