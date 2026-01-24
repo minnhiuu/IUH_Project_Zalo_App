@@ -42,6 +42,7 @@ export const API_ENDPOINTS = {
     REGISTER: '/auth/register',     // POST - RegisterInitRequest (2-step with OTP)
     REGISTER_VERIFY: '/auth/register/verify', // POST - RegisterVerifyRequest
     REFRESH: '/auth/refresh',       // POST - RefreshTokenRequest
+    LOGOUT: '/auth/logout',         // POST - LogoutRequest
     VALIDATE: '/auth/validate',     // GET ?token=xxx
   },
   USER: {

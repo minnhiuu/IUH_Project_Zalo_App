@@ -1,13 +1,9 @@
-// ============================================
-// Auth Types - Core authentication types
-// ============================================
 
-// Login payload - matches backend LoginRequest
 export interface LoginPayload {
   email: string;
   password: string;
   deviceId: string;
-  deviceType: 'WEB' | 'MOBILE'; // Backend only accepts WEB or MOBILE
+  deviceType: 'WEB' | 'MOBILE'; 
 }
 
 // Register payload - matches backend RegisterInitRequest (2-step with OTP)
@@ -60,6 +56,5 @@ export interface RegisterFormData {
   password: string;
   confirmPassword: string;
   fullName: string;
-  email?: string;
   otp?: string;
 }

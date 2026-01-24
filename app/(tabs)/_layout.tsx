@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { StatusBar, Platform } from 'react-native';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
@@ -42,24 +43,37 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <Tabs
-      screenOptions={{
-        tabBarActiveTintColor: '#0068FF',
-        tabBarInactiveTintColor: '#999999',
-        headerShown: false,
-        tabBarStyle: {
-          backgroundColor: colorScheme === 'dark' ? '#1A1A1A' : '#FFFFFF',
-          borderTopColor: colorScheme === 'dark' ? '#333333' : '#E0E0E0',
-          paddingTop: 8,
-          paddingBottom: 8,
-          height: 60,
-        },
-        tabBarLabelStyle: {
-          fontSize: 11,
-          fontWeight: '500',
-        },
-      }}
-    >
+    <>
+      <StatusBar 
+        barStyle="light-content" 
+        backgroundColor="#0068FF"
+        translucent={Platform.OS === 'android'}
+      />
+      <Tabs
+        screenOptions={{
+          tabBarActiveTintColor: '#0068FF',
+          tabBarInactiveTintColor: '#8E8E93',
+          headerShown: false,
+          tabBarStyle: {
+            backgroundColor: colorScheme === 'dark' ? '#1A1A1A' : '#FFFFFF',
+            borderTopColor: colorScheme === 'dark' ? '#333333' : '#E5E5E5',
+            borderTopWidth: 0.5,
+            paddingTop: 10,
+            paddingBottom: Platform.OS === 'ios' ? 28 : 12,
+            height: Platform.OS === 'ios' ? 88 : 70,
+            elevation: 0,
+            shadowOpacity: 0,
+          },
+          tabBarLabelStyle: {
+            fontSize: 11,
+            fontWeight: '500',
+            marginTop: 2,
+          },
+          tabBarIconStyle: {
+            marginTop: 4,
+          },
+        }}
+      >
       <Tabs.Screen
         name={TAB_CONFIG.messages.name}
         options={{
@@ -67,7 +81,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? TAB_CONFIG.messages.iconFocused : TAB_CONFIG.messages.icon}
-              size={24}
+              size={26}
               color={color}
             />
           ),
@@ -80,7 +94,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? TAB_CONFIG.contacts.iconFocused : TAB_CONFIG.contacts.icon}
-              size={24}
+              size={26}
               color={color}
             />
           ),
@@ -93,7 +107,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? TAB_CONFIG.discover.iconFocused : TAB_CONFIG.discover.icon}
-              size={24}
+              size={26}
               color={color}
             />
           ),
@@ -106,7 +120,7 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? TAB_CONFIG.timeline.iconFocused : TAB_CONFIG.timeline.icon}
-              size={24}
+              size={26}
               color={color}
             />
           ),
@@ -119,12 +133,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? TAB_CONFIG.profile.iconFocused : TAB_CONFIG.profile.icon}
-              size={24}
+              size={26}
               color={color}
             />
           ),
         }}
       />
     </Tabs>
+    </>
   );
 }

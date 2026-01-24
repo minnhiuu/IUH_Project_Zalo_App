@@ -118,10 +118,10 @@ export const authApi = {
    * Refresh access token
    * POST /auth/refresh
    */
-  refreshToken: async (refreshToken: string): Promise<AuthTokens> => {
+  refreshToken: async (refreshToken: string, deviceId?: string): Promise<AuthTokens> => {
     const response = await http.post<ApiResponse<TokenApiResponse>>(
       API_ENDPOINTS.AUTH.REFRESH,
-      { refreshToken }
+      { refreshToken, deviceId }
     );
     
     const tokens = transformTokenResponse(response.data.data);
@@ -149,10 +149,20 @@ export const authApi = {
   },
 
   /**
-   * Logout user - clear local tokens
-   * Note: Backend may not have logout endpoint, just clear local storage
+   * Logout user - call backend and clear local tokens
+   * POST /auth/logout
    */
-  logout: async (): Promise<void> => {
+  logout: async (refreshToken?: string): Promise<void> => {
+    try {
+      // Call backend logout if refresh token is available
+      if (refreshToken) {
+        await http.post(API_ENDPOINTS.AUTH.LOGOUT, { refreshToken });
+      }
+    } catch (error) {
+      console.warn('[authApi] Logout API failed, clearing local tokens anyway:', error);
+    }
+    
+    // Always clear local tokens
     await clearTokens();
     await storage.remove('user_data');
   },

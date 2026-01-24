@@ -149,7 +149,10 @@ export const useLogoutMutation = () => {
 
   return useMutation({
     mutationKey: authKeys.logout(),
-    mutationFn: () => authApi.logout(),
+    mutationFn: async () => {
+      const refreshToken = await getRefreshToken();
+      return authApi.logout(refreshToken || undefined);
+    },
     
     onMutate: () => {
       setLoading(true);
