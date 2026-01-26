@@ -18,14 +18,14 @@
     "captchaPlaceholder": "Verification code",
     "refreshCaptcha": "Refresh code",
     "show": "Show",
-    "hide": "Hide", 
+    "hide": "Hide",
     "loginWithPassword": "LOGIN WITH PASSWORD",
     "loginWithoutPassword": "LOGIN WITHOUT PASSWORD",
     "forgotPassword": "Forgot password?",
     "loginWithFacebook": "Login with Facebook",
     "noAccount": "Don't have an account?",
     "register": "Register",
-    "loginSuccess": "Login successful", 
+    "loginSuccess": "Login successful",
     "loginFailed": "Login failed",
     "or": "Or",
     "qrInstruction": "Use Zalo app on another device to scan QR code",
@@ -62,7 +62,7 @@
     "terms": "By registering, you agree to",
     "termsOfService": "Terms of Service",
     "and": "and",
-    "privacyPolicy": "Privacy Policy", 
+    "privacyPolicy": "Privacy Policy",
     "ofZalo": "of Zalo"
   },
   "validation": {
@@ -109,5 +109,18 @@
     "back": "Back to login",
     "otpSent": "OTP code has been sent",
     "resetSuccess": "Password reset successful"
+  },
+  "qrScanner": {
+    "title": "Scan QR Code",
+    "permissionTitle": "Camera Permission",
+    "permissionMessage": "Zalo needs camera permission to scan QR code",
+    "scanInstruction": "Move camera to QR code to scan",
+    "invalidQr": "Invalid QR code",
+    "confirmTitle": "Login to Web?",
+    "confirmMessage": "Confirm to login on web browser",
+    "accept": "Login",
+    "reject": "Reject",
+    "success": "Login confirmed successfully",
+    "denied": "Login rejected"
   }
 }

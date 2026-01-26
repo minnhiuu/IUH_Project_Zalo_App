@@ -1,5 +1,5 @@
 import "../global.css";
-import "@/i18n"; // Initialize i18n
+import "@/i18n"; // Initializing i18n logic separately if needed
 
 import {
   DarkTheme,
@@ -13,16 +13,14 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import { I18nextProvider } from "react-i18next";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
 
 import { GluestackProvider } from "@/components/ui";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import i18n from "@/i18n";
+import i18n from "@/i18n"; // Main i18n instance
 import { useAuthStore } from "@/store";
 import { getAccessToken, getRefreshToken } from "@/lib/http";
-
-
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -40,8 +38,24 @@ const queryClient = new QueryClient({
  */
 function SimpleLoadingScreen() {
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0068FF' }}>
-      <Text style={{ fontSize: 48, fontWeight: 'bold', color: 'white', fontStyle: 'italic' }}>Zalo</Text>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        backgroundColor: "#0068FF",
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 48,
+          fontWeight: "bold",
+          color: "white",
+          fontStyle: "italic",
+        }}
+      >
+        Zalo
+      </Text>
       <ActivityIndicator size="large" color="white" style={{ marginTop: 20 }} />
     </View>
   );
@@ -51,7 +65,13 @@ function SimpleLoadingScreen() {
  * Auth Guard Component - Redirects to auth if not authenticated
  */
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isInitialized, setInitialized, loginSuccess, logoutSuccess } = useAuthStore();
+  const {
+    isAuthenticated,
+    isInitialized,
+    setInitialized,
+    loginSuccess,
+    logoutSuccess,
+  } = useAuthStore();
   const segments = useSegments();
   const router = useRouter();
 
@@ -61,53 +81,53 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
 
     const initAuth = async () => {
-      console.log('[AuthGuard] Starting auth initialization...');
+      console.log("[AuthGuard] Starting auth initialization...");
       try {
         let accessToken: string | null = null;
         let refreshToken: string | null = null;
-        
+
         try {
           // Add timeout for token retrieval
           const tokenPromise = Promise.all([
             getAccessToken(),
             getRefreshToken(),
           ]);
-          
-          const [access, refresh] = await Promise.race([
+
+          const result = await Promise.race([
             tokenPromise,
-            new Promise<[null, null]>((resolve) => 
-              setTimeout(() => resolve([null, null]), 3000)
+            new Promise<[null, null]>((resolve) =>
+              setTimeout(() => resolve([null, null]), 3000),
             ),
           ]);
-          
-          accessToken = access;
-          refreshToken = refresh;
-          console.log('[AuthGuard] Tokens retrieved:', { 
-            hasAccessToken: !!accessToken, 
-            hasRefreshToken: !!refreshToken 
+
+          accessToken = result[0];
+          refreshToken = result[1];
+          console.log("[AuthGuard] Tokens retrieved:", {
+            hasAccessToken: !!accessToken,
+            hasRefreshToken: !!refreshToken,
           });
         } catch (tokenError) {
-          console.error('[AuthGuard] Error getting tokens:', tokenError);
+          console.error("[AuthGuard] Error getting tokens:", tokenError);
         }
 
         if (!isMounted) return;
 
         if (accessToken && refreshToken) {
           loginSuccess(
-            { accessToken, refreshToken, tokenType: 'Bearer', expiresIn: 0 },
-            null
+            { accessToken, refreshToken, tokenType: "Bearer", expiresIn: 0 },
+            null,
           );
-          console.log('[AuthGuard] User logged in with existing tokens');
+          console.log("[AuthGuard] User logged in with existing tokens");
         } else {
           logoutSuccess();
-          console.log('[AuthGuard] No tokens found, logged out');
+          console.log("[AuthGuard] No tokens found, logged out");
         }
       } catch (error) {
-        console.error('[AuthGuard] Auth init error:', error);
+        console.error("[AuthGuard] Auth init error:", error);
         if (isMounted) logoutSuccess();
       } finally {
         if (isMounted) {
-          console.log('[AuthGuard] Setting initialized to true');
+          console.log("[AuthGuard] Setting initialized to true");
           setInitialized(true);
         }
       }
@@ -116,8 +136,10 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     if (!isInitialized) {
       // Failsafe: ensure we initialize even if something goes wrong
       timeoutId = setTimeout(() => {
-        console.warn('[AuthGuard] Initialization timeout - forcing initialized state');
-        if (isMounted && !useAuthStore.getState().isInitialized) {
+        console.warn(
+          "[AuthGuard] Initialization timeout - forcing initialized state",
+        );
+        if (isMounted && !isInitialized) {
           logoutSuccess();
           setInitialized(true);
         }
@@ -130,27 +152,30 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
       isMounted = false;
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [isInitialized]);
+  }, [isInitialized, loginSuccess, logoutSuccess, setInitialized]);
 
   useEffect(() => {
     if (!isInitialized) return;
 
     const inAuthGroup = segments[0] === "auth";
-    console.log('[AuthGuard] Navigation check:', { isAuthenticated, inAuthGroup, segments });
+    console.log("[AuthGuard] Navigation check:", {
+      isAuthenticated,
+      inAuthGroup,
+      segments,
+    });
 
     if (!isAuthenticated && !inAuthGroup) {
       // Redirect to auth if not authenticated
-      console.log('[AuthGuard] Redirecting to /auth');
+      console.log("[AuthGuard] Redirecting to /auth");
       router.replace("/auth");
     } else if (isAuthenticated && inAuthGroup) {
       // Redirect to tabs if authenticated and trying to access auth
-      console.log('[AuthGuard] Redirecting to /(tabs)');
+      console.log("[AuthGuard] Redirecting to /(tabs)");
       router.replace("/(tabs)");
     }
-  }, [isAuthenticated, isInitialized, segments]);
+  }, [isAuthenticated, isInitialized, segments, router]);
 
   // Show loading screen while initializing
-  console.log('[AuthGuard] Render - isInitialized:', isInitialized);
   if (!isInitialized) {
     return <SimpleLoadingScreen />;
   }
@@ -174,6 +199,13 @@ export default function RootLayout() {
                   <Stack screenOptions={{ headerShown: false }}>
                     <Stack.Screen name="(tabs)" />
                     <Stack.Screen name="auth" />
+                    <Stack.Screen
+                      name="qr-scan"
+                      options={{
+                        presentation: "modal",
+                        animation: "slide_from_bottom",
+                      }}
+                    />
                   </Stack>
                 </AuthGuard>
                 <StatusBar style="auto" />

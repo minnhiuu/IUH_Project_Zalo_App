@@ -1,14 +1,16 @@
-import i18n from '@/i18n';
-import type { LoginFormData, RegisterFormData } from '@/types/auth.types';
+import i18n from "@/i18n";
+import type { LoginFormData, RegisterFormData } from "@/types/auth.types";
 
 // Phone validation regex for Vietnamese numbers
-const PHONE_REGEX = /^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/;
+const PHONE_REGEX =
+  /^(0|\+84)(3[2-9]|5[6|8|9]|7[0|6-9]|8[1-9]|9[0-9])[0-9]{7}$/;
 
 // Password requirements
 const PASSWORD_MIN_LENGTH = 8;
 const PASSWORD_MAX_LENGTH = 50;
 // Password must contain: at least 8 chars, 1 uppercase, 1 number, 1 special char
-const PASSWORD_REGEX = /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+const PASSWORD_REGEX =
+  /^(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
 
 export interface ValidationResult {
   isValid: boolean;
@@ -27,16 +29,16 @@ export const authSchema = {
    */
   phone: (value: string): ValidationResult => {
     const t = i18n.t;
-    const cleaned = value.replace(/\s/g, '');
-    
+    const cleaned = value.replace(/\s/g, "");
+
     if (!cleaned) {
-      return { isValid: false, error: t('auth.validation.phoneRequired') };
+      return { isValid: false, error: t("auth.validation.phoneRequired") };
     }
-    
+
     if (!PHONE_REGEX.test(cleaned)) {
-      return { isValid: false, error: t('auth.validation.phoneInvalid') };
+      return { isValid: false, error: t("auth.validation.phoneInvalid") };
     }
-    
+
     return { isValid: true };
   },
 
@@ -45,43 +47,50 @@ export const authSchema = {
    */
   password: (value: string): ValidationResult => {
     const t = i18n.t;
-    
+
     if (!value) {
-      return { isValid: false, error: t('auth.validation.passwordRequired') };
+      return { isValid: false, error: t("auth.validation.passwordRequired") };
     }
-    
+
     if (value.length < PASSWORD_MIN_LENGTH) {
-      return { isValid: false, error: t('auth.validation.passwordMinLength') };
+      return { isValid: false, error: t("auth.validation.passwordMinLength") };
     }
-    
+
     if (value.length > PASSWORD_MAX_LENGTH) {
-      return { isValid: false, error: t('auth.validation.passwordMaxLength') };
+      return { isValid: false, error: t("auth.validation.passwordMaxLength") };
     }
-    
+
     if (!PASSWORD_REGEX.test(value)) {
-      return { 
-        isValid: false, 
-        error: 'Mật khẩu phải có ít nhất 8 ký tự, 1 chữ hoa, 1 số và 1 ký tự đặc biệt' 
+      return {
+        isValid: false,
+        error:
+          "Mật khẩu phải có ít nhất 8 ký tự, 1 chữ hoa, 1 số và 1 ký tự đặc biệt",
       };
     }
-    
+
     return { isValid: true };
   },
 
   /**
    * Validate confirm password
    */
-  confirmPassword: (password: string, confirmPassword: string): ValidationResult => {
+  confirmPassword: (
+    password: string,
+    confirmPassword: string,
+  ): ValidationResult => {
     const t = i18n.t;
-    
+
     if (!confirmPassword) {
-      return { isValid: false, error: t('auth.validation.confirmPasswordRequired') };
+      return {
+        isValid: false,
+        error: t("auth.validation.confirmPasswordRequired"),
+      };
     }
-    
+
     if (password !== confirmPassword) {
-      return { isValid: false, error: t('auth.validation.passwordMismatch') };
+      return { isValid: false, error: t("auth.validation.passwordMismatch") };
     }
-    
+
     return { isValid: true };
   },
 
@@ -91,19 +100,19 @@ export const authSchema = {
   fullName: (value: string): ValidationResult => {
     const t = i18n.t;
     const trimmed = value.trim();
-    
+
     if (!trimmed) {
-      return { isValid: false, error: t('auth.validation.fullNameRequired') };
+      return { isValid: false, error: t("auth.validation.fullNameRequired") };
     }
-    
+
     if (trimmed.length < 2) {
-      return { isValid: false, error: t('auth.validation.fullNameMinLength') };
+      return { isValid: false, error: t("auth.validation.fullNameMinLength") };
     }
-    
+
     if (trimmed.length > 50) {
-      return { isValid: false, error: t('auth.validation.fullNameMaxLength') };
+      return { isValid: false, error: t("auth.validation.fullNameMaxLength") };
     }
-    
+
     return { isValid: true };
   },
 
@@ -112,15 +121,15 @@ export const authSchema = {
    */
   otp: (value: string): ValidationResult => {
     const t = i18n.t;
-    
+
     if (!value) {
-      return { isValid: false, error: t('auth.validation.otpRequired') };
+      return { isValid: false, error: t("auth.validation.otpRequired") };
     }
-    
+
     if (!/^\d{6}$/.test(value)) {
-      return { isValid: false, error: t('auth.validation.otpInvalid') };
+      return { isValid: false, error: t("auth.validation.otpInvalid") };
     }
-    
+
     return { isValid: true };
   },
 
@@ -129,16 +138,16 @@ export const authSchema = {
    */
   email: (value: string): ValidationResult => {
     const t = i18n.t;
-    
+
     if (!value) {
-      return { isValid: false, error: t('auth.validation.emailRequired') };
+      return { isValid: false, error: t("auth.validation.emailRequired") };
     }
-    
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(value)) {
-      return { isValid: false, error: t('auth.validation.emailInvalid') };
+      return { isValid: false, error: t("auth.validation.emailInvalid") };
     }
-    
+
     return { isValid: true };
   },
 
@@ -147,17 +156,17 @@ export const authSchema = {
    */
   validateLoginForm: (data: LoginFormData): Record<string, string> => {
     const errors: Record<string, string> = {};
-    
+
     const phoneResult = authSchema.phone(data.phoneNumber);
     if (!phoneResult.isValid && phoneResult.error) {
       errors.phoneNumber = phoneResult.error;
     }
-    
+
     const passwordResult = authSchema.password(data.password);
     if (!passwordResult.isValid && passwordResult.error) {
       errors.password = passwordResult.error;
     }
-    
+
     return errors;
   },
 
@@ -166,27 +175,30 @@ export const authSchema = {
    */
   validateRegisterForm: (data: RegisterFormData): Record<string, string> => {
     const errors: Record<string, string> = {};
-    
+
     const phoneResult = authSchema.phone(data.phoneNumber);
     if (!phoneResult.isValid && phoneResult.error) {
       errors.phoneNumber = phoneResult.error;
     }
-    
+
     const fullNameResult = authSchema.fullName(data.fullName);
     if (!fullNameResult.isValid && fullNameResult.error) {
       errors.fullName = fullNameResult.error;
     }
-    
+
     const passwordResult = authSchema.password(data.password);
     if (!passwordResult.isValid && passwordResult.error) {
       errors.password = passwordResult.error;
     }
-    
-    const confirmPasswordResult = authSchema.confirmPassword(data.password, data.confirmPassword);
+
+    const confirmPasswordResult = authSchema.confirmPassword(
+      data.password,
+      data.confirmPassword,
+    );
     if (!confirmPasswordResult.isValid && confirmPasswordResult.error) {
       errors.confirmPassword = confirmPasswordResult.error;
     }
-    
+
     // OTP is optional in register
     if (data.otp) {
       const otpResult = authSchema.otp(data.otp);
@@ -194,7 +206,7 @@ export const authSchema = {
         errors.otp = otpResult.error;
       }
     }
-    
+
     return errors;
   },
 };

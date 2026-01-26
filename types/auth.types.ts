@@ -1,9 +1,8 @@
-
 export interface LoginPayload {
   email: string;
   password: string;
   deviceId: string;
-  deviceType: 'WEB' | 'MOBILE'; 
+  deviceType: "WEB" | "MOBILE";
 }
 
 // Register payload - matches backend RegisterInitRequest (2-step with OTP)
@@ -20,7 +19,7 @@ export interface RegisterVerifyPayload {
   email: string;
   otp: string;
   deviceId: string;
-  deviceType: 'WEB' | 'MOBILE'; // Backend only accepts WEB or MOBILE
+  deviceType: "WEB" | "MOBILE"; // Backend only accepts WEB or MOBILE
 }
 
 // Auth tokens (camelCase - used in app)
@@ -31,17 +30,22 @@ export interface AuthTokens {
   expiresIn: number;
 }
 
-// Backend API response format (snake_case from JSON)
+// Backend API response format (support both snake_case and camelCase)
 export interface TokenApiResponse {
   access_token: string;
   refresh_token: string;
   token_type: string;
   expires_in: number;
+  // Also support camelCase from new BE
+  accessToken?: string;
+  refreshToken?: string;
+  tokenType?: string;
+  expiresIn?: number;
 }
 
 // Auth response after login/register
 export interface AuthResponse {
-  user?: import('./user.types').User;
+  user?: import("./user.types").User;
   tokens: AuthTokens;
 }
 
