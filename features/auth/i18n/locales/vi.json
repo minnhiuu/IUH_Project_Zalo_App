@@ -121,6 +121,8 @@
     "accept": "Đăng nhập",
     "reject": "Từ chối",
     "success": "Xác nhận đăng nhập thành công",
-    "denied": "Đã từ chối đăng nhập"
+    "denied": "Đã từ chối đăng nhập",
+    "expired": "Mã QR hết hạn",
+    "expiredError": "Mã QR đã hết hạn, vui lòng tải lại mã mới"
   }
 }

@@ -14,6 +14,11 @@ export interface RegisterPayload {
   phoneNumber?: string;
 }
 
+export interface RegisterInitApiResponse {
+  message: string;
+  email: string;
+}
+
 // Register verify payload - matches backend RegisterVerifyRequest (Step 2)
 export interface RegisterVerifyPayload {
   email: string;
@@ -87,4 +92,25 @@ export interface ResetPasswordFormData {
   otp: string;
   newPassword: string;
   confirmPassword: string;
+}
+export enum QrSessionStatus {
+  PENDING = "PENDING",
+  SCANNED = "SCANNED",
+  CONFIRMED = "CONFIRMED",
+  REJECTED = "REJECTED",
+  EXPIRED = "EXPIRED",
+}
+
+export interface QrGenerationResponse {
+  qrId: string;
+  qrContent: string;
+  expiresAt: string;
+}
+
+export interface QrStatusResponse {
+  status: QrSessionStatus;
+  accessToken?: string;
+  refreshToken?: string;
+  userAvatar?: string;
+  userFullName?: string;
 }

@@ -48,6 +48,8 @@ export const API_ENDPOINTS = {
     FORGOT_PASSWORD: "/auth/forgot-password", // POST - Request OTP for password reset
     RESET_PASSWORD: "/auth/reset-password", // POST - Reset password with OTP
     QR: {
+      GENERATE: "/auth/qr/generate",
+      WAIT: (qrId: string) => `/auth/qr/wait/${qrId}`,
       SCAN: "/auth/qr/scan",
       ACCEPT: "/auth/qr/accept",
       REJECT: "/auth/qr/reject",

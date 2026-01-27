@@ -402,7 +402,7 @@ export default function MessagesScreen() {
           </View>
           <TouchableOpacity
             style={{ marginLeft: 12 }}
-            onPress={() => router.push("/qr-scan" as Href)}
+            onPress={() => router.push("/qr" as Href)}
           >
             <Ionicons name="qr-code" size={22} color="white" />
           </TouchableOpacity>

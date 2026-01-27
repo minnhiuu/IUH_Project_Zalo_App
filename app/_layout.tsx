@@ -1,5 +1,5 @@
 import "../global.css";
-import "@/i18n"; // Initializing i18n logic separately if needed
+import i18n from "@/i18n"; // Initializing i18n logic
 
 import {
   DarkTheme,
@@ -18,7 +18,6 @@ import { View, Text, ActivityIndicator } from "react-native";
 
 import { GluestackProvider } from "@/components/ui";
 import { useColorScheme } from "@/hooks/use-color-scheme";
-import i18n from "@/i18n"; // Main i18n instance
 import { useAuthStore } from "@/store";
 import { getAccessToken, getRefreshToken } from "@/lib/http";
 
@@ -157,19 +156,23 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isInitialized) return;
 
-    const inAuthGroup = segments[0] === "auth";
+    const segmentsArray = segments as string[];
+    const inAuthGroup = segmentsArray[0] === "auth";
+    const inQrGroup = segmentsArray[0] === "qr";
+
     console.log("[AuthGuard] Navigation check:", {
       isAuthenticated,
       inAuthGroup,
+      inQrGroup,
       segments,
     });
 
-    if (!isAuthenticated && !inAuthGroup) {
-      // Redirect to auth if not authenticated
+    if (!isAuthenticated && !inAuthGroup && !inQrGroup) {
+      // Redirect to auth if not authenticated and not in QR/Auth groups
       console.log("[AuthGuard] Redirecting to /auth");
       router.replace("/auth");
     } else if (isAuthenticated && inAuthGroup) {
-      // Redirect to tabs if authenticated and trying to access auth
+      // Redirect to tabs if authenticated and trying to access general auth screens
       console.log("[AuthGuard] Redirecting to /(tabs)");
       router.replace("/(tabs)");
     }
@@ -200,12 +203,13 @@ export default function RootLayout() {
                     <Stack.Screen name="(tabs)" />
                     <Stack.Screen name="auth" />
                     <Stack.Screen
-                      name="qr-scan"
+                      name="qr/index"
                       options={{
                         presentation: "modal",
                         animation: "slide_from_bottom",
                       }}
                     />
+                    <Stack.Screen name="qr/confirm" />
                   </Stack>
                 </AuthGuard>
                 <StatusBar style="auto" />

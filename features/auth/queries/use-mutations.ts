@@ -311,8 +311,8 @@ export const useResetPasswordMutation = () => {
 export const useQrScanMutation = () => {
   return useMutation({
     mutationFn: (qrId: string) => authApi.qrScan(qrId),
-    onError: (error: Error) => {
-      handleErrorApi({ error });
+    onError: (error: any) => {
+      // Don't call handleErrorApi here as we handle it custom in the component
     },
   });
 };

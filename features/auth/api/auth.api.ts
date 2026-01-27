@@ -10,22 +10,13 @@ import type {
   RegisterVerifyPayload,
   ForgotPasswordPayload,
   ResetPasswordPayload,
+  QrGenerationResponse,
+  QrStatusResponse,
+  RegisterInitApiResponse,
 } from "@/types/auth.types";
+import { QrSessionStatus } from "@/types/auth.types";
 import type { ApiResponse } from "@/types/common.types";
 import type { User } from "@/types/user.types";
-
-// Backend API response format (support both snake_case and camelCase)
-interface TokenApiResponse {
-  access_token: string;
-  refresh_token: string;
-  token_type: string;
-  expires_in: number;
-  // Also support camelCase from new BE
-  accessToken?: string;
-  refreshToken?: string;
-  tokenType?: string;
-  expiresIn?: number;
-}
 
 // Helper to transform BE response (now in camelCase)
 const transformTokenResponse = (data: TokenApiResponse): AuthTokens => ({
@@ -269,8 +260,12 @@ export const authApi = {
    * QR Login - Step 1: Scan QR Code
    * POST /auth/qr/scan
    */
-  qrScan: async (qrContent: string): Promise<void> => {
-    await http.post(API_ENDPOINTS.AUTH.QR.SCAN, { qrContent });
+  qrScan: async (qrContent: string): Promise<any> => {
+    const response = await http.post<ApiResponse<any>>(
+      API_ENDPOINTS.AUTH.QR.SCAN,
+      { qrContent },
+    );
+    return response.data.data;
   },
 
   /**
@@ -287,6 +282,32 @@ export const authApi = {
    */
   qrReject: async (qrContent: string): Promise<void> => {
     await http.post(API_ENDPOINTS.AUTH.QR.REJECT, { qrContent });
+  },
+
+  /**
+   * QR Login - Step 0: Generate QR (for mobile app login)
+   */
+  generateQr: async (): Promise<QrGenerationResponse> => {
+    const response = await http.post<ApiResponse<QrGenerationResponse>>(
+      API_ENDPOINTS.AUTH.QR.GENERATE,
+    );
+    return response.data.data;
+  },
+
+  /**
+   * QR Login - Step 0.5: Wait for QR status (Long Polling)
+   */
+  waitQrStatus: async (
+    qrId: string,
+    expectedStatus: QrSessionStatus,
+  ): Promise<QrStatusResponse> => {
+    const response = await http.get<ApiResponse<QrStatusResponse>>(
+      API_ENDPOINTS.AUTH.QR.WAIT(qrId),
+      {
+        params: { expectedStatus },
+      },
+    );
+    return response.data.data;
   },
 
   /**
