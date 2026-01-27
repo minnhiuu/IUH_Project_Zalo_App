@@ -133,6 +133,34 @@
       "sessionExpired": "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.",
       "unauthorized": "Bạn không có quyền thực hiện hành động này.",
       "serverError": "Lỗi máy chủ. Vui lòng thử lại sau."
+    },
+    "qrScanner": {
+      "title": "Quét mã QR",
+      "permissionTitle": "Quyền sử dụng máy ảnh",
+      "permissionMessage": "Zalo cần quyền sử dụng máy ảnh để quét mã QR",
+      "scanInstruction": "Di chuyển camera đến mã QR để quét",
+      "invalidQr": "Mã QR không hợp lệ hoặc đã hết hạn",
+      "confirmTitle": "Bạn muốn đăng nhập?",
+      "confirmMessage": "Xác nhận để đăng nhập trên trình duyệt web",
+      "accept": "Đăng nhập",
+      "reject": "Từ chối",
+      "success": "Xác nhận đăng nhập thành công",
+      "denied": "Đã từ chối đăng nhập",
+      "confirmScreen": {
+        "title": "Đăng nhập {{appName}} Web bằng mã QR\ntrên thiết bị lạ?",
+        "warningTitle": "Tài khoản có thể bị chiếm đoạt nếu đây không phải thiết bị của bạn.",
+        "warningDesc": "Bấm <bold>Từ chối</bold> nếu ai đó yêu cầu bạn đăng nhập bằng mã QR để bình chọn, trúng thưởng, nhận khuyến mãi,...",
+        "browser": "Trình duyệt:",
+        "time": "Thời gian:",
+        "location": "Địa điểm:",
+        "checkbox": "Tôi đã kiểm tra kỹ thông tin và xác nhận đây là thiết bị của tôi",
+        "loginSuccess": "Đăng nhập BondHub trên máy tính thành công"
+      },
+      "modal": {
+        "title": "Đăng nhập trên thiết bị lạ?",
+        "message": "Bạn hãy luôn thận trọng khi đăng nhập bằng mã QR để tránh bị chiếm đoạt tài khoản",
+        "back": "Quay lại"
+      }
     }
   }
 }

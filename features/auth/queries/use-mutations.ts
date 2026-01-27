@@ -1,14 +1,22 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
-import Toast from 'react-native-toast-message';
-import { useTranslation } from 'react-i18next';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
+import Toast from "react-native-toast-message";
+import { useTranslation } from "react-i18next";
 
-import { authApi } from '../api';
-import { authKeys } from './keys';
-import { useAuthStore } from '@/store';
-import { handleErrorApi } from '@/utils/error-handler';
-import { getRefreshToken } from '@/lib/http';
-import type { LoginPayload, RegisterPayload, RegisterVerifyPayload, AuthResponse, AuthTokens } from '@/types/auth.types';
+import { authApi } from "../api";
+import { authKeys } from "./keys";
+import { useAuthStore } from "@/store";
+import { handleErrorApi } from "@/utils/error-handler";
+import { getRefreshToken } from "@/lib/http";
+import type {
+  LoginPayload,
+  RegisterPayload,
+  RegisterVerifyPayload,
+  AuthResponse,
+  AuthTokens,
+  ForgotPasswordPayload,
+  ResetPasswordPayload,
+} from "@/types/auth.types";
 
 /**
  * Login mutation hook
@@ -22,30 +30,30 @@ export const useLoginMutation = () => {
   return useMutation({
     mutationKey: authKeys.login(),
     mutationFn: (body: LoginPayload) => authApi.login(body),
-    
+
     onMutate: () => {
       setLoading(true);
       setError(null);
     },
-    
+
     onSuccess: (data: AuthResponse) => {
       loginSuccess(data.tokens, data.user);
       queryClient.invalidateQueries({ queryKey: authKeys.user() });
-      
+
       Toast.show({
-        type: 'success',
-        text1: t('auth.login.loginSuccess'),
+        type: "success",
+        text1: t("auth.login.loginSuccess"),
         visibilityTime: 2000,
       });
-      
-      router.replace('/(tabs)');
+
+      router.replace("/(tabs)");
     },
-    
+
     onError: (error: Error) => {
       setError(error.message);
       handleErrorApi({ error });
     },
-    
+
     onSettled: () => {
       setLoading(false);
     },
@@ -64,32 +72,32 @@ export const useRegisterMutation = () => {
   return useMutation({
     mutationKey: authKeys.register(),
     mutationFn: (body: RegisterPayload) => authApi.register(body),
-    
+
     onMutate: () => {
       setLoading(true);
       setError(null);
     },
-    
+
     onSuccess: (data, variables) => {
       Toast.show({
-        type: 'success',
-        text1: t('auth.register.otpSent'),
+        type: "success",
+        text1: t("auth.register.otpSent"),
         text2: data.message,
         visibilityTime: 3000,
       });
-      
+
       // Navigate to OTP verification screen
       router.push({
-        pathname: '/auth/verify-otp' as any,
+        pathname: "/auth/verify-otp" as any,
         params: { email: variables.email },
       });
     },
-    
+
     onError: (error: Error) => {
       setError(error.message);
       handleErrorApi({ error });
     },
-    
+
     onSettled: () => {
       setLoading(false);
     },
@@ -108,30 +116,30 @@ export const useRegisterVerifyMutation = () => {
   return useMutation({
     mutationKey: authKeys.registerVerify(),
     mutationFn: (body: RegisterVerifyPayload) => authApi.registerVerify(body),
-    
+
     onMutate: () => {
       setLoading(true);
       setError(null);
     },
-    
+
     onSuccess: (data: AuthResponse) => {
       loginSuccess(data.tokens, data.user);
       queryClient.invalidateQueries({ queryKey: authKeys.user() });
-      
+
       Toast.show({
-        type: 'success',
-        text1: t('auth.register.registerSuccess'),
+        type: "success",
+        text1: t("auth.register.registerSuccess"),
         visibilityTime: 2000,
       });
-      
-      router.replace('/(tabs)');
+
+      router.replace("/(tabs)");
     },
-    
+
     onError: (error: Error) => {
       setError(error.message);
       handleErrorApi({ error });
     },
-    
+
     onSettled: () => {
       setLoading(false);
     },
@@ -153,38 +161,38 @@ export const useLogoutMutation = () => {
       const refreshToken = await getRefreshToken();
       return authApi.logout(refreshToken || undefined);
     },
-    
+
     onMutate: () => {
       setLoading(true);
     },
-    
+
     onSuccess: () => {
       logoutSuccess();
       queryClient.clear();
-      
+
       Toast.show({
-        type: 'success',
-        text1: t('auth.logout.logoutSuccess'),
+        type: "success",
+        text1: t("auth.logout.logoutSuccess"),
         visibilityTime: 2000,
       });
-      
-      router.replace('/auth/login' as any);
+
+      router.replace("/auth/login" as any);
     },
-    
+
     onError: () => {
       // Even on error, still logout locally
       logoutSuccess();
       queryClient.clear();
-      
+
       Toast.show({
-        type: 'info',
-        text1: t('auth.logout.logoutSuccess'),
+        type: "info",
+        text1: t("auth.logout.logoutSuccess"),
         visibilityTime: 2000,
       });
-      
-      router.replace('/auth/login' as any);
+
+      router.replace("/auth/login" as any);
     },
-    
+
     onSettled: () => {
       setLoading(false);
     },
@@ -203,24 +211,152 @@ export const useRefreshTokenMutation = () => {
     mutationFn: async (): Promise<AuthTokens> => {
       const refreshToken = await getRefreshToken();
       if (!refreshToken) {
-        throw new Error(t('auth.refresh.refreshFailed'));
+        throw new Error(t("auth.refresh.refreshFailed"));
       }
       return authApi.refreshToken(refreshToken);
     },
-    
+
     onSuccess: (tokens: AuthTokens) => {
       refreshTokenSuccess(tokens);
     },
-    
+
     onError: (error: Error) => {
       setError(error.message);
       logoutSuccess();
-      
+
       Toast.show({
-        type: 'error',
-        text1: t('auth.refresh.refreshFailed'),
+        type: "error",
+        text1: t("auth.refresh.refreshFailed"),
         visibilityTime: 3000,
       });
+    },
+  });
+};
+
+export const useForgotPasswordMutation = () => {
+  const { t } = useTranslation();
+  const { setLoading, setError } = useAuthStore();
+
+  return useMutation({
+    mutationKey: authKeys.forgotPassword(),
+    mutationFn: (body: ForgotPasswordPayload) => authApi.forgotPassword(body),
+
+    onMutate: () => {
+      setLoading(true);
+      setError(null);
+    },
+
+    onSuccess: (data) => {
+      Toast.show({
+        type: "success",
+        text1: t("Gửi OTP thành công"),
+        text2: data.message,
+        visibilityTime: 3000,
+      });
+    },
+
+    onError: (error: Error) => {
+      setError(error.message);
+      handleErrorApi({ error });
+    },
+
+    onSettled: () => {
+      setLoading(false);
+    },
+  });
+};
+
+export const useResetPasswordMutation = () => {
+  const { t } = useTranslation();
+  const queryClient = useQueryClient();
+  const router = useRouter();
+  const { loginSuccess, setLoading, setError } = useAuthStore();
+
+  return useMutation({
+    mutationKey: authKeys.resetPassword(),
+    mutationFn: (body: ResetPasswordPayload) => authApi.resetPassword(body),
+
+    onMutate: () => {
+      setLoading(true);
+      setError(null);
+    },
+
+    onSuccess: (data: AuthResponse) => {
+      loginSuccess(data.tokens, data.user);
+      queryClient.invalidateQueries({ queryKey: authKeys.user() });
+
+      Toast.show({
+        type: "success",
+        text1: t("Đã đặt lại mật khẩu thành công"),
+        visibilityTime: 2000,
+      });
+
+      router.replace("/(tabs)");
+    },
+
+    onError: (error: Error) => {
+      setError(error.message);
+      handleErrorApi({ error });
+    },
+
+    onSettled: () => {
+      setLoading(false);
+    },
+  });
+};
+
+/**
+ * QR Scan mutation hook
+ */
+export const useQrScanMutation = () => {
+  return useMutation({
+    mutationFn: (qrId: string) => authApi.qrScan(qrId),
+    onError: (error: any) => {
+      // Don't call handleErrorApi here as we handle it custom in the component
+    },
+  });
+};
+
+/**
+ * QR Accept mutation hook
+ */
+export const useQrAcceptMutation = () => {
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: (qrId: string) => authApi.qrAccept(qrId),
+    onSuccess: () => {
+      Toast.show({
+        type: "success",
+        text1: "Xác nhận đăng nhập thành công",
+        visibilityTime: 2000,
+      });
+      router.back();
+    },
+    onError: (error: Error) => {
+      handleErrorApi({ error });
+    },
+  });
+};
+
+/**
+ * QR Reject mutation hook
+ */
+export const useQrRejectMutation = () => {
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: (qrId: string) => authApi.qrReject(qrId),
+    onSuccess: () => {
+      Toast.show({
+        type: "info",
+        text1: "Đã từ chối đăng nhập",
+        visibilityTime: 2000,
+      });
+      router.back();
+    },
+    onError: (error: Error) => {
+      handleErrorApi({ error });
     },
   });
 };

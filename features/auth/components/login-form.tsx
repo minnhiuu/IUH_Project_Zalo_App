@@ -208,11 +208,27 @@ const LoginForm: React.FC = () => {
 
       {/* Links */}
       <View className="gap-y-3">
-        <TouchableOpacity>
+        <TouchableOpacity 
+          onPress={() => {
+            router.push('/auth/forgot-password' as any);
+          }}
+          activeOpacity={0.6}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
           <Text className="text-[#0068FF] text-sm">{t('auth.login.forgotPassword')}</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity className="flex-row items-center">
+        <TouchableOpacity 
+          className="flex-row items-center"
+          onPress={() => {
+            Toast.show({
+              type: 'info',
+              text1: 'Coming soon',
+              text2: 'Facebook login will be available soon',
+            });
+          }}
+          activeOpacity={0.6}
+        >
           <Ionicons name="logo-facebook" size={18} color="#1877f2" />
           <Text className="text-[#0068FF] text-sm ml-2">{t('auth.login.loginWithFacebook')}</Text>
         </TouchableOpacity>

@@ -1,9 +1,8 @@
-
 export interface LoginPayload {
   email: string;
   password: string;
   deviceId: string;
-  deviceType: 'WEB' | 'MOBILE'; 
+  deviceType: "WEB" | "MOBILE";
 }
 
 // Register payload - matches backend RegisterInitRequest (2-step with OTP)
@@ -15,12 +14,17 @@ export interface RegisterPayload {
   phoneNumber?: string;
 }
 
+export interface RegisterInitApiResponse {
+  message: string;
+  email: string;
+}
+
 // Register verify payload - matches backend RegisterVerifyRequest (Step 2)
 export interface RegisterVerifyPayload {
   email: string;
   otp: string;
   deviceId: string;
-  deviceType: 'WEB' | 'MOBILE'; // Backend only accepts WEB or MOBILE
+  deviceType: "WEB" | "MOBILE"; // Backend only accepts WEB or MOBILE
 }
 
 // Auth tokens (camelCase - used in app)
@@ -31,17 +35,22 @@ export interface AuthTokens {
   expiresIn: number;
 }
 
-// Backend API response format (snake_case from JSON)
+// Backend API response format (support both snake_case and camelCase)
 export interface TokenApiResponse {
   access_token: string;
   refresh_token: string;
   token_type: string;
   expires_in: number;
+  // Also support camelCase from new BE
+  accessToken?: string;
+  refreshToken?: string;
+  tokenType?: string;
+  expiresIn?: number;
 }
 
 // Auth response after login/register
 export interface AuthResponse {
-  user?: import('./user.types').User;
+  user?: import("./user.types").User;
   tokens: AuthTokens;
 }
 
@@ -57,4 +66,51 @@ export interface RegisterFormData {
   confirmPassword: string;
   fullName: string;
   otp?: string;
+}
+
+// Forgot password payload - Step 1: Request OTP
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+// Reset password payload - Step 2: Reset with OTP
+export interface ResetPasswordPayload {
+  email: string;
+  otp: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+
+// Forgot password form data
+export interface ForgotPasswordFormData {
+  email: string;
+}
+
+// Reset password form data
+export interface ResetPasswordFormData {
+  email: string;
+  otp: string;
+  newPassword: string;
+  confirmPassword: string;
+}
+export enum QrSessionStatus {
+  PENDING = "PENDING",
+  SCANNED = "SCANNED",
+  CONFIRMED = "CONFIRMED",
+  REJECTED = "REJECTED",
+  EXPIRED = "EXPIRED",
+}
+
+export interface QrGenerationResponse {
+  qrId: string;
+  qrContent: string;
+  expiresAt: string;
+}
+
+export interface QrStatusResponse {
+  status: QrSessionStatus;
+  accessToken?: string;
+  refreshToken?: string;
+  userAvatar?: string;
+  userFullName?: string;
 }
