@@ -1,9 +1,5 @@
-import { QrSessionStatus } from "@/types/auth.types";
+import { QrSessionStatus } from "../schemas";
 
-/**
- * Auth Query Keys - Used for TanStack React Query caching
- * Following web project structure
- */
 export const authKeys = {
   all: () => ["auth"] as const,
 
@@ -37,6 +33,15 @@ export const authKeys = {
 
   generateQr: () => [...authKeys.all(), "generate-qr"] as const,
 
+  qrStatus: (qrId: string) =>
+    [...authKeys.all(), "qr-status", qrId] as const,
+
   waitQrStatus: (qrId: string, expectedStatus: QrSessionStatus) =>
     [...authKeys.all(), "wait-qr-status", qrId, expectedStatus] as const,
+
+  scanQr: () => [...authKeys.all(), "scan-qr"] as const,
+
+  acceptQr: () => [...authKeys.all(), "accept-qr"] as const,
+
+  rejectQr: () => [...authKeys.all(), "reject-qr"] as const,
 };

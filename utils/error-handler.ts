@@ -2,9 +2,6 @@ import Toast from 'react-native-toast-message';
 import axios from 'axios';
 import { getErrorMessage } from '@/constants/error-messages';
 
-/**
- * Entity Error for validation errors (status 422)
- */
 export class EntityError extends Error {
   status: 422;
   payload: {

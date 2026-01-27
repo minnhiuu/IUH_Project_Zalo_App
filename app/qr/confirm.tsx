@@ -7,7 +7,7 @@ import {
   useQrRejectMutation,
 } from "@/features/auth/queries/use-mutations";
 import { useWaitQrStatusQuery } from "@/features/auth/queries/use-queries";
-import { QrSessionStatus } from "@/types/auth.types";
+import { QrSessionStatus } from "@/features/auth/schemas";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
   Box,
@@ -47,15 +47,15 @@ export default function QrConfirmScreen() {
 
   const { data: statusData, refetch: refetchStatus } = useWaitQrStatusQuery(
     qrId,
-    QrSessionStatus.CONFIRMED,
+    QrSessionStatus.Confirmed,
     !!qrId && !isExpired && !showCountdown,
   );
 
   useEffect(() => {
     if (!statusData || isExpired) return;
-    if (statusData.status === QrSessionStatus.REJECTED) {
+    if (statusData.status === QrSessionStatus.Rejected) {
       router.back();
-    } else if (statusData.status === QrSessionStatus.SCANNED) {
+    } else if (statusData.status === QrSessionStatus.Scanned) {
       refetchStatus();
     }
   }, [statusData, router, isExpired, refetchStatus]);
@@ -96,7 +96,7 @@ export default function QrConfirmScreen() {
 
   const handleConfirmLogin = () => {
     if (countdown > 0) return;
-    acceptMutation.mutate(qrContent, {
+    acceptMutation.mutate({qrContent: qrContent}, {
       onSuccess: () => {
         setShowCountdown(false);
         router.dismiss();
@@ -114,7 +114,7 @@ export default function QrConfirmScreen() {
   };
 
   const handleReject = () => {
-    rejectMutation.mutate(qrContent, {
+    rejectMutation.mutate({qrContent: qrContent}, {
       onSettled: () => router.back(),
     });
   };

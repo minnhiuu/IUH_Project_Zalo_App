@@ -5,9 +5,11 @@ import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Input } from '@/components/ui';
 import { Button } from '@/components/ui';
-import { authSchema } from '../schemas';
+import { 
+  forgotPasswordRequestSchema, 
+  resetPasswordRequestSchema,
+} from '../schemas/auth.schema';
 import { useForgotPasswordMutation, useResetPasswordMutation } from '../queries/use-mutations';
-import type { ForgotPasswordFormData, ResetPasswordFormData } from '@/types/auth.types';
 
 type Step = 'REQUEST' | 'RESET';
 
@@ -18,11 +20,11 @@ export function ForgotPasswordForm() {
   const [email, setEmail] = useState('');
   const otpInputRef = useRef<TextInput>(null);
   
-
+  // Request step state
   const [requestEmail, setRequestEmail] = useState('');
   const [requestEmailError, setRequestEmailError] = useState('');
   
-
+  // Reset step state
   const [otp, setOtp] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -35,46 +37,40 @@ export function ForgotPasswordForm() {
   const forgotPasswordMutation = useForgotPasswordMutation();
   const resetPasswordMutation = useResetPasswordMutation();
 
-
   const validateRequestForm = (): boolean => {
-    const emailValidation = authSchema.email(requestEmail);
-    if (!emailValidation.isValid) {
-      setRequestEmailError(emailValidation.error || '');
+    try {
+      forgotPasswordRequestSchema.parse({ email: requestEmail });
+      setRequestEmailError('');
+      return true;
+    } catch (error: any) {
+      const zodError = error.errors?.[0];
+      setRequestEmailError(zodError?.message || 'Email không hợp lệ');
       return false;
     }
-    setRequestEmailError('');
-    return true;
   };
 
-
   const validateResetForm = (): boolean => {
-    let isValid = true;
-
-    const otpValidation = authSchema.otp(otp);
-    if (!otpValidation.isValid) {
-      setOtpError(otpValidation.error || '');
-      isValid = false;
-    } else {
+    try {
+      resetPasswordRequestSchema.parse({
+        email,
+        otp,
+        newPassword,
+        confirmPassword,
+      });
       setOtpError('');
-    }
-
-    const passwordValidation = authSchema.password(newPassword);
-    if (!passwordValidation.isValid) {
-      setNewPasswordError(passwordValidation.error || '');
-      isValid = false;
-    } else {
       setNewPasswordError('');
-    }
-
-    const confirmPasswordValidation = authSchema.confirmPassword(newPassword, confirmPassword);
-    if (!confirmPasswordValidation.isValid) {
-      setConfirmPasswordError(confirmPasswordValidation.error || '');
-      isValid = false;
-    } else {
       setConfirmPasswordError('');
+      return true;
+    } catch (error: any) {
+      const errors = error.errors || [];
+      errors.forEach((err: any) => {
+        const path = err.path[0];
+        if (path === 'otp') setOtpError(err.message);
+        if (path === 'newPassword') setNewPasswordError(err.message);
+        if (path === 'confirmPassword') setConfirmPasswordError(err.message);
+      });
+      return false;
     }
-
-    return isValid;
   };
 
   const handleRequest = async () => {

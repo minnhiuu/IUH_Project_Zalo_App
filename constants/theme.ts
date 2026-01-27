@@ -1,74 +1,205 @@
 /**
  * Theme configuration for Zalo Clone App
- * Colors follow Zalo's design system
+ * Colors match web design system from index.css
+ * Design follows official Zalo brand guidelines
  */
 
-// Primary Colors - Zalo Blue
-export const PRIMARY = {
-  DEFAULT: '#0068FF',
-  50: '#E6F0FF',
-  100: '#CCE0FF',
-  200: '#99C2FF',
-  300: '#66A3FF',
-  400: '#3385FF',
-  500: '#0068FF',
-  600: '#0052CC',
-  700: '#003D99',
-  800: '#002966',
-  900: '#001433',
-};
-
-// Neutral Colors
-export const NEUTRAL = {
+// ==================== BRAND COLORS ====================
+// Official Zalo brand palette matching web app
+export const BRAND = {
+  // Primary Blues
+  blue: '#0190F3',           // brand-blue - Main brand color
+  blueDark: '#005AE0',       // brand-blue-dark - Darker variant
+  blueLight: '#E8F3FF',      // brand-blue-light - Light backgrounds
+  
+  // Secondary
+  navy: '#081B3A',           // brand-navy - Dark text/headers
+  primary: '#0068FF',        // primary - Primary actions/buttons
+  vibrantBlue: '#0190F3',    // vibrant-blue - Accent color
+  
+  // Grays
+  gray100: '#F1F2F4',        // brand-gray-100 - Light backgrounds
+  gray200: '#ECECF0',        // brand-gray-200 - Borders/dividers
+  gray400: '#8C8C8C',        // brand-gray-400 - Secondary text
+  gray500: '#555555',        // brand-gray-500 - Dark secondary text
+  
+  // Status
+  red: '#E53838',            // brand-red - Error/destructive actions
+  
+  // White & Black
   white: '#FFFFFF',
   black: '#000000',
-  50: '#FAFAFA',
-  100: '#F5F5F5',
-  200: '#EEEEEE',
-  300: '#E0E0E0',
-  400: '#BDBDBD',
-  500: '#9E9E9E',
-  600: '#757575',
-  700: '#616161',
-  800: '#424242',
-  900: '#212121',
 };
 
-// Semantic Colors
+// ==================== SEMANTIC COLORS ====================
+// Mapped to Shadcn UI semantic tokens from web
 export const SEMANTIC = {
+  // Backgrounds
+  background: '#FFFFFF',
+  backgroundSecondary: '#F1F2F4',
+  
+  // Text
+  foreground: 'rgba(0, 0, 0, 0.88)',
+  textPrimary: 'rgba(0, 0, 0, 0.88)',
+  textSecondary: '#555555',
+  textTertiary: '#8C8C8C',
+  textDisabled: 'rgba(0, 0, 0, 0.38)',
+  
+  // Primary Actions
+  primary: '#0068FF',
+  primaryHover: '#005AE0',
+  primaryForeground: '#FFFFFF',
+  
+  // Vibrant (for emphasis)
+  vibrantBlue: '#0190F3',
+  vibrantBlueHover: '#0184E0',
+  
+  // Secondary
+  secondary: '#E8F3FF',
+  secondaryForeground: '#0190F3',
+  
+  // Muted
+  muted: '#F1F2F4',
+  mutedForeground: '#555555',
+  
+  // Accent
+  accent: '#F1F2F4',
+  accentForeground: 'rgba(0, 0, 0, 0.88)',
+  
+  // Borders & Input
+  border: '#ECECF0',
+  input: '#ECECF0',
+  ring: '#0190F3',
+  
+  // Status Colors
   success: '#00C853',
   warning: '#FFB300',
-  error: '#FF3B30',
-  info: '#2196F3',
+  error: '#E53838',
+  destructive: '#E53838',
+  destructiveForeground: '#FFFFFF',
+  info: '#0190F3',
 };
 
-// Theme Colors for Light/Dark mode
+// ==================== DARK MODE COLORS ====================
+export const DARK_MODE = {
+  background: '#0F1419',      // Navy black (oklch(0.15 0.05 260))
+  backgroundSecondary: '#1A1F29',
+  foreground: '#FFFFFF',
+  
+  textPrimary: '#FFFFFF',
+  textSecondary: 'rgba(255, 255, 255, 0.7)',
+  textTertiary: 'rgba(255, 255, 255, 0.5)',
+  
+  primary: '#0190F3',
+  primaryHover: '#005AE0',
+  primaryForeground: '#FFFFFF',
+  
+  border: 'rgba(255, 255, 255, 0.1)',
+  divider: 'rgba(255, 255, 255, 0.05)',
+  
+  card: '#1A1F29',
+  cardForeground: '#FFFFFF',
+};
+
+// ==================== COMPONENT-SPECIFIC COLORS ====================
+// Colors for specific Zalo UI components
+export const COMPONENT = {
+  // Bottom Tab Navigation
+  tab: {
+    active: '#0068FF',
+    inactive: '#8C8C8C',
+    background: '#FFFFFF',
+    border: '#ECECF0',
+  },
+  
+  // Message Bubbles
+  message: {
+    sent: '#0068FF',          // User's messages (blue)
+    sentText: '#FFFFFF',
+    received: '#F1F2F4',      // Other's messages (gray)
+    receivedText: 'rgba(0, 0, 0, 0.88)',
+    timestamp: '#8C8C8C',
+  },
+  
+  // Online Status
+  status: {
+    online: '#00C853',
+    offline: '#8C8C8C',
+    away: '#FFB300',
+  },
+  
+  // Sidebar (matching web)
+  sidebar: {
+    background: '#005AE0',
+    foreground: '#FFFFFF',
+    primary: '#FFFFFF',
+    primaryForeground: '#005AE0',
+    accent: 'rgba(0, 0, 0, 0.25)',
+    accentForeground: '#FFFFFF',
+    border: 'rgba(255, 255, 255, 0.1)',
+  },
+  
+  // Buttons
+  button: {
+    primary: '#0068FF',
+    primaryHover: '#005AE0',
+    primaryDisabled: 'rgba(1, 144, 243, 0.4)',
+    secondary: '#E8F3FF',
+    secondaryText: '#0190F3',
+  },
+  
+  // Input Fields
+  input: {
+    background: '#FFFFFF',
+    border: '#ECECF0',
+    borderFocus: '#0068FF',
+    placeholder: '#8C8C8C',
+    disabled: '#F1F2F4',
+  },
+  
+  // Cards & Containers
+  card: {
+    background: '#FFFFFF',
+    border: '#ECECF0',
+    shadow: 'rgba(0, 0, 0, 0.08)',
+  },
+  
+  // QR Scanner
+  qr: {
+    overlay: 'rgba(0, 0, 0, 0.7)',
+    frame: '#0068FF',
+    success: '#00C853',
+    error: '#E53838',
+  },
+};
+
+// ==================== UTILITY FUNCTIONS ====================
 export const Colors = {
   light: {
-    text: '#1A1A1A',
-    textSecondary: '#666666',
-    textTertiary: '#999999',
-    background: '#FFFFFF',
-    backgroundSecondary: '#F5F5F5',
-    tint: PRIMARY.DEFAULT,
-    border: '#E0E0E0',
-    divider: '#F0F0F0',
-    icon: '#666666',
-    tabIconDefault: '#999999',
-    tabIconSelected: PRIMARY.DEFAULT,
+    text: SEMANTIC.textPrimary,
+    textSecondary: SEMANTIC.textSecondary,
+    textTertiary: SEMANTIC.textTertiary,
+    background: SEMANTIC.background,
+    backgroundSecondary: SEMANTIC.backgroundSecondary,
+    tint: SEMANTIC.primary,
+    border: SEMANTIC.border,
+    divider: SEMANTIC.border,
+    icon: SEMANTIC.textSecondary,
+    tabIconDefault: COMPONENT.tab.inactive,
+    tabIconSelected: COMPONENT.tab.active,
   },
   dark: {
-    text: '#FFFFFF',
-    textSecondary: '#B0B0B0',
-    textTertiary: '#808080',
-    background: '#1A1A1A',
-    backgroundSecondary: '#2A2A2A',
-    tint: PRIMARY[300],
-    border: '#333333',
-    divider: '#2A2A2A',
-    icon: '#B0B0B0',
-    tabIconDefault: '#808080',
-    tabIconSelected: PRIMARY[300],
+    text: DARK_MODE.textPrimary,
+    textSecondary: DARK_MODE.textSecondary,
+    textTertiary: DARK_MODE.textTertiary,
+    background: DARK_MODE.background,
+    backgroundSecondary: DARK_MODE.backgroundSecondary,
+    tint: DARK_MODE.primary,
+    border: DARK_MODE.border,
+    divider: DARK_MODE.divider,
+    icon: DARK_MODE.textSecondary,
+    tabIconDefault: DARK_MODE.textTertiary,
+    tabIconSelected: DARK_MODE.primary,
   },
 };
 

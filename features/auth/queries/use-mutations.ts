@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+﻿import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import Toast from "react-native-toast-message";
 import { useTranslation } from "react-i18next";
@@ -7,20 +7,17 @@ import { authApi } from "../api";
 import { authKeys } from "./keys";
 import { useAuthStore } from "@/store";
 import { handleErrorApi } from "@/utils/error-handler";
-import { getRefreshToken } from "@/lib/http";
+import { getRefreshToken, setAccessToken, setRefreshToken, clearTokens } from "@/lib/http";
+import { storage } from "@/utils/storageUtils";
 import type {
-  LoginPayload,
-  RegisterPayload,
-  RegisterVerifyPayload,
-  AuthResponse,
-  AuthTokens,
-  ForgotPasswordPayload,
-  ResetPasswordPayload,
-} from "@/types/auth.types";
+  LoginRequest,
+  RegisterInitRequest,
+  RegisterVerifyRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+  QrMobileRequest,
+} from "../schemas";
 
-/**
- * Login mutation hook
- */
 export const useLoginMutation = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -29,15 +26,24 @@ export const useLoginMutation = () => {
 
   return useMutation({
     mutationKey: authKeys.login(),
-    mutationFn: (body: LoginPayload) => authApi.login(body),
+    mutationFn: authApi.login,
 
     onMutate: () => {
       setLoading(true);
       setError(null);
     },
 
-    onSuccess: (data: AuthResponse) => {
-      loginSuccess(data.tokens, data.user);
+    onSuccess: async (response) => {
+      const tokens = response.data.data;
+      
+      // Store tokens in secure storage
+      await setAccessToken(tokens.accessToken);
+      await setRefreshToken(tokens.refreshToken);
+      
+      // Update UI state only
+      loginSuccess();
+      
+      // Invalidate user query to fetch user data
       queryClient.invalidateQueries({ queryKey: authKeys.user() });
 
       Toast.show({
@@ -60,10 +66,6 @@ export const useLoginMutation = () => {
   });
 };
 
-/**
- * Register mutation hook - Step 1: Initiate registration (2-step with OTP)
- * Sends OTP to email, then user needs to verify
- */
 export const useRegisterMutation = () => {
   const { t } = useTranslation();
   const router = useRouter();
@@ -71,22 +73,21 @@ export const useRegisterMutation = () => {
 
   return useMutation({
     mutationKey: authKeys.register(),
-    mutationFn: (body: RegisterPayload) => authApi.register(body),
+    mutationFn: authApi.register,
 
     onMutate: () => {
       setLoading(true);
       setError(null);
     },
 
-    onSuccess: (data, variables) => {
+    onSuccess: (response, variables) => {
       Toast.show({
         type: "success",
         text1: t("auth.register.otpSent"),
-        text2: data.message,
+        text2: response.data.data.message,
         visibilityTime: 3000,
       });
 
-      // Navigate to OTP verification screen
       router.push({
         pathname: "/auth/verify-otp" as any,
         params: { email: variables.email },
@@ -104,9 +105,6 @@ export const useRegisterMutation = () => {
   });
 };
 
-/**
- * Register verify mutation hook - Step 2: Verify OTP and complete registration
- */
 export const useRegisterVerifyMutation = () => {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
@@ -115,15 +113,24 @@ export const useRegisterVerifyMutation = () => {
 
   return useMutation({
     mutationKey: authKeys.registerVerify(),
-    mutationFn: (body: RegisterVerifyPayload) => authApi.registerVerify(body),
+    mutationFn: authApi.registerVerify,
 
     onMutate: () => {
       setLoading(true);
       setError(null);
     },
 
-    onSuccess: (data: AuthResponse) => {
-      loginSuccess(data.tokens, data.user);
+    onSuccess: async (response) => {
+      const tokens = response.data.data;
+      
+      // Store tokens in secure storage
+      await setAccessToken(tokens.accessToken);
+      await setRefreshToken(tokens.refreshToken);
+      
+      // Update UI state only
+      loginSuccess();
+      
+      // Invalidate user query to fetch user data
       queryClient.invalidateQueries({ queryKey: authKeys.user() });
 
       Toast.show({
@@ -159,14 +166,17 @@ export const useLogoutMutation = () => {
     mutationKey: authKeys.logout(),
     mutationFn: async () => {
       const refreshToken = await getRefreshToken();
-      return authApi.logout(refreshToken || undefined);
+      return authApi.logout(refreshToken ? { refreshToken } : {});
     },
 
     onMutate: () => {
       setLoading(true);
     },
 
-    onSuccess: () => {
+    onSuccess: async () => {
+      await clearTokens();
+      await storage.remove("user_data");
+      
       logoutSuccess();
       queryClient.clear();
 
@@ -179,8 +189,10 @@ export const useLogoutMutation = () => {
       router.replace("/auth/login" as any);
     },
 
-    onError: () => {
-      // Even on error, still logout locally
+    onError: async () => {
+      await clearTokens();
+      await storage.remove("user_data");
+      
       logoutSuccess();
       queryClient.clear();
 
@@ -204,20 +216,27 @@ export const useLogoutMutation = () => {
  */
 export const useRefreshTokenMutation = () => {
   const { t } = useTranslation();
-  const { refreshTokenSuccess, logoutSuccess, setError } = useAuthStore();
+  const { logoutSuccess, setError } = useAuthStore();
 
   return useMutation({
     mutationKey: authKeys.refresh(),
-    mutationFn: async (): Promise<AuthTokens> => {
+    mutationFn: async () => {
       const refreshToken = await getRefreshToken();
       if (!refreshToken) {
         throw new Error(t("auth.refresh.refreshFailed"));
       }
-      return authApi.refreshToken(refreshToken);
+      // TODO: Get deviceId from storage or device info
+      return authApi.refresh({ deviceId: "mobile-device", refreshToken });
     },
 
-    onSuccess: (tokens: AuthTokens) => {
-      refreshTokenSuccess(tokens);
+    onSuccess: async (response) => {
+      const tokens = response.data.data;
+      
+      // Store tokens in secure storage only
+      await setAccessToken(tokens.accessToken);
+      await setRefreshToken(tokens.refreshToken);
+      
+      // No need to update store - tokens are in secure storage
     },
 
     onError: (error: Error) => {
@@ -239,18 +258,18 @@ export const useForgotPasswordMutation = () => {
 
   return useMutation({
     mutationKey: authKeys.forgotPassword(),
-    mutationFn: (body: ForgotPasswordPayload) => authApi.forgotPassword(body),
+    mutationFn: authApi.forgotPassword,
 
     onMutate: () => {
       setLoading(true);
       setError(null);
     },
 
-    onSuccess: (data) => {
+    onSuccess: (response) => {
       Toast.show({
         type: "success",
-        text1: t("Gửi OTP thành công"),
-        text2: data.message,
+        text1: t("auth.forgotPassword.otpSent"),
+        text2: response.data.data.message,
         visibilityTime: 3000,
       });
     },
@@ -274,20 +293,29 @@ export const useResetPasswordMutation = () => {
 
   return useMutation({
     mutationKey: authKeys.resetPassword(),
-    mutationFn: (body: ResetPasswordPayload) => authApi.resetPassword(body),
+    mutationFn: authApi.resetPassword,
 
     onMutate: () => {
       setLoading(true);
       setError(null);
     },
 
-    onSuccess: (data: AuthResponse) => {
-      loginSuccess(data.tokens, data.user);
+    onSuccess: async (response) => {
+      const tokens = response.data.data;
+      
+      // Store tokens in secure storage
+      await setAccessToken(tokens.accessToken);
+      await setRefreshToken(tokens.refreshToken);
+      
+      // Update UI state only
+      loginSuccess();
+      
+      // Invalidate user query to fetch user data
       queryClient.invalidateQueries({ queryKey: authKeys.user() });
 
       Toast.show({
         type: "success",
-        text1: t("Đã đặt lại mật khẩu thành công"),
+        text1: t("auth.resetPassword.success"),
         visibilityTime: 2000,
       });
 
@@ -305,30 +333,40 @@ export const useResetPasswordMutation = () => {
   });
 };
 
-/**
- * QR Scan mutation hook
- */
 export const useQrScanMutation = () => {
+  const { t } = useTranslation();
+
   return useMutation({
-    mutationFn: (qrId: string) => authApi.qrScan(qrId),
-    onError: (error: any) => {
-      // Don't call handleErrorApi here as we handle it custom in the component
+    mutationKey: authKeys.scanQr(),
+    mutationFn: authApi.scanQr,
+    onSuccess: () => {
+      Toast.show({
+        type: "success",
+        text1: t("auth.qrLogin.scanned"),
+        visibilityTime: 2000,
+      });
+    },
+    onError: (error: Error) => {
+      handleErrorApi({ error });
     },
   });
 };
 
 /**
  * QR Accept mutation hook
+ * Used when user confirms QR login on mobile
  */
 export const useQrAcceptMutation = () => {
+  const { t } = useTranslation();
   const router = useRouter();
 
   return useMutation({
-    mutationFn: (qrId: string) => authApi.qrAccept(qrId),
+    mutationKey: authKeys.acceptQr(),
+    mutationFn: authApi.acceptQr,
     onSuccess: () => {
       Toast.show({
         type: "success",
-        text1: "Xác nhận đăng nhập thành công",
+        text1: t("auth.qrLogin.confirmed"),
         visibilityTime: 2000,
       });
       router.back();
@@ -341,16 +379,37 @@ export const useQrAcceptMutation = () => {
 
 /**
  * QR Reject mutation hook
+ * Used when user rejects QR login on mobile
  */
 export const useQrRejectMutation = () => {
+  const { t } = useTranslation();
   const router = useRouter();
 
   return useMutation({
-    mutationFn: (qrId: string) => authApi.qrReject(qrId),
+    mutationKey: authKeys.rejectQr(),
+    mutationFn: authApi.rejectQr,
     onSuccess: () => {
       Toast.show({
         type: "info",
-        text1: "Đã từ chối đăng nhập",
+        text1: t("auth.qrLogin.rejected"),
+        visibilityTime: 2000,
+      });
+      router.back();
+    },
+    onError: (error: Error) => {
+      handleErrorApi({ error });
+    },
+  });
+};
+
+export const useQrMobileMutation = () => {
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: authApi.qrMobile,
+    onSuccess: (_, variables) => {
+      Toast.show({
+        type: "success",
         visibilityTime: 2000,
       });
       router.back();

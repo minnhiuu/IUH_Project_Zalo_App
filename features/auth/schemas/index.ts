@@ -1,3 +1,2 @@
-// Export auth schemas
-export { authSchema, default } from './auth.schema';
-export type { ValidationResult, LoginFormData, RegisterFormData } from './auth.schema';
+// Export all auth schemas and types
+export * from "./auth.schema";

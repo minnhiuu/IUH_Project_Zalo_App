@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Alert, StyleSheet, View, Text, TouchableOpacity } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { Ionicons } from "@expo/vector-icons";
@@ -15,6 +15,7 @@ export default function QrScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [torch, setTorch] = useState(false);
+  const isProcessingRef = useRef(false); // Prevent multiple scans immediately
 
   const scanMutation = useQrScanMutation();
 
@@ -25,37 +26,73 @@ export default function QrScanScreen() {
   }, [permission, requestPermission]);
 
   const processQrData = (data: string) => {
-    if (scanned) return;
+    // Double check with ref to prevent multiple scans
+    if (scanned || isProcessingRef.current) {
+      console.log('[QR Scanner] Already processing, ignoring...');
+      return;
+    }
 
+    console.log('[QR Scanner] Raw QR data:', data);
+
+    // Set both state and ref immediately
     setScanned(true);
+    isProcessingRef.current = true;
+
+    // Extract qrId from deep link format: bondhub://qr/{qrId}
+    let qrId = data;
+    if (data.startsWith('bondhub://qr/')) {
+      qrId = data.replace('bondhub://qr/', '');
+    } else if (data.startsWith('http://') || data.startsWith('https://')) {
+      // Handle web URL format if needed
+      const match = data.match(/\/qr\/([a-zA-Z0-9-]+)/);
+      if (match) qrId = match[1];
+    }
+
+    console.log('[QR Scanner] Extracted qrId:', qrId);
 
     // Notify backend that QR is scanned
-    scanMutation.mutate(data, {
-      onSuccess: (responseData: { expiresAt?: string }) => {
+    scanMutation.mutate({ qrContent: qrId }, {
+      onSuccess: () => {
+        console.log('[QR Scanner] Scan successful, navigating to confirm');
         router.replace({
           pathname: "/qr/confirm",
           params: {
-            qrContent: data,
-            expiresAt: responseData?.expiresAt || "",
+            qrContent: qrId, 
+            expiresAt: "", 
           },
         });
       },
       onError: (error: any) => {
+        console.error('[QR Scanner] Scan error:', error);
+        console.error('[QR Scanner] Error response:', error?.response?.data);
+        
         const errorMessage = error?.response?.data?.message || "";
         const errorCode = error?.response?.data?.code || "";
 
+        let alertTitle = t("common.error");
+        let alertMessage = t("auth.qrScanner.invalidQr");
+
         if (
           errorCode === "AUTH_005" ||
-          errorMessage.toLowerCase().includes("expired")
+          errorMessage.toLowerCase().includes("expired") ||
+          errorMessage.toLowerCase().includes("hết hạn")
         ) {
-          Alert.alert(
-            t("auth.qrScanner.expired"),
-            t("auth.qrScanner.expiredError"),
-          );
-        } else {
-          Alert.alert(t("common.error"), t("auth.qrScanner.invalidQr"));
+          alertTitle = t("auth.qrScanner.expired");
+          alertMessage = t("auth.qrScanner.expiredError");
         }
-        setScanned(false);
+
+        Alert.alert(alertTitle, `${alertMessage}\n\nError: ${errorMessage || errorCode}`, [
+          {
+            text: "OK",
+            onPress: () => {
+              // Wait 2 seconds before allowing next scan
+              setTimeout(() => {
+                setScanned(false);
+                isProcessingRef.current = false;
+              }, 2000);
+            },
+          },
+        ]);
       },
     });
   };

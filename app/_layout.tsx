@@ -111,8 +111,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 
         if (accessToken && refreshToken) {
           loginSuccess(
-            { accessToken, refreshToken, tokenType: "Bearer", expiresIn: 0 },
-            null,
+           
           );
           console.log("[AuthGuard] User logged in with existing tokens");
         } else {
@@ -166,11 +165,9 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     });
 
     if (!isAuthenticated && !inAuthGroup && !inQrGroup) {
-      // Redirect to auth if not authenticated and not in QR/Auth groups
       console.log("[AuthGuard] Redirecting to /auth");
       router.replace("/auth");
     } else if (isAuthenticated && inAuthGroup) {
-      // Redirect to tabs if authenticated and trying to access general auth screens
       console.log("[AuthGuard] Redirecting to /(tabs)");
       router.replace("/(tabs)");
     }

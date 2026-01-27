@@ -1,7 +1,4 @@
-/**
- * Route paths for navigation
- * Following web project structure
- */
+
 export const PATHS = {
   HOME: '/',
   
