@@ -24,7 +24,6 @@ import { getAccessToken, getRefreshToken } from "@/lib/http";
 
 
 
-// Create a client for React Query
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -35,9 +34,7 @@ const queryClient = new QueryClient({
   },
 });
 
-/**
- * Simple Loading Screen - No external dependencies
- */
+
 function SimpleLoadingScreen() {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0068FF' }}>
