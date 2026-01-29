@@ -1,11 +1,12 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./app/**/*.{js,jsx,ts,tsx}",
-    "./components/**/*.{js,jsx,ts,tsx}",
-    "./screens/**/*.{js,jsx,ts,tsx}",
+    './app/**/*.{js,jsx,ts,tsx}',
+    './components/**/*.{js,jsx,ts,tsx}',
+    './features/**/*.{js,jsx,ts,tsx}',
+    './screens/**/*.{js,jsx,ts,tsx}'
   ],
-  presets: [require("nativewind/preset")],
+  presets: [require('nativewind/preset')],
   theme: {
     extend: {
       colors: {
@@ -21,26 +22,26 @@ module.exports = {
           600: '#0052CC',
           700: '#003D99',
           800: '#002966',
-          900: '#001433',
+          900: '#001433'
         },
         // Secondary colors
         secondary: {
           DEFAULT: '#7B61FF',
           light: '#9D8AFF',
-          dark: '#5A3FD6',
+          dark: '#5A3FD6'
         },
         // Background colors
         background: {
           DEFAULT: '#FFFFFF',
           secondary: '#F5F5F5',
-          tertiary: '#EBEBEB',
+          tertiary: '#EBEBEB'
         },
         // Text colors
         text: {
           DEFAULT: '#1A1A1A',
           secondary: '#666666',
           tertiary: '#999999',
-          light: '#FFFFFF',
+          light: '#FFFFFF'
         },
         // Status colors
         success: '#00C853',
@@ -51,10 +52,10 @@ module.exports = {
         border: '#E0E0E0',
         divider: '#F0F0F0',
         online: '#4CAF50',
-        offline: '#9E9E9E',
+        offline: '#9E9E9E'
       },
       fontFamily: {
-        sans: ['System', 'sans-serif'],
+        sans: ['System', 'sans-serif']
       },
       fontSize: {
         '2xs': '10px',
@@ -64,18 +65,17 @@ module.exports = {
         lg: '18px',
         xl: '20px',
         '2xl': '24px',
-        '3xl': '30px',
+        '3xl': '30px'
       },
       spacing: {
         'safe-top': 'var(--safe-area-inset-top)',
-        'safe-bottom': 'var(--safe-area-inset-bottom)',
+        'safe-bottom': 'var(--safe-area-inset-bottom)'
       },
       borderRadius: {
-        'message': '18px',
-        'avatar': '9999px',
-      },
-    },
+        message: '18px',
+        avatar: '9999px'
+      }
+    }
   },
-  plugins: [],
+  plugins: []
 }
-
