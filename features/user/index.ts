@@ -1,14 +1,14 @@
 // Schemas and Types
-export * from "./schemas/user.schema";
+export * from './schemas/user.schema'
 
 // API
-export * from "./api/user.api";
+export * from './api/user.api'
 
 // Query Keys
-export * from "./queries/keys";
+export * from './queries/keys'
 
 // Queries
-export * from "./queries/use-queries";
+export * from './queries/use-queries'
 
 // Mutations
-export * from "./queries/use-mutations";
+export * from './queries/use-mutations'

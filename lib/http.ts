@@ -1,237 +1,186 @@
-import axios, {
-  AxiosError,
-  type InternalAxiosRequestConfig,
-  type AxiosResponse,
-} from "axios";
-import * as SecureStore from "expo-secure-store";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { decodeToken, isTokenExpiringSoon } from "@/utils/jwt";
-import apiConfig, { API_ENDPOINTS } from "@/config/apiConfig";
-
-// Storage keys
-const ACCESS_TOKEN_KEY = "access_token";
-const REFRESH_TOKEN_KEY = "refresh_token";
+import axios, { AxiosError, type InternalAxiosRequestConfig, type AxiosResponse } from 'axios'
+import { isTokenExpiringSoon } from '@/utils/jwt'
+import apiConfig, { API_ENDPOINTS } from '@/config/apiConfig'
+import { secureStorage } from '@/utils/storageUtils'
 
 export const getAccessToken = async (): Promise<string | null> => {
   try {
-    const token = await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
-    if (token) return token;
-    return await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
+    return await secureStorage.getAccessToken()
   } catch (error) {
-    console.warn("[http] getAccessToken error, trying AsyncStorage:", error);
-    try {
-      return await AsyncStorage.getItem(ACCESS_TOKEN_KEY);
-    } catch {
-      return null;
-    }
+    console.error('[http] getAccessToken error:', error)
+    return null
   }
-};
+}
 
 export const setAccessToken = async (token: string | null): Promise<void> => {
   try {
     if (token) {
-      await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, token);
-      await AsyncStorage.setItem(ACCESS_TOKEN_KEY, token); // Also save to AsyncStorage as backup
+      await secureStorage.setAccessToken(token)
     } else {
-      await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
-      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
+      await secureStorage.clearTokens()
     }
   } catch (error) {
-    console.warn(
-      "[http] setAccessToken SecureStore error, using AsyncStorage:",
-      error,
-    );
-    if (token) {
-      await AsyncStorage.setItem(ACCESS_TOKEN_KEY, token);
-    } else {
-      await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
-    }
+    console.error('[http] setAccessToken error:', error)
+    throw error
   }
-};
+}
 
 export const getRefreshToken = async (): Promise<string | null> => {
   try {
-    const token = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
-    if (token) return token;
-    return await AsyncStorage.getItem(REFRESH_TOKEN_KEY);
+    return await secureStorage.getRefreshToken()
   } catch (error) {
-    console.warn("[http] getRefreshToken error, trying AsyncStorage:", error);
-    try {
-      return await AsyncStorage.getItem(REFRESH_TOKEN_KEY);
-    } catch {
-      return null;
-    }
+    console.error('[http] getRefreshToken error:', error)
+    return null
   }
-};
+}
 
 export const setRefreshToken = async (token: string | null): Promise<void> => {
   try {
     if (token) {
-      await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, token);
-      await AsyncStorage.setItem(REFRESH_TOKEN_KEY, token);
+      await secureStorage.setRefreshToken(token)
     } else {
-      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
-      await AsyncStorage.removeItem(REFRESH_TOKEN_KEY);
+      await secureStorage.clearTokens()
     }
   } catch (error) {
-    console.warn(
-      "[http] setRefreshToken SecureStore error, using AsyncStorage:",
-      error,
-    );
-    if (token) {
-      await AsyncStorage.setItem(REFRESH_TOKEN_KEY, token);
-    } else {
-      await AsyncStorage.removeItem(REFRESH_TOKEN_KEY);
-    }
+    console.error('[http] setRefreshToken error:', error)
+    throw error
   }
-};
+}
 
 export const clearTokens = async (): Promise<void> => {
   try {
-    await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
-    await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+    await secureStorage.clearTokens()
   } catch (error) {
-    console.warn("[http] clearTokens SecureStore error:", error);
+    console.error('[http] clearTokens error:', error)
+    throw error
   }
-  // Always also clear from AsyncStorage
-  await AsyncStorage.removeItem(ACCESS_TOKEN_KEY);
-  await AsyncStorage.removeItem(REFRESH_TOKEN_KEY);
-};
+}
 
 // Refresh token logic
-let isRefreshing = false;
-let refreshPromise: Promise<string | null> | null = null;
+let isRefreshing = false
+let refreshPromise: Promise<string | null> | null = null
 let failedQueue: Array<{
-  resolve: (token: string | null) => void;
-  reject: (error: Error) => void;
-}> = [];
+  resolve: (token: string | null) => void
+  reject: (error: Error) => void
+}> = []
 
-const processQueue = (
-  error: Error | null,
-  token: string | null = null,
-): void => {
+const processQueue = (error: Error | null, token: string | null = null): void => {
   failedQueue.forEach((prom) => {
     if (error) {
-      prom.reject(error);
+      prom.reject(error)
     } else {
-      prom.resolve(token);
+      prom.resolve(token)
     }
-  });
-  failedQueue = [];
-};
+  })
+  failedQueue = []
+}
 
 const performRefresh = async (): Promise<string | null> => {
   try {
-    const refreshToken = await getRefreshToken();
+    const refreshToken = await getRefreshToken()
     if (!refreshToken) {
-      throw new Error("No refresh token available");
+      throw new Error('No refresh token available')
     }
 
-    const response = await axios.post(
-      `${apiConfig.apiUrl}${API_ENDPOINTS.AUTH.REFRESH}`,
-      { refreshToken },
-    );
+    const response = await axios.post(`${apiConfig.apiUrl}${API_ENDPOINTS.AUTH.REFRESH}`, { refreshToken })
 
     // Backend returns camelCase: accessToken, refreshToken
-    const { accessToken, refreshToken: newRefreshToken } = response.data.data;
+    const { accessToken, refreshToken: newRefreshToken } = response.data.data
 
     if (accessToken) {
-      await setAccessToken(accessToken);
-      await setRefreshToken(newRefreshToken);
+      await setAccessToken(accessToken)
+      await setRefreshToken(newRefreshToken)
     }
 
-    return accessToken;
+    return accessToken
   } catch (error) {
-    await clearTokens();
-    throw error;
+    await clearTokens()
+    throw error
   }
-};
+}
 
 export const silentRefresh = async (): Promise<string | null> => {
   if (isRefreshing && refreshPromise) {
-    return refreshPromise;
+    return refreshPromise
   }
 
-  isRefreshing = true;
+  isRefreshing = true
   refreshPromise = performRefresh()
     .then((token) => {
-      processQueue(null, token);
-      return token;
+      processQueue(null, token)
+      return token
     })
     .catch((error) => {
-      processQueue(error as Error, null);
-      throw error;
+      processQueue(error as Error, null)
+      throw error
     })
     .finally(() => {
-      isRefreshing = false;
-      refreshPromise = null;
-    });
+      isRefreshing = false
+      refreshPromise = null
+    })
 
-  return refreshPromise;
-};
+  return refreshPromise
+}
 
 // Create HTTP instance
 const http = axios.create({
   baseURL: apiConfig.apiUrl,
   timeout: apiConfig.timeout,
   headers: {
-    "Content-Type": "application/json",
-    Accept: "application/json",
-  },
-});
+    'Content-Type': 'application/json',
+    Accept: 'application/json'
+  }
+})
 
 // Request interceptor
 http.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const isAuthEndpoint =
-      config.url?.includes("/auth/login") ||
-      config.url?.includes("/auth/refresh") ||
-      config.url?.includes("/auth/register");
+      config.url?.includes('/auth/login') ||
+      config.url?.includes('/auth/refresh') ||
+      config.url?.includes('/auth/register')
 
-    if (isAuthEndpoint) return config;
+    if (isAuthEndpoint) return config
 
-    let token = await getAccessToken();
+    let token = await getAccessToken()
 
     // Skip token expiry check for QR endpoints (they need current token, not refreshed)
     const isQrEndpoint =
-      config.url?.includes("/auth/qr/scan") ||
-      config.url?.includes("/auth/qr/accept") ||
-      config.url?.includes("/auth/qr/reject");
+      config.url?.includes('/auth/qr/scan') ||
+      config.url?.includes('/auth/qr/accept') ||
+      config.url?.includes('/auth/qr/reject')
 
     if (token && !isQrEndpoint && isTokenExpiringSoon(token)) {
       try {
-        token =
-          isRefreshing && refreshPromise
-            ? await refreshPromise
-            : await silentRefresh();
+        token = isRefreshing && refreshPromise ? await refreshPromise : await silentRefresh()
       } catch (error) {
-        console.error("Token refresh failed:", error);
+        console.error('Token refresh failed:', error)
       }
     }
 
     if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`
     }
 
-    return config;
+    return config
   },
   (error: AxiosError) => {
-    return Promise.reject(error);
-  },
-);
+    return Promise.reject(error)
+  }
+)
 
 // Response interceptor
 http.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
-      _retry?: boolean;
-    };
+      _retry?: boolean
+    }
 
     // Handle 401 - try to refresh token
     if (error.response?.status === 401 && !originalRequest._retry) {
-      if (originalRequest.url?.includes("/auth/refresh")) {
-        return Promise.reject(error);
+      if (originalRequest.url?.includes('/auth/refresh')) {
+        return Promise.reject(error)
       }
 
       if (isRefreshing) {
@@ -239,30 +188,30 @@ http.interceptors.response.use(
           failedQueue.push({
             resolve: async (token) => {
               if (token && originalRequest.headers) {
-                originalRequest.headers.Authorization = `Bearer ${token}`;
+                originalRequest.headers.Authorization = `Bearer ${token}`
               }
-              resolve(http(originalRequest));
+              resolve(http(originalRequest))
             },
-            reject: (err) => reject(err),
-          });
-        });
+            reject: (err) => reject(err)
+          })
+        })
       }
 
-      originalRequest._retry = true;
+      originalRequest._retry = true
 
       try {
-        const newToken = await silentRefresh();
+        const newToken = await silentRefresh()
         if (newToken && originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          originalRequest.headers.Authorization = `Bearer ${newToken}`
         }
-        return http(originalRequest);
+        return http(originalRequest)
       } catch (refreshError) {
-        return Promise.reject(refreshError);
+        return Promise.reject(refreshError)
       }
     }
 
-    return Promise.reject(error);
-  },
-);
+    return Promise.reject(error)
+  }
+)
 
-export default http;
+export default http

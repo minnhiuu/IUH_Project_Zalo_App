@@ -1,25 +1,21 @@
-import "../global.css";
-import i18n from "@/i18n"; // Initializing i18n logic
+import '../global.css'
+import i18n from '@/i18n'
 
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Stack, useRouter, useSegments } from "expo-router";
-import { StatusBar } from "expo-status-bar";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import Toast from "react-native-toast-message";
-import { I18nextProvider } from "react-i18next";
-import { useEffect } from "react";
-import { View, Text, ActivityIndicator } from "react-native";
+import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Stack, useRouter, useSegments } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { GestureHandlerRootView } from 'react-native-gesture-handler'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
+import Toast from 'react-native-toast-message'
+import { I18nextProvider } from 'react-i18next'
+import { useEffect } from 'react'
+import { View, Text, ActivityIndicator } from 'react-native'
 
-import { GluestackProvider } from "@/components/ui";
-import { useColorScheme } from "@/hooks/use-color-scheme";
-import { useAuthStore } from "@/store";
-import { getAccessToken, getRefreshToken } from "@/lib/http";
+import { GluestackProvider } from '@/components/ui'
+import { useColorScheme } from '@/hooks/use-color-scheme'
+import { useAuthStore } from '@/store'
+import { getAccessToken, getRefreshToken } from '@/lib/http'
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -27,162 +23,145 @@ const queryClient = new QueryClient({
     queries: {
       retry: 2,
       staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
+      refetchOnWindowFocus: false
+    }
+  }
+})
 
 function SimpleLoadingScreen() {
   return (
     <View
       style={{
         flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#0068FF",
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#0068FF'
       }}
     >
       <Text
         style={{
           fontSize: 48,
-          fontWeight: "bold",
-          color: "white",
-          fontStyle: "italic",
+          fontWeight: 'bold',
+          color: 'white',
+          fontStyle: 'italic'
         }}
       >
         Zalo
       </Text>
-      <ActivityIndicator size="large" color="white" style={{ marginTop: 20 }} />
+      <ActivityIndicator size='large' color='white' style={{ marginTop: 20 }} />
     </View>
-  );
+  )
 }
 
 /**
  * Auth Guard Component - Redirects to auth if not authenticated
  */
 function AuthGuard({ children }: { children: React.ReactNode }) {
-  const {
-    isAuthenticated,
-    isInitialized,
-    setInitialized,
-    loginSuccess,
-    logoutSuccess,
-  } = useAuthStore();
-  const segments = useSegments();
-  const router = useRouter();
+  const { isAuthenticated, isInitialized, setInitialized, loginSuccess, logoutSuccess } = useAuthStore()
+  const segments = useSegments()
+  const router = useRouter()
 
   // Initialize auth on app start
   useEffect(() => {
-    let isMounted = true;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    let isMounted = true
+    let timeoutId: ReturnType<typeof setTimeout> | undefined
 
     const initAuth = async () => {
-      console.log("[AuthGuard] Starting auth initialization...");
+      console.log('[AuthGuard] Starting auth initialization...')
       try {
-        let accessToken: string | null = null;
-        let refreshToken: string | null = null;
+        let accessToken: string | null = null
+        let refreshToken: string | null = null
 
         try {
           // Add timeout for token retrieval
-          const tokenPromise = Promise.all([
-            getAccessToken(),
-            getRefreshToken(),
-          ]);
+          const tokenPromise = Promise.all([getAccessToken(), getRefreshToken()])
 
           const result = await Promise.race([
             tokenPromise,
-            new Promise<[null, null]>((resolve) =>
-              setTimeout(() => resolve([null, null]), 3000),
-            ),
-          ]);
+            new Promise<[null, null]>((resolve) => setTimeout(() => resolve([null, null]), 3000))
+          ])
 
-          accessToken = result[0];
-          refreshToken = result[1];
-          console.log("[AuthGuard] Tokens retrieved:", {
+          accessToken = result[0]
+          refreshToken = result[1]
+          console.log('[AuthGuard] Tokens retrieved:', {
             hasAccessToken: !!accessToken,
-            hasRefreshToken: !!refreshToken,
-          });
+            hasRefreshToken: !!refreshToken
+          })
         } catch (tokenError) {
-          console.error("[AuthGuard] Error getting tokens:", tokenError);
+          console.error('[AuthGuard] Error getting tokens:', tokenError)
         }
 
-        if (!isMounted) return;
+        if (!isMounted) return
 
         if (accessToken && refreshToken) {
-          loginSuccess(
-           
-          );
-          console.log("[AuthGuard] User logged in with existing tokens");
+          loginSuccess()
+          console.log('[AuthGuard] User logged in with existing tokens')
         } else {
-          logoutSuccess();
-          console.log("[AuthGuard] No tokens found, logged out");
+          logoutSuccess()
+          console.log('[AuthGuard] No tokens found, logged out')
         }
       } catch (error) {
-        console.error("[AuthGuard] Auth init error:", error);
-        if (isMounted) logoutSuccess();
+        console.error('[AuthGuard] Auth init error:', error)
+        if (isMounted) logoutSuccess()
       } finally {
         if (isMounted) {
-          console.log("[AuthGuard] Setting initialized to true");
-          setInitialized(true);
+          console.log('[AuthGuard] Setting initialized to true')
+          setInitialized(true)
         }
       }
-    };
+    }
 
     if (!isInitialized) {
       // Failsafe: ensure we initialize even if something goes wrong
       timeoutId = setTimeout(() => {
-        console.warn(
-          "[AuthGuard] Initialization timeout - forcing initialized state",
-        );
+        console.warn('[AuthGuard] Initialization timeout - forcing initialized state')
         if (isMounted && !isInitialized) {
-          logoutSuccess();
-          setInitialized(true);
+          logoutSuccess()
+          setInitialized(true)
         }
-      }, 5000);
+      }, 5000)
 
-      initAuth();
+      initAuth()
     }
 
     return () => {
-      isMounted = false;
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [isInitialized, loginSuccess, logoutSuccess, setInitialized]);
+      isMounted = false
+      if (timeoutId) clearTimeout(timeoutId)
+    }
+  }, [isInitialized, loginSuccess, logoutSuccess, setInitialized])
 
   useEffect(() => {
-    if (!isInitialized) return;
+    if (!isInitialized) return
 
-    const segmentsArray = segments as string[];
-    const inAuthGroup = segmentsArray[0] === "auth";
-    const inQrGroup = segmentsArray[0] === "qr";
+    const segmentsArray = segments as string[]
+    const inAuthGroup = segmentsArray[0] === 'auth'
+    const inQrGroup = segmentsArray[0] === 'qr'
 
-    console.log("[AuthGuard] Navigation check:", {
+    console.log('[AuthGuard] Navigation check:', {
       isAuthenticated,
       inAuthGroup,
       inQrGroup,
-      segments,
-    });
+      segments
+    })
 
     if (!isAuthenticated && !inAuthGroup && !inQrGroup) {
-      console.log("[AuthGuard] Redirecting to /auth");
-      router.replace("/auth");
+      console.log('[AuthGuard] Redirecting to /auth')
+      router.replace('/auth')
     } else if (isAuthenticated && inAuthGroup) {
-      console.log("[AuthGuard] Redirecting to /(tabs)");
-      router.replace("/(tabs)");
+      console.log('[AuthGuard] Redirecting to /(tabs)')
+      router.replace('/(tabs)')
     }
-  }, [isAuthenticated, isInitialized, segments, router]);
+  }, [isAuthenticated, isInitialized, segments, router])
 
-  // Show loading screen while initializing
   if (!isInitialized) {
-    return <SimpleLoadingScreen />;
+    return <SimpleLoadingScreen />
   }
 
-  return <>{children}</>;
+  return <>{children}</>
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const colorScheme = useColorScheme()
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -190,24 +169,22 @@ export default function RootLayout() {
         <I18nextProvider i18n={i18n}>
           <QueryClientProvider client={queryClient}>
             <GluestackProvider>
-              <ThemeProvider
-                value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
-              >
+              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
                 <AuthGuard>
                   <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name="(tabs)" />
-                    <Stack.Screen name="auth" />
+                    <Stack.Screen name='(tabs)' />
+                    <Stack.Screen name='auth' />
                     <Stack.Screen
-                      name="qr/index"
+                      name='qr/index'
                       options={{
-                        presentation: "modal",
-                        animation: "slide_from_bottom",
+                        presentation: 'modal',
+                        animation: 'slide_from_bottom'
                       }}
                     />
-                    <Stack.Screen name="qr/confirm" />
+                    <Stack.Screen name='qr/confirm' />
                   </Stack>
                 </AuthGuard>
-                <StatusBar style="auto" />
+                <StatusBar style='auto' />
                 <Toast />
               </ThemeProvider>
             </GluestackProvider>
@@ -215,5 +192,5 @@ export default function RootLayout() {
         </I18nextProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
-  );
+  )
 }

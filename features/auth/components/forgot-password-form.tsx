@@ -1,53 +1,49 @@
-import { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput } from 'react-native';
-import { useRouter } from 'expo-router';
-import { useTranslation } from 'react-i18next';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Input } from '@/components/ui';
-import { Button } from '@/components/ui';
-import { 
-  forgotPasswordRequestSchema, 
-  resetPasswordRequestSchema,
-} from '../schemas/auth.schema';
-import { useForgotPasswordMutation, useResetPasswordMutation } from '../queries/use-mutations';
+import { useState, useRef } from 'react'
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput } from 'react-native'
+import { useRouter } from 'expo-router'
+import { useTranslation } from 'react-i18next'
+import { MaterialCommunityIcons } from '@expo/vector-icons'
+import { Input } from '@/components/ui'
+import { Button } from '@/components/ui'
+import { forgotPasswordRequestSchema, resetPasswordRequestSchema } from '../schemas/auth.schema'
+import { useForgotPasswordMutation, useResetPasswordMutation } from '../queries/use-mutations'
 
-type Step = 'REQUEST' | 'RESET';
+type Step = 'REQUEST' | 'RESET'
 
 export function ForgotPasswordForm() {
-  const { t } = useTranslation();
-  const router = useRouter();
-  const [step, setStep] = useState<Step>('REQUEST');
-  const [email, setEmail] = useState('');
-  const otpInputRef = useRef<TextInput>(null);
-  
-  // Request step state
-  const [requestEmail, setRequestEmail] = useState('');
-  const [requestEmailError, setRequestEmailError] = useState('');
-  
-  // Reset step state
-  const [otp, setOtp] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [otpError, setOtpError] = useState('');
-  const [newPasswordError, setNewPasswordError] = useState('');
-  const [confirmPasswordError, setConfirmPasswordError] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const router = useRouter()
+  const [step, setStep] = useState<Step>('REQUEST')
+  const [email, setEmail] = useState('')
+  const otpInputRef = useRef<TextInput>(null)
 
-  const forgotPasswordMutation = useForgotPasswordMutation();
-  const resetPasswordMutation = useResetPasswordMutation();
+  // Request step state
+  const [requestEmail, setRequestEmail] = useState('')
+  const [requestEmailError, setRequestEmailError] = useState('')
+
+  // Reset step state
+  const [otp, setOtp] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [otpError, setOtpError] = useState('')
+  const [newPasswordError, setNewPasswordError] = useState('')
+  const [confirmPasswordError, setConfirmPasswordError] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+
+  const forgotPasswordMutation = useForgotPasswordMutation()
+  const resetPasswordMutation = useResetPasswordMutation()
 
   const validateRequestForm = (): boolean => {
     try {
-      forgotPasswordRequestSchema.parse({ email: requestEmail });
-      setRequestEmailError('');
-      return true;
+      forgotPasswordRequestSchema.parse({ email: requestEmail })
+      setRequestEmailError('')
+      return true
     } catch (error: any) {
-      const zodError = error.errors?.[0];
-      setRequestEmailError(zodError?.message || 'Email không hợp lệ');
-      return false;
+      const zodError = error.errors?.[0]
+      setRequestEmailError(zodError?.message || 'Email không hợp lệ')
+      return false
     }
-  };
+  }
 
   const validateResetForm = (): boolean => {
     try {
@@ -55,53 +51,53 @@ export function ForgotPasswordForm() {
         email,
         otp,
         newPassword,
-        confirmPassword,
-      });
-      setOtpError('');
-      setNewPasswordError('');
-      setConfirmPasswordError('');
-      return true;
+        confirmPassword
+      })
+      setOtpError('')
+      setNewPasswordError('')
+      setConfirmPasswordError('')
+      return true
     } catch (error: any) {
-      const errors = error.errors || [];
+      const errors = error.errors || []
       errors.forEach((err: any) => {
-        const path = err.path[0];
-        if (path === 'otp') setOtpError(err.message);
-        if (path === 'newPassword') setNewPasswordError(err.message);
-        if (path === 'confirmPassword') setConfirmPasswordError(err.message);
-      });
-      return false;
+        const path = err.path[0]
+        if (path === 'otp') setOtpError(err.message)
+        if (path === 'newPassword') setNewPasswordError(err.message)
+        if (path === 'confirmPassword') setConfirmPasswordError(err.message)
+      })
+      return false
     }
-  };
+  }
 
   const handleRequest = async () => {
-    if (!validateRequestForm()) return;
+    if (!validateRequestForm()) return
 
     try {
-      await forgotPasswordMutation.mutateAsync({ email: requestEmail });
-      setEmail(requestEmail);
-      setStep('RESET');
+      await forgotPasswordMutation.mutateAsync({ email: requestEmail })
+      setEmail(requestEmail)
+      setStep('RESET')
     } catch (error) {
       // Error handled by mutation
     }
-  };
+  }
 
   const handleReset = async () => {
-    if (!validateResetForm()) return;
+    if (!validateResetForm()) return
 
     try {
       await resetPasswordMutation.mutateAsync({
         email,
         otp,
         newPassword,
-        confirmPassword,
-      });
+        confirmPassword
+      })
       // Navigation handled by mutation
     } catch (error) {
       // Error handled by mutation
     }
-  };
+  }
 
-  const isRequestStep = step === 'REQUEST';
+  const isRequestStep = step === 'REQUEST'
 
   return (
     <View style={styles.container}>
@@ -120,18 +116,16 @@ export function ForgotPasswordForm() {
         {isRequestStep ? (
           <View style={styles.form}>
             <Input
-              placeholder="Email"
+              placeholder='Email'
               value={requestEmail}
               onChangeText={(text) => {
-                setRequestEmail(text);
-                setRequestEmailError('');
+                setRequestEmail(text)
+                setRequestEmailError('')
               }}
               error={requestEmailError}
-              keyboardType="email-address"
-              autoCapitalize="none"
-              leftIcon={
-                <MaterialCommunityIcons name="email-outline" size={20} color="#666" />
-              }
+              keyboardType='email-address'
+              autoCapitalize='none'
+              leftIcon={<MaterialCommunityIcons name='email-outline' size={20} color='#666' />}
             />
 
             <Button
@@ -140,7 +134,7 @@ export function ForgotPasswordForm() {
               disabled={!requestEmail || forgotPasswordMutation.isPending}
             >
               {forgotPasswordMutation.isPending ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color='#fff' />
               ) : (
                 <Text style={styles.buttonText}>Tiếp tục</Text>
               )}
@@ -151,62 +145,51 @@ export function ForgotPasswordForm() {
             {/* OTP Input */}
             <View style={styles.otpSection}>
               <View style={styles.otpHeader}>
-                <MaterialCommunityIcons name="key-outline" size={16} color="#999" />
+                <MaterialCommunityIcons name='key-outline' size={16} color='#999' />
                 <Text style={styles.otpLabel}>Nhập mã kích hoạt</Text>
               </View>
-              <TouchableOpacity 
-                style={styles.otpBoxes}
-                activeOpacity={1}
-                onPress={() => otpInputRef.current?.focus()}
-              >
+              <TouchableOpacity style={styles.otpBoxes} activeOpacity={1} onPress={() => otpInputRef.current?.focus()}>
                 {[0, 1, 2, 3, 4, 5].map((index) => {
-                  const isActive = index === otp.length;
+                  const isActive = index === otp.length
                   return (
-                    <View key={index} style={[
-                      styles.otpBox,
-                      isActive && styles.otpBoxActive
-                    ]}>
+                    <View key={index} style={[styles.otpBox, isActive && styles.otpBoxActive]}>
                       <Text style={styles.otpBoxText}>{otp[index] || ''}</Text>
                     </View>
-                  );
+                  )
                 })}
               </TouchableOpacity>
               <TextInput
                 ref={otpInputRef}
                 value={otp}
                 onChangeText={(text) => {
-                  setOtp(text.replace(/\D/g, '').slice(0, 6));
-                  setOtpError('');
+                  setOtp(text.replace(/\D/g, '').slice(0, 6))
+                  setOtpError('')
                 }}
-                keyboardType="number-pad"
+                keyboardType='number-pad'
                 maxLength={6}
                 style={styles.hiddenInput}
                 autoFocus
               />
-              {otpError && (
-                <Text style={styles.errorText}>{otpError}</Text>
-              )}
+              {otpError && <Text style={styles.errorText}>{otpError}</Text>}
             </View>
 
             {/* New Password */}
             <Input
-              placeholder="Vui lòng nhập mật khẩu"
+              placeholder='Vui lòng nhập mật khẩu'
               value={newPassword}
               onChangeText={(text) => {
-                setNewPassword(text);
-                setNewPasswordError('');
+                setNewPassword(text)
+                setNewPasswordError('')
               }}
               error={newPasswordError}
               secureTextEntry={!showPassword}
-              leftIcon={
-                <MaterialCommunityIcons name="lock-outline" size={20} color="#666" />
-              }
+              leftIcon={<MaterialCommunityIcons name='lock-outline' size={20} color='#666' />}
               rightIcon={
                 <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
                   <MaterialCommunityIcons
                     name={showPassword ? 'eye-off-outline' : 'eye-outline'}
                     size={20}
-                    color="#666"
+                    color='#666'
                   />
                 </TouchableOpacity>
               }
@@ -214,23 +197,21 @@ export function ForgotPasswordForm() {
 
             {/* Confirm Password */}
             <Input
-              placeholder="Nhập lại mật khẩu"
+              placeholder='Nhập lại mật khẩu'
               value={confirmPassword}
               onChangeText={(text) => {
-                setConfirmPassword(text);
-                setConfirmPasswordError('');
+                setConfirmPassword(text)
+                setConfirmPasswordError('')
               }}
               error={confirmPasswordError}
               secureTextEntry={!showConfirmPassword}
-              leftIcon={
-                <MaterialCommunityIcons name="lock-outline" size={20} color="#666" />
-              }
+              leftIcon={<MaterialCommunityIcons name='lock-outline' size={20} color='#666' />}
               rightIcon={
                 <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
                   <MaterialCommunityIcons
                     name={showConfirmPassword ? 'eye-off-outline' : 'eye-outline'}
                     size={20}
-                    color="#666"
+                    color='#666'
                   />
                 </TouchableOpacity>
               }
@@ -239,12 +220,10 @@ export function ForgotPasswordForm() {
             <Button
               onPress={handleReset}
               style={styles.submitButton}
-              disabled={
-                !otp || !newPassword || !confirmPassword || resetPasswordMutation.isPending
-              }
+              disabled={!otp || !newPassword || !confirmPassword || resetPasswordMutation.isPending}
             >
               {resetPasswordMutation.isPending ? (
-                <ActivityIndicator color="#fff" />
+                <ActivityIndicator color='#fff' />
               ) : (
                 <Text style={styles.buttonText}>Xác nhận</Text>
               )}
@@ -256,25 +235,25 @@ export function ForgotPasswordForm() {
         <TouchableOpacity
           onPress={() => {
             if (isRequestStep) {
-              router.back();
+              router.back()
             } else {
-              setStep('REQUEST');
-              setOtp('');
-              setNewPassword('');
-              setConfirmPassword('');
-              setOtpError('');
-              setNewPasswordError('');
-              setConfirmPasswordError('');
+              setStep('REQUEST')
+              setOtp('')
+              setNewPassword('')
+              setConfirmPassword('')
+              setOtpError('')
+              setNewPasswordError('')
+              setConfirmPasswordError('')
             }
           }}
           style={styles.backButton}
         >
-          <MaterialCommunityIcons name="chevron-left" size={18} color="#0068FF" />
+          <MaterialCommunityIcons name='chevron-left' size={18} color='#0068FF' />
           <Text style={styles.backText}>Quay lại</Text>
         </TouchableOpacity>
       </View>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -282,7 +261,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
     justifyContent: 'center',
-    padding: 20,
+    padding: 20
   },
   card: {
     backgroundColor: '#fff',
@@ -292,72 +271,72 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
-    elevation: 4,
+    elevation: 4
   },
   header: {
     alignItems: 'center',
-    marginBottom: 32,
+    marginBottom: 32
   },
   title: {
     fontSize: 32,
     fontWeight: 'bold',
     color: '#0068FF',
-    marginBottom: 16,
+    marginBottom: 16
   },
   instruction: {
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
-    lineHeight: 20,
+    lineHeight: 20
   },
   form: {
-    gap: 16,
+    gap: 16
   },
   otpSection: {
-    marginBottom: 8,
+    marginBottom: 8
   },
   otpHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 12
   },
   otpLabel: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#666',
+    color: '#666'
   },
   otpInput: {
     fontSize: 24,
     fontWeight: '600',
-    letterSpacing: 8,
+    letterSpacing: 8
   },
   submitButton: {
-    marginTop: 8,
+    marginTop: 8
   },
   buttonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '600'
   },
   backButton: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 20,
-    paddingVertical: 8,
+    paddingVertical: 8
   },
   backText: {
     fontSize: 14,
     color: '#0068FF',
-    fontWeight: '500',
+    fontWeight: '500'
   },
   otpBoxes: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 12,
-    marginBottom: 16,
+    marginBottom: 16
   },
   otpBox: {
     width: 42,
@@ -367,27 +346,27 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#fff'
   },
   otpBoxActive: {
     borderColor: '#0068FF',
-    borderWidth: 2,
+    borderWidth: 2
   },
   otpBoxText: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#1a1a1a',
+    color: '#1a1a1a'
   },
   hiddenInput: {
     position: 'absolute',
     opacity: 0,
     height: 0,
-    width: 0,
+    width: 0
   },
   errorText: {
     color: '#ef4444',
     fontSize: 12,
     marginTop: 4,
-    textAlign: 'center',
-  },
-});
+    textAlign: 'center'
+  }
+})

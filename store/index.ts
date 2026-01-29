@@ -1,8 +1,2 @@
 // Export all stores here
-export { 
-  useAuthStore, 
-  selectIsAuthenticated,
-  selectIsLoading,
-  selectIsInitialized,
-  selectError,
-} from './authStore';
+export { useAuthStore, selectIsAuthenticated, selectIsLoading, selectIsInitialized, selectError } from './authStore'

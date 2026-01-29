@@ -1,2 +1,2 @@
 // Export all types
-export * from './common.types';
+export * from './common.types'

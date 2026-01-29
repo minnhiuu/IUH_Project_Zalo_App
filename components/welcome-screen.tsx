@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, Dimensions } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Svg, { Circle, Line, G } from 'react-native-svg';
+import React from 'react'
+import { View, Text, StyleSheet, Dimensions } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import Svg, { Circle, Line, G } from 'react-native-svg'
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window')
 
 // Network dots decoration component
 const NetworkDecoration = () => {
@@ -19,8 +19,8 @@ const NetworkDecoration = () => {
     { x: 350, y: height - 160, r: 4 },
     { x: width - 50, y: height - 170, r: 5 },
     { x: width - 80, y: height - 190, r: 3 },
-    { x: width - 120, y: height - 150, r: 4 },
-  ];
+    { x: width - 120, y: height - 150, r: 4 }
+  ]
 
   const lines = [
     { x1: 50, y1: height - 200, x2: 80, y2: height - 180 },
@@ -33,15 +33,11 @@ const NetworkDecoration = () => {
     { x1: 320, y1: height - 200, x2: 350, y2: height - 160 },
     { x1: 350, y1: height - 160, x2: width - 120, y2: height - 150 },
     { x1: width - 120, y1: height - 150, x2: width - 80, y2: height - 190 },
-    { x1: width - 80, y1: height - 190, x2: width - 50, y2: height - 170 },
-  ];
+    { x1: width - 80, y1: height - 190, x2: width - 50, y2: height - 170 }
+  ]
 
   return (
-    <Svg 
-      width={width} 
-      height={height} 
-      style={StyleSheet.absoluteFill}
-    >
+    <Svg width={width} height={height} style={StyleSheet.absoluteFill}>
       <G>
         {/* Lines */}
         {lines.map((line, index) => (
@@ -51,24 +47,18 @@ const NetworkDecoration = () => {
             y1={line.y1}
             x2={line.x2}
             y2={line.y2}
-            stroke="rgba(255,255,255,0.3)"
+            stroke='rgba(255,255,255,0.3)'
             strokeWidth={1}
           />
         ))}
         {/* Dots */}
         {dots.map((dot, index) => (
-          <Circle
-            key={`dot-${index}`}
-            cx={dot.x}
-            cy={dot.y}
-            r={dot.r}
-            fill="rgba(255,255,255,0.6)"
-          />
+          <Circle key={`dot-${index}`} cx={dot.x} cy={dot.y} r={dot.r} fill='rgba(255,255,255,0.6)' />
         ))}
       </G>
     </Svg>
-  );
-};
+  )
+}
 
 export const WelcomeScreen = () => {
   return (
@@ -99,52 +89,52 @@ export const WelcomeScreen = () => {
         <Text style={styles.logoText}>Zalo</Text>
       </View>
     </LinearGradient>
-  );
-};
+  )
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   backgroundPattern: {
     ...StyleSheet.absoluteFillObject,
-    opacity: 0.15,
+    opacity: 0.15
   },
   fadedBubble: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 20
   },
   bubbleAvatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
     backgroundColor: 'white',
-    marginRight: 12,
+    marginRight: 12
   },
   bubbleContent: {
-    flex: 1,
+    flex: 1
   },
   bubbleLine: {
     height: 14,
     backgroundColor: 'white',
     borderRadius: 7,
     marginBottom: 6,
-    width: '90%',
+    width: '90%'
   },
   logoContainer: {
     justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'center'
   },
   logoText: {
     fontSize: 72,
     fontWeight: '400',
     color: 'white',
-    letterSpacing: 2,
-  },
-});
+    letterSpacing: 2
+  }
+})
 
-export default WelcomeScreen;
+export default WelcomeScreen

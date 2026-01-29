@@ -1,11 +1,11 @@
-export { authKeys } from './keys';
+export { authKeys } from './keys'
 
 export {
   useLoginMutation,
   useRegisterMutation,
   useRegisterVerifyMutation,
   useLogoutMutation,
-  useRefreshTokenMutation,
-} from './use-mutations';
+  useRefreshTokenMutation
+} from './use-mutations'
 
-export * from './use-queries';
+export * from './use-queries'
