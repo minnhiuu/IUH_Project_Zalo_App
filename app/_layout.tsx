@@ -94,7 +94,8 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         if (!isMounted) return
 
         if (accessToken && refreshToken) {
-          loginSuccess()
+          // loginSuccess will fetch user profile
+          await loginSuccess()
           console.log('[AuthGuard] User logged in with existing tokens')
         } else {
           logoutSuccess()
@@ -174,6 +175,7 @@ export default function RootLayout() {
                   <Stack screenOptions={{ headerShown: false }}>
                     <Stack.Screen name='(tabs)' />
                     <Stack.Screen name='auth' />
+                    <Stack.Screen name='settings' />
                     <Stack.Screen
                       name='qr/index'
                       options={{

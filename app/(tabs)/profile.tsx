@@ -92,7 +92,7 @@ export default function ProfileScreen() {
           <View className='flex-1'>
             <Text className='text-white text-base opacity-90'>Tìm kiếm</Text>
           </View>
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/settings')}>
             <Ionicons name='settings-outline' size={24} color='white' />
           </TouchableOpacity>
         </View>
