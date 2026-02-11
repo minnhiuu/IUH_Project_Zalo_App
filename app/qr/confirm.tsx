@@ -1,30 +1,12 @@
-import React, { useState, useEffect } from 'react'
-import { ScrollView, Text, TouchableOpacity } from 'react-native'
+﻿import React, { useState, useEffect } from 'react'
+import { ScrollView, Text as RNText, TouchableOpacity, View, Modal as RNModal, Pressable } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useQrAcceptMutation, useQrRejectMutation } from '@/features/auth/queries/use-mutations'
 import { useWaitQrStatusQuery } from '@/features/auth/queries/use-queries'
 import { QrSessionStatus } from '@/features/auth/schemas'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import {
-  Box,
-  VStack,
-  HStack,
-  Center,
-  Modal,
-  ModalBackdrop,
-  ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  ButtonText,
-  Checkbox,
-  CheckboxIndicator,
-  CheckboxIcon,
-  CheckboxLabel,
-  Heading
-} from '@gluestack-ui/themed'
+import { Button, Text } from '@/components/ui'
 
 export default function QrConfirmScreen() {
   const router = useRouter()
@@ -136,76 +118,96 @@ export default function QrConfirmScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }} edges={['top', 'bottom']}>
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
         {/* Header spacer */}
-        <Box height={56} justifyContent='center' px='$4'>
+        <View style={{ height: 56, justifyContent: 'center', paddingHorizontal: 16 }}>
           <TouchableOpacity onPress={() => router.back()}>
             <Ionicons name='arrow-back' size={24} color='black' />
           </TouchableOpacity>
-        </Box>
+        </View>
 
         {/* Monitor Icon Section */}
-        <Center mt='$4'>
-          <Box
-            width={208}
-            height={160}
-            bg='#F8F9FA'
-            rounded='$xl'
-            alignItems='center'
-            justifyContent='center'
-            position='relative'
+        <View style={{ marginTop: 16, alignItems: 'center' }}>
+          <View
+            style={{
+              width: 208,
+              height: 160,
+              backgroundColor: '#F8F9FA',
+              borderRadius: 16,
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative'
+            }}
           >
-            <Box
-              width={144}
-              height={96}
-              bg='$white'
-              borderWidth={1}
-              borderColor='#E9EAED'
-              rounded='$lg'
-              alignItems='center'
-              justifyContent='center'
-              position='relative'
+            <View
+              style={{
+                width: 144,
+                height: 96,
+                backgroundColor: 'white',
+                borderWidth: 1,
+                borderColor: '#E9EAED',
+                borderRadius: 8,
+                alignItems: 'center',
+                justifyContent: 'center',
+                position: 'relative'
+              }}
             >
-              <Center width='$12' height='$12' rounded='$full' borderWidth={1} borderColor='#E9EAED'>
+              <View
+                style={{
+                  width: 48,
+                  height: 48,
+                  borderRadius: 24,
+                  borderWidth: 1,
+                  borderColor: '#E9EAED',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
                 <Ionicons name='globe-outline' size={28} color='#D12323' />
-              </Center>
+              </View>
               {/* Stand */}
-              <Box
-                position='absolute'
-                bottom={-16}
-                width='$8'
-                height='$4'
-                bg='#E9EAED'
-                rounded='$sm'
-                alignSelf='center'
+              <View
+                style={{
+                  position: 'absolute',
+                  bottom: -16,
+                  width: 32,
+                  height: 16,
+                  backgroundColor: '#E9EAED',
+                  borderRadius: 4
+                }}
               />
-              <Box
-                position='absolute'
-                bottom={-20}
-                width='$16'
-                height='$1'
-                bg='#D1D3D6'
-                rounded='$full'
-                alignSelf='center'
+              <View
+                style={{
+                  position: 'absolute',
+                  bottom: -20,
+                  width: 64,
+                  height: 4,
+                  backgroundColor: '#D1D3D6',
+                  borderRadius: 100
+                }}
               />
-            </Box>
+            </View>
             {/* Alert Badge */}
-            <Center
-              position='absolute'
-              top='$2'
-              right='$4'
-              bg='#D12323'
-              width='$7'
-              height='$7'
-              rounded='$full'
-              borderWidth={2}
-              borderColor='#F8F9FA'
+            <View
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 16,
+                backgroundColor: '#D12323',
+                width: 28,
+                height: 28,
+                borderRadius: 14,
+                borderWidth: 2,
+                borderColor: '#F8F9FA',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
             >
               <Ionicons name='warning' size={14} color='white' />
-            </Center>
-          </Box>
-        </Center>
+            </View>
+          </View>
+        </View>
 
         {/* Title */}
-        <Box px='$10' mt='$8'>
+        <View style={{ paddingHorizontal: 40, marginTop: 32 }}>
           <Text
             style={{
               fontSize: 20,
@@ -217,10 +219,18 @@ export default function QrConfirmScreen() {
           >
             Đăng nhập Zalo Web bằng mã QR trên thiết bị lạ?
           </Text>
-        </Box>
+        </View>
 
         {/* Security Warning Box */}
-        <Box mx='$6' mt='$6' p='$4' bg='#FFEBEB' rounded='$lg'>
+        <View
+          style={{
+            marginHorizontal: 24,
+            marginTop: 24,
+            padding: 16,
+            backgroundColor: '#FFEBEB',
+            borderRadius: 8
+          }}
+        >
           <Text
             style={{
               fontSize: 14,
@@ -235,11 +245,11 @@ export default function QrConfirmScreen() {
             Bấm <Text style={{ fontWeight: 'bold' }}>Từ chối</Text> nếu ai đó yêu cầu bạn đăng nhập bằng mã QR để bình
             chọn, trúng thưởng, nhận khuyến mãi,...
           </Text>
-        </Box>
+        </View>
 
         {/* Details Section */}
-        <VStack px='$6' mt='$8' space='md'>
-          <HStack>
+        <View style={{ paddingHorizontal: 24, marginTop: 32, gap: 12 }}>
+          <View style={{ flexDirection: 'row' }}>
             <Text style={{ fontSize: 14, color: '#64748B', width: 112 }}>Trình duyệt:</Text>
             <Text
               style={{
@@ -251,8 +261,8 @@ export default function QrConfirmScreen() {
             >
               {browserInfo}
             </Text>
-          </HStack>
-          <HStack>
+          </View>
+          <View style={{ flexDirection: 'row' }}>
             <Text style={{ fontSize: 14, color: '#64748B', width: 112 }}>Thời gian:</Text>
             <Text
               style={{
@@ -264,8 +274,8 @@ export default function QrConfirmScreen() {
             >
               {currentTime}
             </Text>
-          </HStack>
-          <HStack>
+          </View>
+          <View style={{ flexDirection: 'row' }}>
             <Text style={{ fontSize: 14, color: '#64748B', width: 112 }}>Địa điểm:</Text>
             <Text
               style={{
@@ -277,70 +287,85 @@ export default function QrConfirmScreen() {
             >
               {location}
             </Text>
-          </HStack>
-        </VStack>
+          </View>
+        </View>
       </ScrollView>
 
       {/* Footer */}
-      <Box px='$6' pb='$6' bg='$white' pt='$2' borderTopWidth={1} borderTopColor='$secondary100'>
-        <Checkbox
-          size='md'
-          value='confirmed'
-          isChecked={isChecked}
-          onChange={(checked) => setIsChecked(checked)}
-          aria-label='Confirm security'
-          mb='$6'
-          mt='$2'
+      <View
+        style={{
+          paddingHorizontal: 24,
+          paddingBottom: 24,
+          backgroundColor: 'white',
+          paddingTop: 8,
+          borderTopWidth: 1,
+          borderTopColor: '#E8F3FF'
+        }}
+      >
+        <Pressable
+          onPress={() => setIsChecked(!isChecked)}
+          style={{ flexDirection: 'row', marginBottom: 24, marginTop: 8 }}
         >
-          <CheckboxIndicator mr='$3'>
-            <CheckboxIcon>
-              <Ionicons name='checkmark' size={12} color='white' />
-            </CheckboxIcon>
-          </CheckboxIndicator>
-          <CheckboxLabel style={{ color: '#334155', fontSize: 14, lineHeight: 20, flex: 1 }}>
+          <View
+            style={{
+              width: 20,
+              height: 20,
+              borderWidth: 2,
+              borderColor: isChecked ? '#0068FF' : '#D1D5DB',
+              borderRadius: 4,
+              marginRight: 12,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: isChecked ? '#0068FF' : 'transparent'
+            }}
+          >
+            {isChecked && <Ionicons name='checkmark' size={12} color='white' />}
+          </View>
+          <Text style={{ color: '#334155', fontSize: 14, lineHeight: 20, flex: 1 }}>
             Tôi đã kiểm tra kỹ thông tin và xác nhận đây là thiết bị của tôi
-          </CheckboxLabel>
-        </Checkbox>
+          </Text>
+        </Pressable>
 
         {/* Action Buttons */}
-        <VStack space='sm'>
+        <View style={{ gap: 8 }}>
           <Button
             onPress={handleStartLoginFlow}
-            isDisabled={!isChecked}
-            size='lg'
-            rounded='$full'
-            bg={isChecked ? '#004BB9' : '$secondary300'}
-            height={56}
+            disabled={!isChecked}
+            variant={isChecked ? 'primary' : 'secondary'}
+            className="h-14 rounded-full"
           >
-            <ButtonText color={isChecked ? '$white' : '$secondary500'} fontWeight='$bold'>
+            <Text weight="bold" className={isChecked ? 'text-white' : 'text-muted'}>
               Đăng nhập
-            </ButtonText>
+            </Text>
           </Button>
 
-          <Button onPress={handleReject} size='lg' rounded='$full' variant='solid' bg='$secondary100' height={56}>
-            <ButtonText color='#0F172A' fontWeight='$bold'>
+          <Button onPress={handleReject} variant="secondary" className="h-14 rounded-full">
+            <Text weight="bold" className="text-foreground">
               Từ chối
-            </ButtonText>
+            </Text>
           </Button>
-        </VStack>
-      </Box>
+        </View>
+      </View>
 
       {/* Confirmation Modal */}
-      <Modal isOpen={showCountdown} onClose={() => setShowCountdown(false)} size='md'>
-        <ModalBackdrop />
-        <ModalContent p='$6' rounded='$2xl' maxWidth={340}>
-          <ModalHeader p='$0' mb='$3'>
-            <Heading size='md' fontWeight='$bold' color='#0F172A'>
+      <RNModal visible={showCountdown} transparent animationType="fade">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
+          <View
+            style={{
+              backgroundColor: 'white',
+              padding: 24,
+              borderRadius: 16,
+              maxWidth: 340,
+              width: '90%'
+            }}
+          >
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#0F172A', marginBottom: 12 }}>
               Đăng nhập trên thiết bị lạ?
-            </Heading>
-          </ModalHeader>
-          <ModalBody p='$0' mb='$8'>
-            <Text style={{ fontSize: 14, color: '#64748B', lineHeight: 24 }}>
+            </Text>
+            <Text style={{ fontSize: 14, color: '#64748B', lineHeight: 24, marginBottom: 32 }}>
               Bạn hãy luôn thận trọng khi đăng nhập bằng mã QR để tránh bị chiếm đoạt tài khoản
             </Text>
-          </ModalBody>
-          <ModalFooter p='$0' justifyContent='flex-end'>
-            <HStack space='xl'>
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 24 }}>
               <TouchableOpacity onPress={() => setShowCountdown(false)}>
                 <Text style={{ fontWeight: 'bold', color: '#0F172A' }}>Quay lại</Text>
               </TouchableOpacity>
@@ -354,45 +379,64 @@ export default function QrConfirmScreen() {
                   Đăng nhập {countdown > 0 ? `(${countdown})` : ''}
                 </Text>
               </TouchableOpacity>
-            </HStack>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+            </View>
+          </View>
+        </View>
+      </RNModal>
 
       {/* Expiration Modal */}
-      <Modal isOpen={isExpired} onClose={() => router.back()} size='md'>
-        <ModalBackdrop />
-        <ModalContent p='$8' rounded='$2xl' alignItems='center'>
-          <Center bg='#FFEBEB' p='$4' rounded='$full' mb='$4'>
-            <Ionicons name='time-outline' size={48} color='#D12323' />
-          </Center>
-          <Text
+      <RNModal visible={isExpired} transparent animationType="fade">
+        <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
+          <View
             style={{
-              fontSize: 20,
-              fontWeight: 'bold',
-              color: '#0F172A',
-              marginBottom: 8,
-              textAlign: 'center'
+              backgroundColor: 'white',
+              padding: 32,
+              borderRadius: 16,
+              alignItems: 'center',
+              width: '90%',
+              maxWidth: 340
             }}
           >
-            Mã QR hết hạn
-          </Text>
-          <Text
-            style={{
-              fontSize: 14,
-              color: '#64748B',
-              marginBottom: 32,
-              textAlign: 'center',
-              lineHeight: 20
-            }}
-          >
-            Mã QR đã hết hạn, vui lòng tải lại mã mới trên thiết bị của bạn.
-          </Text>
-          <Button width='$full' py='$4' bg='$primary600' rounded='$xl' onPress={() => router.back()}>
-            <ButtonText fontWeight='$bold'>Quay lại</ButtonText>
-          </Button>
-        </ModalContent>
-      </Modal>
+            <View
+              style={{
+                backgroundColor: '#FFEBEB',
+                padding: 16,
+                borderRadius: 24,
+                marginBottom: 16
+              }}
+            >
+              <Ionicons name='time-outline' size={48} color='#D12323' />
+            </View>
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: 'bold',
+                color: '#0F172A',
+                marginBottom: 8,
+                textAlign: 'center'
+              }}
+            >
+              Mã QR hết hạn
+            </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                color: '#64748B',
+                marginBottom: 32,
+                textAlign: 'center',
+                lineHeight: 20
+              }}
+            >
+              Mã QR đã hết hạn, vui lòng tải lại mã mới trên thiết bị của bạn.
+            </Text>
+            <Button onPress={() => router.back()} variant="primary" className="w-full h-12 rounded-xl">
+              <Text weight="bold" className="text-white">
+                Quay lại
+              </Text>
+            </Button>
+          </View>
+        </View>
+      </RNModal>
     </SafeAreaView>
   )
 }

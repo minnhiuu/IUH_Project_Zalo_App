@@ -1,7 +1,7 @@
 import '../global.css'
 import i18n from '@/i18n'
 
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
@@ -12,10 +12,11 @@ import { I18nextProvider } from 'react-i18next'
 import { useEffect } from 'react'
 import { View, Text, ActivityIndicator } from 'react-native'
 
-import { GluestackProvider } from '@/components/ui'
+import { GluestackProvider } from '@/components/ui/gluestack-ui-provider'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useAuthStore } from '@/store'
 import { getAccessToken, getRefreshToken } from '@/lib/http'
+import { ThemeProvider } from '@/context'
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -168,26 +169,29 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <I18nextProvider i18n={i18n}>
           <QueryClientProvider client={queryClient}>
-            <GluestackProvider>
-              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                <AuthGuard>
-                  <Stack screenOptions={{ headerShown: false }}>
-                    <Stack.Screen name='(tabs)' />
-                    <Stack.Screen name='auth' />
-                    <Stack.Screen
-                      name='qr/index'
-                      options={{
-                        presentation: 'modal',
-                        animation: 'slide_from_bottom'
-                      }}
-                    />
-                    <Stack.Screen name='qr/confirm' />
-                  </Stack>
-                </AuthGuard>
-                <StatusBar style='auto' />
-                <Toast />
-              </ThemeProvider>
-            </GluestackProvider>
+            <ThemeProvider>
+              <GluestackProvider>
+                <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+                  <AuthGuard>
+                    <Stack screenOptions={{ headerShown: false }}>
+                      <Stack.Screen name='(tabs)' />
+                      <Stack.Screen name='auth' />
+                      <Stack.Screen name='settings' options={{ presentation: 'card' }} />
+                      <Stack.Screen
+                        name='qr/index'
+                        options={{
+                          presentation: 'modal',
+                          animation: 'slide_from_bottom'
+                        }}
+                      />
+                      <Stack.Screen name='qr/confirm' />
+                    </Stack>
+                  </AuthGuard>
+                  <StatusBar style='auto' />
+                  <Toast />
+                </NavigationThemeProvider>
+              </GluestackProvider>
+            </ThemeProvider>
           </QueryClientProvider>
         </I18nextProvider>
       </SafeAreaProvider>

@@ -31,6 +31,25 @@ export const BRAND = {
   black: '#000000'
 }
 
+// ==================== HEADER CONFIGURATION ====================
+// Fixed header dimensions for consistency across all screens
+// Matches web sidebar color: #005ae0 (brand-blue-dark)
+export const HEADER = {
+  height: 56, // Standard header height (excluding SafeArea)
+  paddingHorizontal: 16, // px-4
+  paddingVertical: 12, // py-3
+  backgroundColor: BRAND.blueDark, // #005ae0 - Matches web sidebar
+  textColor: BRAND.white,
+  searchPlaceholderColor: 'rgba(255, 255, 255, 0.8)',
+  iconSize: {
+    search: 22,
+    qr: 24,
+    add: 30,
+    settings: 26,
+    back: 28
+  }
+}
+
 // ==================== SEMANTIC COLORS ====================
 // Mapped to Shadcn UI semantic tokens from web
 export const SEMANTIC = {
@@ -255,3 +274,33 @@ export const Shadows = {
     elevation: 8
   }
 }
+
+// ==================== COMPLETE THEME OBJECT ====================
+// Single source of truth for all app styling
+export const ZaloTheme = {
+  colors: {
+    // Brand colors
+    brand: BRAND,
+    // Semantic colors
+    semantic: SEMANTIC,
+    // Dark mode colors
+    darkMode: DARK_MODE,
+    // Component colors
+    component: COMPONENT,
+    // Light/Dark modes for useColorScheme()
+    light: Colors.light,
+    dark: Colors.dark
+  },
+  header: HEADER,
+  spacing: Spacing,
+  borderRadius: BorderRadius,
+  shadows: Shadows,
+  fonts: Fonts
+} as const
+
+// Type for theme
+export type Theme = typeof ZaloTheme
+
+// Default export for easy importing
+export default ZaloTheme
+

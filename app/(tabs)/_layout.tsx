@@ -2,45 +2,44 @@ import { Ionicons } from '@expo/vector-icons'
 import { Tabs } from 'expo-router'
 import React from 'react'
 import { StatusBar, Platform } from 'react-native'
-
-import { useColorScheme } from '@/hooks/use-color-scheme'
+import { useTranslation } from 'react-i18next'
 
 // Zalo-style tab configuration
 const TAB_CONFIG = {
   messages: {
     name: 'index',
-    title: 'Tin nhắn',
-    icon: 'chatbubbles',
-    iconFocused: 'chatbubbles'
+    titleKey: 'tabs.messages',
+    icon: 'chatbubble-ellipses-outline',
+    iconFocused: 'chatbubble-ellipses'
   },
   contacts: {
     name: 'contacts',
-    title: 'Danh bạ',
-    icon: 'people-outline',
-    iconFocused: 'people'
+    titleKey: 'tabs.contacts',
+    icon: 'person-outline',
+    iconFocused: 'person'
   },
   discover: {
     name: 'discover',
-    title: 'Khám phá',
-    icon: 'compass-outline',
-    iconFocused: 'compass'
+    titleKey: 'tabs.discover',
+    icon: 'apps-outline',
+    iconFocused: 'apps'
   },
   timeline: {
     name: 'timeline',
-    title: 'Nhật ký',
-    icon: 'time-outline',
-    iconFocused: 'time'
+    titleKey: 'tabs.timeline',
+    icon: 'newspaper-outline',
+    iconFocused: 'newspaper'
   },
   profile: {
     name: 'profile',
-    title: 'Cá nhân',
-    icon: 'person-outline',
-    iconFocused: 'person'
+    titleKey: 'tabs.profile',
+    icon: 'person-circle-outline',
+    iconFocused: 'person-circle'
   }
 } as const
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme()
+  const { t } = useTranslation()
 
   return (
     <>
@@ -51,8 +50,8 @@ export default function TabLayout() {
           tabBarInactiveTintColor: '#8E8E93',
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: colorScheme === 'dark' ? '#1A1A1A' : '#FFFFFF',
-            borderTopColor: colorScheme === 'dark' ? '#333333' : '#E5E5E5',
+            backgroundColor: '#FFFFFF',
+            borderTopColor: '#E5E5E5',
             borderTopWidth: 0.5,
             paddingTop: 10,
             paddingBottom: Platform.OS === 'ios' ? 28 : 12,
@@ -73,7 +72,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name={TAB_CONFIG.messages.name}
           options={{
-            title: TAB_CONFIG.messages.title,
+            title: t(TAB_CONFIG.messages.titleKey),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? TAB_CONFIG.messages.iconFocused : TAB_CONFIG.messages.icon}
@@ -86,7 +85,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name={TAB_CONFIG.contacts.name}
           options={{
-            title: TAB_CONFIG.contacts.title,
+            title: t(TAB_CONFIG.contacts.titleKey),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? TAB_CONFIG.contacts.iconFocused : TAB_CONFIG.contacts.icon}
@@ -99,7 +98,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name={TAB_CONFIG.discover.name}
           options={{
-            title: TAB_CONFIG.discover.title,
+            title: t(TAB_CONFIG.discover.titleKey),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? TAB_CONFIG.discover.iconFocused : TAB_CONFIG.discover.icon}
@@ -112,7 +111,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name={TAB_CONFIG.timeline.name}
           options={{
-            title: TAB_CONFIG.timeline.title,
+            title: t(TAB_CONFIG.timeline.titleKey),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? TAB_CONFIG.timeline.iconFocused : TAB_CONFIG.timeline.icon}
@@ -125,7 +124,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name={TAB_CONFIG.profile.name}
           options={{
-            title: TAB_CONFIG.profile.title,
+            title: t(TAB_CONFIG.profile.titleKey),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? TAB_CONFIG.profile.iconFocused : TAB_CONFIG.profile.icon}

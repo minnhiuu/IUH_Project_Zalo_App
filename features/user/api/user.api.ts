@@ -6,7 +6,7 @@ import type { UserResponse, UserUpdateRequest } from '../schemas/user.schema'
 export const getMyProfile = () => http.get<ApiResponse<UserResponse>>(API_ENDPOINTS.USER.ME)
 
 export const updateProfile = (id: string, data: UserUpdateRequest) =>
-  http.put<ApiResponse<UserResponse>>(API_ENDPOINTS.USER.UPDATE(id), data)
+  http.put<ApiResponse<UserResponse>>(`${API_ENDPOINTS.USER.UPDATE}/${id}`, data)
 
 export const userApi = {
   getMyProfile,

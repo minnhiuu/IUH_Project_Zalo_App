@@ -162,5 +162,161 @@
         "back": "Quay lại"
       }
     }
+  },
+  "tabs": {
+    "messages": "Tin nhắn",
+    "contacts": "Danh bạ",
+    "discover": "Khám phá",
+    "timeline": "Nhật ký",
+    "profile": "Cá nhân"
+  },
+  "messages": {
+    "title": "Tin nhắn",
+    "search": "Tìm kiếm",
+    "newMessage": "Tin nhắn mới",
+    "noMessages": "Chưa có tin nhắn nào",
+    "online": "Đang hoạt động",
+    "offline": "Không hoạt động",
+    "typing": "Đang nhập...",
+    "seen": "Đã xem",
+    "sent": "Đã gửi",
+    "group": "Nhóm",
+    "members": "thành viên"
+  },
+  "contacts": {
+    "title": "Danh bạ",
+    "search": "Tìm kiếm",
+    "tabs": {
+      "friends": "Bạn bè",
+      "groups": "Nhóm",
+      "oa": "OA"
+    },
+    "friendRequest": "Lời mời kết bạn",
+    "birthday": "Sinh nhật",
+    "filters": {
+      "all": "Tất cả",
+      "new": "Bạn mới",
+      "recent": "Mới truy cập"
+    },
+    "addFriend": "Kết bạn",
+    "noContacts": "Chưa có liên hệ nào"
+  },
+  "friendRequests": {
+    "title": "Lời mời kết bạn",
+    "tabs": {
+      "received": "Đã nhận",
+      "sent": "Đã gửi"
+    },
+    "actions": {
+      "accept": "Đồng ý",
+      "decline": "Từ chối",
+      "withdraw": "Thu hồi"
+    },
+    "source": {
+      "phoneContact": "Từ danh bạ máy",
+      "friendSuggestion": "Có thể bạn quen biết",
+      "qrCode": "Từ mã QR",
+      "nearby": "Từ người lân cận",
+      "group": "Từ nhóm {{groupName}}"
+    },
+    "time": {
+      "justNow": "Vừa xong",
+      "minutesAgo": "{{count}} phút trước",
+      "hoursAgo": "{{count}} giờ trước",
+      "daysAgo": "{{count}} ngày trước",
+      "weeksAgo": "{{count}} tuần trước"
+    },
+    "empty": {
+      "received": "Không có lời mời kết bạn",
+      "sent": "Chưa gửi lời mời kết bạn nào"
+    },
+    "success": {
+      "accepted": "Đã chấp nhận lời mời kết bạn",
+      "declined": "Đã từ chối lời mời kết bạn",
+      "withdrawn": "Đã thu hồi lời mời kết bạn"
+    }
+  },
+  "discover": {
+    "title": "Khám phá",
+    "search": "Tìm kiếm",
+    "services": {
+      "video": "Zalo Video",
+      "gameCenter": "Game Center",
+      "miniApp": "Mini App",
+      "shop": "Shop",
+      "payment": "Thanh toán",
+      "official": "Trang chính thức"
+    }
+  },
+  "timeline": {
+    "title": "Nhật ký",
+    "search": "Tìm kiếm",
+    "stories": "Câu chuyện",
+    "addStory": "Thêm câu chuyện",
+    "newPost": "Đăng bài",
+    "like": "Thích",
+    "comment": "Bình luận",
+    "share": "Chia sẻ",
+    "viewAll": "Xem tất cả",
+    "noStories": "Chưa có câu chuyện nào",
+    "noPosts": "Chưa có bài viết nào"
+  },
+  "profile": {
+    "title": "Cá nhân",
+    "search": "Tìm kiếm",
+    "online": "Đang hoạt động",
+    "menu": {
+      "zCloud": "zCloud",
+      "zCloudDesc": "Không gian lưu trữ dữ liệu trên đám mây",
+      "zStyle": "zStyle – Nổi bật trên Zalo",
+      "zStyleDesc": "Hình nền và nhạc cho cuộc gọi Zalo",
+      "myDocs": "My Documents",
+      "myDocsDesc": "Lưu trữ các tin nhắn quan trọng",
+      "storage": "Dữ liệu trên máy",
+      "storageDesc": "Quản lý dữ liệu Zalo của bạn",
+      "qrWallet": "Ví QR",
+      "qrWalletDesc": "Lưu trữ và xuất trình các mã QR quan trọng",
+      "accountSecurity": "Tài khoản và bảo mật",
+      "privacy": "Quyền riêng tư",
+      "settings": "Cài đặt"
+    },
+    "promo": {
+      "title": "Tặng bạn ưu đãi năm mới từ zStyle",
+      "subtitle": "Chỉ từ 10.700đ/tháng, nhận ưu đãi ngay"
+    }
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "search": "Tìm kiếm",
+    "theme": {
+      "title": "Giao diện",
+      "light": "Sáng",
+      "dark": "Tối",
+      "system": "Theo hệ thống",
+      "chooseTheme": "Chọn giao diện",
+      "chooseThemeDesc": "Chọn chế độ giao diện hiển thị"
+    },
+    "menu": {
+      "accountSecurity": "Tài khoản và bảo mật",
+      "privacy": "Quyền riêng tư",
+      "storage": "Dữ liệu trên máy",
+      "backup": "Sao lưu và khôi phục",
+      "notifications": "Thông báo",
+      "messages": "Tin nhắn",
+      "calls": "Cuộc gọi",
+      "diary": "Nhật ký",
+      "contacts": "Danh bạ",
+      "appearance": "Giao diện và ngôn ngữ",
+      "about": "Thông tin về Zalo",
+      "support": "Liên hệ hỗ trợ",
+      "switchAccount": "Chuyển tài khoản"
+    },
+    "logout": {
+      "title": "Đăng xuất",
+      "confirm": "Bạn có chắc chắn muốn đăng xuất?",
+      "button": "Đăng xuất",
+      "cancel": "Hủy",
+      "loading": "Đang đăng xuất..."
+    }
   }
 }

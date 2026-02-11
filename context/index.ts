@@ -1,3 +1,3 @@
 // Export all contexts here
-// Example:
-// export { AuthProvider, useAuth } from './AuthContext';
+export { ThemeProvider, useTheme, useThemeColors, useThemeValue } from './theme-context'
+export type { ThemeMode, ActiveTheme } from './theme-context'
