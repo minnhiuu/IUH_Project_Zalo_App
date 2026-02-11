@@ -135,6 +135,250 @@
       "serverError": "Server error. Please try again later."
     }
   },
+  "settings": {
+    "title": "Settings",
+    "sections": {
+      "security": "SECURITY",
+      "data": "DATA",
+      "notificationsCommunication": "NOTIFICATIONS & COMMUNICATION",
+      "interface": "INTERFACE",
+      "support": "SUPPORT",
+      "general": "GENERAL",
+      "display": "DISPLAY",
+      "media": "MEDIA",
+      "advanced": "ADVANCED",
+      "deviceManagement": "DEVICES",
+      "personalInfo": "PERSONAL INFO",
+      "activity": "ACTIVITY",
+      "blockReport": "BLOCK & REPORT",
+      "storageDetails": "STORAGE DETAILS",
+      "backupSettings": "BACKUP SETTINGS",
+      "notificationTypes": "NOTIFICATION TYPES",
+      "callSettings": "CALL SETTINGS",
+      "quality": "QUALITY",
+      "recentActivity": "RECENT ACTIVITY",
+      "filter": "FILTER",
+      "sync": "SYNC",
+      "language": "LANGUAGE"
+    },
+    "menu": {
+      "accountSecurity": {
+        "title": "Account & Security",
+        "subtitle": "Manage account and security"
+      },
+      "privacy": {
+        "title": "Privacy",
+        "subtitle": "Privacy settings"
+      },
+      "dataOnDevice": {
+        "title": "Data on Device",
+        "subtitle": "Manage storage data"
+      },
+      "backupRestore": {
+        "title": "Backup & Restore",
+        "subtitle": "Backup and restore data"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "subtitle": "Notification settings"
+      },
+      "messages": {
+        "title": "Messages",
+        "subtitle": "Message settings"
+      },
+      "calls": {
+        "title": "Calls",
+        "subtitle": "Call settings"
+      },
+      "journal": {
+        "title": "Journal",
+        "subtitle": "View activity history"
+      },
+      "contacts": {
+        "title": "Contacts",
+        "subtitle": "Manage contacts"
+      },
+      "interfaceLanguage": {
+        "title": "Interface & Language",
+        "subtitle": "Customize interface and language"
+      },
+      "about": {
+        "title": "About Zalo",
+        "subtitle": "Version and app information"
+      },
+      "support": {
+        "title": "Contact Support",
+        "subtitle": "Help and support"
+      }
+    },
+    "accountSecurity": {
+      "phone": "Phone number",
+      "email": "Email",
+      "changePassword": "Change Password",
+      "changePasswordSubtitle": "Update your password",
+      "twoFactor": "Two-factor authentication",
+      "twoFactorSubtitle": "Enhance account security",
+      "biometrics": "Biometrics",
+      "biometricsSubtitle": "Fingerprint, Face ID",
+      "deviceManagement": "Device management",
+      "deviceManagementSubtitle": "View logged in devices"
+    },
+    "deviceManagement": {
+      "title": "Device Management",
+      "description": "Manage devices logged into your account",
+      "loading": "Loading devices...",
+      "noDevices": "No devices found",
+      "activeDevices": "Active Devices",
+      "inactiveDevices": "Inactive Devices",
+      "activeStatus": "Active",
+      "currentDevice": "This Device",
+      "logout": "Log out",
+      "logoutOthers": "Log out of other devices",
+      "logoutOthersConfirm": "Are you sure you want to log out of all other devices?",
+      "logoutOthersSuccess": "Logged out of all other devices",
+      "logoutOthersError": "Failed to log out of other devices",
+      "deleteConfirm": "Are you sure you want to delete this device?",
+      "deleteSuccess": "Device deleted successfully",
+      "deleteError": "Failed to delete device"
+    },
+    "privacy": {
+      "whoCanSeeProfile": "Who can see my profile",
+      "whoCanSeePhotos": "Who can see my photos",
+      "everyone": "Everyone",
+      "friends": "Friends",
+      "showOnlineStatus": "Show online status",
+      "showOnlineStatusSubtitle": "Let others see when you're online",
+      "readReceipts": "Read receipts",
+      "readReceiptsSubtitle": "Let others know you've read messages",
+      "blockList": "Block list",
+      "blockListSubtitle": "Manage blocked users",
+      "reportViolation": "Report violation",
+      "reportViolationSubtitle": "Report inappropriate content"
+    },
+    "dataOnDevice": {
+      "totalUsed": "Total used",
+      "images": "Images",
+      "videos": "Videos",
+      "documents": "Documents",
+      "audio": "Audio",
+      "clearCache": "Clear cache",
+      "clearCacheSubtitle": "Free up storage space",
+      "manageData": "Manage data",
+      "manageDataSubtitle": "Customize storage settings"
+    },
+    "backupRestore": {
+      "lastBackup": "Last backup",
+      "today": "Today",
+      "autoBackup": "Auto backup",
+      "autoBackupSubtitle": "Backup data daily",
+      "backupOverWifi": "Backup over Wi-Fi",
+      "backupOverWifiSubtitle": "Only backup on Wi-Fi connection",
+      "backupContent": "Backup content",
+      "backupContentSubtitle": "Messages, Photos, Videos",
+      "backupNow": "Backup now",
+      "restoreData": "Restore data"
+    },
+    "notifications": {
+      "allowNotifications": "Allow notifications",
+      "allowNotificationsSubtitle": "Receive push notifications",
+      "sound": "Sound",
+      "soundSubtitle": "Play sound for notifications",
+      "vibration": "Vibration",
+      "vibrationSubtitle": "Vibrate for notifications",
+      "messagesNotif": "Messages",
+      "messagesNotifSubtitle": "New message notifications",
+      "groupsNotif": "Groups",
+      "groupsNotifSubtitle": "Notifications from groups",
+      "friendRequests": "Friend requests",
+      "friendRequestsSubtitle": "New friend requests",
+      "doNotDisturb": "Do not disturb",
+      "doNotDisturbSubtitle": "Turn off notifications on schedule"
+    },
+    "messages": {
+      "messagePreview": "Message preview",
+      "messagePreviewSubtitle": "Show content in notifications",
+      "fontSize": "Font size",
+      "fontSizeMedium": "Medium",
+      "chatTheme": "Chat theme",
+      "chatThemeSubtitle": "Wallpaper and colors",
+      "autoDownload": "Auto download",
+      "autoDownloadSubtitle": "Auto download photos/videos",
+      "saveToLibrary": "Save to library",
+      "saveToLibrarySubtitle": "Auto save photos/videos",
+      "endToEndEncryption": "End-to-end encryption",
+      "endToEndEncryptionSubtitle": "Secure messages",
+      "archivedMessages": "Archived messages",
+      "archivedMessagesSubtitle": "View archived conversations"
+    },
+    "calls": {
+      "allowCalls": "Allow calls",
+      "allowCallsSubtitle": "Receive voice calls",
+      "allowVideoCalls": "Allow video calls",
+      "allowVideoCallsSubtitle": "Receive video calls",
+      "audioQuality": "Audio quality",
+      "automatic": "Automatic",
+      "videoQuality": "Video quality",
+      "hd": "HD",
+      "ringtone": "Ringtone",
+      "ringtoneSubtitle": "Customize ringtone",
+      "callHistory": "Call history",
+      "callHistorySubtitle": "View recent calls"
+    },
+    "journal": {
+      "login": "Login",
+      "passwordChange": "Password change",
+      "newFriend": "New friend",
+      "activityType": "Activity type",
+      "all": "All",
+      "timeRange": "Time range",
+      "last7Days": "Last 7 days",
+      "exportLog": "Export log",
+      "clearLog": "Clear log"
+    },
+    "contacts": {
+      "syncContacts": "Sync contacts",
+      "syncContactsSubtitle": "Sync with device contacts",
+      "allContacts": "All contacts",
+      "contactsCount": "{{count}} contacts",
+      "favorites": "Favorites",
+      "friendRequestsList": "Friend requests",
+      "requestsCount": "{{count}} requests"
+    },
+    "interfaceLanguage": {
+      "darkMode": "Dark mode",
+      "darkModeSubtitle": "Dark theme interface",
+      "themeColor": "Theme color",
+      "blue": "Blue",
+      "appLanguage": "App language",
+      "vietnamese": "Vietnamese"
+    },
+    "about": {
+      "version": "Version {{version}}",
+      "description": "Zalo is a free messaging and calling app that helps you connect with friends and family easily and quickly.",
+      "copyright": "© 2024 Zalo. All rights reserved."
+    },
+    "support": {
+      "faq": "Frequently asked questions",
+      "faqSubtitle": "Find quick answers",
+      "chatSupport": "Chat with support",
+      "chatSupportSubtitle": "Contact directly via chat",
+      "email": "Email",
+      "hotline": "Hotline"
+    },
+    "changePassword": {
+      "title": "Change Password",
+      "currentPassword": "Current password",
+      "currentPasswordPlaceholder": "Enter current password",
+      "newPassword": "New password",
+      "newPasswordPlaceholder": "Enter new password (at least 8 characters)",
+      "confirmPassword": "Confirm new password",
+      "confirmPasswordPlaceholder": "Re-enter new password",
+      "changeButton": "Change Password",
+      "changing": "Changing...",
+      "success": "Password changed successfully",
+      "error": "Failed to change password"
+    }
+  },
   "tabs": {
     "messages": "Messages",
     "contacts": "Contacts",

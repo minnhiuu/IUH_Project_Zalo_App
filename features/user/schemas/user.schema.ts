@@ -20,20 +20,18 @@ export type UserUpdateRequest = z.infer<typeof userUpdateRequestSchema>
 
 /**
  * Response Types (TypeScript interfaces for API responses)
+ * Matching backend UserProfileResponse structure
  */
-
-export type AccountResponse = {
-  id: string
-  phoneNumber: string
-  email: string
-  role: string
-}
 
 export type UserResponse = {
   id: string
+  phoneNumber: string
+  email: string
   fullName: string
-  dob: string // ISO date string (LocalDate from backend)
   bio: string
   gender: Gender
-  accountInfo: AccountResponse
+  dob: string // ISO date string (LocalDate from backend)
+  avatar: string | null
+  background: string | null
+  backgroundY: number | null
 }
