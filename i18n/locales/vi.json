@@ -182,7 +182,19 @@
     "noResults": "Không tìm thấy kết quả cho \"{{query}}\"",
     "recent": {
       "title": "Tìm kiếm gần đây",
-      "clearAll": "Xóa tất cả"
+      "clearAll": "Xóa tất cả",
+      "miniApps": "Mini Apps vừa dùng",
+      "contacts": "Liên hệ đã tìm",
+      "quickAccess": "Truy cập nhanh",
+      "queries": "Từ khóa đã tìm",
+      "editHistory": "Chỉnh sửa lịch sử tìm kiếm"
+    },
+    "editHistory": {
+      "title": "Chỉnh sửa lịch sử tìm kiếm",
+      "showQuickAccess": "Hiện truy cập nhanh",
+      "searchHistory": "Lịch sử tìm kiếm",
+      "saveContacts": "Lưu liên hệ đã tìm",
+      "saveQueries": "Lưu từ khóa đã tìm"
     },
     "seeMore": "Xem thêm",
     "action": {

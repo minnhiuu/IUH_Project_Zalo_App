@@ -2,14 +2,17 @@ import { Container, SearchTopBar } from '@/components'
 import { useInfiniteSearchUsers } from '../queries/use-search-queries'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Ionicons } from '@expo/vector-icons'
-import { useRouter } from 'expo-router'
-import React, { useState, useRef, useEffect } from 'react'
+import { useRouter, useFocusEffect } from 'expo-router'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ScrollView, Text, TextInput, View, ActivityIndicator, Keyboard, Animated } from 'react-native'
 import { AllTab } from './all/all-tab'
 import { ContactsTab } from './contacts/contacts-tab'
 import { MessagesTab } from './messages/messages-tab'
 import { DiscoverTab } from './discover/discover-tab'
+import { RecentSearchScreen } from './recent-search-screen'
+import { RecentSearch } from '../schema/search-schema'
+import { storage, STORAGE_KEYS } from '@/utils/storageUtils'
 
 export type SearchTab = 'all' | 'contacts' | 'messages' | 'discover'
 
@@ -34,11 +37,11 @@ export function SearchScreen() {
   const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState<SearchTab>('all')
+  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([])
   const debouncedQuery = useDebounce(searchQuery, 300)
   const inputRef = useRef<TextInput>(null)
   const fadeAnim = useRef(new Animated.Value(0)).current
 
-  /* const { data: searchResults, isLoading } = useSearchUsers(debouncedQuery) */
   const {
     data: infiniteSearchResults,
     fetchNextPage,
@@ -46,6 +49,12 @@ export function SearchScreen() {
     isFetchingNextPage,
     isLoading
   } = useInfiniteSearchUsers(debouncedQuery)
+
+  useFocusEffect(
+    useCallback(() => {
+      loadRecentSearches()
+    }, [])
+  )
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -60,9 +69,69 @@ export function SearchScreen() {
     return () => clearTimeout(timer)
   }, [fadeAnim])
 
+  const loadRecentSearches = async () => {
+    const saved = await storage.get<RecentSearch[]>(STORAGE_KEYS.RECENT_SEARCHES)
+    if (saved) {
+      setRecentSearches(saved)
+    }
+  }
+
+  const saveRecentSearches = async (updated: RecentSearch[]) => {
+    setRecentSearches(updated)
+    await storage.set(STORAGE_KEYS.RECENT_SEARCHES, updated)
+  }
+
+  const addToRecent = async (item: RecentSearch) => {
+    let users = recentSearches.filter((s) => s.type === 'user')
+    let keywords = recentSearches.filter((s) => s.type === 'keyword')
+
+    if (item.type === 'user') {
+      users = users.filter((s) => s.id !== item.id)
+      users.unshift(item)
+      users = users.slice(0, 10)
+    } else {
+      keywords = keywords.filter((s) => s.id !== item.id && s.displayName !== item.displayName)
+      keywords.unshift(item)
+      keywords = keywords.slice(0, 5)
+    }
+
+    const updated = [...users, ...keywords]
+    await saveRecentSearches(updated)
+  }
+
+  const removeFromRecent = async (id: string) => {
+    const updated = recentSearches.filter((s) => s.id !== id)
+    await saveRecentSearches(updated)
+  }
+
+  const clearAllRecent = async () => {
+    await saveRecentSearches([])
+  }
+
   const handleClear = () => {
     setSearchQuery('')
     inputRef.current?.focus()
+  }
+
+  const handleSearchSubmit = () => {
+    if (!searchQuery.trim()) return
+
+    addToRecent({
+      id: `k-${Date.now()}`,
+      type: 'keyword',
+      displayName: searchQuery.trim(),
+      timestamp: Date.now()
+    })
+  }
+
+  const handleRecentSelect = (item: RecentSearch) => {
+    addToRecent({ ...item, timestamp: Date.now() })
+
+    if (item.type === 'user') {
+      router.push(`/user/${item.id}` as any)
+    } else {
+      setSearchQuery(item.displayName)
+    }
   }
 
   const tabs: { key: SearchTab; label: string }[] = [
@@ -89,15 +158,17 @@ export function SearchScreen() {
   )
 
   const onItemPress = (item: any) => {
-    // For users returned from search API, they follow UserSummaryResponse structure (id, fullName, avatar)
-    // Mock items (contacts/messages) have different IDs (short strings starting with 'm' or 'c')
-    // Real user IDs are UUIDs (long strings)
-
-    // Simple heuristic: if it has an ID and NOT a mock ID, it's likely a user from the API
     const isMock = item.id.startsWith('m') || item.id.startsWith('c')
     const isUser = activeTab === 'discover' || !isMock
 
     if (isUser) {
+      addToRecent({
+        id: item.id,
+        type: 'user',
+        displayName: item.fullName,
+        avatar: item.avatar,
+        timestamp: Date.now()
+      })
       router.push(`/user/${item.id}` as any)
     } else {
       console.log('Selected item:', item.id)
@@ -105,6 +176,17 @@ export function SearchScreen() {
   }
 
   const renderContent = () => {
+    if (!searchQuery) {
+      return (
+        <RecentSearchScreen
+          searches={recentSearches}
+          onSelect={handleRecentSelect}
+          onRemove={removeFromRecent}
+          onClear={clearAllRecent}
+        />
+      )
+    }
+
     if (activeTab === 'discover') {
       return (
         <View className='flex-1 bg-gray-100'>
@@ -176,9 +258,10 @@ export function SearchScreen() {
         placeholder={t('search.placeholder')}
         onBack={() => router.back()}
         onClear={handleClear}
-        tabs={tabs}
+        tabs={searchQuery ? tabs : []}
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        onSubmitEditing={handleSearchSubmit}
       />
 
       {renderContent()}

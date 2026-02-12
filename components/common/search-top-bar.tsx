@@ -22,6 +22,7 @@ interface SearchTopBarProps {
   onQrPress?: () => void
   onPress?: () => void
   rightAction?: React.ReactNode
+  onSubmitEditing?: () => void
 }
 
 export function SearchTopBar({
@@ -38,7 +39,8 @@ export function SearchTopBar({
   showQr,
   onQrPress,
   onPress,
-  rightAction
+  rightAction,
+  onSubmitEditing
 }: SearchTopBarProps) {
   return (
     <Animated.View style={style}>
@@ -53,6 +55,7 @@ export function SearchTopBar({
         onQrPress={onQrPress}
         onPress={onPress}
         rightAction={rightAction}
+        onSubmitEditing={onSubmitEditing}
       />
 
       {tabs.length > 0 && setActiveTab && (

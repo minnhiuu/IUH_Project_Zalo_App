@@ -154,7 +154,19 @@
     "noResults": "No results found for \"{{query}}\"",
     "recent": {
       "title": "Recent Searches",
-      "clearAll": "Clear all"
+      "clearAll": "Clear all",
+      "miniApps": "Recently used Mini Apps",
+      "contacts": "Searched contacts",
+      "quickAccess": "Quick access",
+      "queries": "Searched queries",
+      "editHistory": "Edit search history"
+    },
+    "editHistory": {
+      "title": "Edit search history",
+      "showQuickAccess": "Show quick access",
+      "searchHistory": "Search history",
+      "saveContacts": "Save searched contacts",
+      "saveQueries": "Save searched queries"
     },
     "seeMore": "See more"
   },
