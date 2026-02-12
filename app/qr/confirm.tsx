@@ -334,13 +334,13 @@ export default function QrConfirmScreen() {
             variant={isChecked ? 'primary' : 'secondary'}
             className="h-14 rounded-full"
           >
-            <Text weight="bold" className={isChecked ? 'text-white' : 'text-muted'}>
+            <Text bold={true} className={isChecked ? 'text-white' : 'text-muted'}>
               Đăng nhập
             </Text>
           </Button>
 
           <Button onPress={handleReject} variant="secondary" className="h-14 rounded-full">
-            <Text weight="bold" className="text-foreground">
+            <Text bold={true} className="text-foreground">
               Từ chối
             </Text>
           </Button>
@@ -430,7 +430,7 @@ export default function QrConfirmScreen() {
               Mã QR đã hết hạn, vui lòng tải lại mã mới trên thiết bị của bạn.
             </Text>
             <Button onPress={() => router.back()} variant="primary" className="w-full h-12 rounded-xl">
-              <Text weight="bold" className="text-white">
+              <Text bold={true} className="text-white">
                 Quay lại
               </Text>
             </Button>

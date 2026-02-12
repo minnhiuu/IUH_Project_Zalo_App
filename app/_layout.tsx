@@ -177,8 +177,9 @@ export default function RootLayout() {
                     <Stack screenOptions={{ headerShown: false }}>
                       <Stack.Screen name='(tabs)' />
                       <Stack.Screen name='auth' />
-                      <Stack.Screen name='settings' options={{ presentation: 'card' }} />
                       <Stack.Screen name='settings' />
+                      <Stack.Screen name='search' />
+                      <Stack.Screen name='friend-requests' />
                     <Stack.Screen
                         name='qr/index'
                         options={{

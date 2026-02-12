@@ -1,9 +1,10 @@
-﻿import { Ionicons } from '@expo/vector-icons'
-import { View, ScrollView, Pressable, TextInput } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { Ionicons } from '@expo/vector-icons'
+import { ScrollView } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
-import { Header, Avatar, Text } from '@/components/ui'
+import { Header, Avatar, Text, Box, VStack, HStack, Card, Divider } from '@/components/ui'
+import { AvatarImage, AvatarFallbackText } from '@/components/ui/avatar'
+import { Pressable } from '@/components/ui/pressable'
 
 interface MenuItem {
   id: string
@@ -28,7 +29,7 @@ export default function ProfileScreen() {
   const { t } = useTranslation()
 
   return (
-    <View className="flex-1 bg-gray-50">
+    <Box style={{ flex: 1, backgroundColor: '#f9fafb' }}>
       {/* Header */}
       <Header
         showSearch
@@ -39,73 +40,71 @@ export default function ProfileScreen() {
 
       <ScrollView>
         {/* User Profile Header */}
-        <View className="bg-white px-4 py-4">
-          <View className="flex-row items-center">
-            <View className="relative mr-3">
-              <Avatar
-                size="xl"
-                source={{ uri: 'https://i.pravatar.cc/150?img=50' }}
-                fallback={
-                  <View className="bg-primary items-center justify-center w-full h-full">
-                    <Text className="text-white font-bold text-2xl">N</Text>
-                  </View>
-                }
-              />
+        <Card style={{ paddingHorizontal: 16, paddingVertical: 16 }}>
+          <HStack style={{ alignItems: 'center' }} space="md">
+            <Box style={{ position: 'relative' }}>
+              <Avatar size="xl">
+                <AvatarFallbackText style={{ fontSize: 24, color: '#ffffff' }}>N</AvatarFallbackText>
+                <AvatarImage source={{ uri: 'https://i.pravatar.cc/150?img=50' }} />
+              </Avatar>
               {/* Online status indicator */}
-              <View className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
-            </View>
-            <View className="flex-1">
-              <Text size="lg" weight="bold" className="text-gray-900">
+              <Box style={{ position: 'absolute', bottom: -2, right: -2, width: 16, height: 16, backgroundColor: '#22c55e', borderRadius: 8, borderWidth: 2, borderColor: '#ffffff' }} />
+            </Box>
+            <VStack style={{ flex: 1 }}>
+              <Text size="lg" bold style={{ color: '#111827' }}>
                 Nguyễn Huỳnh Minh Hiếu
               </Text>
-            </View>
-          </View>
-        </View>
+            </VStack>
+          </HStack>
+        </Card>
 
         {/* Promotional Card */}
         <Pressable 
-          className="mx-4 mt-2 p-3.5 rounded-lg active:opacity-90"
           style={{
+            marginHorizontal: 16,
+            marginTop: 8,
+            padding: 14,
+            borderRadius: 8,
             backgroundColor: '#E8F3FF'
           }}
         >
-          <View className="flex-row items-center">
-            <View className="w-10 h-10 bg-white rounded-lg items-center justify-center mr-3 shadow-sm">
+          <HStack style={{ alignItems: 'center' }} space="md">
+            <Box style={{ width: 40, height: 40, backgroundColor: '#ffffff', borderRadius: 8, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }}>
               <Ionicons name="pricetag" size={20} color="#0068FF" />
-            </View>
-            <View className="flex-1">
-              <Text weight="semibold" className="text-gray-900" size="sm">
+            </Box>
+            <VStack style={{ flex: 1 }}>
+              <Text style={{ color: '#111827' }} size="sm" bold>
                 {t('profile.promo.title')}
               </Text>
-              <Text size="xs" className="text-primary mt-0.5">
+              <Text size="xs" style={{ color: '#3b82f6', marginTop: 2 }}>
                 {t('profile.promo.subtitle')}
               </Text>
-            </View>
+            </VStack>
             <Ionicons name="chevron-forward" size={20} color="#0068FF" />
-          </View>
+          </HStack>
         </Pressable>
 
         {/* Menu Items */}
-        <View className="bg-white mt-2">
+        <Card style={{ marginTop: 8 }}>
           {MENU_ITEMS_KEYS.map((item, index) => (
-            <View key={item.id}>
-              <Pressable className="flex-row items-center px-4 py-3 active:bg-gray-50">
+            <VStack key={item.id}>
+              <Pressable style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 }}>
                 {/* Icon */}
-                <View className="w-10 h-10 items-center justify-center mr-3">
+                <Box style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
                   <Ionicons name={item.icon as any} size={28} color="#0068FF" />
-                </View>
+                </Box>
 
                 {/* Content */}
-                <View className="flex-1">
-                  <Text size="base" weight="medium" className="text-gray-900">
+                <VStack style={{ flex: 1 }}>
+                  <Text size="md" bold style={{ color: '#111827' }}>
                     {t(item.titleKey)}
                   </Text>
                   {item.subtitleKey && (
-                    <Text size="xs" className="text-gray-500 mt-0.5">
+                    <Text size="xs" style={{ color: '#6b7280', marginTop: 2 }}>
                       {t(item.subtitleKey)}
                     </Text>
                   )}
-                </View>
+                </VStack>
 
                 {/* Arrow */}
                 <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
@@ -113,27 +112,27 @@ export default function ProfileScreen() {
 
               {/* Divider */}
               {index < MENU_ITEMS_KEYS.length - 1 && (
-                <View className="h-px bg-gray-100 ml-16" />
+                <Divider style={{ marginLeft: 64 }} />
               )}
-            </View>
+            </VStack>
           ))}
-        </View>
+        </Card>
 
         {/* Settings */}
-        <View className="bg-white mt-2 mb-6">
-          <Pressable className="flex-row items-center px-4 py-3 active:bg-gray-50">
-            <View className="w-10 h-10 items-center justify-center mr-3">
+        <Card style={{ marginTop: 8, marginBottom: 24 }}>
+          <Pressable style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 }}>
+            <Box style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
               <Ionicons name="settings-outline" size={28} color="#0068FF" />
-            </View>
-            <View className="flex-1">
-              <Text size="base" weight="medium" className="text-gray-900">
+            </Box>
+            <VStack style={{ flex: 1 }}>
+              <Text size="md" bold style={{ color: '#111827' }}>
                 {t('profile.menu.settings')}
               </Text>
-            </View>
+            </VStack>
             <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
           </Pressable>
-        </View>
+        </Card>
       </ScrollView>
-    </View>
+    </Box>
   )
 }

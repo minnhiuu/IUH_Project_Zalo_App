@@ -2,10 +2,10 @@ import { Ionicons } from '@expo/vector-icons'
 import { View, TextInput, Pressable } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { TextV4 as Text } from './text-v4'
+import { Text } from './text'
 import { HEADER, BRAND } from '@/constants/theme'
 
-interface HeaderV4Props {
+interface HeaderProps {
   // Search props
   showSearch?: boolean
   searchPlaceholder?: string
@@ -28,7 +28,7 @@ interface HeaderV4Props {
   onBackPress?: () => void
 }
 
-export function HeaderV4({
+export function Header({
   showSearch = true,
   searchPlaceholder = 'Tìm kiếm',
   onSearchChange,
@@ -44,7 +44,7 @@ export function HeaderV4({
   onSettingsPress,
   onSearchPress,
   onBackPress
-}: HeaderV4Props) {
+}: HeaderProps) {
   const router = useRouter()
 
   const handleBackPress = () => {
@@ -75,22 +75,20 @@ export function HeaderV4({
 
             {/* Search Icon or Title */}
             {showSearch ? (
-              <>
+              <Pressable
+                onPress={() => router.push('/search')}
+                style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}
+              >
                 <Ionicons name="search" size={24} color={HEADER.textColor} />
-                <View className="flex-1">
-                  <TextInput
-                    placeholder={searchPlaceholder}
-                    placeholderTextColor={HEADER.searchPlaceholderColor}
-                    className="text-white text-base"
-                    style={{ color: HEADER.textColor }}
-                    value={searchValue}
-                    onChangeText={onSearchChange}
-                  />
+                <View style={{ flex: 1, marginLeft: 8 }}>
+                  <Text size="md" style={{ color: HEADER.searchPlaceholderColor }}>
+                    {searchPlaceholder}
+                  </Text>
                 </View>
-              </>
+              </Pressable>
             ) : (
               <View className="flex-1">
-                <Text size="lg" weight="bold" className="text-white">
+                <Text size="lg" bold={true} className="text-white">
                   {title}
                 </Text>
               </View>

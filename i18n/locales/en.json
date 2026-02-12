@@ -137,6 +137,7 @@
   },
   "settings": {
     "title": "Settings",
+    "search": "Search",
     "sections": {
       "security": "SECURITY",
       "data": "DATA",
@@ -209,15 +210,29 @@
       "support": {
         "title": "Contact Support",
         "subtitle": "Help and support"
-      }
+      },
+      "switchAccount": "Switch account"
     },
     "accountSecurity": {
+      "sections": {
+        "account": "Account",
+        "security": "Security",
+        "login": "Login"
+      },
+      "personalInfo": "Personal info",
+      "myQR": "My QR code",
       "phone": "Phone number",
       "email": "Email",
-      "changePassword": "Change Password",
-      "changePasswordSubtitle": "Update your password",
+      "notLinked": "Not linked",
+      "securityCheck": "Security check",
+      "securityCheckSubtitle": "3 security issues to resolve",
+      "lockZalo": "Lock Zalo",
+      "off": "Off",
       "twoFactor": "Two-factor authentication",
       "twoFactorSubtitle": "Enhance account security",
+      "loginDevices": "Login devices",
+      "changePassword": "Change Password",
+      "changePasswordSubtitle": "Update your password",
       "biometrics": "Biometrics",
       "biometricsSubtitle": "Fingerprint, Face ID",
       "deviceManagement": "Device management",
@@ -242,21 +257,39 @@
       "deleteError": "Failed to delete device"
     },
     "privacy": {
-      "whoCanSeeProfile": "Who can see my profile",
-      "whoCanSeePhotos": "Who can see my photos",
+      "sections": {
+        "personal": "Personal",
+        "messagesAndCalls": "Messages and calls",
+        "journal": "Journal",
+        "searchAndFriend": "Search sources and friend requests",
+        "utilities": "Utility permissions"
+      },
+      "birthday": "Birthday",
+      "showAccessStatus": "Show access status",
+      "on": "On",
+      "off": "Off",
+      "showSeenStatus": "Show \"Seen\" status",
+      "allowMessaging": "Allow messaging",
       "everyone": "Everyone",
+      "allowCalls": "Allow calls",
+      "friendsAndContacted": "Friends and previously contacted",
+      "allowViewAndComment": "Allow viewing and commenting",
+      "blockAndHide": "Block and hide",
+      "manageFriendSources": "Manage search and friend sources",
+      "utilities": "Utilities",
       "friends": "Friends",
-      "showOnlineStatus": "Show online status",
-      "showOnlineStatusSubtitle": "Let others see when you're online",
-      "readReceipts": "Read receipts",
-      "readReceiptsSubtitle": "Let others know you've read messages",
       "blockList": "Block list",
-      "blockListSubtitle": "Manage blocked users",
-      "reportViolation": "Report violation",
-      "reportViolationSubtitle": "Report inappropriate content"
+      "blockListSubtitle": "Manage blocked users"
     },
     "dataOnDevice": {
       "totalUsed": "Total used",
+      "percentOfPhone": "{{percent}}% of phone storage",
+      "zaloData": "Zalo data",
+      "zCloudDescription": "Free up phone storage by saving photos and videos to zCloud for free",
+      "learnMore": "Learn more",
+      "cache": "Cache",
+      "mediaLargeFiles": "Photos, videos, files larger than 5 MB",
+      "chatData": "Chat data",
       "images": "Images",
       "videos": "Videos",
       "documents": "Documents",
@@ -450,7 +483,8 @@
       "accepted": "Friend request accepted",
       "declined": "Friend request declined",
       "withdrawn": "Friend request withdrawn"
-    }
+    },
+    "viewMore": "VIEW MORE"
   },
   "discover": {
     "title": "Discover",
@@ -501,38 +535,16 @@
       "subtitle": "From only 10,700đ/month, get offer now"
     }
   },
-  "settings": {
-    "title": "Settings",
-    "search": "Search",
-    "theme": {
-      "title": "Appearance",
-      "light": "Light",
-      "dark": "Dark",
-      "system": "System",
-      "chooseTheme": "Choose theme",
-      "chooseThemeDesc": "Choose display theme mode"
+  "search": {
+    "placeholder": "Search",
+    "tabs": {
+      "mine": "Mine",
+      "explore": "Explore"
     },
-    "menu": {
-      "accountSecurity": "Account and security",
-      "privacy": "Privacy",
-      "storage": "Device storage",
-      "backup": "Backup and restore",
-      "notifications": "Notifications",
-      "messages": "Messages",
-      "calls": "Calls",
-      "diary": "Diary",
-      "contacts": "Contacts",
-      "appearance": "Appearance and language",
-      "about": "About Zalo",
-      "support": "Contact support",
-      "switchAccount": "Switch account"
-    },
-    "logout": {
-      "title": "Logout",
-      "confirm": "Are you sure you want to logout?",
-      "button": "Logout",
-      "cancel": "Cancel",
-      "loading": "Logging out..."
-    }
+    "miniAppsUsed": "Mini Apps used",
+    "recentContacts": "Recent contacts",
+    "edit": "Edit",
+    "manageHistory": "Manage search history",
+    "exploreContent": "Explore interesting content"
   }
 }

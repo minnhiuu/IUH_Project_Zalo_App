@@ -165,6 +165,7 @@
   },
   "settings": {
     "title": "Cài đặt",
+    "search": "Tìm kiếm",
     "sections": {
       "security": "BẢO MẬT",
       "data": "DỮ LIỆU",
@@ -237,15 +238,29 @@
       "support": {
         "title": "Liên hệ hỗ trợ",
         "subtitle": "Trợ giúp và hỗ trợ"
-      }
+      },
+      "switchAccount": "Chuyển tài khoản"
     },
     "accountSecurity": {
+      "sections": {
+        "account": "Tài khoản",
+        "security": "Bảo mật",
+        "login": "Đăng nhập"
+      },
+      "personalInfo": "Thông tin cá nhân",
+      "myQR": "Mã QR của tôi",
       "phone": "Số điện thoại",
       "email": "Email",
+      "notLinked": "Chưa liên kết",
+      "securityCheck": "Kiểm tra bảo mật",
+      "securityCheckSubtitle": "3 vấn đề bảo mật cần xử lý",
+      "lockZalo": "Khoá Zalo",
+      "off": "Đang tắt",
+      "twoFactor": "Bảo mật 2 lớp",
+      "twoFactorSubtitle": "Tăng cường bảo mật tài khoản",
+      "loginDevices": "Thiết bị đăng nhập",
       "changePassword": "Đổi mật khẩu",
       "changePasswordSubtitle": "Cập nhật mật khẩu của bạn",
-      "twoFactor": "Xác thực hai bước",
-      "twoFactorSubtitle": "Tăng cường bảo mật tài khoản",
       "biometrics": "Sinh trắc học",
       "biometricsSubtitle": "Vân tay, Face ID",
       "deviceManagement": "Quản lý thiết bị",
@@ -270,21 +285,39 @@
       "deleteError": "Không thể xóa thiết bị"
     },
     "privacy": {
-      "whoCanSeeProfile": "Ai có thể xem hồ sơ của tôi",
-      "whoCanSeePhotos": "Ai có thể xem ảnh của tôi",
+      "sections": {
+        "personal": "Cá nhân",
+        "messagesAndCalls": "Tin nhắn và cuộc gọi",
+        "journal": "Nhật ký",
+        "searchAndFriend": "Nguồn tìm kiếm và kết bạn",
+        "utilities": "Quyền của tiện ích"
+      },
+      "birthday": "Sinh nhật",
+      "showAccessStatus": "Hiện trạng thái truy cập",
+      "on": "Đang bật",
+      "off": "Đang tắt",
+      "showSeenStatus": "Hiện trạng thái \"Đã xem\"",
+      "allowMessaging": "Cho phép nhắn tin",
       "everyone": "Mọi người",
+      "allowCalls": "Cho phép gọi điện",
+      "friendsAndContacted": "Bạn bè và người lạ từng liên hệ",
+      "allowViewAndComment": "Cho phép xem và bình luận",
+      "blockAndHide": "Chặn và ẩn",
+      "manageFriendSources": "Quản lý nguồn tìm kiếm và kết bạn",
+      "utilities": "Tiện ích",
       "friends": "Bạn bè",
-      "showOnlineStatus": "Hiển thị trạng thái online",
-      "showOnlineStatusSubtitle": "Cho phép người khác thấy bạn đang online",
-      "readReceipts": "Thông báo đã đọc",
-      "readReceiptsSubtitle": "Cho phép người khác biết bạn đã đọc tin nhắn",
       "blockList": "Danh sách chặn",
-      "blockListSubtitle": "Quản lý người dùng bị chặn",
-      "reportViolation": "Báo cáo vi phạm",
-      "reportViolationSubtitle": "Báo cáo nội dung không phù hợp"
+      "blockListSubtitle": "Quản lý người dùng bị chặn"
     },
     "dataOnDevice": {
       "totalUsed": "Tổng dung lượng đã sử dụng",
+      "percentOfPhone": "{{percent}}% dung lượng điện thoại",
+      "zaloData": "Dữ liệu Zalo",
+      "zCloudDescription": "Giải phóng dung lượng điện thoại bằng cách lưu trữ ảnh, video lên zCloud miễn phí",
+      "learnMore": "Tìm hiểu thêm",
+      "cache": "Bộ nhớ đệm",
+      "mediaLargeFiles": "Ảnh, video, file lớn hơn 5 MB",
+      "chatData": "Dữ liệu trò chuyện",
       "images": "Hình ảnh",
       "videos": "Video",
       "documents": "Tài liệu",
@@ -411,7 +444,7 @@
     "messages": "Tin nhắn",
     "contacts": "Danh bạ",
     "discover": "Khám phá",
-    "timeline": "Nhật ký",
+    "timeline": "Tường nhà",
     "profile": "Cá nhân"
   },
   "messages": {
@@ -478,7 +511,8 @@
       "accepted": "Đã chấp nhận lời mời kết bạn",
       "declined": "Đã từ chối lời mời kết bạn",
       "withdrawn": "Đã thu hồi lời mời kết bạn"
-    }
+    },
+    "viewMore": "XEM THÊM"
   },
   "discover": {
     "title": "Khám phá",
@@ -529,38 +563,16 @@
       "subtitle": "Chỉ từ 10.700đ/tháng, nhận ưu đãi ngay"
     }
   },
-  "settings": {
-    "title": "Cài đặt",
-    "search": "Tìm kiếm",
-    "theme": {
-      "title": "Giao diện",
-      "light": "Sáng",
-      "dark": "Tối",
-      "system": "Theo hệ thống",
-      "chooseTheme": "Chọn giao diện",
-      "chooseThemeDesc": "Chọn chế độ giao diện hiển thị"
+  "search": {
+    "placeholder": "Tìm kiếm",
+    "tabs": {
+      "mine": "Của tôi",
+      "explore": "Khám phá"
     },
-    "menu": {
-      "accountSecurity": "Tài khoản và bảo mật",
-      "privacy": "Quyền riêng tư",
-      "storage": "Dữ liệu trên máy",
-      "backup": "Sao lưu và khôi phục",
-      "notifications": "Thông báo",
-      "messages": "Tin nhắn",
-      "calls": "Cuộc gọi",
-      "diary": "Nhật ký",
-      "contacts": "Danh bạ",
-      "appearance": "Giao diện và ngôn ngữ",
-      "about": "Thông tin về Zalo",
-      "support": "Liên hệ hỗ trợ",
-      "switchAccount": "Chuyển tài khoản"
-    },
-    "logout": {
-      "title": "Đăng xuất",
-      "confirm": "Bạn có chắc chắn muốn đăng xuất?",
-      "button": "Đăng xuất",
-      "cancel": "Hủy",
-      "loading": "Đang đăng xuất..."
-    }
+    "miniAppsUsed": "Mini App đã sử dụng",
+    "recentContacts": "Liên hệ đã tìm",
+    "edit": "Sửa",
+    "manageHistory": "Quản lý lịch sử tìm kiếm",
+    "exploreContent": "Khám phá nội dung thú vị"
   }
 }

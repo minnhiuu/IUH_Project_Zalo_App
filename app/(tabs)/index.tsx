@@ -1,7 +1,8 @@
-﻿import { Ionicons } from '@expo/vector-icons'
-import { View, ScrollView, Pressable } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { View, ScrollView, TouchableOpacity, Image } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { Header, Avatar, Text } from '@/components/ui'
+import { Header } from '@/components/ui'
+import { Text } from '@/components/ui/text'
 
 interface Conversation {
   id: string
@@ -18,14 +19,14 @@ const MOCK_CONVERSATIONS: Conversation[] = [
     id: '1',
     name: 'Đào Linh',
     avatar: 'https://i.pravatar.cc/150?img=1',
-    lastMessage: 'Bạn: ma m làm gì v',
+    lastMessage: 'Bạn: ma m lam gi v',
     time: '46 giây'
   },
   {
     id: '2',
     name: 'Nguyễn Duyên',
     avatar: 'https://i.pravatar.cc/150?img=5',
-    lastMessage: 'Bạn hông làm',
+    lastMessage: 'Bạn hong làm',
     time: '49 phút'
   },
   {
@@ -54,7 +55,7 @@ const MOCK_CONVERSATIONS: Conversation[] = [
     id: '6',
     name: 'Phạm Minh Châu',
     avatar: 'https://i.pravatar.cc/150?img=2',
-    lastMessage: 'Trong video record có có nói sơ, mà...',
+    lastMessage: 'Trong video record cô có nói sơ, mà...',
     time: '1 giờ'
   },
   {
@@ -77,7 +78,7 @@ const MOCK_CONVERSATIONS: Conversation[] = [
     id: '9',
     name: 'Nhóm QLDA',
     avatar: 'https://i.pravatar.cc/150?img=12',
-    lastMessage: 'Lê Hồn: t tạo gg doc có j mn làm vô đầy\n✈️ t bài 1, Hùng, Hiếu bài 2, Giáp, Danh bài 3',
+    lastMessage: 'Lê Hồn: t tạo gg doc có j mn làm vô đây',
     time: '4 giờ',
     isGroup: true,
     unread: 5
@@ -88,7 +89,7 @@ export default function MessagesScreen() {
   const { t } = useTranslation()
 
   return (
-    <View className="flex-1 bg-white">
+    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
       {/* Header */}
       <Header
         showSearch
@@ -98,61 +99,69 @@ export default function MessagesScreen() {
       />
 
       {/* Conversations List */}
-      <ScrollView className="flex-1">
+      <ScrollView style={{ flex: 1 }}>
         {MOCK_CONVERSATIONS.map((conversation) => (
-          <Pressable
+          <TouchableOpacity
             key={conversation.id}
-            className="flex-row items-center px-4 py-3 border-b border-gray-100 active:bg-gray-50"
+            activeOpacity={0.7}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+            }}
           >
             {/* Avatar */}
-            <View className="mr-3">
-              <Avatar
-                size="lg"
+            <View style={{ marginRight: 12, position: 'relative' }}>
+              <Image
                 source={{ uri: conversation.avatar }}
-                fallback={
-                  <View className="bg-gray-300 items-center justify-center w-full h-full">
-                    <Text className="text-white font-bold">
-                      {conversation.name[0]}
-                    </Text>
-                  </View>
-                }
+                style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#E5E7EB' }}
               />
               {conversation.isGroup && (
-                <View className="absolute -bottom-1 -right-1 bg-primary rounded-full w-5 h-5 items-center justify-center border-2 border-white">
+                <View style={{
+                  position: 'absolute', bottom: -1, right: -1,
+                  backgroundColor: '#3b82f6', borderRadius: 10,
+                  width: 20, height: 20,
+                  alignItems: 'center', justifyContent: 'center',
+                  borderWidth: 2, borderColor: '#ffffff'
+                }}>
                   <Ionicons name="people" size={10} color="#ffffff" />
                 </View>
               )}
             </View>
 
             {/* Content */}
-            <View className="flex-1 mr-2">
-              <View className="flex-row items-center justify-between mb-1">
-                <Text size="base" weight="semibold" className="flex-1 text-gray-900">
+            <View style={{ flex: 1 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827', flex: 1 }} numberOfLines={1}>
                   {conversation.name}
                 </Text>
-                <Text size="xs" className="text-gray-500">
+                <Text style={{ fontSize: 13, color: '#9ca3af', marginLeft: 8 }}>
                   {conversation.time}
                 </Text>
               </View>
-              <View className="flex-row items-center">
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                 <Text
-                  size="sm"
                   numberOfLines={1}
-                  className="flex-1 text-gray-600"
+                  style={{ flex: 1, fontSize: 14, color: '#6b7280' }}
                 >
                   {conversation.lastMessage}
                 </Text>
                 {/* Unread Badge */}
-                {conversation.unread && (
-                  <View className="ml-2 bg-destructive rounded-full min-w-[20px] h-5 px-1.5 items-center justify-center">
-                    <Text className="text-white text-xs font-bold">
+                {conversation.unread ? (
+                  <View style={{
+                    marginLeft: 8, backgroundColor: '#ef4444',
+                    borderRadius: 10, minWidth: 20, height: 20,
+                    paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center'
+                  }}>
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#ffffff' }}>
                       {conversation.unread}
                     </Text>
                   </View>
-                )}
+                ) : null}
               </View>
             </View>
-          </Pressable>
+          </TouchableOpacity>
         ))}
       </ScrollView>
     </View>

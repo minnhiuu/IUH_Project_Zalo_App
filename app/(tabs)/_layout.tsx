@@ -15,14 +15,14 @@ const TAB_CONFIG = {
   contacts: {
     name: 'contacts',
     titleKey: 'tabs.contacts',
-    icon: 'person-outline',
-    iconFocused: 'person'
+    icon: 'people-outline',
+    iconFocused: 'people'
   },
   discover: {
     name: 'discover',
     titleKey: 'tabs.discover',
-    icon: 'apps-outline',
-    iconFocused: 'apps'
+    icon: 'grid-outline',
+    iconFocused: 'grid'
   },
   timeline: {
     name: 'timeline',

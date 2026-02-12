@@ -1,206 +1,245 @@
-﻿import { Ionicons } from '@expo/vector-icons'
-import { View, ScrollView, Pressable } from 'react-native'
-import { useState } from 'react'
+import { Ionicons } from '@expo/vector-icons'
+import { View, SectionList, TouchableOpacity, Image } from 'react-native'
+import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
-import { Header, Avatar, Text } from '@/components/ui'
+import { Header } from '@/components/ui'
+import { Text } from '@/components/ui/text'
 
 interface Contact {
   id: string
   name: string
   avatar: string
-  initial: string
 }
 
 const MOCK_CONTACTS: Contact[] = [
-  {
-    id: '1',
-    name: 'Ba',
-    avatar: 'https://i.pravatar.cc/150?img=1',
-    initial: 'B'
-  },
-  {
-    id: '2',
-    name: 'Bèo Photocopy - Printing',
-    avatar: 'https://i.pravatar.cc/150?img=2',
-    initial: 'B'
-  },
-  {
-    id: '3',
-    name: 'Boconganh',
-    avatar: 'https://i.pravatar.cc/150?img=3',
-    initial: 'B'
-  },
-  {
-    id: '4',
-    name: 'Bong',
-    avatar: 'https://i.pravatar.cc/150?img=4',
-    initial: 'B'
-  },
-  {
-    id: '5',
-    name: 'Bùi Thu Thảo',
-    avatar: 'https://i.pravatar.cc/150?img=5',
-    initial: 'B'
-  }
+  { id: '1', name: 'Ba', avatar: 'https://i.pravatar.cc/150?img=1' },
+  { id: '2', name: 'Bảo Photocopy - Printing', avatar: 'https://i.pravatar.cc/150?img=2' },
+  { id: '3', name: 'Boconganh', avatar: 'https://i.pravatar.cc/150?img=3' },
+  { id: '4', name: 'Bong', avatar: 'https://i.pravatar.cc/150?img=4' },
+  { id: '5', name: 'Bùi Thu Thảo', avatar: 'https://i.pravatar.cc/150?img=5' },
+  { id: '6', name: 'Châu Minh', avatar: 'https://i.pravatar.cc/150?img=6' },
+  { id: '7', name: 'Duy Hoàng', avatar: 'https://i.pravatar.cc/150?img=7' },
+  { id: '8', name: 'Đào Linh', avatar: 'https://i.pravatar.cc/150?img=8' },
+  { id: '9', name: 'Hùng Nguyễn', avatar: 'https://i.pravatar.cc/150?img=9' },
+  { id: '10', name: 'Kiên Trần', avatar: 'https://i.pravatar.cc/150?img=10' },
 ]
+
+function groupByLetter(contacts: Contact[]): { title: string; data: Contact[] }[] {
+  const groups: Record<string, Contact[]> = {}
+  contacts.forEach((c) => {
+    const letter = c.name.charAt(0).toUpperCase()
+    if (!groups[letter]) groups[letter] = []
+    groups[letter].push(c)
+  })
+  return Object.entries(groups)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([title, data]) => ({ title, data }))
+}
+
+const ALPHABET = ['A','B','C','Đ','G','H','K','L','M','N','O','P','Q','R','S','T','V','X','Y','Z']
 
 export default function ContactsScreen() {
   const { t } = useTranslation()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'friends' | 'groups' | 'oa'>('friends')
+  const [activeFilter, setActiveFilter] = useState<'all' | 'new' | 'recent'>('all')
 
-  const handleAddFriend = () => {
-    // Navigate to add friend screen
-    console.log('Add friend')
-  }
+  const sections = useMemo(() => groupByLetter(MOCK_CONTACTS), [])
+
+  const tabs = [
+    { key: 'friends' as const, label: t('contacts.tabs.friends') },
+    { key: 'groups' as const, label: t('contacts.tabs.groups') },
+    { key: 'oa' as const, label: 'OA' },
+  ]
+
+  const filters = [
+    { key: 'all' as const, label: t('contacts.filters.all'), count: 135 },
+    { key: 'new' as const, label: t('contacts.filters.new'), count: 1 },
+    { key: 'recent' as const, label: t('contacts.filters.recent'), count: 8 },
+  ]
 
   return (
-    <View className="flex-1 bg-white">
-      {/* Header with Add Friend button */}
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      {/* Header */}
       <Header
         showSearch
         searchPlaceholder={t('contacts.search')}
         showAddButton
-        onAddPress={handleAddFriend}
+        onAddPress={() => {}}
       />
 
       {/* Tabs */}
-      <View className="flex-row border-b border-border bg-white">
-        <Pressable
-          onPress={() => setActiveTab('friends')}
-          className={`flex-1 py-3 items-center ${
-            activeTab === 'friends' ? 'border-b-2 border-primary' : ''
-          }`}
-        >
-          <Text
-            weight="medium"
-            variant={activeTab === 'friends' ? 'primary' : 'muted'}
+      <View style={{ flexDirection: 'row', borderBottomWidth: 0.5, borderBottomColor: '#E5E7EB' }}>
+        {tabs.map((tab) => (
+          <TouchableOpacity
+            key={tab.key}
+            onPress={() => setActiveTab(tab.key)}
+            activeOpacity={0.7}
+            style={{
+              flex: 1,
+              paddingVertical: 12,
+              alignItems: 'center',
+              borderBottomWidth: activeTab === tab.key ? 2 : 0,
+              borderBottomColor: '#0068FF',
+            }}
           >
-            {t('contacts.tabs.friends')}
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setActiveTab('groups')}
-          className={`flex-1 py-3 items-center ${
-            activeTab === 'groups' ? 'border-b-2 border-primary' : ''
-          }`}
-        >
-          <Text
-            weight="medium"
-            variant={activeTab === 'groups' ? 'primary' : 'muted'}
-          >
-            {t('contacts.tabs.groups')}
-          </Text>
-        </Pressable>
-        <Pressable
-          onPress={() => setActiveTab('oa')}
-          className={`flex-1 py-3 items-center ${
-            activeTab === 'oa' ? 'border-b-2 border-primary' : ''
-          }`}
-        >
-          <Text
-            weight="medium"
-            variant={activeTab === 'oa' ? 'primary' : 'muted'}
-          >
-            {t('contacts.tabs.oa')}
-          </Text>
-        </Pressable>
+            <Text
+              style={{
+                fontSize: 15,
+                fontWeight: activeTab === tab.key ? '600' : '400',
+                color: activeTab === tab.key ? '#0068FF' : '#6b7280',
+              }}
+            >
+              {tab.label}
+            </Text>
+          </TouchableOpacity>
+        ))}
       </View>
 
       {/* Quick Actions */}
-      <View className="bg-white">
-        <Pressable 
-          className="flex-row items-center px-4 py-3 active:bg-gray-100"
+      <View>
+        <TouchableOpacity
           onPress={() => router.push('/friend-requests')}
+          activeOpacity={0.7}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+            borderBottomWidth: 0.5,
+            borderBottomColor: '#f0f0f0',
+          }}
         >
-          <View className="w-12 h-12 bg-primary rounded-full items-center justify-center mr-3">
-            <Ionicons name="person-add" size={24} color="#ffffff" />
+          <View style={{
+            width: 48, height: 48, borderRadius: 24,
+            backgroundColor: '#E8F3FF',
+            alignItems: 'center', justifyContent: 'center',
+            marginRight: 12,
+          }}>
+            <Ionicons name="person-add" size={22} color="#0068FF" />
           </View>
-          <Text size="base" weight="medium">
-            {t('contacts.friendRequest')} <Text variant="muted">(10)</Text>
-          </Text>
-        </Pressable>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>
+              {t('contacts.friendRequest')}
+            </Text>
+          </View>
+          <Text style={{ fontSize: 14, color: '#6b7280' }}>(10)</Text>
+        </TouchableOpacity>
 
-        <Pressable className="flex-row items-center px-4 py-3 active:bg-gray-100">
-          <View className="w-12 h-12 bg-primary rounded-full items-center justify-center mr-3">
-            <Ionicons name="gift" size={24} color="#ffffff" />
+        <TouchableOpacity
+          activeOpacity={0.7}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+            borderBottomWidth: 6,
+            borderBottomColor: '#F3F4F6',
+          }}
+        >
+          <View style={{
+            width: 48, height: 48, borderRadius: 24,
+            backgroundColor: '#FFF7E6',
+            alignItems: 'center', justifyContent: 'center',
+            marginRight: 12,
+          }}>
+            <Ionicons name="gift" size={22} color="#F59E0B" />
           </View>
-          <Text size="base" weight="medium">
-            {t('contacts.birthday')}
-          </Text>
-        </Pressable>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>
+              {t('contacts.birthday')}
+            </Text>
+          </View>
+        </TouchableOpacity>
       </View>
 
-      {/* Filters - Fixed width to prevent overflow */}
-      <View className="bg-white px-4 py-3 border-b border-border">
-        <View className="flex-row gap-2">
-          <Pressable className="flex-1 py-2 rounded-full bg-muted active:bg-gray-300 items-center">
-            <Text size="sm" weight="medium" numberOfLines={1}>
-              {t('contacts.filters.all')} 135
+      {/* Filters */}
+      <View style={{
+        flexDirection: 'row',
+        paddingHorizontal: 16,
+        paddingVertical: 10,
+        gap: 8,
+        borderBottomWidth: 0.5,
+        borderBottomColor: '#f0f0f0',
+      }}>
+        {filters.map((filter) => (
+          <TouchableOpacity
+            key={filter.key}
+            onPress={() => setActiveFilter(filter.key)}
+            activeOpacity={0.7}
+            style={{
+              flex: 1,
+              paddingVertical: 8,
+              borderRadius: 20,
+              backgroundColor: activeFilter === filter.key ? '#E8F3FF' : '#F3F4F6',
+              alignItems: 'center',
+            }}
+          >
+            <Text style={{
+              fontSize: 13,
+              fontWeight: '500',
+              color: activeFilter === filter.key ? '#0068FF' : '#6b7280',
+            }}>
+              {filter.label} {filter.count}
             </Text>
-          </Pressable>
-          <Pressable className="flex-1 py-2 rounded-full border border-border active:bg-gray-100 items-center">
-            <Text size="sm" variant="muted" numberOfLines={1}>
-              {t('contacts.filters.new')} 1
-            </Text>
-          </Pressable>
-          <Pressable className="flex-1 py-2 rounded-full border border-border active:bg-gray-100 items-center">
-            <Text size="sm" variant="muted" numberOfLines={1}>
-              {t('contacts.filters.recent')} 8
-            </Text>
-          </Pressable>
-        </View>
+          </TouchableOpacity>
+        ))}
       </View>
 
-      {/* Contacts List with Alphabetical Index */}
-      <View className="flex-1 flex-row">
-        <ScrollView className="flex-1">
-          {/* Section Header */}
-          <View className="px-4 py-2 bg-muted">
-            <Text weight="bold" variant="muted">
-              B
-            </Text>
-          </View>
-
-          {/* Contacts */}
-          {MOCK_CONTACTS.map((contact) => (
-            <Pressable
-              key={contact.id}
-              className="flex-row items-center px-4 py-3 active:bg-gray-100"
-            >
-              <Avatar
-                size="md"
-                source={{ uri: contact.avatar }}
-                fallback={
-                  <View className="bg-primary items-center justify-center w-full h-full">
-                    <Text className="text-white font-bold">
-                      {contact.name[0]}
-                    </Text>
-                  </View>
-                }
-              />
-              <Text size="base" weight="medium" className="flex-1 ml-3">
-                {contact.name}
+      {/* Contacts List + Alphabet */}
+      <View style={{ flex: 1, flexDirection: 'row' }}>
+        <SectionList
+          sections={sections}
+          style={{ flex: 1 }}
+          keyExtractor={(item) => item.id}
+          stickySectionHeadersEnabled
+          showsVerticalScrollIndicator={false}
+          renderSectionHeader={({ section }) => (
+            <View style={{ paddingHorizontal: 16, paddingVertical: 6, backgroundColor: '#F9FAFB' }}>
+              <Text style={{ fontSize: 14, fontWeight: '600', color: '#6b7280' }}>
+                {section.title}
               </Text>
-              <Pressable className="p-2">
-                <Ionicons name="call-outline" size={24} color="#0068FF" />
-              </Pressable>
-              <Pressable className="p-2">
-                <Ionicons name="videocam-outline" size={24} color="#0068FF" />
-              </Pressable>
-            </Pressable>
-          ))}
-        </ScrollView>
+            </View>
+          )}
+          renderItem={({ item }) => (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 16,
+                paddingVertical: 10,
+                backgroundColor: '#fff',
+              }}
+            >
+              <Image
+                source={{ uri: item.avatar }}
+                style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#E5E7EB', marginRight: 12 }}
+              />
+              <Text style={{ flex: 1, fontSize: 16, color: '#111827' }} numberOfLines={1}>
+                {item.name}
+              </Text>
+              <View style={{ flexDirection: 'row', gap: 12 }}>
+                <TouchableOpacity style={{ padding: 4 }}>
+                  <Ionicons name="call-outline" size={22} color="#0068FF" />
+                </TouchableOpacity>
+                <TouchableOpacity style={{ padding: 4 }}>
+                  <Ionicons name="videocam-outline" size={22} color="#0068FF" />
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          )}
+        />
 
-        {/* Alphabetical Index */}
-        <View className="justify-center items-center px-2 py-4">
-          {['B', 'C', 'D', 'Đ', 'F', 'H', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'T', 'V', 'X', 'Y', 'Z'].map((letter) => (
-            <Pressable key={letter} className="py-0.5">
-              <Text size="xs" variant={letter === 'B' ? 'primary' : 'muted'} weight="medium">
+        {/* Alphabet Sidebar */}
+        <View style={{ justifyContent: 'center', paddingHorizontal: 4, paddingVertical: 4 }}>
+          {ALPHABET.map((letter) => (
+            <TouchableOpacity key={letter} style={{ paddingVertical: 1.5 }}>
+              <Text style={{ fontSize: 10, fontWeight: '500', color: '#6b7280', textAlign: 'center' }}>
                 {letter}
               </Text>
-            </Pressable>
+            </TouchableOpacity>
           ))}
         </View>
       </View>

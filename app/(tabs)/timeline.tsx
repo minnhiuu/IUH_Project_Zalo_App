@@ -1,8 +1,10 @@
-﻿import { Ionicons } from '@expo/vector-icons'
-import { View, ScrollView, Pressable, Image } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { ScrollView, Image, View } from 'react-native'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Header, Avatar, Text } from '@/components/ui'
+import { Header, Avatar, Text, Box, VStack, HStack, Card } from '@/components/ui'
+import { AvatarImage} from '@/components/ui/avatar'
+import { Pressable } from '@/components/ui/pressable'
 
 interface Story {
   id: string
@@ -25,19 +27,19 @@ interface Post {
 const MOCK_STORIES: Story[] = [
   {
     id: '1',
-    name: 'Thêm khoảnh khắc',
+    name: 'Th�m kho?nh kh?c',
     avatar: '',
     hasStory: false
   },
   {
     id: '2',
-    name: 'Đào Linh',
+    name: '��o Linh',
     avatar: 'https://i.pravatar.cc/150?img=10',
     hasStory: true
   },
   {
     id: '3',
-    name: 'Nguyễn Duyên',
+    name: 'Nguy?n Duy�n',
     avatar: 'https://i.pravatar.cc/150?img=11',
     hasStory: true
   }
@@ -46,20 +48,20 @@ const MOCK_STORIES: Story[] = [
 const MOCK_POSTS: Post[] = [
   {
     id: '1',
-    author: 'Đào Linh',
+    author: '��o Linh',
     avatar: 'https://i.pravatar.cc/150?img=10',
-    time: '2 giờ trước',
-    content: 'Năm mới an khang thịnh vượng mọi người nhé! 🎉',
+    time: '2 gi? tr�?c',
+    content: 'N�m m?i an khang th?nh v�?ng m?i ng�?i nh�! ??',
     images: ['https://picsum.photos/400/300?random=1'],
     likes: 42,
     comments: 8
   },
   {
     id: '2',
-    author: 'Nguyễn Duyên',
+    author: 'Nguy?n Duy�n',
     avatar: 'https://i.pravatar.cc/150?img=11',
-    time: '4 giờ trước',
-    content: 'Hôm nay thời tiết đẹp quá!',
+    time: '4 gi? tr�?c',
+    content: 'H�m nay th?i ti?t �?p qu�!',
     likes: 23,
     comments: 5
   }
@@ -70,7 +72,7 @@ export default function TimelineScreen() {
   const [activeTab, setActiveTab] = useState<'interested' | 'all'>('interested')
 
   return (
-    <View className="flex-1 bg-white">
+    <Box style={{ flex: 1, backgroundColor: '#ffffff' }}>
       {/* Header */}
       <Header
         showSearch
@@ -78,157 +80,163 @@ export default function TimelineScreen() {
       />
 
       {/* Tabs */}
-      <View className="flex-row border-b border-border bg-white">
+      <HStack style={{ borderBottomWidth: 1, borderBottomColor: '#e5e7eb', backgroundColor: '#ffffff' }}>
         <Pressable
           onPress={() => setActiveTab('interested')}
-          className={`flex-1 py-3 items-center ${
-            activeTab === 'interested' ? 'border-b-2 border-primary' : ''
-          }`}
+          style={[
+            { flex: 1, paddingVertical: 12, alignItems: 'center' },
+            activeTab === 'interested' && { borderBottomWidth: 2, borderBottomColor: '#3b82f6' }
+          ]}
         >
           <Text
-            weight="medium"
-            variant={activeTab === 'interested' ? 'primary' : 'muted'}
+            bold
+            style={{ color: activeTab === 'interested' ? '#3b82f6' : '#6b7280' }}
           >
             Quan tâm
           </Text>
         </Pressable>
         <Pressable
           onPress={() => setActiveTab('all')}
-          className={`flex-1 py-3 items-center ${
-            activeTab === 'all' ? 'border-b-2 border-primary' : ''
-          }`}
+          style={[
+            { flex: 1, paddingVertical: 12, alignItems: 'center' },
+            activeTab === 'all' && { borderBottomWidth: 2, borderBottomColor: '#3b82f6' }
+          ]}
         >
           <Text
-            weight="medium"
-            variant={activeTab === 'all' ? 'primary' : 'muted'}
+            bold
+            style={{ color: activeTab === 'all' ? '#3b82f6' : '#6b7280' }}
           >
             Khác
           </Text>
         </Pressable>
-      </View>
+      </HStack>
 
-      <ScrollView className="flex-1 bg-gray-50">
+      <ScrollView style={{ flex: 1, backgroundColor: '#f9fafb' }}>
         {/* Banner */}
-        <Pressable className="bg-gradient-to-r from-red-500 to-red-600 p-4 mx-4 mt-4 rounded-xl active:opacity-80">
-          <Text className="text-white font-bold text-lg">
+        <Card style={{ marginHorizontal: 16, marginTop: 16, borderRadius: 12, backgroundColor: '#ef4444', padding: 16 }}>
+          <Text bold style={{ color: '#ffffff', fontSize: 18 }}>
             Cùng Zalo đón Tết
           </Text>
-          <Text className="text-white text-sm mt-1">
+          <Text size="sm" style={{ color: '#ffffff', marginTop: 4 }}>
             Khám phá những trải nghiệm Tết thú vị
           </Text>
-        </Pressable>
+        </Card>
 
         {/* Create Post Section */}
-        <View className="bg-white mt-3 p-4">
-          <Text weight="semibold" size="base" className="mb-3">
+        <Card style={{ marginTop: 12, padding: 16 }}>
+          <Text bold size="md" style={{ marginBottom: 12 }}>
             Tết của bạn thế nào?
           </Text>
           <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-            <Pressable className="items-center mr-4">
-              <View className="w-16 h-16 bg-primary/10 rounded-full items-center justify-center mb-2">
+            <Pressable style={{ alignItems: 'center', marginRight: 16 }}>
+              <Box style={{ width: 64, height: 64, backgroundColor: '#e0f2fe', borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
                 <Ionicons name="image-outline" size={28} color="#0068FF" />
-              </View>
-              <Text size="xs" variant="muted">
+              </Box>
+              <Text size="xs" style={{ color: '#6b7280' }}>
                 Ảnh/Video
               </Text>
             </Pressable>
-            <Pressable className="items-center mr-4">
-              <View className="w-16 h-16 bg-primary/10 rounded-full items-center justify-center mb-2">
+            <Pressable style={{ alignItems: 'center', marginRight: 16 }}>
+              <Box style={{ width: 64, height: 64, backgroundColor: '#e0f2fe', borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
                 <Ionicons name="images-outline" size={28} color="#0068FF" />
-              </View>
-              <Text size="xs" variant="muted">
+              </Box>
+              <Text size="xs" style={{ color: '#6b7280' }}>
                 Album
               </Text>
             </Pressable>
-            <Pressable className="items-center mr-4">
-              <View className="w-16 h-16 bg-primary/10 rounded-full items-center justify-center mb-2">
+            <Pressable style={{ alignItems: 'center', marginRight: 16 }}>
+              <Box style={{ width: 64, height: 64, backgroundColor: '#e0f2fe', borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
                 <Ionicons name="happy-outline" size={28} color="#0068FF" />
-              </View>
-              <Text size="xs" variant="muted">
+              </Box>
+              <Text size="xs" style={{ color: '#6b7280' }}>
                 Cảm xúc 24h
               </Text>
             </Pressable>
           </ScrollView>
-        </View>
+        </Card>
 
         {/* Stories */}
-        <View className="bg-white mt-3 py-3">
-          <Text weight="semibold" size="base" className="px-4 mb-3">
+        <Card style={{ marginTop: 12, paddingVertical: 12 }}>
+          <Text bold size="md" style={{ paddingHorizontal: 16, marginBottom: 12 }}>
             Khoảnh khắc
           </Text>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="px-4">
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingHorizontal: 16 }}>
             {MOCK_STORIES.map((story) => (
-              <Pressable key={story.id} className="items-center mr-4 w-20">
+              <Pressable key={story.id} style={{ alignItems: 'center', marginRight: 16, width: 80 }}>
                 {story.hasStory ? (
-                  <View className="w-16 h-16 rounded-full border-2 border-primary p-0.5 mb-2">
-                    <Avatar size="md" source={{ uri: story.avatar }} />
-                  </View>
+                  <Box style={{ width: 64, height: 64, borderRadius: 32, borderWidth: 2, borderColor: '#3b82f6', padding: 2, marginBottom: 8 }}>
+                    <Avatar size="md">
+                      <AvatarImage source={{ uri: story.avatar }} />
+                    </Avatar>
+                  </Box>
                 ) : (
-                  <View className="w-16 h-16 bg-primary/10 rounded-full items-center justify-center mb-2">
+                  <Box style={{ width: 64, height: 64, backgroundColor: '#e0f2fe', borderRadius: 32, alignItems: 'center', justifyContent: 'center', marginBottom: 8 }}>
                     <Ionicons name="add" size={32} color="#0068FF" />
-                  </View>
+                  </Box>
                 )}
-                <Text size="xs" numberOfLines={2} className="text-center">
+                <Text size="xs" numberOfLines={2} style={{ textAlign: 'center' }}>
                   {story.name}
                 </Text>
               </Pressable>
             ))}
           </ScrollView>
-        </View>
+        </Card>
 
         {/* Posts Feed */}
         {MOCK_POSTS.map((post) => (
-          <View key={post.id} className="bg-white mt-3 pb-3">
+          <Card key={post.id} style={{ marginTop: 12, paddingBottom: 12 }}>
             {/* Post Header */}
-            <View className="flex-row items-center px-4 py-3">
-              <Avatar size="md" source={{ uri: post.avatar }} />
-              <View className="flex-1 ml-3">
-                <Text weight="medium">{post.author}</Text>
-                <Text variant="muted" size="xs">
+            <HStack style={{ paddingHorizontal: 16, paddingVertical: 12, alignItems: 'center' }} space="md">
+              <Avatar size="md">
+                <AvatarImage source={{ uri: post.avatar }} />
+              </Avatar>
+              <VStack style={{ flex: 1 }} space="xs">
+                <Text bold>{post.author}</Text>
+                <Text style={{ color: '#6b7280' }} size="xs">
                   {post.time}
                 </Text>
-              </View>
+              </VStack>
               <Pressable>
                 <Ionicons name="ellipsis-horizontal" size={20} color="#8c8c8c" />
               </Pressable>
-            </View>
+            </HStack>
 
             {/* Post Content */}
-            <Text className="px-4 mb-3">{post.content}</Text>
+            <Text style={{ paddingHorizontal: 16, marginBottom: 12 }}>{post.content}</Text>
 
             {/* Post Images */}
             {post.images && post.images.length > 0 && (
               <Image
                 source={{ uri: post.images[0] }}
-                className="w-full h-64"
+                style={{ width: '100%', height: 256 }}
                 resizeMode="cover"
               />
             )}
 
             {/* Post Actions */}
-            <View className="flex-row items-center px-4 mt-3 pt-3 border-t border-border">
-              <Pressable className="flex-row items-center flex-1">
+            <HStack style={{ paddingHorizontal: 16, marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#e5e7eb', alignItems: 'center' }}>
+              <Pressable style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                 <Ionicons name="heart-outline" size={20} color="#8c8c8c" />
-                <Text variant="muted" size="sm" className="ml-2">
+                <Text style={{ color: '#6b7280', marginLeft: 8 }} size="sm">
                   {post.likes}
                 </Text>
               </Pressable>
-              <Pressable className="flex-row items-center flex-1">
+              <Pressable style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                 <Ionicons name="chatbubble-outline" size={20} color="#8c8c8c" />
-                <Text variant="muted" size="sm" className="ml-2">
+                <Text style={{ color: '#6b7280', marginLeft: 8 }} size="sm">
                   {post.comments}
                 </Text>
               </Pressable>
-              <Pressable className="flex-row items-center flex-1">
+              <Pressable style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
                 <Ionicons name="share-outline" size={20} color="#8c8c8c" />
-                <Text variant="muted" size="sm" className="ml-2">
+                <Text style={{ color: '#6b7280', marginLeft: 8 }} size="sm">
                   Chia sẻ
                 </Text>
               </Pressable>
-            </View>
-          </View>
+            </HStack>
+          </Card>
         ))}
       </ScrollView>
-    </View>
+    </Box>
   )
 }

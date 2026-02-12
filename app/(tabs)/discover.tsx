@@ -1,7 +1,8 @@
-﻿import { Ionicons } from '@expo/vector-icons'
-import { View, ScrollView, Pressable } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { ScrollView } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { Header, Text } from '@/components/ui'
+import { Header, Text, Box, VStack, HStack, Divider } from '@/components/ui'
+import { Pressable } from '@/components/ui/pressable'
 
 interface Service {
   id: string
@@ -15,44 +16,44 @@ const SERVICES: Service[] = [
   {
     id: '1',
     title: 'Zalo Video',
-    subtitle: '16 điểm pháo hoa đêm Giao thừa ở...',
+    subtitle: '16 �i?m ph�o hoa ��m Giao th?a ?...',
     icon: 'play-circle',
     badge: 'red'
   },
   {
     id: '2',
-    title: 'Trang tin tổng hợp',
+    title: 'Trang tin t?ng h?p',
     subtitle: '',
     icon: 'newspaper'
   },
   {
     id: '3',
     title: 'Game Center',
-    subtitle: 'Tam Quốc Đông Khởi, Tiên Nghịch',
+    subtitle: 'Tam Qu?c ��ng Kh?i, Ti�n Ngh?ch',
     icon: 'game-controller'
   },
   {
     id: '4',
-    title: 'Dịch vụ đời sống',
-    subtitle: 'Nạp điện thoại, Tra hóa đơn, ...',
+    title: 'D?ch v? �?i s?ng',
+    subtitle: 'N?p �i?n tho?i, Tra h�a ��n, ...',
     icon: 'calendar'
   },
   {
     id: '5',
-    title: 'Tiện ích tài chính',
-    subtitle: 'Vay TPBank, Mở thẻ VIB, Giá vàng, ...',
+    title: 'Ti?n �ch t�i ch�nh',
+    subtitle: 'Vay TPBank, M? th? VIB, Gi� v�ng, ...',
     icon: 'wallet'
   },
   {
     id: '6',
-    title: 'Tìm việc',
-    subtitle: 'Tuyển dụng và tìm việc làm gần bạn',
+    title: 'T?m vi?c',
+    subtitle: 'Tuy?n d?ng v� t?m vi?c l�m g?n b?n',
     icon: 'briefcase'
   },
   {
     id: '7',
-    title: 'Trợ lý Công Dân Số',
-    subtitle: 'AI hỗi đáp thủ tục hành chính công',
+    title: 'Tr? l? C�ng D�n S?',
+    subtitle: 'AI h?i ��p th? t?c h�nh ch�nh c�ng',
     icon: 'cube'
   },
   {
@@ -67,7 +68,7 @@ export default function DiscoverScreen() {
   const { t } = useTranslation()
 
   return (
-    <View className="flex-1 bg-white">
+    <Box style={{ flex: 1, backgroundColor: '#ffffff' }}>
       {/* Header */}
       <Header
         showSearch
@@ -76,31 +77,31 @@ export default function DiscoverScreen() {
       />
 
       {/* Services List */}
-      <ScrollView className="flex-1">
+      <ScrollView style={{ flex: 1 }}>
         {SERVICES.map((service, index) => (
-          <View key={service.id}>
-            <Pressable className="flex-row items-center px-4 py-4 active:bg-gray-100">
+          <VStack key={service.id} space="xs">
+            <Pressable style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 16 }}>
               {/* Icon */}
-              <View className="w-12 h-12 bg-primary/10 rounded-lg items-center justify-center mr-3">
+              <Box style={{ width: 48, height: 48, backgroundColor: '#e0f2fe', borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
                 <Ionicons name={service.icon as any} size={28} color="#0068FF" />
-              </View>
+              </Box>
 
               {/* Content */}
-              <View className="flex-1">
-                <View className="flex-row items-center gap-2">
-                  <Text size="base" weight="medium">
+              <VStack style={{ flex: 1 }} space="xs">
+                <HStack space="sm" style={{ alignItems: 'center' }}>
+                  <Text size="md" bold>
                     {service.title}
                   </Text>
                   {service.badge === 'red' && (
-                    <View className="w-2 h-2 bg-destructive rounded-full" />
+                    <Box style={{ width: 8, height: 8, backgroundColor: '#ef4444', borderRadius: 4 }} />
                   )}
-                </View>
+                </HStack>
                 {service.subtitle && (
-                  <Text variant="muted" size="sm" numberOfLines={1} className="mt-1">
+                  <Text style={{ color: '#6b7280', marginTop: 4 }} size="sm" numberOfLines={1}>
                     {service.subtitle}
                   </Text>
                 )}
-              </View>
+              </VStack>
 
               {/* Arrow */}
               <Ionicons name="chevron-forward" size={20} color="#8c8c8c" />
@@ -108,11 +109,11 @@ export default function DiscoverScreen() {
 
             {/* Divider */}
             {index < SERVICES.length - 1 && (
-              <View className="h-px bg-border ml-16" />
+              <Divider style={{ marginLeft: 64 }} />
             )}
-          </View>
+          </VStack>
         ))}
       </ScrollView>
-    </View>
+    </Box>
   )
 }

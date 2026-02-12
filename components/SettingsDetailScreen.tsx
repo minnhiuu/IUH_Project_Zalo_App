@@ -1,7 +1,7 @@
 import React from 'react'
-import { Box, ScrollView } from '@gluestack-ui/themed'
+import { ScrollView } from 'react-native'
 import { useRouter } from 'expo-router'
-import { Header } from '@/components/ui'
+import { Box, Header } from '@/components/ui'
 
 interface SettingsDetailScreenProps {
   title: string
@@ -12,8 +12,8 @@ export default function SettingsDetailScreen({ title, children }: SettingsDetail
   const router = useRouter()
 
   return (
-    <Box flex={1} bg='$backgroundLight100'>
-      <Header title={title} leftIcon='arrow-back' onLeftPress={() => router.back()} />
+    <Box className="flex-1 bg-gray-100">
+      <Header title={title} showBackButton={true} onBackPress={() => router.back()} />
       <ScrollView showsVerticalScrollIndicator={false}>{children}</ScrollView>
     </Box>
   )
