@@ -1,7 +1,7 @@
+import { SearchTopBar } from '@/components'
 import React from 'react'
 import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useAuthStore } from '@/store'
@@ -79,24 +79,20 @@ export default function ProfileScreen() {
   return (
     <View className='flex-1 bg-gray-100'>
       {/* Header with Gradient covering status bar */}
-      <LinearGradient
-        colors={['#0068FF', '#0055DD']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{ paddingTop: insets.top }}
-      >
-        <View className='flex-row items-center justify-between px-4 py-2.5'>
-          <TouchableOpacity className='mr-3'>
-            <Ionicons name='search' size={24} color='white' />
-          </TouchableOpacity>
-          <View className='flex-1'>
-            <Text className='text-white text-base opacity-90'>Tìm kiếm</Text>
+      <SearchTopBar
+        searchQuery=''
+        setSearchQuery={() => {}}
+        placeholder='Tìm kiếm'
+        onPress={() => router.push('/search')}
+        showQr={false}
+        rightAction={
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => console.log('Settings')}>
+              <Ionicons name='settings-outline' size={24} color='white' />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity>
-            <Ionicons name='settings-outline' size={24} color='white' />
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
+        }
+      />
 
       <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
         {/* Profile Header */}

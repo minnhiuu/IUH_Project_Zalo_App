@@ -162,5 +162,29 @@
         "back": "Quay lại"
       }
     }
+  },
+  "search": {
+    "placeholder": "Tìm kiếm",
+    "tabs": {
+      "all": "Tất cả",
+      "contacts": "Liên hệ",
+      "messages": "Tin nhắn",
+      "discover": "Khám phá"
+    },
+    "sections": {
+      "contacts": "Liên hệ",
+      "messages": "Tin nhắn",
+      "discover": "Khám phá"
+    },
+    "noResults": "Không tìm thấy kết quả cho \"{{query}}\"",
+    "recent": {
+      "title": "Tìm kiếm gần đây",
+      "clearAll": "Xóa tất cả"
+    },
+    "seeMore": "Xem thêm",
+    "action": {
+      "add": "KẾT BẠN",
+      "accept": "ĐỒNG Ý"
+    }
   }
 }

@@ -175,6 +175,14 @@ export default function RootLayout() {
                     <Stack.Screen name='(tabs)' />
                     <Stack.Screen name='auth' />
                     <Stack.Screen
+                      name='search'
+                      options={{
+                        animation: 'fade',
+                        headerShown: false,
+                        presentation: 'transparentModal'
+                      }}
+                    />
+                    <Stack.Screen
                       name='qr/index'
                       options={{
                         presentation: 'modal',

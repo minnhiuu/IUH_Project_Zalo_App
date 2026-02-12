@@ -1,7 +1,6 @@
+import { Container, SearchTopBar } from '@/components'
 import React, { useEffect } from 'react'
 import { View, Text, TouchableOpacity, Image, FlatList } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, Href, useLocalSearchParams } from 'expo-router'
 import Toast from 'react-native-toast-message'
@@ -325,7 +324,6 @@ export default function MessagesScreen() {
   const router = useRouter()
   const { t } = useTranslation()
   const params = useLocalSearchParams()
-  const insets = useSafeAreaInsets()
 
   useEffect(() => {
     if (params.qrLoginSuccess === 'true') {
@@ -346,37 +344,25 @@ export default function MessagesScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'white' }}>
+    <Container safeAreaEdges={[]}>
       {/* Header with Gradient covering status bar */}
-      <LinearGradient
-        colors={['#0068FF', '#0055DD']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{ paddingTop: insets.top }}
-      >
-        {/* Search Bar */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: 16,
-            paddingVertical: 10
-          }}
-        >
-          <TouchableOpacity style={{ marginRight: 12 }}>
-            <Ionicons name='search' size={24} color='white' />
-          </TouchableOpacity>
-          <View style={{ flex: 1 }}>
-            <Text style={{ color: 'white', fontSize: 16, opacity: 0.9 }}>Tìm kiếm</Text>
+      <SearchTopBar
+        searchQuery=''
+        setSearchQuery={() => {}}
+        placeholder={t('search.placeholder')}
+        onPress={() => router.push('/search')}
+        showQr={false}
+        rightAction={
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => router.push('/qr' as Href)}>
+              <Ionicons name='qr-code' size={22} color='white' />
+            </TouchableOpacity>
+            <TouchableOpacity style={{ marginLeft: 12 }}>
+              <Ionicons name='add' size={28} color='white' />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity style={{ marginLeft: 12 }} onPress={() => router.push('/qr' as Href)}>
-            <Ionicons name='qr-code' size={22} color='white' />
-          </TouchableOpacity>
-          <TouchableOpacity style={{ marginLeft: 16 }}>
-            <Ionicons name='add' size={28} color='white' />
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
+        }
+      />
 
       {/* Conversation List */}
       <FlatList
@@ -388,6 +374,6 @@ export default function MessagesScreen() {
         showsVerticalScrollIndicator={false}
         ItemSeparatorComponent={() => <View style={{ height: 0.5, backgroundColor: '#F3F4F6', marginLeft: 76 }} />}
       />
-    </View>
+    </Container>
   )
 }

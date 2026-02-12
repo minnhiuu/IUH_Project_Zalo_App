@@ -55,9 +55,9 @@ export const API_ENDPOINTS = {
     }
   },
   USER: {
-    PROFILE: '/user/profile',
-    UPDATE_PROFILE: '/user/profile',
-    SEARCH: '/user/search',
+    PROFILE: '/user/me',
+    UPDATE_PROFILE: '/user/me',
+    SEARCH: '/users/search',
     GET_BY_ID: (id: string) => `/user/${id}`
   },
   MESSAGE: {

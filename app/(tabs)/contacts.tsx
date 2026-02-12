@@ -1,16 +1,29 @@
-import { Container, EmptyState, Header } from '@/components'
+import { Container, EmptyState, SearchTopBar } from '@/components'
 import React from 'react'
-import { View } from 'react-native'
+import { View, TouchableOpacity } from 'react-native'
+import { useRouter } from 'expo-router'
+import { useTranslation } from 'react-i18next'
+import { Ionicons } from '@expo/vector-icons'
 
 export default function ContactsScreen() {
+  const router = useRouter()
+  const { t } = useTranslation()
+
   return (
-    <Container safeAreaEdges={['top']}>
-      <Header
-        title='Danh bạ'
-        rightIcon='person-add-outline'
-        onRightPress={() => {
-          // TODO: Implement add contact
-        }}
+    <Container safeAreaEdges={[]}>
+      <SearchTopBar
+        searchQuery=''
+        setSearchQuery={() => {}}
+        placeholder={t('search.placeholder')}
+        onPress={() => router.push('/search')}
+        showQr={false}
+        rightAction={
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <TouchableOpacity onPress={() => console.log('Add contact')}>
+              <Ionicons name='person-add-outline' size={24} color='white' />
+            </TouchableOpacity>
+          </View>
+        }
       />
       <View className='flex-1'>
         <EmptyState
