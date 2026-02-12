@@ -8,7 +8,10 @@
     "save": "Lưu",
     "delete": "Xóa",
     "edit": "Chỉnh sửa",
-    "back": "Quay lại",
+    "chat": "Nhắn tin",
+    "seeMore": "Xem thêm",
+    "add": "Thêm",
+    "goBack": "Quay lại",
     "next": "Tiếp theo",
     "done": "Hoàn tất",
     "close": "Đóng",
@@ -186,5 +189,12 @@
       "add": "KẾT BẠN",
       "accept": "ĐỒNG Ý"
     }
+  },
+  "user": {
+    "profile": {
+      "timelinePostRestriction": "Bạn không thể xem bài viết dòng thời gian của {{name}} vì bạn chưa là bạn bè"
+    },
+    "recommendedFriends": "Bạn bè gợi ý",
+    "notFound": "Không tìm thấy người dùng"
   }
 }

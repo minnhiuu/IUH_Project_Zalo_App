@@ -171,7 +171,13 @@ export default function RootLayout() {
             <GluestackProvider>
               <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
                 <AuthGuard>
-                  <Stack screenOptions={{ headerShown: false }}>
+                  <Stack
+                    screenOptions={{
+                      headerShown: false,
+                      animation: 'slide_from_right', // Default smooth transition
+                      animationDuration: 200
+                    }}
+                  >
                     <Stack.Screen name='(tabs)' />
                     <Stack.Screen name='auth' />
                     <Stack.Screen

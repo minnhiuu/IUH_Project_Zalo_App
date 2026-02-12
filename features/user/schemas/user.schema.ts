@@ -37,3 +37,9 @@ export type UserResponse = {
   gender: Gender
   accountInfo: AccountResponse
 }
+
+export type UserSummaryResponse = {
+  id: string
+  fullName: string
+  avatar: string | null
+}

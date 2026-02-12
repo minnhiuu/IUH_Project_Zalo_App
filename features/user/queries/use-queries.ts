@@ -12,3 +12,15 @@ export const useMyProfile = () => {
     staleTime: 5 * 60 * 1000 // 5 minutes
   })
 }
+
+export const useUserById = (id: string) => {
+  return useQuery({
+    queryKey: userKeys.byId(id),
+    queryFn: async () => {
+      const response = await userApi.getUserById(id)
+      return response.data.data
+    },
+    enabled: !!id,
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  })
+}

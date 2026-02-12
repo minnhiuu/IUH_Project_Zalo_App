@@ -1,5 +1,5 @@
 import { UserAvatar } from '@/components/common/user-avatar'
-import { UserResponse } from '@/features/user'
+import { UserResponse, UserSummaryResponse } from '@/features/user'
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
@@ -11,7 +11,7 @@ export interface ContactItemType {
   avatar?: string | null
 }
 
-export type SearchResultItemData = UserResponse | ContactItemType
+export type SearchResultItemData = UserResponse | ContactItemType | UserSummaryResponse
 
 export function HighlightText({
   text,
@@ -92,7 +92,7 @@ export function SearchResultItem<T extends SearchResultItemData>({
 
   const getAvatar = (item: SearchResultItemData) => {
     if ('avatar' in item) {
-      return (item as ContactItemType).avatar || undefined
+      return item.avatar || undefined
     }
     return undefined
   }

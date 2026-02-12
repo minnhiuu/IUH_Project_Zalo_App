@@ -1,4 +1,4 @@
-import { UserResponse } from '@/features/user'
+import { UserSummaryResponse } from '@/features/user'
 import { PageResponse } from '@/types/common.types'
 import { InfiniteData } from '@tanstack/react-query'
 import React from 'react'
@@ -7,9 +7,9 @@ import { SearchSection } from '../core/search-sections'
 import { DiscoverItem } from './discover-item'
 
 interface DiscoverTabProps {
-  searchResults: InfiniteData<PageResponse<UserResponse[]>> | undefined
+  searchResults: InfiniteData<PageResponse<UserSummaryResponse[]>> | undefined
   searchQuery: string
-  onItemPress: (item: UserResponse) => void
+  onItemPress: (item: UserSummaryResponse) => void
   fetchNextPage?: () => void
   hasNextPage?: boolean
   isFetchingNextPage?: boolean

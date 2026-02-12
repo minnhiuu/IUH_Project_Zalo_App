@@ -8,7 +8,10 @@ export const getMyProfile = () => http.get<ApiResponse<UserResponse>>(API_ENDPOI
 export const updateProfile = (_id: string, data: UserUpdateRequest) =>
   http.put<ApiResponse<UserResponse>>(API_ENDPOINTS.USER.UPDATE_PROFILE, data)
 
+export const getUserById = (id: string) => http.get<ApiResponse<UserResponse>>(API_ENDPOINTS.USER.GET_BY_ID(id))
+
 export const userApi = {
   getMyProfile,
-  updateProfile
+  updateProfile,
+  getUserById
 }

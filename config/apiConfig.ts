@@ -58,7 +58,7 @@ export const API_ENDPOINTS = {
     PROFILE: '/user/me',
     UPDATE_PROFILE: '/user/me',
     SEARCH: '/users/search',
-    GET_BY_ID: (id: string) => `/user/${id}`
+    GET_BY_ID: (id: string) => `/users/${id}`
   },
   MESSAGE: {
     CONVERSATIONS: '/message/conversations',

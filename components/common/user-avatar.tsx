@@ -1,7 +1,7 @@
 import React from 'react'
 import { Image, ImageSourcePropType, Text, View } from 'react-native'
 
-type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
+type AvatarSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl'
 
 interface UserAvatarProps {
   source?: ImageSourcePropType | string | null
@@ -42,6 +42,16 @@ const sizeStyles: Record<AvatarSize, { container: string; text: string; online: 
     container: 'w-20 h-20',
     text: 'text-xl',
     online: 'w-5 h-5 border-2'
+  },
+  '3xl': {
+    container: 'w-24 h-24',
+    text: 'text-2xl',
+    online: 'w-6 h-6 border-2'
+  },
+  '4xl': {
+    container: 'w-32 h-32',
+    text: 'text-3xl',
+    online: 'w-7 h-7 border-4'
   }
 }
 

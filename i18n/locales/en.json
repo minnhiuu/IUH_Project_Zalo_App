@@ -8,7 +8,10 @@
     "save": "Save",
     "delete": "Delete",
     "edit": "Edit",
-    "back": "Back",
+    "chat": "Chat",
+    "seeMore": "See more",
+    "add": "Add",
+    "goBack": "Go Back",
     "next": "Next",
     "done": "Done",
     "close": "Close",
@@ -154,5 +157,12 @@
       "clearAll": "Clear all"
     },
     "seeMore": "See more"
+  },
+  "user": {
+    "profile": {
+      "timelinePostRestriction": "You aren't friends with {{name}} yet"
+    },
+    "recommendedFriends": "Recommended friends",
+    "notFound": "User not found"
   }
 }

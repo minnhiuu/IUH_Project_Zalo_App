@@ -89,7 +89,19 @@ export function SearchScreen() {
   )
 
   const onItemPress = (item: any) => {
-    console.log('Selected item:', item.id)
+    // For users returned from search API, they follow UserSummaryResponse structure (id, fullName, avatar)
+    // Mock items (contacts/messages) have different IDs (short strings starting with 'm' or 'c')
+    // Real user IDs are UUIDs (long strings)
+
+    // Simple heuristic: if it has an ID and NOT a mock ID, it's likely a user from the API
+    const isMock = item.id.startsWith('m') || item.id.startsWith('c')
+    const isUser = activeTab === 'discover' || !isMock
+
+    if (isUser) {
+      router.push(`/user/${item.id}` as any)
+    } else {
+      console.log('Selected item:', item.id)
+    }
   }
 
   const renderContent = () => {

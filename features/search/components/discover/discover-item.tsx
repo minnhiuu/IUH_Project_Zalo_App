@@ -1,13 +1,13 @@
-import { UserResponse } from '@/features/user'
+import { UserSummaryResponse } from '@/features/user'
 import React from 'react'
 import { Text, TouchableOpacity } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { SearchResultItem } from '@/features/search/components/core/search-result-item'
 
 interface DiscoverItemProps {
-  item: UserResponse
+  item: UserSummaryResponse
   searchQuery: string
-  onPress: (item: UserResponse) => void
+  onPress: (item: UserSummaryResponse) => void
 }
 
 export function DiscoverItem({ item, searchQuery, onPress }: DiscoverItemProps) {
