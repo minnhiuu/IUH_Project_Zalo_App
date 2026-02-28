@@ -1,5 +1,5 @@
 import { Container, SearchTopBar } from '@/components'
-import { useInfiniteSearchUsers } from '../queries/use-search-queries'
+import { useInfiniteSearchUsers } from '../queries/use-queries'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useFocusEffect } from 'expo-router'
