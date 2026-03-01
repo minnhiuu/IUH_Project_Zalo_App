@@ -18,7 +18,7 @@ export const useSendFriendRequest = () => {
 
       Toast.show({
         type: 'success',
-        text1: t('friendRequests.sendSuccess'),
+        text1: t('friend.toast.sendSuccess'),
         visibilityTime: 2000,
       })
     },
@@ -41,7 +41,7 @@ export const useAcceptFriendRequest = () => {
 
       Toast.show({
         type: 'success',
-        text1: t('friendRequests.acceptSuccess'),
+        text1: t('friend.toast.acceptSuccess'),
         visibilityTime: 2000,
       })
     },
@@ -62,7 +62,7 @@ export const useDeclineFriendRequest = () => {
 
       Toast.show({
         type: 'success',
-        text1: t('friendRequests.declineSuccess'),
+        text1: t('friend.toast.declineSuccess'),
         visibilityTime: 2000,
       })
     },
@@ -83,7 +83,7 @@ export const useCancelFriendRequest = () => {
 
       Toast.show({
         type: 'success',
-        text1: t('friendRequests.cancelSuccess'),
+        text1: t('friend.toast.cancelSuccess'),
         visibilityTime: 2000,
       })
     },
@@ -105,7 +105,7 @@ export const useUnfriend = () => {
 
       Toast.show({
         type: 'success',
-        text1: t('friendRequests.unfriendSuccess'),
+        text1: t('friend.toast.unfriendSuccess'),
         visibilityTime: 2000,
       })
     },

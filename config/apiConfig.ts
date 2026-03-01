@@ -79,19 +79,19 @@ export const API_ENDPOINTS = {
   },
   FRIENDSHIP: {
     // Friend requests
-    SEND_REQUEST: '/api/friendships/requests', // POST
-    ACCEPT_REQUEST: (friendshipId: string) => `/api/friendships/requests/${friendshipId}/accept`, // PUT
-    DECLINE_REQUEST: (friendshipId: string) => `/api/friendships/requests/${friendshipId}/decline`, // PUT
-    CANCEL_REQUEST: (friendshipId: string) => `/api/friendships/requests/${friendshipId}/cancel`, // PUT
-    RECEIVED_REQUESTS: '/api/friendships/requests/received', // GET
-    SENT_REQUESTS: '/api/friendships/requests/sent', // GET
+    SEND_REQUEST: '/friendships/requests', // POST
+    ACCEPT_REQUEST: (friendshipId: string) => `/friendships/requests/${friendshipId}/accept`, // PUT
+    DECLINE_REQUEST: (friendshipId: string) => `/friendships/requests/${friendshipId}/decline`, // PUT
+    CANCEL_REQUEST: (friendshipId: string) => `/friendships/requests/${friendshipId}/cancel`, // PUT
+    RECEIVED_REQUESTS: '/friendships/requests/received', // GET
+    SENT_REQUESTS: '/friendships/requests/sent', // GET
     // Friends
-    MY_FRIENDS: '/api/friendships/friends', // GET
-    UNFRIEND: (friendId: string) => `/api/friendships/friends/${friendId}`, // DELETE
+    MY_FRIENDS: '/friendships/friends', // GET
+    UNFRIEND: (friendId: string) => `/friendships/friends/${friendId}`, // DELETE
     // Status & mutual
-    CHECK_STATUS: (userId: string) => `/api/friendships/status/${userId}`, // GET
-    MUTUAL_FRIENDS: (userId: string) => `/api/friendships/mutual/${userId}`, // GET
-    MUTUAL_FRIENDS_COUNT: (userId: string) => `/api/friendships/mutual/${userId}/count`, // GET
+    CHECK_STATUS: (userId: string) => `/friendships/status/${userId}`, // GET
+    MUTUAL_FRIENDS: (userId: string) => `/friendships/mutual/${userId}`, // GET
+    MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count`, // GET
   }
 } as const
 

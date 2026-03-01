@@ -17,6 +17,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import * as Application from 'expo-application'
 
 import { useLoginMutation } from '../queries'
+import { secureStorage } from '@/utils/storageUtils'
 
 const LoginForm: React.FC = () => {
   const { t } = useTranslation()
@@ -79,6 +80,9 @@ const LoginForm: React.FC = () => {
       console.warn('Failed to get device ID:', error)
       deviceId = `${Platform.OS}-${Date.now()}`
     }
+
+    // Save deviceId for token refresh later
+    await secureStorage.setDeviceId(deviceId)
 
     login({
       email: email.trim(),

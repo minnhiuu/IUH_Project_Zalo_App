@@ -5,26 +5,28 @@
  */
 
 // ==================== BRAND COLORS ====================
-// Official Zalo brand palette matching web app
+// Official Zalo brand palette matching web app (index.css :root)
 export const BRAND = {
-  // Primary Blues
-  blue: '#0190F3', // brand-blue - Main brand color
-  blueDark: '#005AE0', // brand-blue-dark - Darker variant
-  blueLight: '#E8F3FF', // brand-blue-light - Light backgrounds
+  // Primary Blues (synced with web --brand-*)
+  blue: '#0068FF', // --brand-blue
+  blueDark: '#005AE0', // --brand-blue-dark
+  blueLight: '#E5F1FF', // --brand-blue-light
+  blueHover: '#C7E0FF', // --brand-blue-hover
+  blueText: '#0045AD', // --brand-blue-text
 
   // Secondary
-  navy: '#081B3A', // brand-navy - Dark text/headers
-  primary: '#0068FF', // primary - Primary actions/buttons
-  vibrantBlue: '#0190F3', // vibrant-blue - Accent color
+  navy: '#081B3A', // --foreground (web uses as foreground)
+  primary: '#0068FF', // --primary
+  vibrantBlue: '#0068FF', // --vibrant-blue (same as primary in web light)
 
   // Grays
-  gray100: '#F1F2F4', // brand-gray-100 - Light backgrounds
-  gray200: '#ECECF0', // brand-gray-200 - Borders/dividers
-  gray400: '#8C8C8C', // brand-gray-400 - Secondary text
-  gray500: '#555555', // brand-gray-500 - Dark secondary text
+  gray100: '#F1F2F4', // --muted
+  gray200: '#EBECF0', // --secondary (web)
+  gray400: '#5A6981', // --muted-foreground (web)
+  gray500: '#081B3A', // --secondary-foreground (web)
 
   // Status
-  red: '#E53838', // brand-red - Error/destructive actions
+  red: '#E53838', // --destructive
 
   // White & Black
   white: '#FFFFFF',
@@ -51,73 +53,110 @@ export const HEADER = {
 }
 
 // ==================== SEMANTIC COLORS ====================
-// Mapped to Shadcn UI semantic tokens from web
+// Mapped to web CSS variables from index.css :root
 export const SEMANTIC = {
-  // Backgrounds
-  background: '#FFFFFF',
-  backgroundSecondary: '#F1F2F4',
+  // Backgrounds (web: --background, --muted)
+  background: '#FFFFFF', // --background
+  backgroundSecondary: '#F1F2F4', // --muted
 
-  // Text
-  foreground: 'rgba(0, 0, 0, 0.88)',
-  textPrimary: 'rgba(0, 0, 0, 0.88)',
-  textSecondary: '#555555',
-  textTertiary: '#8C8C8C',
-  textDisabled: 'rgba(0, 0, 0, 0.38)',
+  // Text (web: --foreground, --muted-foreground)
+  foreground: '#081B3A', // --foreground
+  textPrimary: '#081B3A', // --foreground
+  textSecondary: '#5A6981', // --muted-foreground
+  textTertiary: '#5A6981', // --muted-foreground (lighter usage)
+  textDisabled: '#8B96A7', // --disabled
 
-  // Primary Actions
-  primary: '#0068FF',
-  primaryHover: '#005AE0',
-  primaryForeground: '#FFFFFF',
+  // Primary Actions (web: --primary, --primary-hover)
+  primary: '#0068FF', // --primary
+  primaryHover: '#005AE0', // --primary-hover
+  primaryForeground: '#FFFFFF', // --primary-foreground
 
-  // Vibrant (for emphasis)
-  vibrantBlue: '#0190F3',
-  vibrantBlueHover: '#0184E0',
+  // Vibrant (web: --vibrant-blue)
+  vibrantBlue: '#0068FF', // --vibrant-blue (light mode)
+  vibrantBlueHover: '#005AE0', // --vibrant-blue-hover
 
-  // Secondary
-  secondary: '#E8F3FF',
-  secondaryForeground: '#0190F3',
+  // Secondary (web: --secondary, --secondary-foreground)
+  secondary: '#EBECF0', // --secondary
+  secondaryForeground: '#081B3A', // --secondary-foreground
+  secondaryHover: '#C6CAD2', // --secondary-hover
 
-  // Muted
-  muted: '#F1F2F4',
-  mutedForeground: '#555555',
+  // Muted (web: --muted, --muted-foreground)
+  muted: '#F1F2F4', // --muted
+  mutedForeground: '#5A6981', // --muted-foreground
 
-  // Accent
-  accent: '#F1F2F4',
-  accentForeground: 'rgba(0, 0, 0, 0.88)',
+  // Accent (web: --accent, --accent-foreground)
+  accent: '#F1F2F4', // --accent
+  accentForeground: '#081B3A', // --accent-foreground
+  accentHover: '#E5E7EB', // --accent-hover
 
-  // Borders & Input
-  border: '#ECECF0',
-  input: '#ECECF0',
-  ring: '#0190F3',
+  // Borders & Input (web: --border, --input, --ring)
+  border: '#DBDBDB', // --border
+  input: '#DBDBDB', // --input
+  ring: '#0068FF', // --ring
+
+  // Section Divider
+  sectionDivider: '#F1F2F4', // --section-divider
+
+  // Icons (web: --icon-*)
+  iconMuted: '#9FACBC', // --icon-muted
+  iconHover: '#66A6FF', // --icon-hover
+  iconSecondary: '#5A6981', // --icon-secondary
 
   // Status Colors
   success: '#00C853',
   warning: '#FFB300',
   error: '#E53838',
-  destructive: '#E53838',
-  destructiveForeground: '#FFFFFF',
-  info: '#0190F3'
+  destructive: '#E53838', // --destructive
+  destructiveForeground: '#FFFFFF', // --destructive-foreground
+  info: '#0068FF'
 }
 
 // ==================== DARK MODE COLORS ====================
+// Synced with web index.css .dark variables
 export const DARK_MODE = {
-  background: '#0F1419', // Navy black (oklch(0.15 0.05 260))
-  backgroundSecondary: '#1A1F29',
-  foreground: '#FFFFFF',
+  background: '#22262B', // --background (dark)
+  backgroundSecondary: '#2C323A', // --secondary (dark)
+  foreground: '#DFE2E7', // --foreground (dark)
 
-  textPrimary: '#FFFFFF',
-  textSecondary: 'rgba(255, 255, 255, 0.7)',
-  textTertiary: 'rgba(255, 255, 255, 0.5)',
+  textPrimary: '#DFE2E7', // --foreground (dark)
+  textSecondary: '#B6C1CF', // --muted-foreground (dark)
+  textTertiary: '#B6C1CF', // --muted-foreground (dark)
+  textDisabled: '#8B96A7', // --disabled
 
-  primary: '#0190F3',
-  primaryHover: '#005AE0',
-  primaryForeground: '#FFFFFF',
+  primary: '#0068FF', // --primary (dark)
+  primaryHover: '#005AE0', // --primary-hover (dark)
+  primaryForeground: '#FFFFFF', // --primary-foreground
 
-  border: 'rgba(255, 255, 255, 0.1)',
-  divider: 'rgba(255, 255, 255, 0.05)',
+  vibrantBlue: '#0068FF', // --vibrant-blue (dark)
+  vibrantBlueHover: '#005AE0', // --vibrant-blue-hover (dark)
 
-  card: '#1A1F29',
-  cardForeground: '#FFFFFF'
+  secondary: '#2C323A', // --secondary (dark)
+  secondaryForeground: '#DFE2E7', // --secondary-foreground (dark)
+  secondaryHover: '#38404A', // --secondary-hover (dark)
+
+  muted: '#3E444A', // --muted (dark)
+  mutedForeground: '#B6C1CF', // --muted-foreground (dark)
+
+  accent: '#3E444A', // --accent (dark)
+  accentForeground: '#FFFFFF', // --accent-foreground (dark)
+  accentHover: '#3E444A', // --accent-hover (dark)
+
+  border: 'rgba(255, 255, 255, 0.1)', // --border (dark)
+  input: '#1A1D21', // --input (dark)
+  ring: '#0068FF', // --ring (dark)
+  divider: '#121416', // --section-divider (dark)
+
+  card: '#22262B', // --card (dark)
+  cardForeground: '#FFFFFF', // --card-foreground (dark)
+
+  // Sidebar (dark)
+  sidebar: '#121416', // --sidebar (dark)
+  sidebarForeground: '#FFFFFF', // --sidebar-foreground (dark)
+
+  // Icons
+  iconMuted: '#9FACBC', // --icon-muted (dark)
+  iconHover: '#66A6FF', // --icon-hover (dark)
+  iconSecondary: '#5A6981' // --icon-secondary (dark)
 }
 
 // ==================== COMPONENT-SPECIFIC COLORS ====================
@@ -125,70 +164,79 @@ export const DARK_MODE = {
 export const COMPONENT = {
   // Bottom Tab Navigation
   tab: {
-    active: '#0068FF',
-    inactive: '#8C8C8C',
-    background: '#FFFFFF',
-    border: '#ECECF0'
+    active: '#0068FF', // --primary
+    inactive: '#5A6981', // --muted-foreground
+    background: '#FFFFFF', // --background
+    border: '#DBDBDB' // --border
   },
 
   // Message Bubbles
   message: {
-    sent: '#0068FF', // User's messages (blue)
+    sent: '#0068FF', // --primary
     sentText: '#FFFFFF',
-    received: '#F1F2F4', // Other's messages (gray)
-    receivedText: 'rgba(0, 0, 0, 0.88)',
-    timestamp: '#8C8C8C'
+    received: '#F1F2F4', // --muted
+    receivedText: '#081B3A', // --foreground
+    timestamp: '#5A6981' // --muted-foreground
   },
 
   // Online Status
   status: {
     online: '#00C853',
-    offline: '#8C8C8C',
+    offline: '#5A6981', // --muted-foreground
     away: '#FFB300'
   },
 
-  // Sidebar (matching web)
+  // Sidebar (matching web --sidebar-*)
   sidebar: {
-    background: '#005AE0',
-    foreground: '#FFFFFF',
-    primary: '#FFFFFF',
-    primaryForeground: '#005AE0',
-    accent: 'rgba(0, 0, 0, 0.25)',
-    accentForeground: '#FFFFFF',
-    border: 'rgba(255, 255, 255, 0.1)'
+    background: '#005AE0', // --sidebar
+    foreground: '#FFFFFF', // --sidebar-foreground
+    primary: '#FFFFFF', // --sidebar-primary
+    primaryForeground: '#005AE0', // --sidebar-primary-foreground
+    accent: 'rgba(255, 255, 255, 0.2)', // --sidebar-accent
+    accentForeground: '#FFFFFF', // --sidebar-accent-foreground
+    border: 'rgba(255, 255, 255, 0.1)', // --sidebar-border
+    ring: '#0068FF' // --sidebar-ring
   },
 
   // Buttons
   button: {
-    primary: '#0068FF',
-    primaryHover: '#005AE0',
-    primaryDisabled: 'rgba(1, 144, 243, 0.4)',
-    secondary: '#E8F3FF',
-    secondaryText: '#0190F3'
+    primary: '#0068FF', // --primary
+    primaryHover: '#005AE0', // --primary-hover
+    primaryDisabled: 'rgba(0, 104, 255, 0.4)', // --primary with opacity
+    secondary: '#EBECF0', // --secondary
+    secondaryText: '#081B3A', // --secondary-foreground
+    secondaryHover: '#C6CAD2' // --secondary-hover
   },
 
   // Input Fields
   input: {
-    background: '#FFFFFF',
-    border: '#ECECF0',
-    borderFocus: '#0068FF',
-    placeholder: '#8C8C8C',
-    disabled: '#F1F2F4'
+    background: '#FFFFFF', // --background
+    border: '#DBDBDB', // --border / --input
+    borderFocus: '#0068FF', // --ring
+    placeholder: '#5A6981', // --muted-foreground
+    disabled: '#F1F2F4' // --muted
   },
 
   // Cards & Containers
   card: {
-    background: '#FFFFFF',
-    border: '#ECECF0',
+    background: '#FFFFFF', // --card
+    foreground: '#081B3A', // --card-foreground
+    border: '#DBDBDB', // --border
     shadow: 'rgba(0, 0, 0, 0.08)'
+  },
+
+  // Popover
+  popover: {
+    background: '#FFFFFF', // --popover
+    foreground: '#081B3A' // --popover-foreground
   },
 
   // QR Scanner
   qr: {
     overlay: 'rgba(0, 0, 0, 0.7)',
-    frame: '#0068FF',
+    frame: '#0068FF', // --primary
     success: '#00C853',
-    error: '#E53838'
+    error: '#E53838' // --destructive
   }
 }
 
@@ -202,8 +250,10 @@ export const Colors = {
     backgroundSecondary: SEMANTIC.backgroundSecondary,
     tint: SEMANTIC.primary,
     border: SEMANTIC.border,
-    divider: SEMANTIC.border,
-    icon: SEMANTIC.textSecondary,
+    divider: SEMANTIC.sectionDivider,
+    icon: SEMANTIC.iconSecondary,
+    iconMuted: SEMANTIC.iconMuted,
+    iconHover: SEMANTIC.iconHover,
     tabIconDefault: COMPONENT.tab.inactive,
     tabIconSelected: COMPONENT.tab.active
   },
@@ -216,8 +266,10 @@ export const Colors = {
     tint: DARK_MODE.primary,
     border: DARK_MODE.border,
     divider: DARK_MODE.divider,
-    icon: DARK_MODE.textSecondary,
-    tabIconDefault: DARK_MODE.textTertiary,
+    icon: DARK_MODE.iconSecondary,
+    iconMuted: DARK_MODE.iconMuted,
+    iconHover: DARK_MODE.iconHover,
+    tabIconDefault: DARK_MODE.mutedForeground,
     tabIconSelected: DARK_MODE.primary
   }
 }

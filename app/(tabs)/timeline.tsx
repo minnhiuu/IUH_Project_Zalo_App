@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Header, Avatar, Text, Box, VStack, HStack, Card } from '@/components/ui'
 import { AvatarImage} from '@/components/ui/avatar'
 import { Pressable } from '@/components/ui/pressable'
+import { SEMANTIC } from '@/constants/theme'
 
 interface Story {
   id: string
@@ -197,7 +198,7 @@ export default function TimelineScreen() {
                 </Text>
               </VStack>
               <Pressable>
-                <Ionicons name="ellipsis-horizontal" size={20} color="#8c8c8c" />
+                <Ionicons name="ellipsis-horizontal" size={20} color={SEMANTIC.iconMuted} />
               </Pressable>
             </HStack>
 
@@ -216,19 +217,19 @@ export default function TimelineScreen() {
             {/* Post Actions */}
             <HStack style={{ paddingHorizontal: 16, marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#e5e7eb', alignItems: 'center' }}>
               <Pressable style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                <Ionicons name="heart-outline" size={20} color="#8c8c8c" />
+                <Ionicons name="heart-outline" size={20} color={SEMANTIC.iconMuted} />
                 <Text style={{ color: '#6b7280', marginLeft: 8 }} size="sm">
                   {post.likes}
                 </Text>
               </Pressable>
               <Pressable style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                <Ionicons name="chatbubble-outline" size={20} color="#8c8c8c" />
+                <Ionicons name="chatbubble-outline" size={20} color={SEMANTIC.iconMuted} />
                 <Text style={{ color: '#6b7280', marginLeft: 8 }} size="sm">
                   {post.comments}
                 </Text>
               </Pressable>
               <Pressable style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-                <Ionicons name="share-outline" size={20} color="#8c8c8c" />
+                <Ionicons name="share-outline" size={20} color={SEMANTIC.iconMuted} />
                 <Text style={{ color: '#6b7280', marginLeft: 8 }} size="sm">
                   Chia sẻ
                 </Text>

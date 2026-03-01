@@ -1,5 +1,8 @@
 import '../global.css'
 import i18n from '@/i18n'
+// Load feature-level i18n bundles (side-effect: registers translations)
+import '@/features/friend/i18n'
+import { SEMANTIC } from '@/constants/theme'
 
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -36,7 +39,7 @@ function SimpleLoadingScreen() {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#0068FF'
+        backgroundColor: SEMANTIC.primary
       }}
     >
       <Text
@@ -180,6 +183,9 @@ export default function RootLayout() {
                       <Stack.Screen name='settings' />
                       <Stack.Screen name='search' />
                       <Stack.Screen name='friend-requests' />
+                      <Stack.Screen name='add-friend' />
+                      <Stack.Screen name='user-profile/[id]' />
+                      <Stack.Screen name='chat/[id]' />
                     <Stack.Screen
                         name='qr/index'
                         options={{

@@ -7,6 +7,7 @@ import { useWaitQrStatusQuery } from '@/features/auth/queries/use-queries'
 import { QrSessionStatus } from '@/features/auth/schemas'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Button, Text } from '@/components/ui'
+import { SEMANTIC } from '@/constants/theme'
 
 export default function QrConfirmScreen() {
   const router = useRouter()
@@ -299,7 +300,7 @@ export default function QrConfirmScreen() {
           backgroundColor: 'white',
           paddingTop: 8,
           borderTopWidth: 1,
-          borderTopColor: '#E8F3FF'
+          borderTopColor: SEMANTIC.border
         }}
       >
         <Pressable

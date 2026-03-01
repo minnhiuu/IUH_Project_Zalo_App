@@ -1,36 +1,21 @@
 import { Ionicons } from '@expo/vector-icons'
-import { View, SectionList, TouchableOpacity, Image } from 'react-native'
+import { View, SectionList, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
 import { Header } from '@/components/ui'
 import { Text } from '@/components/ui/text'
+import { useMyFriends, useReceivedFriendRequests } from '@/features/friend/queries'
+import { FriendListItem } from '@/features/friend/components'
+import type { FriendResponse } from '@/features/friend/schemas'
+import { SEMANTIC, BRAND } from '@/constants/theme'
 
-interface Contact {
-  id: string
-  name: string
-  avatar: string
-}
-
-const MOCK_CONTACTS: Contact[] = [
-  { id: '1', name: 'Ba', avatar: 'https://i.pravatar.cc/150?img=1' },
-  { id: '2', name: 'Bảo Photocopy - Printing', avatar: 'https://i.pravatar.cc/150?img=2' },
-  { id: '3', name: 'Boconganh', avatar: 'https://i.pravatar.cc/150?img=3' },
-  { id: '4', name: 'Bong', avatar: 'https://i.pravatar.cc/150?img=4' },
-  { id: '5', name: 'Bùi Thu Thảo', avatar: 'https://i.pravatar.cc/150?img=5' },
-  { id: '6', name: 'Châu Minh', avatar: 'https://i.pravatar.cc/150?img=6' },
-  { id: '7', name: 'Duy Hoàng', avatar: 'https://i.pravatar.cc/150?img=7' },
-  { id: '8', name: 'Đào Linh', avatar: 'https://i.pravatar.cc/150?img=8' },
-  { id: '9', name: 'Hùng Nguyễn', avatar: 'https://i.pravatar.cc/150?img=9' },
-  { id: '10', name: 'Kiên Trần', avatar: 'https://i.pravatar.cc/150?img=10' },
-]
-
-function groupByLetter(contacts: Contact[]): { title: string; data: Contact[] }[] {
-  const groups: Record<string, Contact[]> = {}
-  contacts.forEach((c) => {
-    const letter = c.name.charAt(0).toUpperCase()
+function groupByLetter(friends: FriendResponse[]): { title: string; data: FriendResponse[] }[] {
+  const groups: Record<string, FriendResponse[]> = {}
+  friends.forEach((f) => {
+    const letter = f.userName.charAt(0).toUpperCase()
     if (!groups[letter]) groups[letter] = []
-    groups[letter].push(c)
+    groups[letter].push(f)
   })
   return Object.entries(groups)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -45,7 +30,13 @@ export default function ContactsScreen() {
   const [activeTab, setActiveTab] = useState<'friends' | 'groups' | 'oa'>('friends')
   const [activeFilter, setActiveFilter] = useState<'all' | 'new' | 'recent'>('all')
 
-  const sections = useMemo(() => groupByLetter(MOCK_CONTACTS), [])
+  // Fetch real data from API
+  const { data: friends = [], isLoading: friendsLoading } = useMyFriends()
+  const { data: receivedRequests = [] } = useReceivedFriendRequests()
+
+  const sections = useMemo(() => groupByLetter(friends), [friends])
+  const friendCount = friends.length
+  const requestCount = receivedRequests.length
 
   const tabs = [
     { key: 'friends' as const, label: t('contacts.tabs.friends') },
@@ -54,10 +45,29 @@ export default function ContactsScreen() {
   ]
 
   const filters = [
-    { key: 'all' as const, label: t('contacts.filters.all'), count: 135 },
-    { key: 'new' as const, label: t('contacts.filters.new'), count: 1 },
-    { key: 'recent' as const, label: t('contacts.filters.recent'), count: 8 },
+    { key: 'all' as const, label: t('contacts.filters.all'), count: friendCount },
+    { key: 'new' as const, label: t('contacts.filters.new'), count: 0 },
+    { key: 'recent' as const, label: t('contacts.filters.recent'), count: 0 },
   ]
+
+  const handleFriendPress = (friend: FriendResponse) => {
+    router.push({
+      pathname: '/chat/[id]' as any,
+      params: {
+        id: friend.userId,
+        name: friend.userName,
+        avatar: friend.userAvatar || '',
+      },
+    })
+  }
+
+  const handleCall = (friend: FriendResponse) => {
+    console.log('Call:', friend.userId)
+  }
+
+  const handleVideoCall = (friend: FriendResponse) => {
+    console.log('Video call:', friend.userId)
+  }
 
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -66,7 +76,7 @@ export default function ContactsScreen() {
         showSearch
         searchPlaceholder={t('contacts.search')}
         showAddButton
-        onAddPress={() => {}}
+        onAddPress={() => router.push('/add-friend' as any)}
       />
 
       {/* Tabs */}
@@ -113,18 +123,20 @@ export default function ContactsScreen() {
         >
           <View style={{
             width: 48, height: 48, borderRadius: 24,
-            backgroundColor: '#E8F3FF',
+            backgroundColor: BRAND.blueLight,
             alignItems: 'center', justifyContent: 'center',
             marginRight: 12,
           }}>
-            <Ionicons name="person-add" size={22} color="#0068FF" />
+            <Ionicons name="person-add" size={22} color={SEMANTIC.primary} />
           </View>
           <View style={{ flex: 1 }}>
             <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>
               {t('contacts.friendRequest')}
             </Text>
           </View>
-          <Text style={{ fontSize: 14, color: '#6b7280' }}>(10)</Text>
+          {requestCount > 0 && (
+            <Text style={{ fontSize: 14, color: '#6b7280' }}>({requestCount})</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -172,14 +184,14 @@ export default function ContactsScreen() {
               flex: 1,
               paddingVertical: 8,
               borderRadius: 20,
-              backgroundColor: activeFilter === filter.key ? '#E8F3FF' : '#F3F4F6',
+              backgroundColor: activeFilter === filter.key ? BRAND.blueLight : '#F3F4F6',
               alignItems: 'center',
             }}
           >
             <Text style={{
               fontSize: 13,
               fontWeight: '500',
-              color: activeFilter === filter.key ? '#0068FF' : '#6b7280',
+              color: activeFilter === filter.key ? SEMANTIC.primary : '#6b7280',
             }}>
               {filter.label} {filter.count}
             </Text>
@@ -188,61 +200,53 @@ export default function ContactsScreen() {
       </View>
 
       {/* Contacts List + Alphabet */}
-      <View style={{ flex: 1, flexDirection: 'row' }}>
-        <SectionList
-          sections={sections}
-          style={{ flex: 1 }}
-          keyExtractor={(item) => item.id}
-          stickySectionHeadersEnabled
-          showsVerticalScrollIndicator={false}
-          renderSectionHeader={({ section }) => (
-            <View style={{ paddingHorizontal: 16, paddingVertical: 6, backgroundColor: '#F9FAFB' }}>
-              <Text style={{ fontSize: 14, fontWeight: '600', color: '#6b7280' }}>
-                {section.title}
-              </Text>
-            </View>
-          )}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                paddingHorizontal: 16,
-                paddingVertical: 10,
-                backgroundColor: '#fff',
-              }}
-            >
-              <Image
-                source={{ uri: item.avatar }}
-                style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: '#E5E7EB', marginRight: 12 }}
-              />
-              <Text style={{ flex: 1, fontSize: 16, color: '#111827' }} numberOfLines={1}>
-                {item.name}
-              </Text>
-              <View style={{ flexDirection: 'row', gap: 12 }}>
-                <TouchableOpacity style={{ padding: 4 }}>
-                  <Ionicons name="call-outline" size={22} color="#0068FF" />
-                </TouchableOpacity>
-                <TouchableOpacity style={{ padding: 4 }}>
-                  <Ionicons name="videocam-outline" size={22} color="#0068FF" />
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          )}
-        />
-
-        {/* Alphabet Sidebar */}
-        <View style={{ justifyContent: 'center', paddingHorizontal: 4, paddingVertical: 4 }}>
-          {ALPHABET.map((letter) => (
-            <TouchableOpacity key={letter} style={{ paddingVertical: 1.5 }}>
-              <Text style={{ fontSize: 10, fontWeight: '500', color: '#6b7280', textAlign: 'center' }}>
-                {letter}
-              </Text>
-            </TouchableOpacity>
-          ))}
+      {friendsLoading ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <ActivityIndicator size="large" color="#0068FF" />
+          <Text style={{ color: '#9ca3af', marginTop: 12 }}>{t('friend.loading')}</Text>
         </View>
-      </View>
+      ) : friends.length === 0 ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name="people-outline" size={48} color="#D1D5DB" />
+          <Text style={{ color: '#9ca3af', marginTop: 12 }}>{t('friend.empty.friends')}</Text>
+        </View>
+      ) : (
+        <View style={{ flex: 1, flexDirection: 'row' }}>
+          <SectionList
+            sections={sections}
+            style={{ flex: 1 }}
+            keyExtractor={(item) => item.userId}
+            stickySectionHeadersEnabled
+            showsVerticalScrollIndicator={false}
+            renderSectionHeader={({ section }) => (
+              <View style={{ paddingHorizontal: 16, paddingVertical: 6, backgroundColor: '#F9FAFB' }}>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#6b7280' }}>
+                  {section.title}
+                </Text>
+              </View>
+            )}
+            renderItem={({ item }) => (
+              <FriendListItem
+                friend={item}
+                onPress={handleFriendPress}
+                onCall={handleCall}
+                onVideoCall={handleVideoCall}
+              />
+            )}
+          />
+
+          {/* Alphabet Sidebar */}
+          <View style={{ justifyContent: 'center', paddingHorizontal: 4, paddingVertical: 4 }}>
+            {ALPHABET.map((letter) => (
+              <TouchableOpacity key={letter} style={{ paddingVertical: 1.5 }}>
+                <Text style={{ fontSize: 10, fontWeight: '500', color: '#6b7280', textAlign: 'center' }}>
+                  {letter}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
     </View>
   )
 }

@@ -3,11 +3,17 @@ import { ScrollView } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
-import { Box, VStack, Header, MenuItem } from '@/components/ui'
+import { Box, VStack, Header, MenuItem, Button, ButtonText } from '@/components/ui'
+import { useLogoutMutation } from '@/features/auth'
 
 export default function SettingsScreen() {
   const router = useRouter()
   const { t } = useTranslation()
+  const { mutate: logout, isPending: isLoggingOut } = useLogoutMutation()
+
+  const handleLogout = () => {
+    logout()
+  }
 
   return (
     <Box style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
@@ -116,6 +122,26 @@ export default function SettingsScreen() {
             onPress={() => {}}
           />
         </VStack>
+
+        {/* Logout Button */}
+        <Box style={{ marginHorizontal: 16, marginTop: 16, marginBottom: 32 }}>
+          <Button
+            style={{ 
+              backgroundColor: 'transparent',
+              borderRadius: 8,
+              paddingVertical: 14,
+              borderWidth: 1,
+              borderColor: '#e5e7eb'
+            }}
+            onPress={handleLogout}
+            isDisabled={isLoggingOut}
+          >
+            <Ionicons name="log-out-outline" size={20} color="#111827" />
+            <ButtonText style={{ color: '#111827', fontSize: 16, fontWeight: '500' }}>
+              {t('settings.deviceManagement.logout')}
+            </ButtonText>
+          </Button>
+        </Box>
 
         {/* Bottom Spacing */}
         <Box style={{ height: 32 }} />

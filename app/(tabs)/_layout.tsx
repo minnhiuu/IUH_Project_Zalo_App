@@ -3,6 +3,7 @@ import { Tabs } from 'expo-router'
 import React from 'react'
 import { StatusBar, Platform } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { SEMANTIC, BRAND, COMPONENT } from '@/constants/theme'
 
 // Zalo-style tab configuration
 const TAB_CONFIG = {
@@ -43,15 +44,15 @@ export default function TabLayout() {
 
   return (
     <>
-      <StatusBar barStyle='light-content' backgroundColor='#0068FF' translucent={Platform.OS === 'android'} />
+      <StatusBar barStyle='light-content' backgroundColor={SEMANTIC.primary} translucent={Platform.OS === 'android'} />
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#0068FF',
-          tabBarInactiveTintColor: '#8E8E93',
+          tabBarActiveTintColor: COMPONENT.tab.active,
+          tabBarInactiveTintColor: COMPONENT.tab.inactive,
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: '#FFFFFF',
-            borderTopColor: '#E5E5E5',
+            backgroundColor: COMPONENT.tab.background,
+            borderTopColor: SEMANTIC.border,
             borderTopWidth: 0.5,
             paddingTop: 10,
             paddingBottom: Platform.OS === 'ios' ? 28 : 12,

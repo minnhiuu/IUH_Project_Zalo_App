@@ -4,10 +4,6 @@ import { userApi } from '../api/user.api'
 import { userKeys } from './keys'
 import { handleErrorApi } from '@/utils/error-handler'
 
-/**
- * Mutation hook for updating user profile
- * PUT /users/{id}
- */
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient()
 

@@ -1,6 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
 import { View, ScrollView, TouchableOpacity, Image } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { useRouter } from 'expo-router'
 import { Header } from '@/components/ui'
 import { Text } from '@/components/ui/text'
 
@@ -87,6 +88,7 @@ const MOCK_CONVERSATIONS: Conversation[] = [
 
 export default function MessagesScreen() {
   const { t } = useTranslation()
+  const router = useRouter()
 
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
@@ -95,6 +97,7 @@ export default function MessagesScreen() {
         showSearch
         searchPlaceholder={t('messages.search')}
         showQRButton
+        onQRPress={() => router.push('/qr' as any)}
         showAddButton
       />
 
@@ -104,6 +107,16 @@ export default function MessagesScreen() {
           <TouchableOpacity
             key={conversation.id}
             activeOpacity={0.7}
+            onPress={() =>
+              router.push({
+                pathname: '/chat/[id]' as any,
+                params: {
+                  id: conversation.id,
+                  name: conversation.name,
+                  avatar: conversation.avatar,
+                },
+              })
+            }
             style={{
               flexDirection: 'row',
               alignItems: 'center',

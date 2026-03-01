@@ -3,6 +3,7 @@ import { ScrollView } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Header, Text, Box, VStack, HStack, Divider } from '@/components/ui'
 import { Pressable } from '@/components/ui/pressable'
+import { SEMANTIC } from '@/constants/theme'
 
 interface Service {
   id: string
@@ -104,7 +105,7 @@ export default function DiscoverScreen() {
               </VStack>
 
               {/* Arrow */}
-              <Ionicons name="chevron-forward" size={20} color="#8c8c8c" />
+              <Ionicons name="chevron-forward" size={20} color={SEMANTIC.iconMuted} />
             </Pressable>
 
             {/* Divider */}
