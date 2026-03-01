@@ -67,7 +67,9 @@ export const API_ENDPOINTS = {
   },
   NOTIFICATION: {
     LIST: '/notification',
-    MARK_READ: (id: string) => `/notification/${id}/read`
+    MARK_READ: (id: string) => `/notification/${id}/read`,
+    REGISTER_DEVICE: '/notification/devices',
+    UNREGISTER_DEVICE: (userId: string, token: string) => `/notification/devices?userId=${userId}&token=${token}`
   }
 } as const
 
