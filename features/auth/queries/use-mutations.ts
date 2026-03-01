@@ -9,6 +9,7 @@ import { useAuthStore } from '@/store'
 import { handleErrorApi } from '@/utils/error-handler'
 import { getRefreshToken, setAccessToken, setRefreshToken, clearTokens } from '@/lib/http'
 import { storage } from '@/utils/storageUtils'
+import { useUnregisterDeviceMutation } from '@/features/notifications/queries/use-mutation'
 
 export const useLoginMutation = () => {
   const { t } = useTranslation()
@@ -142,11 +143,21 @@ export const useLogoutMutation = () => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const router = useRouter()
-  const { logoutSuccess, setLoading } = useAuthStore()
+  const { logoutSuccess, setLoading, user, fcmToken } = useAuthStore()
+  const unregisterMutation = useUnregisterDeviceMutation()
 
   return useMutation({
     mutationKey: authKeys.logout(),
     mutationFn: async () => {
+      // Unregister token before logout if possible
+      if (user?.id && fcmToken) {
+        try {
+          await unregisterMutation.mutateAsync({ userId: user.id, token: fcmToken })
+        } catch (error) {
+          console.warn('Silent failure unregistering device on logout:', error)
+        }
+      }
+
       const refreshToken = await getRefreshToken()
       return authApi.logout(refreshToken ? { refreshToken } : {})
     },

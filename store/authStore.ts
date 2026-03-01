@@ -1,41 +1,36 @@
 import { create } from 'zustand'
-
-/**
- * Auth Store - UI State Only
- *
- * Principles:
- * - Server data (user) → React Query (useMyProfile)
- * - UI state → Zustand Store (this file)
- * - Tokens → Secure Storage (expo-secure-store)
- *
- * Store can be lost, but tokens in secure storage persist.
- * No duplicate state - user data comes from React Query cache.
- */
+import { UserResponse } from '@/features/user/schemas/user.schema'
 
 interface AuthState {
-  // UI State only
+  // UI State
+  user: UserResponse | null
   isAuthenticated: boolean
   isLoading: boolean
   isInitialized: boolean
   error: string | null
+  fcmToken: string | null
 
   // Actions
   setAuthenticated: (isAuthenticated: boolean) => void
   setLoading: (isLoading: boolean) => void
   setInitialized: (isInitialized: boolean) => void
   setError: (error: string | null) => void
+  setFcmToken: (fcmToken: string | null) => void
+  setUser: (user: UserResponse | null) => void
 
   // Convenience methods
-  loginSuccess: () => void
+  loginSuccess: (tokens?: any, user?: UserResponse | null) => void
   logoutSuccess: () => void
   reset: () => void
 }
 
 const initialState = {
+  user: null,
   isAuthenticated: false,
   isLoading: false,
   isInitialized: false,
-  error: null
+  error: null,
+  fcmToken: null
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -57,16 +52,19 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   setError: (error) => set({ error }),
 
-  // Login success - only update UI state
-  // Tokens stored in secure storage
-  // User data fetched via React Query
-  loginSuccess: () => {
-    console.log('[AuthStore] loginSuccess')
-    set({
+  setFcmToken: (fcmToken) => set({ fcmToken }),
+
+  setUser: (user) => set({ user, isAuthenticated: !!user }),
+
+  // Login success - update UI state and user
+  loginSuccess: (tokens, user) => {
+    console.log('[AuthStore] loginSuccess', { tokens, user })
+    set((state) => ({
+      user: user ?? state.user,
       isAuthenticated: true,
       isLoading: false,
       error: null
-    })
+    }))
   },
 
   // Logout success - clear all UI state

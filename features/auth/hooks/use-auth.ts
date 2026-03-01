@@ -40,7 +40,7 @@ export const useAuth = () => {
 
         // Token invalid, try refresh
         try {
-          const tokens = await authApi.refreshToken(refreshToken)
+          const tokens = await authApi.refresh({ deviceId: 'mobile', refreshToken })
           store.loginSuccess(tokens, user)
           store.setInitialized(true)
           return true
@@ -67,6 +67,7 @@ export const useAuth = () => {
     isLoading: store.isLoading || loginMutation.isPending || logoutMutation.isPending,
     isInitialized: store.isInitialized,
     error: store.error,
+    fcmToken: store.fcmToken,
 
     // Actions
     login: loginMutation.mutate,
@@ -77,6 +78,7 @@ export const useAuth = () => {
     logoutAsync: logoutMutation.mutateAsync,
     refreshToken: refreshMutation.mutate,
     refreshTokenAsync: refreshMutation.mutateAsync,
+    setFcmToken: store.setFcmToken,
     initializeAuth,
 
     // Store actions
