@@ -2,57 +2,57 @@ import { Ionicons } from '@expo/vector-icons'
 import { Tabs } from 'expo-router'
 import React from 'react'
 import { StatusBar, Platform } from 'react-native'
+import { useTranslation } from 'react-i18next'
+import { useTheme } from '@/context'
 
-import { useColorScheme } from '@/hooks/use-color-scheme'
-
-// Zalo-style tab configuration
 const TAB_CONFIG = {
   messages: {
     name: 'index',
-    title: 'Tin nhắn',
-    icon: 'chatbubbles',
-    iconFocused: 'chatbubbles'
+    titleKey: 'tabs.messages',
+    icon: 'chatbubble-ellipses-outline',
+    iconFocused: 'chatbubble-ellipses'
   },
   contacts: {
     name: 'contacts',
-    title: 'Danh bạ',
+    titleKey: 'tabs.contacts',
     icon: 'people-outline',
     iconFocused: 'people'
   },
   discover: {
     name: 'discover',
-    title: 'Khám phá',
-    icon: 'compass-outline',
-    iconFocused: 'compass'
+    titleKey: 'tabs.discover',
+    icon: 'grid-outline',
+    iconFocused: 'grid'
   },
   timeline: {
     name: 'timeline',
-    title: 'Nhật ký',
-    icon: 'time-outline',
-    iconFocused: 'time'
+    titleKey: 'tabs.timeline',
+    icon: 'newspaper-outline',
+    iconFocused: 'newspaper'
   },
   profile: {
     name: 'profile',
-    title: 'Cá nhân',
-    icon: 'person-outline',
-    iconFocused: 'person'
+    titleKey: 'tabs.profile',
+    icon: 'person-circle-outline',
+    iconFocused: 'person-circle'
   }
 } as const
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme()
+  const { t } = useTranslation()
+  const { colors, isDark } = useTheme()
 
   return (
     <>
-      <StatusBar barStyle='light-content' backgroundColor='#0068FF' translucent={Platform.OS === 'android'} />
+      <StatusBar barStyle='light-content' backgroundColor={isDark ? colors.background : colors.tint} translucent={Platform.OS === 'android'} />
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: '#0068FF',
-          tabBarInactiveTintColor: '#8E8E93',
+          tabBarActiveTintColor: colors.tint,
+          tabBarInactiveTintColor: colors.tabIconDefault,
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: colorScheme === 'dark' ? '#1A1A1A' : '#FFFFFF',
-            borderTopColor: colorScheme === 'dark' ? '#333333' : '#E5E5E5',
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
             borderTopWidth: 0.5,
             paddingTop: 10,
             paddingBottom: Platform.OS === 'ios' ? 28 : 12,
@@ -73,7 +73,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name={TAB_CONFIG.messages.name}
           options={{
-            title: TAB_CONFIG.messages.title,
+            title: t(TAB_CONFIG.messages.titleKey),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? TAB_CONFIG.messages.iconFocused : TAB_CONFIG.messages.icon}
@@ -86,7 +86,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name={TAB_CONFIG.contacts.name}
           options={{
-            title: TAB_CONFIG.contacts.title,
+            title: t(TAB_CONFIG.contacts.titleKey),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? TAB_CONFIG.contacts.iconFocused : TAB_CONFIG.contacts.icon}
@@ -99,7 +99,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name={TAB_CONFIG.discover.name}
           options={{
-            title: TAB_CONFIG.discover.title,
+            title: t(TAB_CONFIG.discover.titleKey),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? TAB_CONFIG.discover.iconFocused : TAB_CONFIG.discover.icon}
@@ -112,7 +112,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name={TAB_CONFIG.timeline.name}
           options={{
-            title: TAB_CONFIG.timeline.title,
+            title: t(TAB_CONFIG.timeline.titleKey),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? TAB_CONFIG.timeline.iconFocused : TAB_CONFIG.timeline.icon}
@@ -125,7 +125,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name={TAB_CONFIG.profile.name}
           options={{
-            title: TAB_CONFIG.profile.title,
+            title: t(TAB_CONFIG.profile.titleKey),
             tabBarIcon: ({ color, focused }) => (
               <Ionicons
                 name={focused ? TAB_CONFIG.profile.iconFocused : TAB_CONFIG.profile.icon}

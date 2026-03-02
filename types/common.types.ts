@@ -1,8 +1,9 @@
 // Common types for API responses
 export interface ApiResponse<T = unknown> {
-  success: boolean
+  code: number
   data: T
   message?: string
+  success?: boolean
 }
 
 export interface ApiError {
@@ -38,14 +39,12 @@ export interface PaginationParams {
   sortOrder?: 'asc' | 'desc'
 }
 
-// Base entity type
 export interface BaseEntity {
   id: string
   createdAt: string
   updatedAt: string
 }
 
-// Loading state
 export interface LoadingState {
   isLoading: boolean
   error: string | null

@@ -166,47 +166,423 @@
       }
     }
   },
+  "settings": {
+    "title": "Cài đặt",
+    "search": "Tìm kiếm",
+    "sections": {
+      "security": "BẢO MẬT",
+      "data": "DỮ LIỆU",
+      "notificationsCommunication": "THÔNG BÁO & GIAO TIẾP",
+      "interface": "GIAO DIỆN",
+      "support": "HỖ TRỢ",
+      "general": "CHUNG",
+      "display": "HIỂN THỊ",
+      "media": "PHƯƠNG TIỆN",
+      "advanced": "NÂNG CAO",
+      "deviceManagement": "THIẾT BỊ",
+      "personalInfo": "THÔNG TIN CÁ NHÂN",
+      "activity": "HOẠT ĐỘNG",
+      "blockReport": "CHẶN & BÁO CÁO",
+      "storageDetails": "CHI TIẾT DUNG LƯỢNG",
+      "backupSettings": "CÀI ĐẶT SAO LƯU",
+      "notificationTypes": "LOẠI THÔNG BÁO",
+      "callSettings": "CÀI ĐẶT CUỘC GỌI",
+      "quality": "CHẤT LƯỢNG",
+      "recentActivity": "HOẠT ĐỘNG GẦN ĐÂY",
+      "filter": "BỘ LỌC",
+      "sync": "ĐỒNG BỘ",
+      "language": "NGÔN NGỮ"
+    },
+    "menu": {
+      "accountSecurity": {
+        "title": "Tài khoản và bảo mật",
+        "subtitle": "Quản lý tài khoản và bảo mật"
+      },
+      "privacy": {
+        "title": "Quyền riêng tư",
+        "subtitle": "Cài đặt quyền riêng tư"
+      },
+      "dataOnDevice": {
+        "title": "Dữ liệu trên máy",
+        "subtitle": "Quản lý dữ liệu lưu trữ"
+      },
+      "backupRestore": {
+        "title": "Sao lưu và khôi phục",
+        "subtitle": "Sao lưu và khôi phục dữ liệu"
+      },
+      "notifications": {
+        "title": "Thông báo",
+        "subtitle": "Cài đặt thông báo"
+      },
+      "messages": {
+        "title": "Tin nhắn",
+        "subtitle": "Cài đặt tin nhắn"
+      },
+      "calls": {
+        "title": "Cuộc gọi",
+        "subtitle": "Cài đặt cuộc gọi"
+      },
+      "journal": {
+        "title": "Nhật ký",
+        "subtitle": "Xem lịch sử hoạt động"
+      },
+      "contacts": {
+        "title": "Danh bạ",
+        "subtitle": "Quản lý danh bạ"
+      },
+      "interfaceLanguage": {
+        "title": "Giao diện và ngôn ngữ",
+        "subtitle": "Tùy chỉnh giao diện và ngôn ngữ"
+      },
+      "about": {
+        "title": "Thông tin về Zalo",
+        "subtitle": "Phiên bản và thông tin ứng dụng"
+      },
+      "support": {
+        "title": "Liên hệ hỗ trợ",
+        "subtitle": "Trợ giúp và hỗ trợ"
+      },
+      "switchAccount": "Chuyển tài khoản"
+    },
+    "accountSecurity": {
+      "sections": {
+        "account": "Tài khoản",
+        "security": "Bảo mật",
+        "login": "Đăng nhập"
+      },
+      "personalInfo": "Thông tin cá nhân",
+      "myQR": "Mã QR của tôi",
+      "phone": "Số điện thoại",
+      "email": "Email",
+      "notLinked": "Chưa liên kết",
+      "securityCheck": "Kiểm tra bảo mật",
+      "securityCheckSubtitle": "3 vấn đề bảo mật cần xử lý",
+      "lockZalo": "Khoá Zalo",
+      "off": "Đang tắt",
+      "twoFactor": "Bảo mật 2 lớp",
+      "twoFactorSubtitle": "Tăng cường bảo mật tài khoản",
+      "loginDevices": "Thiết bị đăng nhập",
+      "changePassword": "Đổi mật khẩu",
+      "changePasswordSubtitle": "Cập nhật mật khẩu của bạn",
+      "biometrics": "Sinh trắc học",
+      "biometricsSubtitle": "Vân tay, Face ID",
+      "deviceManagement": "Quản lý thiết bị",
+      "deviceManagementSubtitle": "Xem các thiết bị đã đăng nhập"
+    },
+    "deviceManagement": {
+      "title": "Quản lý thiết bị",
+      "description": "Quản lý các thiết bị đã đăng nhập vào tài khoản của bạn",
+      "loading": "Đang tải thiết bị...",
+      "noDevices": "Không có thiết bị nào",
+      "activeDevices": "Thiết bị đang hoạt động",
+      "inactiveDevices": "Thiết bị không hoạt động",
+      "activeStatus": "Đang hoạt động",
+      "currentDevice": "Thiết bị này",
+      "logout": "Đăng xuất",
+      "logoutOthers": "Đăng xuất tất cả thiết bị khác",
+      "logoutOthersConfirm": "Bạn có chắc muốn đăng xuất tất cả thiết bị khác?",
+      "logoutOthersSuccess": "Đã đăng xuất khỏi tất cả thiết bị khác",
+      "logoutOthersError": "Không thể đăng xuất khỏi thiết bị khác",
+      "deleteConfirm": "Bạn có chắc muốn xóa thiết bị này?",
+      "deleteSuccess": "Đã xóa thiết bị thành công",
+      "deleteError": "Không thể xóa thiết bị"
+    },
+    "privacy": {
+      "sections": {
+        "personal": "Cá nhân",
+        "messagesAndCalls": "Tin nhắn và cuộc gọi",
+        "journal": "Nhật ký",
+        "searchAndFriend": "Nguồn tìm kiếm và kết bạn",
+        "utilities": "Quyền của tiện ích"
+      },
+      "birthday": "Sinh nhật",
+      "showAccessStatus": "Hiện trạng thái truy cập",
+      "on": "Đang bật",
+      "off": "Đang tắt",
+      "showSeenStatus": "Hiện trạng thái \"Đã xem\"",
+      "allowMessaging": "Cho phép nhắn tin",
+      "everyone": "Mọi người",
+      "allowCalls": "Cho phép gọi điện",
+      "friendsAndContacted": "Bạn bè và người lạ từng liên hệ",
+      "allowViewAndComment": "Cho phép xem và bình luận",
+      "blockAndHide": "Chặn và ẩn",
+      "manageFriendSources": "Quản lý nguồn tìm kiếm và kết bạn",
+      "utilities": "Tiện ích",
+      "friends": "Bạn bè",
+      "blockList": "Danh sách chặn",
+      "blockListSubtitle": "Quản lý người dùng bị chặn"
+    },
+    "dataOnDevice": {
+      "totalUsed": "Tổng dung lượng đã sử dụng",
+      "percentOfPhone": "{{percent}}% dung lượng điện thoại",
+      "zaloData": "Dữ liệu Zalo",
+      "zCloudDescription": "Giải phóng dung lượng điện thoại bằng cách lưu trữ ảnh, video lên zCloud miễn phí",
+      "learnMore": "Tìm hiểu thêm",
+      "cache": "Bộ nhớ đệm",
+      "mediaLargeFiles": "Ảnh, video, file lớn hơn 5 MB",
+      "chatData": "Dữ liệu trò chuyện",
+      "images": "Hình ảnh",
+      "videos": "Video",
+      "documents": "Tài liệu",
+      "audio": "Âm thanh",
+      "clearCache": "Xóa bộ nhớ cache",
+      "clearCacheSubtitle": "Giải phóng dung lượng lưu trữ",
+      "manageData": "Quản lý dữ liệu",
+      "manageDataSubtitle": "Tùy chỉnh cài đặt lưu trữ"
+    },
+    "backupRestore": {
+      "lastBackup": "Sao lưu gần nhất",
+      "today": "Hôm nay",
+      "autoBackup": "Tự động sao lưu",
+      "autoBackupSubtitle": "Sao lưu dữ liệu hàng ngày",
+      "backupOverWifi": "Sao lưu qua Wi-Fi",
+      "backupOverWifiSubtitle": "Chỉ sao lưu khi kết nối Wi-Fi",
+      "backupContent": "Nội dung sao lưu",
+      "backupContentSubtitle": "Tin nhắn, Ảnh, Video",
+      "backupNow": "Sao lưu ngay",
+      "restoreData": "Khôi phục dữ liệu"
+    },
+    "notifications": {
+      "allowNotifications": "Cho phép thông báo",
+      "allowNotificationsSubtitle": "Nhận thông báo đẩy",
+      "sound": "Âm thanh",
+      "soundSubtitle": "Phát âm thanh khi có thông báo",
+      "vibration": "Rung",
+      "vibrationSubtitle": "Rung khi có thông báo",
+      "messagesNotif": "Tin nhắn",
+      "messagesNotifSubtitle": "Thông báo tin nhắn mới",
+      "groupsNotif": "Nhóm",
+      "groupsNotifSubtitle": "Thông báo từ nhóm",
+      "friendRequests": "Kết bạn",
+      "friendRequestsSubtitle": "Yêu cầu kết bạn mới",
+      "doNotDisturb": "Chế độ không làm phiền",
+      "doNotDisturbSubtitle": "Tắt thông báo theo lịch"
+    },
+    "messages": {
+      "messagePreview": "Xem trước tin nhắn",
+      "messagePreviewSubtitle": "Hiển thị nội dung trong thông báo",
+      "fontSize": "Cỡ chữ",
+      "fontSizeMedium": "Vừa",
+      "chatTheme": "Giao diện chat",
+      "chatThemeSubtitle": "Hình nền và màu sắc",
+      "autoDownload": "Tự động tải xuống",
+      "autoDownloadSubtitle": "Tải ảnh/video tự động",
+      "saveToLibrary": "Lưu vào thư viện",
+      "saveToLibrarySubtitle": "Tự động lưu ảnh/video",
+      "endToEndEncryption": "Mã hóa đầu cuối",
+      "endToEndEncryptionSubtitle": "Bảo mật tin nhắn",
+      "archivedMessages": "Tin nhắn đã lưu trữ",
+      "archivedMessagesSubtitle": "Xem các cuộc trò chuyện đã lưu trữ"
+    },
+    "calls": {
+      "allowCalls": "Cho phép cuộc gọi",
+      "allowCallsSubtitle": "Nhận cuộc gọi thoại",
+      "allowVideoCalls": "Cho phép cuộc gọi video",
+      "allowVideoCallsSubtitle": "Nhận cuộc gọi video",
+      "audioQuality": "Chất lượng âm thanh",
+      "automatic": "Tự động",
+      "videoQuality": "Chất lượng video",
+      "hd": "HD",
+      "ringtone": "Nhạc chờ cuộc gọi",
+      "ringtoneSubtitle": "Tùy chỉnh nhạc chờ",
+      "callHistory": "Lịch sử cuộc gọi",
+      "callHistorySubtitle": "Xem các cuộc gọi gần đây"
+    },
+    "journal": {
+      "login": "Đăng nhập",
+      "passwordChange": "Thay đổi mật khẩu",
+      "newFriend": "Kết bạn mới",
+      "activityType": "Loại hoạt động",
+      "all": "Tất cả",
+      "timeRange": "Khoảng thời gian",
+      "last7Days": "7 ngày qua",
+      "exportLog": "Xuất nhật ký",
+      "clearLog": "Xóa nhật ký"
+    },
+    "contacts": {
+      "syncContacts": "Đồng bộ danh bạ",
+      "syncContactsSubtitle": "Đồng bộ với danh bạ thiết bị",
+      "allContacts": "Tất cả danh bạ",
+      "contactsCount": "{{count}} liên hệ",
+      "favorites": "Yêu thích",
+      "friendRequestsList": "Lời mời kết bạn",
+      "requestsCount": "{{count}} lời mời"
+    },
+    "interfaceLanguage": {
+      "darkMode": "Chế độ tối",
+      "darkModeSubtitle": "Giao diện nền tối",
+      "themeColor": "Màu chủ đạo",
+      "blue": "Xanh dương",
+      "appLanguage": "Ngôn ngữ ứng dụng",
+      "vietnamese": "Tiếng Việt",
+      "light": "Sáng",
+      "dark": "Tối",
+      "system": "Hệ thống",
+      "changeFontSize": "Đổi cỡ chữ",
+      "changeLanguage": "Thay đổi ngôn ngữ",
+      "appearance": "Giao diện",
+      "languageSection": "Ngôn ngữ"
+    },
+    "about": {
+      "version": "Phiên bản {{version}}",
+      "description": "Zalo là ứng dụng nhắn tin và gọi điện miễn phí, giúp bạn kết nối với bạn bè và người thân một cách dễ dàng và nhanh chóng.",
+      "copyright": "© 2024 Zalo. All rights reserved."
+    },
+    "support": {
+      "faq": "Câu hỏi thường gặp",
+      "faqSubtitle": "Tìm câu trả lời nhanh chóng",
+      "chatSupport": "Chat với hỗ trợ",
+      "chatSupportSubtitle": "Liên hệ trực tiếp qua chat",
+      "email": "Email",
+      "hotline": "Hotline"
+    },
+    "changePassword": {
+      "title": "Đổi mật khẩu",
+      "currentPassword": "Mật khẩu hiện tại",
+      "currentPasswordPlaceholder": "Nhập mật khẩu hiện tại",
+      "newPassword": "Mật khẩu mới",
+      "newPasswordPlaceholder": "Nhập mật khẩu mới (ít nhất 8 ký tự)",
+      "confirmPassword": "Xác nhận mật khẩu mới",
+      "confirmPasswordPlaceholder": "Nhập lại mật khẩu mới",
+      "changeButton": "Đổi mật khẩu",
+      "changing": "Đang đổi...",
+      "success": "Đổi mật khẩu thành công",
+      "error": "Đổi mật khẩu thất bại"
+    }
+  },
+  "tabs": {
+    "messages": "Tin nhắn",
+    "contacts": "Danh bạ",
+    "discover": "Khám phá",
+    "timeline": "Tường nhà",
+    "profile": "Cá nhân"
+  },
+  "messages": {
+    "title": "Tin nhắn",
+    "search": "Tìm kiếm",
+    "newMessage": "Tin nhắn mới",
+    "noMessages": "Chưa có tin nhắn nào",
+    "online": "Đang hoạt động",
+    "offline": "Không hoạt động",
+    "typing": "Đang nhập...",
+    "seen": "Đã xem",
+    "sent": "Đã gửi",
+    "group": "Nhóm",
+    "members": "thành viên"
+  },
+  "contacts": {
+    "title": "Danh bạ",
+    "search": "Tìm kiếm",
+    "tabs": {
+      "friends": "Bạn bè",
+      "groups": "Nhóm",
+      "oa": "OA"
+    },
+    "friendRequest": "Lời mời kết bạn",
+    "birthday": "Sinh nhật",
+    "filters": {
+      "all": "Tất cả",
+      "new": "Bạn mới",
+      "recent": "Mới truy cập"
+    },
+    "addFriend": "Kết bạn",
+    "noContacts": "Chưa có liên hệ nào"
+  },
+  "friendRequests": {
+    "title": "Lời mời kết bạn",
+    "tabs": {
+      "received": "Đã nhận",
+      "sent": "Đã gửi"
+    },
+    "actions": {
+      "accept": "Đồng ý",
+      "decline": "Từ chối",
+      "withdraw": "Thu hồi"
+    },
+    "source": {
+      "phoneContact": "Từ danh bạ máy",
+      "friendSuggestion": "Có thể bạn quen biết",
+      "qrCode": "Từ mã QR",
+      "nearby": "Từ người lân cận",
+      "group": "Từ nhóm {{groupName}}"
+    },
+    "time": {
+      "justNow": "Vừa xong",
+      "minutesAgo": "{{count}} phút trước",
+      "hoursAgo": "{{count}} giờ trước",
+      "daysAgo": "{{count}} ngày trước",
+      "weeksAgo": "{{count}} tuần trước"
+    },
+    "empty": {
+      "received": "Không có lời mời kết bạn",
+      "sent": "Chưa gửi lời mời kết bạn nào"
+    },
+    "success": {
+      "accepted": "Đã chấp nhận lời mời kết bạn",
+      "declined": "Đã từ chối lời mời kết bạn",
+      "withdrawn": "Đã thu hồi lời mời kết bạn"
+    },
+    "viewMore": "XEM THÊM"
+  },
+  "discover": {
+    "title": "Khám phá",
+    "search": "Tìm kiếm",
+    "services": {
+      "video": "Zalo Video",
+      "gameCenter": "Game Center",
+      "miniApp": "Mini App",
+      "shop": "Shop",
+      "payment": "Thanh toán",
+      "official": "Trang chính thức"
+    }
+  },
+  "timeline": {
+    "title": "Nhật ký",
+    "search": "Tìm kiếm",
+    "stories": "Câu chuyện",
+    "addStory": "Thêm câu chuyện",
+    "newPost": "Đăng bài",
+    "like": "Thích",
+    "comment": "Bình luận",
+    "share": "Chia sẻ",
+    "viewAll": "Xem tất cả",
+    "noStories": "Chưa có câu chuyện nào",
+    "noPosts": "Chưa có bài viết nào"
+  },
+  "profile": {
+    "title": "Cá nhân",
+    "search": "Tìm kiếm",
+    "online": "Đang hoạt động",
+    "menu": {
+      "zCloud": "zCloud",
+      "zCloudDesc": "Không gian lưu trữ dữ liệu trên đám mây",
+      "zStyle": "zStyle – Nổi bật trên Zalo",
+      "zStyleDesc": "Hình nền và nhạc cho cuộc gọi Zalo",
+      "myDocs": "My Documents",
+      "myDocsDesc": "Lưu trữ các tin nhắn quan trọng",
+      "storage": "Dữ liệu trên máy",
+      "storageDesc": "Quản lý dữ liệu Zalo của bạn",
+      "qrWallet": "Ví QR",
+      "qrWalletDesc": "Lưu trữ và xuất trình các mã QR quan trọng",
+      "accountSecurity": "Tài khoản và bảo mật",
+      "privacy": "Quyền riêng tư",
+      "settings": "Cài đặt"
+    },
+    "promo": {
+      "title": "Tặng bạn ưu đãi năm mới từ zStyle",
+      "subtitle": "Chỉ từ 10.700đ/tháng, nhận ưu đãi ngay"
+    }
+  },
   "search": {
     "placeholder": "Tìm kiếm",
     "tabs": {
-      "all": "Tất cả",
-      "contacts": "Liên hệ",
-      "messages": "Tin nhắn",
-      "discover": "Khám phá"
+      "mine": "Của tôi",
+      "explore": "Khám phá"
     },
-    "sections": {
-      "contacts": "Liên hệ",
-      "messages": "Tin nhắn",
-      "discover": "Khám phá"
-    },
-    "noResults": "Không tìm thấy kết quả cho \"{{query}}\"",
-    "recent": {
-      "title": "Tìm kiếm gần đây",
-      "clearAll": "Xóa tất cả",
-      "miniApps": "Mini Apps vừa dùng",
-      "contacts": "Liên hệ đã tìm",
-      "quickAccess": "Truy cập nhanh",
-      "queries": "Từ khóa đã tìm",
-      "editHistory": "Chỉnh sửa lịch sử tìm kiếm"
-    },
-    "editHistory": {
-      "title": "Chỉnh sửa lịch sử tìm kiếm",
-      "showQuickAccess": "Hiện truy cập nhanh",
-      "searchHistory": "Lịch sử tìm kiếm",
-      "saveContacts": "Lưu liên hệ đã tìm",
-      "saveQueries": "Lưu từ khóa đã tìm"
-    },
-    "seeMore": "Xem thêm",
-    "action": {
-      "add": "KẾT BẠN",
-      "accept": "ĐỒNG Ý"
-    }
-  },
-  "user": {
-    "profile": {
-      "timelinePostRestriction": "Bạn không thể xem bài viết dòng thời gian của {{name}} vì bạn chưa là bạn bè"
-    },
-    "recommendedFriends": "Bạn bè gợi ý",
-    "notFound": "Không tìm thấy người dùng"
+    "miniAppsUsed": "Mini App đã sử dụng",
+    "recentContacts": "Liên hệ đã tìm",
+    "edit": "Sửa",
+    "manageHistory": "Quản lý lịch sử tìm kiếm",
+    "exploreContent": "Khám phá nội dung thú vị"
   }
 }

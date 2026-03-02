@@ -70,6 +70,25 @@ export const resetPasswordRequestSchema = z
 
 export type ResetPasswordRequest = z.infer<typeof resetPasswordRequestSchema>
 
+export const changePasswordRequestSchema = z
+  .object({
+    oldPassword: z.string().min(1, 'Mật khẩu hiện tại không được để trống'),
+    newPassword: z
+      .string()
+      .min(8, 'Mật khẩu mới phải có ít nhất 8 ký tự')
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+        'Mật khẩu phải bao gồm chữ thường, chữ hoa, số và ký tự đặc biệt'
+      ),
+    confirmPassword: z.string().min(1, 'Vui lòng xác nhận lại mật khẩu mới')
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Mật khẩu xác nhận không khớp',
+    path: ['confirmPassword']
+  })
+
+export type ChangePasswordRequest = z.infer<typeof changePasswordRequestSchema>
+
 export const refreshRequestSchema = z.object({
   deviceId: z.string().min(1, 'Device ID không được để trống'),
   refreshToken: z.string().optional()

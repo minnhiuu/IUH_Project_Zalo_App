@@ -4,7 +4,8 @@ import * as SecureStore from 'expo-secure-store'
 
 const SECURE_KEYS = {
   ACCESS_TOKEN: 'access_token',
-  REFRESH_TOKEN: 'refresh_token'
+  REFRESH_TOKEN: 'refresh_token',
+  DEVICE_ID: 'device_id',
 }
 
 const STORAGE_KEYS = {
@@ -38,7 +39,15 @@ export const secureStorage = {
   clearTokens: async (): Promise<void> => {
     await SecureStore.deleteItemAsync(SECURE_KEYS.ACCESS_TOKEN)
     await SecureStore.deleteItemAsync(SECURE_KEYS.REFRESH_TOKEN)
-  }
+  },
+
+  setDeviceId: async (deviceId: string): Promise<void> => {
+    await SecureStore.setItemAsync(SECURE_KEYS.DEVICE_ID, deviceId)
+  },
+
+  getDeviceId: async (): Promise<string | null> => {
+    return await SecureStore.getItemAsync(SECURE_KEYS.DEVICE_ID)
+  },
 }
 
 // AsyncStorage for non-sensitive data

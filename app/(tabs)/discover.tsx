@@ -1,91 +1,126 @@
-import { Container, SearchTopBar } from '@/components'
 import { Ionicons } from '@expo/vector-icons'
-import { useRouter } from 'expo-router'
-import React from 'react'
-import { ScrollView, View, Text, TouchableOpacity } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { ScrollView } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { Header, Text, Box, VStack, HStack, Divider } from '@/components/ui'
+import { Pressable } from '@/components/ui/pressable'
+import { SEMANTIC } from '@/constants/theme'
 
-const DISCOVERY_ITEMS = [
+interface Service {
+  id: string
+  title: string
+  subtitle: string
+  icon: string
+  badge?: string | number
+}
+
+const SERVICES: Service[] = [
   {
-    id: 'video',
-    icon: 'play-circle',
-    color: '#FF3B30',
+    id: '1',
     title: 'Zalo Video',
-    subtitle: '16 điểm pháo hoa đêm Giao thừa ở T...'
+    subtitle: '16 �i?m ph�o hoa ��m Giao th?a ?...',
+    icon: 'play-circle',
+    badge: 'red'
   },
-  { id: 'news', icon: 'newspaper', color: '#0068FF', title: 'News hub', subtitle: '' },
   {
-    id: 'game',
-    icon: 'game-controller',
-    color: '#FF9500',
+    id: '2',
+    title: 'Trang tin t?ng h?p',
+    subtitle: '',
+    icon: 'newspaper'
+  },
+  {
+    id: '3',
     title: 'Game Center',
-    subtitle: 'Tam Quốc Động Khởi, Tiên Nghịch'
+    subtitle: 'Tam Qu?c ��ng Kh?i, Ti�n Ngh?ch',
+    icon: 'game-controller'
   },
-  { id: 'life', icon: 'apps', color: '#FFCC00', title: 'Life services', subtitle: 'Mobile top up, Pay bills, ...' },
   {
-    id: 'finance',
-    icon: 'grid',
-    color: '#5856D6',
-    title: 'Financial utilities',
-    subtitle: 'TPBank loans, VIB cards, Gold price, ...'
+    id: '4',
+    title: 'D?ch v? �?i s?ng',
+    subtitle: 'N?p �i?n tho?i, Tra h�a ��n, ...',
+    icon: 'calendar'
   },
-  { id: 'jobs', icon: 'briefcase', color: '#007AFF', title: 'Find jobs', subtitle: 'Post and find jobs near you' },
   {
-    id: 'gov',
-    icon: 'business',
-    color: '#FF2D55',
-    title: 'e-Government Assistant',
-    subtitle: 'AI assistant for public administration'
+    id: '5',
+    title: 'Ti?n �ch t�i ch�nh',
+    subtitle: 'Vay TPBank, M? th? VIB, Gi� v�ng, ...',
+    icon: 'wallet'
   },
-  { id: 'mini', icon: 'flash', color: '#34C759', title: 'Mini Apps', subtitle: '' }
+  {
+    id: '6',
+    title: 'T?m vi?c',
+    subtitle: 'Tuy?n d?ng v� t?m vi?c l�m g?n b?n',
+    icon: 'briefcase'
+  },
+  {
+    id: '7',
+    title: 'Tr? l? C�ng D�n S?',
+    subtitle: 'AI h?i ��p th? t?c h�nh ch�nh c�ng',
+    icon: 'cube'
+  },
+  {
+    id: '8',
+    title: 'Mini App',
+    subtitle: '',
+    icon: 'flash'
+  }
 ]
 
 export default function DiscoverScreen() {
-  const router = useRouter()
   const { t } = useTranslation()
 
   return (
-    <Container safeAreaEdges={[]}>
-      <SearchTopBar
-        searchQuery=''
-        setSearchQuery={() => {}}
-        placeholder={t('search.placeholder')}
-        onPress={() => router.push('/search')}
-        showQr={true}
-        onQrPress={() => console.log('QR')}
-      />
+    <Box style={{ flex: 1, backgroundColor: '#ffffff' }}>
+      {/* Header */}
+      <Header showSearch searchPlaceholder={t('discover.search')} showQRButton />
 
-      <ScrollView className='flex-1 bg-gray-50' showsVerticalScrollIndicator={false}>
-        <View className='bg-white'>
-          {DISCOVERY_ITEMS.map((item, index) => (
-            <React.Fragment key={item.id}>
-              <TouchableOpacity
-                className='flex-row items-center px-4 py-3'
-                onPress={() => console.log('Pressed', item.title)}
+      {/* Services List */}
+      <ScrollView style={{ flex: 1 }}>
+        {SERVICES.map((service, index) => (
+          <VStack key={service.id} space='xs'>
+            <Pressable
+              style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 16 }}
+            >
+              {/* Icon */}
+              <Box
+                style={{
+                  width: 48,
+                  height: 48,
+                  backgroundColor: '#e0f2fe',
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 12
+                }}
               >
-                <View
-                  style={{ backgroundColor: item.color }}
-                  className='w-10 h-10 rounded-lg items-center justify-center mr-3'
-                >
-                  <Ionicons name={item.icon as any} size={24} color='white' />
-                </View>
-                <View className='flex-1 justify-center'>
-                  <Text className='text-gray-900 text-base font-medium'>{item.title}</Text>
-                  {item.subtitle ? (
-                    <Text className='text-gray-500 text-xs' numberOfLines={1}>
-                      {item.subtitle}
-                    </Text>
-                  ) : null}
-                </View>
-                <Ionicons name='chevron-forward' size={20} color='#CCC' />
-              </TouchableOpacity>
-              {index < DISCOVERY_ITEMS.length - 1 && <View className='h-[0.5px] bg-gray-100 ml-16' />}
-            </React.Fragment>
-          ))}
-        </View>
-        <View className='h-10' />
+                <Ionicons name={service.icon as any} size={28} color='#0068FF' />
+              </Box>
+
+              {/* Content */}
+              <VStack style={{ flex: 1 }} space='xs'>
+                <HStack space='sm' style={{ alignItems: 'center' }}>
+                  <Text size='md' bold>
+                    {service.title}
+                  </Text>
+                  {service.badge === 'red' && (
+                    <Box style={{ width: 8, height: 8, backgroundColor: '#ef4444', borderRadius: 4 }} />
+                  )}
+                </HStack>
+                {service.subtitle && (
+                  <Text style={{ color: '#6b7280', marginTop: 4 }} size='sm' numberOfLines={1}>
+                    {service.subtitle}
+                  </Text>
+                )}
+              </VStack>
+
+              {/* Arrow */}
+              <Ionicons name='chevron-forward' size={20} color={SEMANTIC.iconMuted} />
+            </Pressable>
+
+            {/* Divider */}
+            {index < SERVICES.length - 1 && <Divider style={{ marginLeft: 64 }} />}
+          </VStack>
+        ))}
       </ScrollView>
-    </Container>
+    </Box>
   )
 }
