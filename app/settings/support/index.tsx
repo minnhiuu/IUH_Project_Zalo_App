@@ -11,7 +11,7 @@ export default function SupportScreen() {
  return (
  <SettingsDetailScreen title={t('settings.menu.support.title')}>
  {/* Support Options */}
- <Box className="bg-white mt-2 mb-8">
+ <Box className="bg-background mt-2 mb-8">
  <MenuItem
  title={t('settings.support.faq')}
  subtitle={t('settings.support.faqSubtitle')}

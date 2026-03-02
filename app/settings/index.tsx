@@ -5,18 +5,20 @@ import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { Box, VStack, Header, MenuItem, Button, ButtonText } from '@/components/ui'
 import { useLogoutMutation } from '@/features/auth'
+import { useTheme } from '@/context'
 
 export default function SettingsScreen() {
   const router = useRouter()
   const { t } = useTranslation()
   const { mutate: logout, isPending: isLoggingOut } = useLogoutMutation()
+  const { colors, isDark } = useTheme()
 
   const handleLogout = () => {
     logout()
   }
 
   return (
-    <Box style={{ flex: 1, backgroundColor: '#f8f9fa' }}>
+    <Box style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
       <Header 
         title={t('settings.title')} 
         showBackButton={true} 
@@ -26,8 +28,8 @@ export default function SettingsScreen() {
       />
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* All menu items in single white container */}
-        <VStack style={{ backgroundColor: '#ffffff', marginTop: 16 }}>
+        {/* All menu items in single container */}
+        <VStack style={{ backgroundColor: colors.background, marginTop: 16 }}>
           <MenuItem
             icon="shield-checkmark-outline"
             iconColor="#0068FF"
@@ -131,13 +133,13 @@ export default function SettingsScreen() {
               borderRadius: 8,
               paddingVertical: 14,
               borderWidth: 1,
-              borderColor: '#e5e7eb'
+              borderColor: colors.border
             }}
             onPress={handleLogout}
             isDisabled={isLoggingOut}
           >
-            <Ionicons name="log-out-outline" size={20} color="#111827" />
-            <ButtonText style={{ color: '#111827', fontSize: 16, fontWeight: '500' }}>
+            <Ionicons name="log-out-outline" size={20} color={colors.text} />
+            <ButtonText style={{ color: colors.text, fontSize: 16, fontWeight: '500' }}>
               {t('settings.deviceManagement.logout')}
             </ButtonText>
           </Button>

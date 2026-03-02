@@ -3,7 +3,8 @@ import { View, TextInput, Pressable } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { Text } from './text'
-import { HEADER, BRAND } from '@/constants/theme'
+import { HEADER } from '@/constants/theme'
+import { useTheme } from '@/context'
 
 interface HeaderProps {
   // Search props
@@ -46,6 +47,8 @@ export function Header({
   onBackPress
 }: HeaderProps) {
   const router = useRouter()
+  const { isDark, colors } = useTheme()
+  const headerBg = isDark ? colors.background : HEADER.backgroundColor
 
   const handleBackPress = () => {
     if (onBackPress) {
@@ -56,8 +59,8 @@ export function Header({
   }
 
   return (
-    <View style={{ backgroundColor: HEADER.backgroundColor }}>
-      <SafeAreaView edges={['top']} style={{ backgroundColor: HEADER.backgroundColor }}>
+    <View style={{ backgroundColor: headerBg }}>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: headerBg }}>
         <View
           style={{
             paddingHorizontal: HEADER.paddingHorizontal,

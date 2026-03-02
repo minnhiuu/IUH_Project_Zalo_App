@@ -14,108 +14,121 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        // Zalo Colors - synced with web index.css :root
+        // ==================== BRAND (static, no theme switch) ====================
         brand: {
-          blue: '#0068ff', // --brand-blue
-          'blue-dark': '#005ae0', // --brand-blue-dark
-          'blue-light': '#e5f1ff', // --brand-blue-light
-          'blue-hover': '#c7e0ff', // --brand-blue-hover
-          'blue-text': '#0045ad', // --brand-blue-text
-          navy: '#081b3a', // --foreground
+          blue: '#0068ff',
+          'blue-dark': '#005ae0',
+          'blue-light': '#e5f1ff',
+          'blue-hover': '#c7e0ff',
+          'blue-text': '#0045ad',
+          navy: '#081b3a',
           gray: {
-            100: '#f1f2f4', // --muted
-            200: '#ebecf0', // --secondary
-            400: '#5a6981', // --muted-foreground
-            500: '#081b3a', // --secondary-foreground
+            100: '#f1f2f4',
+            200: '#ebecf0',
+            400: '#5a6981',
+            500: '#081b3a',
           },
-          red: '#e53838' // --destructive
+          red: '#e53838'
         },
+
+        // ==================== THEME-AWARE (CSS variable driven) ====================
         primary: {
-          DEFAULT: '#0068ff', // --primary
-          50: '#e5f1ff', // --brand-blue-light
-          100: '#c7e0ff', // --brand-blue-hover
+          DEFAULT: 'var(--color-primary)',
+          50: '#e5f1ff',
+          100: '#c7e0ff',
           200: '#99c2ff',
           300: '#66a3ff',
           400: '#3385ff',
           500: '#0068ff',
-          600: '#005ae0', // --primary-hover
-          700: '#0045ad', // --brand-blue-text
+          600: '#005ae0',
+          700: '#0045ad',
           800: '#002966',
           900: '#001433',
-          foreground: '#ffffff',
-          hover: '#005ae0',
+          foreground: 'var(--color-primary-foreground)',
+          hover: 'var(--color-primary-hover)',
         },
-        // Thêm typography để tương thích với các component Gluestack v2
+
+        // Typography scale (theme-aware for Gluestack UI v4)
         typography: {
-          0: '#ffffff',
-          50: '#f2f2f2',
-          100: '#e5e5e5',
-          200: '#cccccc',
-          300: '#b3b3b3',
-          400: '#999999',
-          500: '#808080',
-          600: '#666666',
-          700: '#4d4d4d',
-          800: '#333333',
-          900: '#171717',
-          950: '#000000',
+          0: 'var(--color-typography-0)',
+          50: 'var(--color-typography-50)',
+          100: 'var(--color-typography-100)',
+          200: 'var(--color-typography-200)',
+          300: 'var(--color-typography-300)',
+          400: 'var(--color-typography-400)',
+          500: 'var(--color-typography-500)',
+          600: 'var(--color-typography-600)',
+          700: 'var(--color-typography-700)',
+          800: 'var(--color-typography-800)',
+          900: 'var(--color-typography-900)',
+          950: 'var(--color-typography-950)',
         },
-        // Giữ nguyên các màu khác của bạn...
+
+        // Status colors (static)
         success: '#00C853',
         warning: '#FFB300',
         error: '#e53838',
         info: '#0068ff',
 
-        // Semantic tokens matching web
-        background: '#ffffff',
-        foreground: '#081b3a',
+        // Semantic tokens (theme-aware via CSS variables)
+        background: {
+          DEFAULT: 'var(--color-background)',
+          secondary: 'var(--color-background-secondary)',
+        },
+        foreground: 'var(--color-foreground)',
         secondary: {
-          DEFAULT: '#ebecf0',
-          foreground: '#081b3a',
-          hover: '#c6cad2',
+          DEFAULT: 'var(--color-secondary)',
+          foreground: 'var(--color-secondary-foreground)',
+          hover: 'var(--color-secondary-hover)',
         },
         muted: {
-          DEFAULT: '#f1f2f4',
-          foreground: '#5a6981',
+          DEFAULT: 'var(--color-muted)',
+          foreground: 'var(--color-muted-foreground)',
         },
         accent: {
-          DEFAULT: '#f1f2f4',
-          foreground: '#081b3a',
-          hover: '#e5e7eb',
+          DEFAULT: 'var(--color-accent)',
+          foreground: 'var(--color-accent-foreground)',
+          hover: 'var(--color-accent-hover)',
         },
-        border: '#dbdbdb',
-        input: '#dbdbdb',
-        ring: '#0068ff',
+        border: 'var(--color-border)',
+        input: 'var(--color-input)',
+        ring: 'var(--color-ring)',
         destructive: {
-          DEFAULT: '#e53838',
-          foreground: '#ffffff',
+          DEFAULT: 'var(--color-destructive)',
+          foreground: 'var(--color-destructive-foreground)',
         },
         card: {
-          DEFAULT: '#ffffff',
-          foreground: '#081b3a',
+          DEFAULT: 'var(--color-card)',
+          foreground: 'var(--color-card-foreground)',
         },
         popover: {
-          DEFAULT: '#ffffff',
-          foreground: '#081b3a',
+          DEFAULT: 'var(--color-popover)',
+          foreground: 'var(--color-popover-foreground)',
         },
         sidebar: {
-          DEFAULT: '#005ae0',
-          foreground: '#ffffff',
-          primary: '#ffffff',
-          'primary-foreground': '#005ae0',
-          accent: 'rgba(255, 255, 255, 0.2)',
-          'accent-foreground': '#ffffff',
-          border: 'rgba(255, 255, 255, 0.1)',
-          ring: '#0068ff',
+          DEFAULT: 'var(--color-sidebar)',
+          foreground: 'var(--color-sidebar-foreground)',
+          primary: 'var(--color-sidebar-primary)',
+          'primary-foreground': 'var(--color-sidebar-primary-foreground)',
+          accent: 'var(--color-sidebar-accent)',
+          'accent-foreground': 'var(--color-sidebar-accent-foreground)',
+          border: 'var(--color-sidebar-border)',
+          ring: 'var(--color-sidebar-ring)',
         },
-        disabled: '#8b96a7',
+
+        // Utility colors (theme-aware)
+        disabled: 'var(--color-disabled)',
+        divider: 'var(--color-divider)',
+        icon: {
+          muted: 'var(--color-icon-muted)',
+          hover: 'var(--color-icon-hover)',
+          secondary: 'var(--color-icon-secondary)',
+        },
       },
       fontFamily: {
-        // NativeWind v4 ưu tiên tên font hệ thống trên Mobile
         sans: ['Roboto', 'system-ui', 'sans-serif'],
-        heading: ['Roboto', 'system-ui', 'sans-serif'], // Thêm font-heading cho Heading component
+        heading: ['Roboto', 'system-ui', 'sans-serif'],
       },
-      // Các config khác giữ nguyên...
       spacing: {
         'safe-top': 'var(--safe-area-inset-top)',
         'safe-bottom': 'var(--safe-area-inset-bottom)'

@@ -54,11 +54,11 @@ export default function ChangePasswordScreen() {
 
  return (
  <SettingsDetailScreen title={t('settings.changePassword.title')}>
- <Box className="bg-white mt-2 px-4 py-6">
+ <Box className="bg-background mt-2 px-4 py-6">
  <VStack space="lg">
  {/* Current Password */}
  <VStack space="xs">
- <Text size="sm" className="text-gray-600 font-medium">
+ <Text size="sm" className="text-muted-foreground font-medium">
  {t('settings.changePassword.currentPassword')}
  </Text>
  <Input isInvalid={!!errors.oldPassword} isDisabled={isSubmitting}>
@@ -84,7 +84,7 @@ export default function ChangePasswordScreen() {
 
  {/* New Password */}
  <VStack space="xs">
- <Text size="sm" className="text-gray-600 font-medium">
+ <Text size="sm" className="text-muted-foreground font-medium">
  {t('settings.changePassword.newPassword')}
  </Text>
  <Input isInvalid={!!errors.newPassword} isDisabled={isSubmitting}>
@@ -110,7 +110,7 @@ export default function ChangePasswordScreen() {
 
  {/* Confirm Password */}
  <VStack space="xs">
- <Text size="sm" className="text-gray-600 font-medium">
+ <Text size="sm" className="text-muted-foreground font-medium">
  {t('settings.changePassword.confirmPassword')}
  </Text>
  <Input isInvalid={!!errors.confirmPassword} isDisabled={isSubmitting}>

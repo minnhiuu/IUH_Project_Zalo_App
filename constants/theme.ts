@@ -1,266 +1,358 @@
 /**
- * Theme configuration for Zalo Clone App
- * Colors match web design system from index.css
- * Design follows official Zalo brand guidelines
+ * ZALO THEME — Single Source of Truth
+ *
+ * Architecture:
+ *  • Color tokens defined ONCE here as CSS-variable maps (light + dark).
+ *  • GluestackProvider imports these maps → NativeWind vars() on native.
+ *  • global.css mirrors the same values for TailwindCSS on web.
+ *  • tailwind.config.js references var(--color-*) so Tailwind classes
+ *    like `bg-background`, `text-foreground` auto-switch with theme.
+ *  • RN StyleSheet consumers use the compat helpers (SEMANTIC / DARK_MODE).
+ *
+ * 👉 When adding a new color: add it to lightTokens + darkTokens here,
+ *    then add the matching CSS var in global.css and tailwind.config.js.
  */
 
-// ==================== BRAND COLORS ====================
-// Official Zalo brand palette matching web app (index.css :root)
+// ────────────────────────────────────────────────────────────
+// 1. BRAND — Static palette (never changes between themes)
+// ────────────────────────────────────────────────────────────
 export const BRAND = {
-  // Primary Blues (synced with web --brand-*)
-  blue: '#0068FF', // --brand-blue
-  blueDark: '#005AE0', // --brand-blue-dark
-  blueLight: '#E5F1FF', // --brand-blue-light
-  blueHover: '#C7E0FF', // --brand-blue-hover
-  blueText: '#0045AD', // --brand-blue-text
-
-  // Secondary
-  navy: '#081B3A', // --foreground (web uses as foreground)
-  primary: '#0068FF', // --primary
-  vibrantBlue: '#0068FF', // --vibrant-blue (same as primary in web light)
-
-  // Grays
-  gray100: '#F1F2F4', // --muted
-  gray200: '#EBECF0', // --secondary (web)
-  gray400: '#5A6981', // --muted-foreground (web)
-  gray500: '#081B3A', // --secondary-foreground (web)
-
-  // Status
-  red: '#E53838', // --destructive
-
-  // White & Black
+  blue: '#0068FF',
+  blueDark: '#005AE0',
+  blueLight: '#E5F1FF',
+  blueHover: '#C7E0FF',
+  blueText: '#0045AD',
   white: '#FFFFFF',
-  black: '#000000'
-}
+  black: '#000000',
+} as const
 
-// ==================== HEADER CONFIGURATION ====================
-// Fixed header dimensions for consistency across all screens
-// Matches web sidebar color: #005ae0 (brand-blue-dark)
-export const HEADER = {
-  height: 56, // Standard header height (excluding SafeArea)
-  paddingHorizontal: 16, // px-4
-  paddingVertical: 12, // py-3
-  backgroundColor: BRAND.blueDark, // #005ae0 - Matches web sidebar
-  textColor: BRAND.white,
-  searchPlaceholderColor: 'rgba(255, 255, 255, 0.8)',
-  iconSize: {
-    search: 22,
-    qr: 24,
-    add: 30,
-    settings: 26,
-    back: 28
-  }
-}
-
-// ==================== SEMANTIC COLORS ====================
-// Mapped to web CSS variables from index.css :root
-export const SEMANTIC = {
-  // Backgrounds (web: --background, --muted)
-  background: '#FFFFFF', // --background
-  backgroundSecondary: '#F1F2F4', // --muted
-
-  // Text (web: --foreground, --muted-foreground)
-  foreground: '#081B3A', // --foreground
-  textPrimary: '#081B3A', // --foreground
-  textSecondary: '#5A6981', // --muted-foreground
-  textTertiary: '#5A6981', // --muted-foreground (lighter usage)
-  textDisabled: '#8B96A7', // --disabled
-
-  // Primary Actions (web: --primary, --primary-hover)
-  primary: '#0068FF', // --primary
-  primaryHover: '#005AE0', // --primary-hover
-  primaryForeground: '#FFFFFF', // --primary-foreground
-
-  // Vibrant (web: --vibrant-blue)
-  vibrantBlue: '#0068FF', // --vibrant-blue (light mode)
-  vibrantBlueHover: '#005AE0', // --vibrant-blue-hover
-
-  // Secondary (web: --secondary, --secondary-foreground)
-  secondary: '#EBECF0', // --secondary
-  secondaryForeground: '#081B3A', // --secondary-foreground
-  secondaryHover: '#C6CAD2', // --secondary-hover
-
-  // Muted (web: --muted, --muted-foreground)
-  muted: '#F1F2F4', // --muted
-  mutedForeground: '#5A6981', // --muted-foreground
-
-  // Accent (web: --accent, --accent-foreground)
-  accent: '#F1F2F4', // --accent
-  accentForeground: '#081B3A', // --accent-foreground
-  accentHover: '#E5E7EB', // --accent-hover
-
-  // Borders & Input (web: --border, --input, --ring)
-  border: '#DBDBDB', // --border
-  input: '#DBDBDB', // --input
-  ring: '#0068FF', // --ring
-
-  // Section Divider
-  sectionDivider: '#F1F2F4', // --section-divider
-
-  // Icons (web: --icon-*)
-  iconMuted: '#9FACBC', // --icon-muted
-  iconHover: '#66A6FF', // --icon-hover
-  iconSecondary: '#5A6981', // --icon-secondary
-
-  // Status Colors
+// ────────────────────────────────────────────────────────────
+// 2. STATUS — Static status colors
+// ────────────────────────────────────────────────────────────
+export const STATUS = {
   success: '#00C853',
   warning: '#FFB300',
   error: '#E53838',
-  destructive: '#E53838', // --destructive
-  destructiveForeground: '#FFFFFF', // --destructive-foreground
-  info: '#0068FF'
-}
+  info: '#0068FF',
+} as const
 
-// ==================== DARK MODE COLORS ====================
-// Synced with web index.css .dark variables
-export const DARK_MODE = {
-  background: '#22262B', // --background (dark)
-  backgroundSecondary: '#2C323A', // --secondary (dark)
-  foreground: '#DFE2E7', // --foreground (dark)
+// ────────────────────────────────────────────────────────────
+// 3. HEADER — Fixed header configuration
+// ────────────────────────────────────────────────────────────
+export const HEADER = {
+  height: 56,
+  paddingHorizontal: 16,
+  paddingVertical: 12,
+  backgroundColor: BRAND.blueDark,
+  textColor: BRAND.white,
+  searchPlaceholderColor: 'rgba(255, 255, 255, 0.8)',
+  iconSize: { search: 22, qr: 24, add: 30, settings: 26, back: 28 },
+} as const
 
-  textPrimary: '#DFE2E7', // --foreground (dark)
-  textSecondary: '#B6C1CF', // --muted-foreground (dark)
-  textTertiary: '#B6C1CF', // --muted-foreground (dark)
-  textDisabled: '#8B96A7', // --disabled
+// ────────────────────────────────────────────────────────────
+// 4. COLOR TOKENS — Light & Dark  ★ Single Source of Truth ★
+//    Keys are CSS variable names → values are hex colors.
+//    GluestackProvider passes these directly to NativeWind vars().
+// ────────────────────────────────────────────────────────────
 
-  primary: '#0068FF', // --primary (dark)
-  primaryHover: '#005AE0', // --primary-hover (dark)
-  primaryForeground: '#FFFFFF', // --primary-foreground
+export const lightTokens = {
+  // Primary
+  '--color-primary': '#0068FF',
+  '--color-primary-foreground': '#FFFFFF',
+  '--color-primary-hover': '#005AE0',
 
-  vibrantBlue: '#0068FF', // --vibrant-blue (dark)
-  vibrantBlueHover: '#005AE0', // --vibrant-blue-hover (dark)
+  // Background
+  '--color-background': '#FFFFFF',
+  '--color-background-secondary': '#F1F2F4',
 
-  secondary: '#2C323A', // --secondary (dark)
-  secondaryForeground: '#DFE2E7', // --secondary-foreground (dark)
-  secondaryHover: '#38404A', // --secondary-hover (dark)
+  // Foreground
+  '--color-foreground': '#081B3A',
 
-  muted: '#3E444A', // --muted (dark)
-  mutedForeground: '#B6C1CF', // --muted-foreground (dark)
+  // Secondary
+  '--color-secondary': '#EBECF0',
+  '--color-secondary-foreground': '#081B3A',
+  '--color-secondary-hover': '#C6CAD2',
 
-  accent: '#3E444A', // --accent (dark)
-  accentForeground: '#FFFFFF', // --accent-foreground (dark)
-  accentHover: '#3E444A', // --accent-hover (dark)
+  // Muted
+  '--color-muted': '#F1F2F4',
+  '--color-muted-foreground': '#5A6981',
 
-  border: 'rgba(255, 255, 255, 0.1)', // --border (dark)
-  input: '#1A1D21', // --input (dark)
-  ring: '#0068FF', // --ring (dark)
-  divider: '#121416', // --section-divider (dark)
+  // Accent
+  '--color-accent': '#F1F2F4',
+  '--color-accent-foreground': '#081B3A',
+  '--color-accent-hover': '#E5E7EB',
 
-  card: '#22262B', // --card (dark)
-  cardForeground: '#FFFFFF', // --card-foreground (dark)
+  // Border / Input / Ring
+  '--color-border': '#DBDBDB',
+  '--color-input': '#DBDBDB',
+  '--color-ring': '#0068FF',
 
-  // Sidebar (dark)
-  sidebar: '#121416', // --sidebar (dark)
-  sidebarForeground: '#FFFFFF', // --sidebar-foreground (dark)
-
-  // Icons
-  iconMuted: '#9FACBC', // --icon-muted (dark)
-  iconHover: '#66A6FF', // --icon-hover (dark)
-  iconSecondary: '#5A6981' // --icon-secondary (dark)
-}
-
-// ==================== COMPONENT-SPECIFIC COLORS ====================
-// Colors for specific Zalo UI components
-export const COMPONENT = {
-  // Bottom Tab Navigation
-  tab: {
-    active: '#0068FF', // --primary
-    inactive: '#5A6981', // --muted-foreground
-    background: '#FFFFFF', // --background
-    border: '#DBDBDB' // --border
-  },
-
-  // Message Bubbles
-  message: {
-    sent: '#0068FF', // --primary
-    sentText: '#FFFFFF',
-    received: '#F1F2F4', // --muted
-    receivedText: '#081B3A', // --foreground
-    timestamp: '#5A6981' // --muted-foreground
-  },
-
-  // Online Status
-  status: {
-    online: '#00C853',
-    offline: '#5A6981', // --muted-foreground
-    away: '#FFB300'
-  },
-
-  // Sidebar (matching web --sidebar-*)
-  sidebar: {
-    background: '#005AE0', // --sidebar
-    foreground: '#FFFFFF', // --sidebar-foreground
-    primary: '#FFFFFF', // --sidebar-primary
-    primaryForeground: '#005AE0', // --sidebar-primary-foreground
-    accent: 'rgba(255, 255, 255, 0.2)', // --sidebar-accent
-    accentForeground: '#FFFFFF', // --sidebar-accent-foreground
-    border: 'rgba(255, 255, 255, 0.1)', // --sidebar-border
-    ring: '#0068FF' // --sidebar-ring
-  },
-
-  // Buttons
-  button: {
-    primary: '#0068FF', // --primary
-    primaryHover: '#005AE0', // --primary-hover
-    primaryDisabled: 'rgba(0, 104, 255, 0.4)', // --primary with opacity
-    secondary: '#EBECF0', // --secondary
-    secondaryText: '#081B3A', // --secondary-foreground
-    secondaryHover: '#C6CAD2' // --secondary-hover
-  },
-
-  // Input Fields
-  input: {
-    background: '#FFFFFF', // --background
-    border: '#DBDBDB', // --border / --input
-    borderFocus: '#0068FF', // --ring
-    placeholder: '#5A6981', // --muted-foreground
-    disabled: '#F1F2F4' // --muted
-  },
-
-  // Cards & Containers
-  card: {
-    background: '#FFFFFF', // --card
-    foreground: '#081B3A', // --card-foreground
-    border: '#DBDBDB', // --border
-    shadow: 'rgba(0, 0, 0, 0.08)'
-  },
+  // Card
+  '--color-card': '#FFFFFF',
+  '--color-card-foreground': '#081B3A',
 
   // Popover
-  popover: {
-    background: '#FFFFFF', // --popover
-    foreground: '#081B3A' // --popover-foreground
-  },
+  '--color-popover': '#FFFFFF',
+  '--color-popover-foreground': '#081B3A',
 
-  // QR Scanner
-  qr: {
-    overlay: 'rgba(0, 0, 0, 0.7)',
-    frame: '#0068FF', // --primary
-    success: '#00C853',
-    error: '#E53838' // --destructive
-  }
+  // Destructive
+  '--color-destructive': '#E53838',
+  '--color-destructive-foreground': '#FFFFFF',
+
+  // Divider / Disabled
+  '--color-divider': '#F1F2F4',
+  '--color-disabled': '#8B96A7',
+
+  // Icons
+  '--color-icon-muted': '#9FACBC',
+  '--color-icon-hover': '#66A6FF',
+  '--color-icon-secondary': '#5A6981',
+
+  // Sidebar
+  '--color-sidebar': '#005AE0',
+  '--color-sidebar-foreground': '#FFFFFF',
+  '--color-sidebar-primary': '#FFFFFF',
+  '--color-sidebar-primary-foreground': '#005AE0',
+  '--color-sidebar-accent': 'rgba(255,255,255,0.2)',
+  '--color-sidebar-accent-foreground': '#FFFFFF',
+  '--color-sidebar-border': 'rgba(255,255,255,0.1)',
+  '--color-sidebar-ring': '#0068FF',
+
+  // Typography scale (for Gluestack UI v4 components)
+  '--color-typography-0': '#FFFFFF',
+  '--color-typography-50': '#F2F2F2',
+  '--color-typography-100': '#E5E5E5',
+  '--color-typography-200': '#CCCCCC',
+  '--color-typography-300': '#B3B3B3',
+  '--color-typography-400': '#999999',
+  '--color-typography-500': '#808080',
+  '--color-typography-600': '#666666',
+  '--color-typography-700': '#4D4D4D',
+  '--color-typography-800': '#333333',
+  '--color-typography-900': '#171717',
+  '--color-typography-950': '#000000',
+} as const
+
+export const darkTokens = {
+  // Primary
+  '--color-primary': '#0068FF',
+  '--color-primary-foreground': '#FFFFFF',
+  '--color-primary-hover': '#005AE0',
+
+  // Background
+  '--color-background': '#22262B',
+  '--color-background-secondary': '#2C323A',
+
+  // Foreground
+  '--color-foreground': '#DFE2E7',
+
+  // Secondary
+  '--color-secondary': '#2C323A',
+  '--color-secondary-foreground': '#DFE2E7',
+  '--color-secondary-hover': '#38404A',
+
+  // Muted
+  '--color-muted': '#3E444A',
+  '--color-muted-foreground': '#B6C1CF',
+
+  // Accent
+  '--color-accent': '#3E444A',
+  '--color-accent-foreground': '#FFFFFF',
+  '--color-accent-hover': '#3E444A',
+
+  // Border / Input / Ring
+  '--color-border': 'rgba(255,255,255,0.1)',
+  '--color-input': '#1A1D21',
+  '--color-ring': '#0068FF',
+
+  // Card
+  '--color-card': '#22262B',
+  '--color-card-foreground': '#FFFFFF',
+
+  // Popover
+  '--color-popover': '#22262B',
+  '--color-popover-foreground': '#FFFFFF',
+
+  // Destructive
+  '--color-destructive': '#E53838',
+  '--color-destructive-foreground': '#FFFFFF',
+
+  // Divider / Disabled
+  '--color-divider': '#121416',
+  '--color-disabled': '#8B96A7',
+
+  // Icons
+  '--color-icon-muted': '#9FACBC',
+  '--color-icon-hover': '#66A6FF',
+  '--color-icon-secondary': '#5A6981',
+
+  // Sidebar
+  '--color-sidebar': '#121416',
+  '--color-sidebar-foreground': '#FFFFFF',
+  '--color-sidebar-primary': '#FFFFFF',
+  '--color-sidebar-primary-foreground': '#121416',
+  '--color-sidebar-accent': 'rgba(255,255,255,0.1)',
+  '--color-sidebar-accent-foreground': '#FFFFFF',
+  '--color-sidebar-border': 'rgba(255,255,255,0.05)',
+  '--color-sidebar-ring': '#0068FF',
+
+  // Typography scale (inverted for dark mode)
+  '--color-typography-0': '#000000',
+  '--color-typography-50': '#171717',
+  '--color-typography-100': '#333333',
+  '--color-typography-200': '#4D4D4D',
+  '--color-typography-300': '#666666',
+  '--color-typography-400': '#808080',
+  '--color-typography-500': '#999999',
+  '--color-typography-600': '#B3B3B3',
+  '--color-typography-700': '#CCCCCC',
+  '--color-typography-800': '#E5E5E5',
+  '--color-typography-900': '#F2F2F2',
+  '--color-typography-950': '#FFFFFF',
+} as const
+
+// Token map type — uses shared key set with string values (not literal types)
+export type TokenKey = keyof typeof lightTokens
+export type TokenMap = Record<TokenKey, string>
+
+// ────────────────────────────────────────────────────────────
+// 5. HELPERS — Extract values from token maps
+// ────────────────────────────────────────────────────────────
+
+/** Pick a raw hex value from a token map by its CSS variable key */
+function t(map: TokenMap, key: TokenKey): string {
+  return map[key]
 }
 
-// ==================== UTILITY FUNCTIONS ====================
+// ────────────────────────────────────────────────────────────
+// 6. SEMANTIC / DARK_MODE — Derived RN-style color objects
+//    For components that need inline style={{ color: X }}.
+//    Every value comes from the token maps above — no duplication.
+// ────────────────────────────────────────────────────────────
+
+export const SEMANTIC = {
+  // Backgrounds
+  background: t(lightTokens, '--color-background'),
+  backgroundSecondary: t(lightTokens, '--color-background-secondary'),
+
+  // Text
+  foreground: t(lightTokens, '--color-foreground'),
+  textPrimary: t(lightTokens, '--color-foreground'),
+  textSecondary: t(lightTokens, '--color-muted-foreground'),
+  textDisabled: t(lightTokens, '--color-disabled'),
+
+  // Primary
+  primary: t(lightTokens, '--color-primary'),
+  primaryHover: t(lightTokens, '--color-primary-hover'),
+  primaryForeground: t(lightTokens, '--color-primary-foreground'),
+
+  // Secondary
+  secondary: t(lightTokens, '--color-secondary'),
+  secondaryForeground: t(lightTokens, '--color-secondary-foreground'),
+  secondaryHover: t(lightTokens, '--color-secondary-hover'),
+
+  // Muted
+  muted: t(lightTokens, '--color-muted'),
+  mutedForeground: t(lightTokens, '--color-muted-foreground'),
+
+  // Accent
+  accent: t(lightTokens, '--color-accent'),
+  accentForeground: t(lightTokens, '--color-accent-foreground'),
+
+  // Border / Input
+  border: t(lightTokens, '--color-border'),
+  input: t(lightTokens, '--color-input'),
+  ring: t(lightTokens, '--color-ring'),
+
+  // Divider
+  divider: t(lightTokens, '--color-divider'),
+
+  // Icons
+  iconMuted: t(lightTokens, '--color-icon-muted'),
+  iconHover: t(lightTokens, '--color-icon-hover'),
+  iconSecondary: t(lightTokens, '--color-icon-secondary'),
+
+  // Status
+  destructive: STATUS.error,
+  destructiveForeground: '#FFFFFF',
+  success: STATUS.success,
+  warning: STATUS.warning,
+  error: STATUS.error,
+  info: STATUS.info,
+} as const
+
+export const DARK_MODE = {
+  // Backgrounds
+  background: t(darkTokens, '--color-background'),
+  backgroundSecondary: t(darkTokens, '--color-background-secondary'),
+
+  // Text
+  foreground: t(darkTokens, '--color-foreground'),
+  textPrimary: t(darkTokens, '--color-foreground'),
+  textSecondary: t(darkTokens, '--color-muted-foreground'),
+  textDisabled: t(darkTokens, '--color-disabled'),
+
+  // Primary
+  primary: t(darkTokens, '--color-primary'),
+  primaryHover: t(darkTokens, '--color-primary-hover'),
+  primaryForeground: t(darkTokens, '--color-primary-foreground'),
+
+  // Secondary
+  secondary: t(darkTokens, '--color-secondary'),
+  secondaryForeground: t(darkTokens, '--color-secondary-foreground'),
+  secondaryHover: t(darkTokens, '--color-secondary-hover'),
+
+  // Muted
+  muted: t(darkTokens, '--color-muted'),
+  mutedForeground: t(darkTokens, '--color-muted-foreground'),
+
+  // Accent
+  accent: t(darkTokens, '--color-accent'),
+  accentForeground: t(darkTokens, '--color-accent-foreground'),
+
+  // Border / Input
+  border: t(darkTokens, '--color-border'),
+  input: t(darkTokens, '--color-input'),
+  ring: t(darkTokens, '--color-ring'),
+
+  // Divider
+  divider: t(darkTokens, '--color-divider'),
+
+  // Icons
+  iconMuted: t(darkTokens, '--color-icon-muted'),
+  iconHover: t(darkTokens, '--color-icon-hover'),
+  iconSecondary: t(darkTokens, '--color-icon-secondary'),
+
+  // Status (same in dark)
+  destructive: STATUS.error,
+  destructiveForeground: '#FFFFFF',
+  success: STATUS.success,
+  warning: STATUS.warning,
+  error: STATUS.error,
+  info: STATUS.info,
+} as const
+
+// ────────────────────────────────────────────────────────────
+// 7. Colors — Quick-access light/dark map for useThemeColor()
+// ────────────────────────────────────────────────────────────
+
 export const Colors = {
   light: {
     text: SEMANTIC.textPrimary,
     textSecondary: SEMANTIC.textSecondary,
-    textTertiary: SEMANTIC.textTertiary,
     background: SEMANTIC.background,
     backgroundSecondary: SEMANTIC.backgroundSecondary,
     tint: SEMANTIC.primary,
     border: SEMANTIC.border,
-    divider: SEMANTIC.sectionDivider,
+    divider: SEMANTIC.divider,
     icon: SEMANTIC.iconSecondary,
     iconMuted: SEMANTIC.iconMuted,
-    iconHover: SEMANTIC.iconHover,
-    tabIconDefault: COMPONENT.tab.inactive,
-    tabIconSelected: COMPONENT.tab.active
+    tabIconDefault: SEMANTIC.mutedForeground,
+    tabIconSelected: SEMANTIC.primary,
   },
   dark: {
     text: DARK_MODE.textPrimary,
     textSecondary: DARK_MODE.textSecondary,
-    textTertiary: DARK_MODE.textTertiary,
     background: DARK_MODE.background,
     backgroundSecondary: DARK_MODE.backgroundSecondary,
     tint: DARK_MODE.primary,
@@ -268,91 +360,52 @@ export const Colors = {
     divider: DARK_MODE.divider,
     icon: DARK_MODE.iconSecondary,
     iconMuted: DARK_MODE.iconMuted,
-    iconHover: DARK_MODE.iconHover,
     tabIconDefault: DARK_MODE.mutedForeground,
-    tabIconSelected: DARK_MODE.primary
-  }
-}
+    tabIconSelected: DARK_MODE.primary,
+  },
+} as const
 
-// Font Configuration
-export const Fonts = {
-  regular: 'System',
-  medium: 'System',
-  semiBold: 'System',
-  bold: 'System'
-}
+// ────────────────────────────────────────────────────────────
+// 8. LAYOUT TOKENS — Spacing, Radius, Shadows
+// ────────────────────────────────────────────────────────────
 
-// Spacing Scale
 export const Spacing = {
   xs: 4,
   sm: 8,
   md: 16,
   lg: 24,
   xl: 32,
-  xxl: 48
-}
+  xxl: 48,
+} as const
 
-// Border Radius Scale
 export const BorderRadius = {
   sm: 4,
   md: 8,
   lg: 12,
   xl: 16,
   xxl: 24,
-  full: 9999
-}
+  full: 9999,
+} as const
 
-// Shadow Styles
 export const Shadows = {
-  sm: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2
-  },
-  md: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 4,
-    elevation: 4
-  },
-  lg: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 8
-  }
-}
+  sm: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
+  md: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 4 },
+  lg: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 8 },
+} as const
 
-// ==================== COMPLETE THEME OBJECT ====================
-// Single source of truth for all app styling
+// ────────────────────────────────────────────────────────────
+// 9. COMPOSITE THEME OBJECT — For ThemeProvider context
+// ────────────────────────────────────────────────────────────
+
 export const ZaloTheme = {
-  colors: {
-    // Brand colors
-    brand: BRAND,
-    // Semantic colors
-    semantic: SEMANTIC,
-    // Dark mode colors
-    darkMode: DARK_MODE,
-    // Component colors
-    component: COMPONENT,
-    // Light/Dark modes for useColorScheme()
-    light: Colors.light,
-    dark: Colors.dark
-  },
+  colors: { brand: BRAND, status: STATUS, light: Colors.light, dark: Colors.dark },
   header: HEADER,
   spacing: Spacing,
   borderRadius: BorderRadius,
   shadows: Shadows,
-  fonts: Fonts
 } as const
 
-// Type for theme
 export type Theme = typeof ZaloTheme
 
-// Default export for easy importing
 export default ZaloTheme
 

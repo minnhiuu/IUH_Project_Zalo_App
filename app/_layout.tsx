@@ -16,10 +16,9 @@ import { useEffect } from 'react'
 import { View, Text, ActivityIndicator } from 'react-native'
 
 import { GluestackProvider } from '@/components/ui/gluestack-ui-provider'
-import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useAuthStore } from '@/store'
 import { getAccessToken, getRefreshToken } from '@/lib/http'
-import { ThemeProvider } from '@/context'
+import { ThemeProvider, useTheme } from '@/context'
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -166,44 +165,50 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme()
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <I18nextProvider i18n={i18n}>
           <QueryClientProvider client={queryClient}>
             <ThemeProvider>
-              <GluestackProvider>
-                <NavigationThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                  <AuthGuard>
-                    <Stack screenOptions={{ headerShown: false }}>
-                      <Stack.Screen name='(tabs)' />
-                      <Stack.Screen name='auth' />
-                      <Stack.Screen name='settings' />
-                      <Stack.Screen name='search' />
-                      <Stack.Screen name='friend-requests' />
-                      <Stack.Screen name='add-friend' />
-                      <Stack.Screen name='user-profile/[id]' />
-                      <Stack.Screen name='chat/[id]' />
-                    <Stack.Screen
-                        name='qr/index'
-                        options={{
-                          presentation: 'modal',
-                          animation: 'slide_from_bottom'
-                        }}
-                      />
-                      <Stack.Screen name='qr/confirm' />
-                    </Stack>
-                  </AuthGuard>
-                  <StatusBar style='auto' />
-                  <Toast />
-                </NavigationThemeProvider>
-              </GluestackProvider>
+              <ThemeAwareProviders />
             </ThemeProvider>
           </QueryClientProvider>
         </I18nextProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+  )
+}
+
+function ThemeAwareProviders() {
+  const { activeTheme, isDark } = useTheme()
+
+  return (
+    <GluestackProvider mode={activeTheme}>
+      <NavigationThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+        <AuthGuard>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name='(tabs)' />
+            <Stack.Screen name='auth' />
+            <Stack.Screen name='settings' />
+            <Stack.Screen name='search' />
+            <Stack.Screen name='friend-requests' />
+            <Stack.Screen name='add-friend' />
+            <Stack.Screen name='user-profile/[id]' />
+            <Stack.Screen name='chat/[id]' />
+            <Stack.Screen
+              name='qr/index'
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom'
+              }}
+            />
+            <Stack.Screen name='qr/confirm' />
+          </Stack>
+        </AuthGuard>
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <Toast />
+      </NavigationThemeProvider>
+    </GluestackProvider>
   )
 }

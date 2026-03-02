@@ -59,7 +59,7 @@ export default function DeviceManagementScreen() {
  return (
  <Box
  key={device.id}
- className={isCurrent ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'}
+ className={isCurrent ? 'bg-blue-50 border-blue-200' : 'bg-background border-gray-200'}
  style={{ borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 12 }}
 >
  <HStack className="items-start justify-between">
@@ -81,7 +81,7 @@ export default function DeviceManagementScreen() {
 
  <VStack className="flex-1">
  <HStack className="flex-wrap items-center" space="xs">
- <Text size="sm" className="text-gray-900 font-bold">
+ <Text size="sm" className="text-foreground font-bold">
  {device.deviceName || 'Unknown Device'}
  </Text>
  
@@ -105,7 +105,7 @@ export default function DeviceManagementScreen() {
  )}
  </HStack>
 
- <Text size="xs" className="text-gray-500 mt-1">
+ <Text size="xs" className="text-muted-foreground mt-1">
  {device.os || 'Unknown OS'} • {device.browser || 'Unknown Browser'}
  </Text>
  
@@ -141,14 +141,14 @@ export default function DeviceManagementScreen() {
  return (
  <SettingsDetailScreen title={t('settings.deviceManagement.title')}>
  <Box className="p-4">
- <Text size="sm" className="text-gray-500 mb-4">
+ <Text size="sm" className="text-muted-foreground mb-4">
  {t('settings.deviceManagement.description')}
  </Text>
 
  {isLoading ? (
  <HStack className="justify-center items-center py-8" space="sm">
  <ActivityIndicator />
- <Text size="sm" className="text-gray-500">
+ <Text size="sm" className="text-muted-foreground">
  {t('settings.deviceManagement.loading')}
  </Text>
  </HStack>
@@ -192,7 +192,7 @@ export default function DeviceManagementScreen() {
  </VStack>
  ) : (
  <Box className="py-8">
- <Text size="sm" className="text-gray-500">
+ <Text size="sm" className="text-muted-foreground">
  {t('settings.deviceManagement.noDevices')}
  </Text>
  </Box>

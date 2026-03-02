@@ -12,7 +12,7 @@ export default function SettingsDetailScreen({ title, children }: SettingsDetail
   const router = useRouter()
 
   return (
-    <Box className="flex-1 bg-gray-100">
+    <Box className="flex-1 bg-background-secondary">
       <Header title={title} showBackButton={true} onBackPress={() => router.back()} />
       <ScrollView showsVerticalScrollIndicator={false}>{children}</ScrollView>
     </Box>

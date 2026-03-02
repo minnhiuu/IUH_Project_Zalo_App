@@ -1,132 +1,85 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 import { useColorScheme as useDeviceColorScheme } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import { ZaloTheme } from '@/constants/theme'
+import { ZaloTheme, Colors, SEMANTIC, DARK_MODE } from '@/constants/theme'
 
-// Theme types
+// ── Types ───────────────────────────────────────────────
 export type ThemeMode = 'light' | 'dark' | 'system'
 export type ActiveTheme = 'light' | 'dark'
 
 interface ThemeContextValue {
-  // Current theme mode setting
   themeMode: ThemeMode
-  // Actual active theme (resolves 'system' to light/dark)
   activeTheme: ActiveTheme
-  // Theme colors and values
+  isDark: boolean
+  /** Static theme object (brand, spacing, etc.) */
   theme: typeof ZaloTheme
-  // Functions
+  /** Resolved light/dark palette for RN styles – e.g., colors.text */
+  colors: (typeof Colors)['light']
   setThemeMode: (mode: ThemeMode) => void
   toggleTheme: () => void
 }
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined)
-
 const THEME_STORAGE_KEY = '@zalo_theme_mode'
 
-interface ThemeProviderProps {
-  children: ReactNode
-}
-
-export function ThemeProvider({ children }: ThemeProviderProps) {
+// ── Provider ────────────────────────────────────────────
+export function ThemeProvider({ children }: { children: ReactNode }) {
   const deviceColorScheme = useDeviceColorScheme()
   const [themeMode, setThemeModeState] = useState<ThemeMode>('light')
 
-  // Determine active theme based on mode and device settings
   const activeTheme: ActiveTheme =
     themeMode === 'system' ? (deviceColorScheme === 'dark' ? 'dark' : 'light') : themeMode
+  const isDark = activeTheme === 'dark'
+  const colors = isDark ? Colors.dark : Colors.light
 
-  // Load saved theme preference on mount
+  // Persist
   useEffect(() => {
-    loadThemePreference()
+    ;(async () => {
+      try {
+        const saved = await AsyncStorage.getItem(THEME_STORAGE_KEY)
+        if (saved === 'light' || saved === 'dark' || saved === 'system') setThemeModeState(saved)
+      } catch {}
+    })()
   }, [])
 
-  // Save theme preference when it changes
   useEffect(() => {
-    saveThemePreference(themeMode)
+    AsyncStorage.setItem(THEME_STORAGE_KEY, themeMode).catch(() => {})
   }, [themeMode])
 
-  const loadThemePreference = async () => {
-    try {
-      const savedTheme = await AsyncStorage.getItem(THEME_STORAGE_KEY)
-      if (savedTheme && (savedTheme === 'light' || savedTheme === 'dark' || savedTheme === 'system')) {
-        setThemeModeState(savedTheme as ThemeMode)
-      }
-    } catch (error) {
-      console.error('Failed to load theme preference:', error)
-    }
-  }
+  const setThemeMode = useCallback((m: ThemeMode) => setThemeModeState(m), [])
 
-  const saveThemePreference = async (mode: ThemeMode) => {
-    try {
-      await AsyncStorage.setItem(THEME_STORAGE_KEY, mode)
-    } catch (error) {
-      console.error('Failed to save theme preference:', error)
-    }
-  }
-
-  const setThemeMode = (mode: ThemeMode) => {
-    setThemeModeState(mode)
-  }
-
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     if (themeMode === 'system') {
-      // If system, toggle based on current device theme
       setThemeModeState(deviceColorScheme === 'dark' ? 'light' : 'dark')
     } else {
-      // Toggle between light and dark
       setThemeModeState(themeMode === 'light' ? 'dark' : 'light')
     }
-  }
+  }, [themeMode, deviceColorScheme])
 
-  const value: ThemeContextValue = {
-    themeMode,
-    activeTheme,
-    theme: ZaloTheme,
-    setThemeMode,
-    toggleTheme
-  }
-
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  return (
+    <ThemeContext.Provider
+      value={{ themeMode, activeTheme, isDark, theme: ZaloTheme, colors, setThemeMode, toggleTheme }}
+    >
+      {children}
+    </ThemeContext.Provider>
+  )
 }
 
-/**
- * Hook to access theme context
- * @returns Theme context with mode, colors, and toggle functions
- */
+// ── Hooks ───────────────────────────────────────────────
+
+/** Full theme context */
 export function useTheme() {
-  const context = useContext(ThemeContext)
-  if (!context) {
-    throw new Error('useTheme must be used within ThemeProvider')
-  }
-  return context
+  const ctx = useContext(ThemeContext)
+  if (!ctx) throw new Error('useTheme must be used within ThemeProvider')
+  return ctx
 }
 
-/**
- * Hook to get theme-aware colors
- * Automatically switches between light and dark colors
- */
+/** Quick-access light/dark palette (Colors.light | Colors.dark) */
 export function useThemeColors() {
-  const { activeTheme, theme } = useTheme()
-  return theme.colors[activeTheme]
+  return useTheme().colors
 }
 
-/**
- * Hook to get specific theme value by path
- * Example: useThemeValue('colors.brand.primary')
- */
-export function useThemeValue<T = any>(path: string): T {
-  const { theme } = useTheme()
-  const keys = path.split('.')
-  let value: any = theme
-
-  for (const key of keys) {
-    if (value && typeof value === 'object' && key in value) {
-      value = value[key]
-    } else {
-      console.warn(`Theme path not found: ${path}`)
-      return undefined as T
-    }
-  }
-
-  return value as T
+/** Full semantic map (SEMANTIC | DARK_MODE) for inline RN styles */
+export function useSemanticColors() {
+  return useTheme().isDark ? DARK_MODE : SEMANTIC
 }

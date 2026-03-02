@@ -2,6 +2,7 @@ import React from 'react'
 import { View } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Pressable, Text, HStack, VStack } from '@/components/ui'
+import { useTheme } from '@/context'
 
 interface MenuItemProps {
   icon?: keyof typeof Ionicons.glyphMap
@@ -26,13 +27,15 @@ export function MenuItem({
   onPress,
   disabled = false
 }: MenuItemProps) {
+  const { colors } = useTheme()
+
   return (
     <Pressable
       onPress={onPress}
       disabled={disabled || !onPress}
       style={({ pressed }) => ({
         opacity: pressed ? 0.7 : 1,
-        backgroundColor: '#ffffff'
+        backgroundColor: colors.background
       })}
     >
       <HStack style={{ 
@@ -40,7 +43,7 @@ export function MenuItem({
         paddingHorizontal: 16, 
         paddingVertical: 12,
         borderBottomWidth: 0.5,
-        borderBottomColor: '#f0f0f0'
+        borderBottomColor: colors.divider
       }} space="md">
         {/* Left Icon/Component */}
         {leftComponent || (icon && (
@@ -58,11 +61,11 @@ export function MenuItem({
 
         {/* Title & Subtitle */}
         <VStack style={{ flex: 1 }}>
-          <Text style={{ fontSize: 16, color: '#000000', fontWeight: '400' }}>
+          <Text style={{ fontSize: 16, color: colors.text, fontWeight: '400' }}>
             {title}
           </Text>
           {subtitle && (
-            <Text style={{ fontSize: 14, color: '#666666', marginTop: 2 }}>
+            <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 2 }}>
               {subtitle}
             </Text>
           )}
@@ -70,7 +73,7 @@ export function MenuItem({
 
         {/* Right Component or Chevron */}
         {rightComponent || (onPress && (
-          <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+          <Ionicons name="chevron-forward" size={20} color={colors.iconMuted} />
         ))}
       </HStack>
     </Pressable>

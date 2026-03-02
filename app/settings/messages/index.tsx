@@ -14,9 +14,9 @@ export default function MessagesScreen() {
  return (
  <SettingsDetailScreen title={t('settings.menu.messages.title')}>
  {/* Display Settings */}
- <Box className="bg-white mt-2">
- <Box className="px-4 py-2 bg-gray-100">
- <Text size="sm" className="text-gray-600 font-medium">
+ <Box className="bg-background mt-2">
+ <Box className="px-4 py-2 bg-background-secondary">
+ <Text size="sm" className="text-muted-foreground font-medium">
  {t('settings.sections.display')}
  </Text>
  </Box>
@@ -26,10 +26,10 @@ export default function MessagesScreen() {
  <Ionicons name='eye-outline' size={22} color='#0068FF' />
  </View>
  <VStack className="flex-1">
- <Text size="md" className="text-gray-900">
+ <Text size="md" className="text-foreground">
  {t('settings.messages.messagePreview')}
  </Text>
- <Text size="sm" className="text-gray-500 mt-0.5">
+ <Text size="sm" className="text-muted-foreground mt-0.5">
  {t('settings.messages.messagePreviewSubtitle')}
  </Text>
  </VStack>
@@ -62,9 +62,9 @@ export default function MessagesScreen() {
  </Box>
 
  {/* Media Settings */}
- <Box className="bg-white mt-4">
- <Box className="px-4 py-2 bg-gray-100">
- <Text size="sm" className="text-gray-600 font-medium">
+ <Box className="bg-background mt-4">
+ <Box className="px-4 py-2 bg-background-secondary">
+ <Text size="sm" className="text-muted-foreground font-medium">
  {t('settings.sections.media')}
  </Text>
  </Box>
@@ -74,10 +74,10 @@ export default function MessagesScreen() {
  <Ionicons name='download-outline' size={22} color='#4CAF50' />
  </View>
  <VStack className="flex-1">
- <Text size="md" className="text-gray-900">
+ <Text size="md" className="text-foreground">
  {t('settings.messages.autoDownload')}
  </Text>
- <Text size="sm" className="text-gray-500 mt-0.5">
+ <Text size="sm" className="text-muted-foreground mt-0.5">
  {t('settings.messages.autoDownloadSubtitle')}
  </Text>
  </VStack>
@@ -90,10 +90,10 @@ export default function MessagesScreen() {
  <Ionicons name='save-outline' size={22} color='#FF9800' />
  </View>
  <VStack className="flex-1">
- <Text size="md" className="text-gray-900">
+ <Text size="md" className="text-foreground">
  {t('settings.messages.saveToLibrary')}
  </Text>
- <Text size="sm" className="text-gray-500 mt-0.5">
+ <Text size="sm" className="text-muted-foreground mt-0.5">
  {t('settings.messages.saveToLibrarySubtitle')}
  </Text>
  </VStack>
@@ -102,9 +102,9 @@ export default function MessagesScreen() {
  </Box>
 
  {/* Advanced */}
- <Box className="bg-white mt-4 mb-8">
- <Box className="px-4 py-2 bg-gray-100">
- <Text size="sm" className="text-gray-600 font-medium">
+ <Box className="bg-background mt-4 mb-8">
+ <Box className="px-4 py-2 bg-background-secondary">
+ <Text size="sm" className="text-muted-foreground font-medium">
  {t('settings.sections.advanced')}
  </Text>
  </Box>

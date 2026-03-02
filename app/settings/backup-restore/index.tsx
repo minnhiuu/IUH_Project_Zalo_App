@@ -13,21 +13,21 @@ export default function BackupRestoreScreen() {
  return (
  <SettingsDetailScreen title={t('settings.menu.backupRestore.title')}>
  {/* Last Backup Info */}
- <Box className="bg-white mt-2 px-4 py-4">
+ <Box className="bg-background mt-2 px-4 py-4">
  <HStack className="items-center" space="md">
- <Text size="md" className="text-gray-600">
+ <Text size="md" className="text-muted-foreground">
  {t('settings.backupRestore.lastBackup')}
  </Text>
- <Text size="md" className="text-gray-900 font-medium">
+ <Text size="md" className="text-foreground font-medium">
  {t('settings.backupRestore.today')}, 10:30
  </Text>
  </HStack>
  </Box>
 
  {/* Backup Settings */}
- <Box className="bg-white mt-4">
- <Box className="px-4 py-2 bg-gray-100">
- <Text size="sm" className="text-gray-600 font-medium">
+ <Box className="bg-background mt-4">
+ <Box className="px-4 py-2 bg-background-secondary">
+ <Text size="sm" className="text-muted-foreground font-medium">
  {t('settings.sections.backupSettings')}
  </Text>
  </Box>
@@ -37,10 +37,10 @@ export default function BackupRestoreScreen() {
  <Ionicons name='cloud-upload-outline' size={22} color='#0068FF' />
  </View>
  <VStack className="flex-1">
- <Text size="md" className="text-gray-900">
+ <Text size="md" className="text-foreground">
  {t('settings.backupRestore.autoBackup')}
  </Text>
- <Text size="sm" className="text-gray-500 mt-0.5">
+ <Text size="sm" className="text-muted-foreground mt-0.5">
  {t('settings.backupRestore.autoBackupSubtitle')}
  </Text>
  </VStack>
@@ -53,10 +53,10 @@ export default function BackupRestoreScreen() {
  <Ionicons name='wifi-outline' size={22} color='#2196F3' />
  </View>
  <VStack className="flex-1">
- <Text size="md" className="text-gray-900">
+ <Text size="md" className="text-foreground">
  {t('settings.backupRestore.backupOverWifi')}
  </Text>
- <Text size="sm" className="text-gray-500 mt-0.5">
+ <Text size="sm" className="text-muted-foreground mt-0.5">
  {t('settings.backupRestore.backupOverWifiSubtitle')}
  </Text>
  </VStack>
@@ -77,7 +77,7 @@ export default function BackupRestoreScreen() {
  </Box>
 
  {/* Actions */}
- <Box className="bg-white mt-4 mb-8">
+ <Box className="bg-background mt-4 mb-8">
  <MenuItem
  title={t('settings.backupRestore.backupNow')}
  leftComponent={

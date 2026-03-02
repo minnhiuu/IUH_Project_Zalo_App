@@ -12,9 +12,9 @@ export default function ContactsScreen() {
  return (
  <SettingsDetailScreen title={t('settings.menu.contacts.title')}>
  {/* Sync Settings */}
- <Box className="bg-white mt-2">
- <Box className="px-4 py-2 bg-gray-100">
- <Text size="sm" className="text-gray-600 font-medium">
+ <Box className="bg-background mt-2">
+ <Box className="px-4 py-2 bg-background-secondary">
+ <Text size="sm" className="text-muted-foreground font-medium">
  {t('settings.sections.sync')}
  </Text>
  </Box>
@@ -24,10 +24,10 @@ export default function ContactsScreen() {
  <Ionicons name='sync-outline' size={22} color='#4CAF50' />
  </View>
  <VStack className="flex-1">
- <Text size="md" className="text-gray-900">
+ <Text size="md" className="text-foreground">
  {t('settings.contacts.syncContacts')}
  </Text>
- <Text size="sm" className="text-gray-500 mt-0.5">
+ <Text size="sm" className="text-muted-foreground mt-0.5">
  {t('settings.contacts.syncContactsSubtitle')}
  </Text>
  </VStack>
@@ -36,7 +36,7 @@ export default function ContactsScreen() {
  </Box>
 
  {/* Contact Management */}
- <Box className="bg-white mt-4 mb-8">
+ <Box className="bg-background mt-4 mb-8">
  <MenuItem
  title={t('settings.contacts.allContacts')}
  subtitle={t('settings.contacts.contactsCount', { count: 250 })}

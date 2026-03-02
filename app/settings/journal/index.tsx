@@ -11,9 +11,9 @@ export default function JournalScreen() {
  return (
  <SettingsDetailScreen title={t('settings.menu.journal.title')}>
  {/* Recent Activity */}
- <Box className="bg-white mt-2">
- <Box className="px-4 py-2 bg-gray-100">
- <Text size="sm" className="text-gray-600 font-medium">
+ <Box className="bg-background mt-2">
+ <Box className="px-4 py-2 bg-background-secondary">
+ <Text size="sm" className="text-muted-foreground font-medium">
  {t('settings.sections.recentActivity')}
  </Text>
  </Box>
@@ -22,10 +22,10 @@ export default function JournalScreen() {
  <HStack className="px-4 py-3 items-center" space="md">
  <Ionicons name='log-in-outline' size={22} color='#4CAF50' />
  <VStack className="flex-1">
- <Text size="md" className="text-gray-900">
+ <Text size="md" className="text-foreground">
  {t('settings.journal.login')}
  </Text>
- <Text size="sm" className="text-gray-500">
+ <Text size="sm" className="text-muted-foreground">
  iPhone 14 Pro • {t('settings.backupRestore.today')}, 10:30
  </Text>
  </VStack>
@@ -34,10 +34,10 @@ export default function JournalScreen() {
  <HStack className="px-4 py-3 items-center" space="md">
  <Ionicons name='shield-checkmark-outline' size={22} color='#0068FF' />
  <VStack className="flex-1">
- <Text size="md" className="text-gray-900">
+ <Text size="md" className="text-foreground">
  {t('settings.journal.passwordChange')}
  </Text>
- <Text size="sm" className="text-gray-500">
+ <Text size="sm" className="text-muted-foreground">
  Yesterday, 14:20
  </Text>
  </VStack>
@@ -46,10 +46,10 @@ export default function JournalScreen() {
  <HStack className="px-4 py-3 items-center" space="md">
  <Ionicons name='person-add-outline' size={22} color='#2196F3' />
  <VStack className="flex-1">
- <Text size="md" className="text-gray-900">
+ <Text size="md" className="text-foreground">
  {t('settings.journal.newFriend')}
  </Text>
- <Text size="sm" className="text-gray-500">
+ <Text size="sm" className="text-muted-foreground">
  2 days ago, 09:15
  </Text>
  </VStack>
@@ -58,9 +58,9 @@ export default function JournalScreen() {
  </Box>
 
  {/* Filter Options */}
- <Box className="bg-white mt-4">
- <Box className="px-4 py-2 bg-gray-100">
- <Text size="sm" className="text-gray-600 font-medium">
+ <Box className="bg-background mt-4">
+ <Box className="px-4 py-2 bg-background-secondary">
+ <Text size="sm" className="text-muted-foreground font-medium">
  {t('settings.sections.filter')}
  </Text>
  </Box>
@@ -89,7 +89,7 @@ export default function JournalScreen() {
  </Box>
 
  {/* Actions */}
- <Box className="bg-white mt-4 mb-8">
+ <Box className="bg-background mt-4 mb-8">
  <MenuItem
  title={t('settings.journal.exportLog')}
  leftComponent={

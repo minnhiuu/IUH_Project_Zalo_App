@@ -3,9 +3,8 @@ import { Tabs } from 'expo-router'
 import React from 'react'
 import { StatusBar, Platform } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { SEMANTIC, BRAND, COMPONENT } from '@/constants/theme'
+import { useTheme } from '@/context'
 
-// Zalo-style tab configuration
 const TAB_CONFIG = {
   messages: {
     name: 'index',
@@ -41,18 +40,19 @@ const TAB_CONFIG = {
 
 export default function TabLayout() {
   const { t } = useTranslation()
+  const { colors, isDark } = useTheme()
 
   return (
     <>
-      <StatusBar barStyle='light-content' backgroundColor={SEMANTIC.primary} translucent={Platform.OS === 'android'} />
+      <StatusBar barStyle='light-content' backgroundColor={isDark ? colors.background : colors.tint} translucent={Platform.OS === 'android'} />
       <Tabs
         screenOptions={{
-          tabBarActiveTintColor: COMPONENT.tab.active,
-          tabBarInactiveTintColor: COMPONENT.tab.inactive,
+          tabBarActiveTintColor: colors.tint,
+          tabBarInactiveTintColor: colors.tabIconDefault,
           headerShown: false,
           tabBarStyle: {
-            backgroundColor: COMPONENT.tab.background,
-            borderTopColor: SEMANTIC.border,
+            backgroundColor: colors.background,
+            borderTopColor: colors.border,
             borderTopWidth: 0.5,
             paddingTop: 10,
             paddingBottom: Platform.OS === 'ios' ? 28 : 12,

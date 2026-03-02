@@ -11,29 +11,29 @@ export default function AboutScreen() {
  return (
  <SettingsDetailScreen title={t('settings.menu.about.title')}>
  {/* App Icon & Version */}
- <Box className="bg-white mt-2 px-4 py-8">
+ <Box className="bg-background mt-2 px-4 py-8">
  <VStack className="items-center justify-center">
  <Ionicons name='chatbubble-ellipses' size={64} color='#0068FF' />
- <Text size="2xl" className="text-gray-900 font-bold mt-4">
+ <Text size="2xl" className="text-foreground font-bold mt-4">
  Zalo
  </Text>
- <Text size="md" className="text-gray-600 mt-2">
+ <Text size="md" className="text-muted-foreground mt-2">
  {t('settings.about.version', { version: '1.0.0' })}
  </Text>
  </VStack>
  </Box>
 
  {/* Description */}
- <Box className="bg-white mt-4 px-4 py-4">
- <Text size="md" className="text-gray-700 text-center">
+ <Box className="bg-background mt-4 px-4 py-4">
+ <Text size="md" className="text-foreground text-center">
  {t('settings.about.description')}
  </Text>
  </Box>
 
  {/* Copyright */}
- <Box className="bg-white mt-4 px-4 py-6 mb-8">
+ <Box className="bg-background mt-4 px-4 py-6 mb-8">
  <VStack className="items-center justify-center">
- <Text size="sm" className="text-gray-500">
+ <Text size="sm" className="text-muted-foreground">
  {t('settings.about.copyright')}
  </Text>
  </VStack>

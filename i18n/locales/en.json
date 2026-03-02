@@ -383,7 +383,14 @@
       "themeColor": "Theme color",
       "blue": "Blue",
       "appLanguage": "App language",
-      "vietnamese": "Vietnamese"
+      "vietnamese": "Vietnamese",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "changeFontSize": "Change font size",
+      "changeLanguage": "Change language",
+      "appearance": "Appearance",
+      "languageSection": "Language"
     },
     "about": {
       "version": "Version {{version}}",

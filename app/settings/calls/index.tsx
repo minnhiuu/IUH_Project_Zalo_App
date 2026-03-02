@@ -13,9 +13,9 @@ export default function CallsScreen() {
  return (
  <SettingsDetailScreen title={t('settings.menu.calls.title')}>
  {/* Call Settings */}
- <Box className="bg-white mt-2">
- <Box className="px-4 py-2 bg-gray-100">
- <Text size="sm" className="text-gray-600 font-medium">
+ <Box className="bg-background mt-2">
+ <Box className="px-4 py-2 bg-background-secondary">
+ <Text size="sm" className="text-muted-foreground font-medium">
  {t('settings.sections.callSettings')}
  </Text>
  </Box>
@@ -25,10 +25,10 @@ export default function CallsScreen() {
  <Ionicons name='call-outline' size={22} color='#0068FF' />
  </View>
  <VStack className="flex-1">
- <Text size="md" className="text-gray-900">
+ <Text size="md" className="text-foreground">
  {t('settings.calls.allowCalls')}
  </Text>
- <Text size="sm" className="text-gray-500 mt-0.5">
+ <Text size="sm" className="text-muted-foreground mt-0.5">
  {t('settings.calls.allowCallsSubtitle')}
  </Text>
  </VStack>
@@ -41,10 +41,10 @@ export default function CallsScreen() {
  <Ionicons name='videocam-outline' size={22} color='#2196F3' />
  </View>
  <VStack className="flex-1">
- <Text size="md" className="text-gray-900">
+ <Text size="md" className="text-foreground">
  {t('settings.calls.allowVideoCalls')}
  </Text>
- <Text size="sm" className="text-gray-500 mt-0.5">
+ <Text size="sm" className="text-muted-foreground mt-0.5">
  {t('settings.calls.allowVideoCallsSubtitle')}
  </Text>
  </VStack>
@@ -53,9 +53,9 @@ export default function CallsScreen() {
  </Box>
 
  {/* Quality Settings */}
- <Box className="bg-white mt-4">
- <Box className="px-4 py-2 bg-gray-100">
- <Text size="sm" className="text-gray-600 font-medium">
+ <Box className="bg-background mt-4">
+ <Box className="px-4 py-2 bg-background-secondary">
+ <Text size="sm" className="text-muted-foreground font-medium">
  {t('settings.sections.quality')}
  </Text>
  </Box>
@@ -85,7 +85,7 @@ export default function CallsScreen() {
  </Box>
 
  {/* Other Settings */}
- <Box className="bg-white mt-4 mb-8">
+ <Box className="bg-background mt-4 mb-8">
  <MenuItem
  title={t('settings.calls.ringtone')}
  subtitle={t('settings.calls.ringtoneSubtitle')}

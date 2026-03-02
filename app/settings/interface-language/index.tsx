@@ -1,71 +1,215 @@
 import React from 'react'
-import { View } from 'react-native'
+import { View, Pressable } from 'react-native'
 import SettingsDetailScreen from '@/components/SettingsDetailScreen'
 import { Ionicons } from '@expo/vector-icons'
-import { Box, VStack, HStack, Text, Divider, Switch, MenuItem } from '@/components/ui'
+import { Box, HStack, Text, Divider } from '@/components/ui'
 import { useTranslation } from 'react-i18next'
+import { useTheme, type ThemeMode } from '@/context'
+import { BRAND } from '@/constants/theme'
 
-export default function InterfaceLanguageScreen() {
- const { t } = useTranslation()
- const [darkMode, setDarkMode] = React.useState(false)
+// ── Theme Preview Card ──────────────────────────────────
+interface ThemeCardProps {
+ mode: ThemeMode
+ label: string
+ isSelected: boolean
+ onPress: () => void
+ isDark: boolean
+}
+
+function ThemePreview({ mode }: { mode: ThemeMode }) {
+ const isLightPreview = mode === 'light'
+ const isDarkPreview = mode === 'dark'
+ const isSystemPreview = mode === 'system'
+
+ if (isSystemPreview) {
+  // Split preview: left half light, right half dark
+  return (
+   <View style={{ flex: 1, flexDirection: 'row', overflow: 'hidden' }}>
+    {/* Light half */}
+    <View style={{ flex: 1 }}>
+     <View style={{ height: 16, backgroundColor: BRAND.blue }} />
+     <View style={{ flex: 1, backgroundColor: '#E8EDF2', padding: 5 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+       <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: BRAND.blue, marginRight: 4 }} />
+       <View style={{ height: 4, flex: 1, borderRadius: 2, backgroundColor: '#C7D0DC' }} />
+      </View>
+      <View style={{ height: 10, borderRadius: 3, backgroundColor: '#FFFFFF', marginBottom: 3 }} />
+      <View style={{ height: 10, width: '80%', borderRadius: 3, backgroundColor: '#FFFFFF' }} />
+     </View>
+    </View>
+    {/* Dark half */}
+    <View style={{ flex: 1 }}>
+     <View style={{ height: 16, backgroundColor: '#2C323A' }} />
+     <View style={{ flex: 1, backgroundColor: '#22262B', padding: 5 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+       <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: BRAND.blue, marginRight: 4 }} />
+       <View style={{ height: 4, flex: 1, borderRadius: 2, backgroundColor: '#4A5060' }} />
+      </View>
+      <View style={{ height: 10, borderRadius: 3, backgroundColor: '#3E444A', marginBottom: 3 }} />
+      <View style={{ height: 10, width: '80%', borderRadius: 3, backgroundColor: '#3E444A' }} />
+     </View>
+    </View>
+   </View>
+  )
+ }
+
+ const headerBg = isLightPreview ? BRAND.blue : '#3E444A'
+ const bodyBg = isLightPreview ? '#E8EDF2' : '#22262B'
+ const contentBg = isLightPreview ? '#FFFFFF' : '#3E444A'
+ const lineBg = isLightPreview ? '#C7D0DC' : '#4A5060'
 
  return (
- <SettingsDetailScreen title={t('settings.menu.interfaceLanguage.title')}>
- {/* Theme */}
- <Box className="bg-white mt-2">
- <Box className="px-4 py-2 bg-gray-100">
- <Text size="sm" className="text-gray-600 font-medium">
- {t('settings.sections.interface')}
- </Text>
- </Box>
+  <View style={{ flex: 1 }}>
+   <View style={{ height: 16, backgroundColor: headerBg }} />
+   <View style={{ flex: 1, backgroundColor: bodyBg, padding: 5 }}>
+    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+     <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: BRAND.blue, marginRight: 4 }} />
+     <View style={{ height: 4, flex: 1, borderRadius: 2, backgroundColor: lineBg }} />
+    </View>
+    <View style={{ height: 10, borderRadius: 3, backgroundColor: contentBg, marginBottom: 3 }} />
+    <View style={{ height: 10, width: '80%', borderRadius: 3, backgroundColor: contentBg }} />
+   </View>
+  </View>
+ )
+}
 
- <HStack className="px-4 py-3 items-center" space="md">
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#1A1A1A', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='moon-outline' size={22} color='#FFFFFF' />
- </View>
- <VStack className="flex-1">
- <Text size="md" className="text-gray-900">
- {t('settings.interfaceLanguage.darkMode')}
- </Text>
- <Text size="sm" className="text-gray-500 mt-0.5">
- {t('settings.interfaceLanguage.darkModeSubtitle')}
- </Text>
- </VStack>
- <Switch value={darkMode} onValueChange={setDarkMode} />
- </HStack>
- <Divider className="ml-16" />
+function ThemeCard({ mode, label, isSelected, onPress, isDark }: ThemeCardProps) {
+ return (
+  <Pressable onPress={onPress} style={{ flex: 1, alignItems: 'center', paddingHorizontal: 8 }}>
+   <View
+    style={{
+     width: '100%',
+     aspectRatio: 1.5,
+     borderRadius: 10,
+     borderWidth: isSelected ? 2.5 : 1,
+     borderColor: isSelected ? BRAND.blue : isDark ? '#3E444A' : '#E0E0E0',
+     overflow: 'hidden',
+    }}
+   >
+    <ThemePreview mode={mode} />
+   </View>
+   <HStack style={{ alignItems: 'center', marginTop: 10, gap: 6 }}>
+    <View
+     style={{
+      width: 20,
+      height: 20,
+      borderRadius: 10,
+      borderWidth: 2,
+      borderColor: isSelected ? BRAND.blue : isDark ? '#5A6981' : '#BBBBBB',
+      alignItems: 'center',
+      justifyContent: 'center',
+     }}
+    >
+     {isSelected && (
+      <View
+       style={{
+        width: 10,
+        height: 10,
+        borderRadius: 5,
+        backgroundColor: BRAND.blue,
+       }}
+      />
+     )}
+    </View>
+    <Text size="sm" className="text-foreground">
+     {label}
+    </Text>
+   </HStack>
+  </Pressable>
+ )
+}
 
- <MenuItem
- title={t('settings.interfaceLanguage.themeColor')}
- subtitle={t('settings.interfaceLanguage.blue')}
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E8F0FE', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='color-palette-outline' size={22} color='#0068FF' />
- </View>
- }
- onPress={() => {}}
- />
- </Box>
+// ── Main Screen ─────────────────────────────────────────
+export default function InterfaceLanguageScreen() {
+ const { t } = useTranslation()
+ const { isDark, themeMode, setThemeMode, colors } = useTheme()
 
- {/* Language */}
- <Box className="bg-white mt-4 mb-8">
- <Box className="px-4 py-2 bg-gray-100">
- <Text size="sm" className="text-gray-600 font-medium">
- {t('settings.sections.language')}
- </Text>
- </Box>
+ return (
+  <SettingsDetailScreen title={t('settings.menu.interfaceLanguage.title')}>
+   {/* ── Appearance Section ── */}
+   <Box style={{ backgroundColor: colors.background, marginTop: 8 }}>
+    <Box style={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 6 }}>
+     <Text size="sm" style={{ color: BRAND.blue, fontWeight: '600' }}>
+      {t('settings.interfaceLanguage.appearance')}
+     </Text>
+    </Box>
 
- <MenuItem
- title={t('settings.interfaceLanguage.appLanguage')}
- subtitle={t('settings.interfaceLanguage.vietnamese')}
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E3F2FD', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='language-outline' size={22} color='#2196F3' />
- </View>
- }
- onPress={() => {}}
- />
- </Box>
- </SettingsDetailScreen>
+    {/* Theme Cards */}
+    <HStack style={{ paddingHorizontal: 16, paddingVertical: 16, justifyContent: 'space-between' }}>
+     <ThemeCard
+      mode="light"
+      label={t('settings.interfaceLanguage.light')}
+      isSelected={themeMode === 'light'}
+      onPress={() => setThemeMode('light')}
+      isDark={isDark}
+     />
+     <ThemeCard
+      mode="dark"
+      label={t('settings.interfaceLanguage.dark')}
+      isSelected={themeMode === 'dark'}
+      onPress={() => setThemeMode('dark')}
+      isDark={isDark}
+     />
+     <ThemeCard
+      mode="system"
+      label={t('settings.interfaceLanguage.system')}
+      isSelected={themeMode === 'system'}
+      onPress={() => setThemeMode('system')}
+      isDark={isDark}
+     />
+    </HStack>
+
+    <Divider style={{ backgroundColor: colors.divider }} />
+
+    {/* Change Font Size */}
+    <Pressable
+     onPress={() => {}}
+     style={({ pressed }) => ({
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      justifyContent: 'space-between',
+      opacity: pressed ? 0.7 : 1,
+     })}
+    >
+     <Text size="md" className="text-foreground">
+      {t('settings.interfaceLanguage.changeFontSize')}
+     </Text>
+     <Ionicons name="chevron-forward" size={20} color={colors.iconMuted} />
+    </Pressable>
+   </Box>
+
+   {/* ── Language Section ── */}
+   <Box style={{ backgroundColor: colors.background, marginTop: 16, marginBottom: 32 }}>
+    <Box style={{ paddingHorizontal: 16, paddingTop: 14, paddingBottom: 6 }}>
+     <Text size="sm" style={{ color: BRAND.blue, fontWeight: '600' }}>
+      {t('settings.interfaceLanguage.languageSection')}
+     </Text>
+    </Box>
+
+    <Pressable
+     onPress={() => {}}
+     style={({ pressed }) => ({
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      justifyContent: 'space-between',
+      opacity: pressed ? 0.7 : 1,
+     })}
+    >
+     <Text size="md" className="text-foreground">
+      {t('settings.interfaceLanguage.changeLanguage')}
+     </Text>
+     <HStack style={{ alignItems: 'center', gap: 8 }}>
+      <Text style={{ fontSize: 20 }}>🇻🇳</Text>
+      <Text size="sm" className="text-muted-foreground">
+       {t('settings.interfaceLanguage.vietnamese')}
+      </Text>
+     </HStack>
+    </Pressable>
+   </Box>
+  </SettingsDetailScreen>
  )
 }
