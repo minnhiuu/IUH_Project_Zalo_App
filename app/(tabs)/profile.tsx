@@ -1,213 +1,166 @@
-import React from 'react'
-import { View, Text, ScrollView, TouchableOpacity, Image, Alert } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
+import { ScrollView, ActivityIndicator } from 'react-native'
 import { useRouter } from 'expo-router'
-import { useAuthStore } from '@/store'
-import { useLogoutMutation } from '@/features/auth/queries'
+import { useTranslation } from 'react-i18next'
+import { Header, Avatar, Text, Box, VStack, HStack, Card, Divider } from '@/components/ui'
+import { AvatarImage, AvatarFallbackText } from '@/components/ui/avatar'
+import { Pressable } from '@/components/ui/pressable'
+import { useMyProfile } from '@/features/user'
+import { SEMANTIC, BRAND } from '@/constants/theme'
 
-// Menu Item Component
-interface MenuItemProps {
-  icon: keyof typeof Ionicons.glyphMap
-  iconColor?: string
-  iconBgColor?: string
-  title: string
-  subtitle?: string
-  onPress?: () => void
-  showArrow?: boolean
-  badge?: string
+interface MenuItem {
+  id: string
+  titleKey: string
+  subtitleKey?: string
+  icon: string
+  route?: string
 }
 
-const MenuItem = ({
-  icon,
-  iconColor = '#0068FF',
-  iconBgColor,
-  title,
-  subtitle,
-  onPress,
-  showArrow = true,
-  badge
-}: MenuItemProps) => (
-  <TouchableOpacity onPress={onPress} className='flex-row items-center px-4 py-3 bg-white active:bg-gray-50'>
-    <View
-      className='w-10 h-10 rounded-full items-center justify-center mr-3'
-      style={{ backgroundColor: iconBgColor || '#E8F0FE' }}
-    >
-      <Ionicons name={icon} size={22} color={iconColor} />
-    </View>
-    <View className='flex-1'>
-      <Text className='text-base text-gray-900 font-medium'>{title}</Text>
-      {subtitle && <Text className='text-sm text-gray-500 mt-0.5'>{subtitle}</Text>}
-    </View>
-    {badge && (
-      <View className='bg-red-500 rounded-full px-2 py-0.5 mr-2'>
-        <Text className='text-white text-xs font-bold'>{badge}</Text>
-      </View>
-    )}
-    {showArrow && <Ionicons name='chevron-forward' size={20} color='#ccc' />}
-  </TouchableOpacity>
-)
-
-// Section Divider
-const SectionDivider = () => <View className='h-2 bg-gray-100' />
-
-// Line Divider
-const LineDivider = () => <View className='h-[0.5px] bg-gray-200 ml-16' />
+const MENU_ITEMS_KEYS: MenuItem[] = [
+  { id: '1', titleKey: 'profile.menu.zCloud', subtitleKey: 'profile.menu.zCloudDesc', icon: 'cloud-outline' },
+  { id: '2', titleKey: 'profile.menu.zStyle', subtitleKey: 'profile.menu.zStyleDesc', icon: 'brush-outline' },
+  { id: '3', titleKey: 'profile.menu.myDocs', subtitleKey: 'profile.menu.myDocsDesc', icon: 'folder-open-outline' },
+  { id: '4', titleKey: 'profile.menu.storage', subtitleKey: 'profile.menu.storageDesc', icon: 'pie-chart-outline', route: '/settings/data-on-device' },
+  { id: '5', titleKey: 'profile.menu.qrWallet', subtitleKey: 'profile.menu.qrWalletDesc', icon: 'wallet-outline' },
+  { id: '6', titleKey: 'profile.menu.accountSecurity', icon: 'shield-checkmark-outline', route: '/settings/account-security' },
+  { id: '7', titleKey: 'profile.menu.privacy', icon: 'lock-closed-outline', route: '/settings/privacy' }
+]
 
 export default function ProfileScreen() {
   const router = useRouter()
-  const insets = useSafeAreaInsets()
-  const { user } = useAuthStore()
-  const logoutMutation = useLogoutMutation()
+  const { t } = useTranslation()
+  const { data: user, isLoading } = useMyProfile()
 
-  // Get user name from store (set during registration)
-  const userName = user?.fullName || 'Người dùng'
-  const userAvatar = user?.avatar
-
-  const handleLogout = () => {
-    Alert.alert('Đăng xuất', 'Bạn có chắc chắn muốn đăng xuất?', [
-      { text: 'Hủy', style: 'cancel' },
-      {
-        text: 'Đăng xuất',
-        style: 'destructive',
-        onPress: () => logoutMutation.mutate()
-      }
-    ])
+  const getInitials = (fullName: string) => {
+    const names = fullName.trim().split(' ')
+    if (names.length >= 2) {
+      return names[names.length - 2].charAt(0) + names[names.length - 1].charAt(0)
+    }
+    return fullName.charAt(0)
   }
 
   return (
-    <View className='flex-1 bg-gray-100'>
-      {/* Header with Gradient covering status bar */}
-      <LinearGradient
-        colors={['#0068FF', '#0055DD']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={{ paddingTop: insets.top }}
-      >
-        <View className='flex-row items-center justify-between px-4 py-2.5'>
-          <TouchableOpacity className='mr-3'>
-            <Ionicons name='search' size={24} color='white' />
-          </TouchableOpacity>
-          <View className='flex-1'>
-            <Text className='text-white text-base opacity-90'>Tìm kiếm</Text>
-          </View>
-          <TouchableOpacity>
-            <Ionicons name='settings-outline' size={24} color='white' />
-          </TouchableOpacity>
-        </View>
-      </LinearGradient>
+    <Box style={{ flex: 1, backgroundColor: '#f9fafb' }}>
+      {/* Header */}
+      <Header
+        showSearch
+        searchPlaceholder={t('profile.search')}
+        showSettingsButton
+        onSettingsPress={() => router.push('/settings' as any)}
+      />
 
-      <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
-        {/* Profile Header */}
-        <TouchableOpacity className='flex-row items-center px-4 py-4 bg-white' activeOpacity={0.7}>
-          {/* Avatar */}
-          <View className='relative'>
-            {userAvatar ? (
-              <Image source={{ uri: userAvatar }} className='w-16 h-16 rounded-full' />
-            ) : (
-              <View className='w-16 h-16 rounded-full bg-gray-300 items-center justify-center'>
-                <Ionicons name='person' size={32} color='#666' />
-              </View>
-            )}
-            {/* Edit avatar button */}
-            <View className='absolute -bottom-1 -right-1 bg-gray-200 rounded-full p-1.5 border-2 border-white'>
-              <Ionicons name='camera' size={12} color='#666' />
-            </View>
-          </View>
+      <ScrollView>
+        {/* User Profile Header */}
+        <Card style={{ paddingHorizontal: 16, paddingVertical: 16 }}>
+          {isLoading ? (
+            <Box style={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
+              <ActivityIndicator size="large" color="#0068FF" />
+            </Box>
+          ) : (
+            <HStack style={{ alignItems: 'center' }} space="md">
+              <Box style={{ position: 'relative' }}>
+                <Avatar size="xl">
+                  <AvatarFallbackText style={{ fontSize: 24, color: '#ffffff' }}>
+                    {user?.fullName ? getInitials(user.fullName) : 'U'}
+                  </AvatarFallbackText>
+                  {user?.avatar && (
+                    <AvatarImage source={{ uri: user.avatar }} />
+                  )}
+                </Avatar>
+                {/* Online status indicator */}
+                <Box style={{ position: 'absolute', bottom: -2, right: -2, width: 16, height: 16, backgroundColor: '#22c55e', borderRadius: 8, borderWidth: 2, borderColor: '#ffffff' }} />
+              </Box>
+              <VStack style={{ flex: 1 }}>
+                <Text size="lg" bold style={{ color: '#111827' }}>
+                  {user?.fullName || 'User'}
+                </Text>
+              </VStack>
+            </HStack>
+          )}
+        </Card>
 
-          {/* User Name */}
-          <View className='flex-1 ml-4'>
-            <Text className='text-xl font-semibold text-gray-900'>{userName}</Text>
-          </View>
-        </TouchableOpacity>
+        {/* Promotional Card */}
+        <Pressable 
+          style={{
+            marginHorizontal: 16,
+            marginTop: 8,
+            padding: 14,
+            borderRadius: 8,
+            backgroundColor: BRAND.blueLight
+          }}
+        >
+          <HStack style={{ alignItems: 'center' }} space="md">
+            <Box style={{ width: 40, height: 40, backgroundColor: SEMANTIC.background, borderRadius: 8, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 2, elevation: 1 }}>
+              <Ionicons name="pricetag" size={20} color={SEMANTIC.primary} />
+            </Box>
+            <VStack style={{ flex: 1 }}>
+              <Text style={{ color: '#111827' }} size="sm" bold>
+                {t('profile.promo.title')}
+              </Text>
+              <Text size="xs" style={{ color: '#3b82f6', marginTop: 2 }}>
+                {t('profile.promo.subtitle')}
+              </Text>
+            </VStack>
+            <Ionicons name="chevron-forward" size={20} color={SEMANTIC.primary} />
+          </HStack>
+        </Pressable>
 
-        <SectionDivider />
+        {/* Menu Items */}
+        <Card style={{ marginTop: 8 }}>
+          {MENU_ITEMS_KEYS.map((item, index) => (
+            <VStack key={item.id}>
+              <Pressable 
+                style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 }}
+                onPress={() => {
+                  if (item.route) {
+                    router.push(item.route as any)
+                  }
+                }}
+              >
+                {/* Icon */}
+                <Box style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+                  <Ionicons name={item.icon as any} size={28} color="#0068FF" />
+                </Box>
 
-        {/* Cloud Services */}
-        <View className='bg-white'>
-          <MenuItem
-            icon='cloud-outline'
-            iconColor='#0068FF'
-            iconBgColor='#E8F0FE'
-            title='zCloud'
-            subtitle='Không gian lưu trữ dữ liệu trên đám mây'
-            onPress={() => {}}
-          />
-          <LineDivider />
-          <MenuItem
-            icon='color-palette-outline'
-            iconColor='#FF6B35'
-            iconBgColor='#FFF0EB'
-            title='zStyle – Nổi bật trên Zalo'
-            subtitle='Hình nền và nhạc cho cuộc gọi Zalo'
-            onPress={() => {}}
-          />
-        </View>
+                {/* Content */}
+                <VStack style={{ flex: 1 }}>
+                  <Text size="md" bold style={{ color: '#111827' }}>
+                    {t(item.titleKey)}
+                  </Text>
+                  {item.subtitleKey && (
+                    <Text size="xs" style={{ color: '#6b7280', marginTop: 2 }}>
+                      {t(item.subtitleKey)}
+                    </Text>
+                  )}
+                </VStack>
 
-        <SectionDivider />
+                {/* Arrow */}
+                <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+              </Pressable>
 
-        {/* Documents & Data */}
-        <View className='bg-white'>
-          <MenuItem
-            icon='folder-outline'
-            iconColor='#4CAF50'
-            iconBgColor='#E8F5E9'
-            title='My Documents'
-            subtitle='Lưu trữ các tin nhắn quan trọng'
-            onPress={() => {}}
-          />
-          <LineDivider />
-          <MenuItem
-            icon='time-outline'
-            iconColor='#9C27B0'
-            iconBgColor='#F3E5F5'
-            title='Dữ liệu trên máy'
-            subtitle='Quản lý dữ liệu Zalo của bạn'
-            onPress={() => {}}
-          />
-          <LineDivider />
-          <MenuItem
-            icon='qr-code-outline'
-            iconColor='#2196F3'
-            iconBgColor='#E3F2FD'
-            title='Ví QR'
-            subtitle='Lưu trữ và xuất trình các mã QR quan trọng'
-            onPress={() => {}}
-          />
-        </View>
+              {/* Divider */}
+              {index < MENU_ITEMS_KEYS.length - 1 && (
+                <Divider style={{ marginLeft: 64 }} />
+              )}
+            </VStack>
+          ))}
+        </Card>
 
-        <SectionDivider />
-
-        {/* Security */}
-        <View className='bg-white'>
-          <MenuItem
-            icon='shield-checkmark-outline'
-            iconColor='#0068FF'
-            iconBgColor='#E8F0FE'
-            title='Tài khoản và bảo mật'
-            onPress={() => {}}
-          />
-          <LineDivider />
-          <MenuItem
-            icon='lock-closed-outline'
-            iconColor='#607D8B'
-            iconBgColor='#ECEFF1'
-            title='Quyền riêng tư'
-            onPress={() => {}}
-          />
-        </View>
-
-        <SectionDivider />
-
-        {/* Logout Button */}
-        <View className='bg-white mt-4 mb-8'>
-          <TouchableOpacity onPress={handleLogout} className='flex-row items-center justify-center py-4'>
-            <Ionicons name='log-out-outline' size={22} color='#FF3B30' />
-            <Text className='text-base font-medium text-red-500 ml-2'>Đăng xuất</Text>
-          </TouchableOpacity>
-        </View>
+        {/* Settings */}
+        <Card style={{ marginTop: 8, marginBottom: 24}}>
+          <Pressable style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12 }}>
+            <Box style={{ width: 40, height: 40, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
+              <Ionicons name="settings-outline" size={28} color="#0068FF" />
+            </Box>
+            <VStack style={{ flex: 1 }}>
+              <Text size="md" bold style={{ color: '#111827' }}>
+                {t('profile.menu.settings')}
+              </Text>
+            </VStack>
+            <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+          </Pressable>
+        </Card>
       </ScrollView>
-    </View>
+    </Box>
   )
 }

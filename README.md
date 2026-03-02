@@ -6,12 +6,15 @@
 
 - [Tổng quan](#-tổng-quan)
 - [Công nghệ sử dụng](#-công-nghệ-sử-dụng)
-- [Cấu trúc dự án](#-cấu-trúc-dự-án)
+- [Cấu trúc dự án chi tiết](#-cấu-trúc-dự-án-chi-tiết)
 - [Yêu cầu hệ thống](#-yêu-cầu-hệ-thống)
 - [Hướng dẫn cài đặt](#-hướng-dẫn-cài-đặt)
+- [Cấu hình môi trường](#-cấu-hình-môi-trường)
+- [Scripts và Commands](#-scripts-và-commands)
 - [Chạy Backend](#-chạy-backend)
 - [Chạy Mobile App](#-chạy-mobile-app)
 - [Cấu hình API](#-cấu-hình-api)
+- [Kiến trúc & Patterns](#-kiến-trúc--patterns)
 - [Tính năng đã triển khai](#-tính-năng-đã-triển-khai)
 
 ---
@@ -44,71 +47,557 @@ BondHub Mobile là ứng dụng chat nhắn tin tương tự Zalo, được xây
 
 ---
 
-## 📁 Cấu trúc dự án
+## 📁 Cấu trúc dự án chi tiết
 
 ```
 zalo-app-mobile/
-├── app/                          # Screens (Expo Router)
-│   ├── _layout.tsx              # Root layout
-│   ├── (tabs)/                  # Tab navigation
-│   │   ├── index.tsx            # Messages
-│   │   ├── contacts.tsx         # Contacts
-│   │   ├── discover.tsx         # Discover
-│   │   ├── timeline.tsx         # Timeline
-│   │   └── profile.tsx          # Profile
-│   └── auth/                    # Auth screens
-│       └── login.tsx
+├── 📱 app/                              # Expo Router - File-based routing
+│   ├── _layout.tsx                     # Root layout (khởi tạo providers)
+│   │
+│   ├── (tabs)/                         # Tab navigation group
+│   │   ├── _layout.tsx                # Tab bar configuration
+│   │   ├── index.tsx                  # Home/Messages tab
+│   │   ├── contacts.tsx               # Danh bạ
+│   │   ├── discover.tsx               # Khám phá
+│   │   ├── timeline.tsx               # Timeline
+│   │   └── profile.tsx                # Trang cá nhân
+│   │
+│   ├── auth/                          # Authentication flows
+│   │   ├── _layout.tsx               # Auth layout (stack navigator)
+│   │   ├── index.tsx                 # Welcome screen
+│   │   ├── login.tsx                 # Màn hình đăng nhập
+│   │   ├── register.tsx              # Đăng ký
+│   │   ├── forgot-password.tsx       # Quên mật khẩu
+│   │   └── verify-otp.tsx            # Xác thực OTP
+│   │
+│   ├── settings/                      # Settings screens
+│   │   └── index.tsx
+│   │
+│   ├── friend-requests/               # Lời mời kết bạn
+│   │   └── index.tsx
+│   │
+│   └── qr/                            # QR Code features
+│       ├── index.tsx                  # QR Scanner
+│       └── confirm.tsx                # Xác nhận kết bạn
 │
-├── features/                     # Feature modules
-│   └── auth/                    # Authentication feature
-│       ├── api/                 # API calls
-│       │   └── auth.api.ts
-│       ├── components/          # Auth components
-│       │   ├── login-form.tsx
-│       │   └── logout-button.tsx
-│       ├── hooks/               # Auth hooks
-│       │   ├── use-auth.ts
-│       │   ├── use-login.ts
-│       │   ├── use-logout.ts
-│       │   └── use-auth-init.ts
-│       ├── queries/             # Query keys
-│       │   └── auth.keys.ts
-│       └── schemas/             # Validation
-│           └── auth.schema.ts
+├── 🎯 features/                         # Feature-based architecture
+│   │
+│   ├── auth/                          # 🔐 Authentication Feature
+│   │   ├── api/
+│   │   │   ├── auth.api.ts           # Login, register, refresh APIs
+│   │   │   └── index.ts
+│   │   │
+│   │   ├── components/
+│   │   │   ├── login-form.tsx        # Form đăng nhập (với validation)
+│   │   │   ├── register-form.tsx     # Form đăng ký
+│   │   │   ├── forgot-password-form.tsx
+│   │   │   ├── logout-button.tsx
+│   │   │   └── welcome-screen.tsx
+│   │   │
+│   │   ├── hooks/
+│   │   │   ├── use-auth.ts           # Hook truy cập auth store
+│   │   │   ├── use-login.ts          # Login mutation
+│   │   │   ├── use-logout.ts         # Logout handler
+│   │   │   └── use-auth-init.ts      # Initialize auth state
+│   │   │
+│   │   ├── queries/
+│   │   │   ├── keys.ts               # React Query keys
+│   │   │   ├── use-mutations.ts      # Login/Register mutations
+│   │   │   └── use-queries.ts        # Validate token query
+│   │   │
+│   │   ├── schemas/
+│   │   │   ├── auth.schema.ts        # Zod validation schemas
+│   │   │   ├── auth.types.ts         # TypeScript types
+│   │   │   └── index.ts
+│   │   │
+│   │   └── i18n/
+│   │       └── locales/              # Feature-specific translations
+│   │           ├── en.json
+│   │           └── vi.json
+│   │
+│   └── user/                          # 👤 User Feature
+│       ├── api/
+│       │   └── user.api.ts           # Get profile, update, search
+│       ├── queries/
+│       │   ├── keys.ts
+│       │   ├── use-mutations.ts
+│       │   └── use-queries.ts
+│       └── schemas/
+│           └── user.schema.ts
 │
-├── components/                   # Shared components
-│   └── ui/                      # UI primitives
-│
-├── config/                       # Configuration
-│   └── apiConfig.ts             # API endpoints
-│
-├── i18n/                        # Internationalization
+├── 🧩 components/                       # Shared UI Components
 │   ├── index.ts
+│   ├── loading-screen.tsx             # Full screen loader
+│   ├── welcome-screen.tsx
+│   │
+│   └── ui/                            # UI Primitives (Gluestack UI)
+│       ├── button-v4.tsx             # Custom button
+│       ├── input-v4.tsx              # Custom input
+│       ├── text-v4.tsx               # Typography
+│       ├── avatar-v4.tsx             # Avatar component
+│       ├── card-v4.tsx
+│       ├── header-v4.tsx
+│       ├── examples.tsx
+│       └── gluestack-ui-provider/
+│           └── index.tsx             # Theme provider
+│
+├── ⚙️ config/                           # Cấu hình ứng dụng
+│   ├── apiConfig.ts                   # 🔥 API Base URLs
+│   ├── axiosInstance.ts               # Deprecated - dùng lib/http.ts
+│   └── index.ts
+│
+├── 🌍 i18n/                             # Internationalization
+│   ├── index.ts                       # i18next setup
 │   └── locales/
-│       ├── en.json              # English
-│       └── vi.json              # Vietnamese
+│       ├── en.json                    # English translations
+│       └── vi.json                    # Tiếng Việt
 │
-├── lib/                         # Core utilities
-│   ├── http.ts                  # Axios instance + interceptors
-│   ├── react-query.ts           # Query client
-│   └── utils.ts
+├── 🔧 lib/                              # Core Libraries
+│   ├── http.ts                        # 🔥 Axios instance + interceptors
+│   ├── react-query.ts                 # 🔥 QueryClient config
+│   ├── utils.ts                       # Tailwind merge utilities
+│   └── index.ts
 │
-├── store/                       # Global state
-│   └── authStore.ts             # Auth Zustand store
+├── 💾 store/                            # Zustand Global State
+│   ├── authStore.ts                   # 🔥 Auth state (user, tokens)
+│   └── index.ts
 │
-├── types/                       # TypeScript types
-│   ├── auth.types.ts
-│   ├── user.types.ts
-│   └── common.types.ts
+├── 📝 types/                            # TypeScript Definitions
+│   ├── common.types.ts                # Common types
+│   └── index.ts
 │
-└── utils/                       # Utility functions
-    ├── storageUtils.ts
-    └── jwt.ts
+├── 🛠 utils/                            # Utility Functions
+│   ├── storageUtils.ts                # AsyncStorage wrapper
+│   ├── jwt.ts                         # JWT decode/validate
+│   ├── error-handler.ts               # Error formatting
+│   ├── dateUtils.ts                   # Date formatting
+│   ├── stringUtils.ts
+│   └── validationUtils.ts
+│
+├── 🪝 hooks/                            # Custom React Hooks
+│   ├── use-color-scheme.ts            # Dark mode
+│   ├── use-theme-color.ts
+│   ├── useDebounce.ts
+│   ├── useKeyboard.ts
+│   └── useLoading.ts
+│
+├── 🎨 assets/
+│   └── images/                        # App icons & splash
+│
+├── 🔐 context/
+│   ├── theme-context.tsx              # Theme provider
+│   └── index.ts
+│
+├── 📄 Các file cấu hình
+│   ├── .env                           # 🔥 Environment variables
+│   ├── app.json                       # Expo configuration
+│   ├── package.json                   # Dependencies & scripts
+│   ├── tsconfig.json                  # TypeScript config
+│   ├── tailwind.config.js             # Tailwind CSS
+│   ├── babel.config.js                # Babel transformer
+│   ├── metro.config.js                # Metro bundler
+│   ├── eslint.config.js               # ESLint rules
+│   ├── .prettierrc                    # Code formatting
+│   └── global.css                     # Global Tailwind styles
+│
+└── 📚 docs/                             # Documentation
+```
+
+### 🔥 Files quan trọng cần hiểu
+
+| File | Mô tả | Điểm chính |
+|------|-------|------------|
+| **`lib/http.ts`** | Axios instance & interceptors | Request/response interceptor, auto refresh token |
+| **`store/authStore.ts`** | Zustand auth state | User info, tokens, persist config |
+| **`config/apiConfig.ts`** | API endpoints | BASE_URL theo môi trường |
+| **`app/_layout.tsx`** | Root layout | Setup providers (QueryClient, i18n, auth) |
+| **`features/auth/hooks/use-auth.ts`** | Auth hook | Login/logout logic, token management |
+| **`.env`** | Environment variables | API URL, Socket URL |
+
+---
+
+## ⚙️ Cấu hình môi trường
+
+### 📄 File `.env`
+
+```dotenv
+# API Configuration
+EXPO_PUBLIC_API_URL=http://192.168.1.19:8080/api
+EXPO_PUBLIC_SOCKET_URL=http://192.168.1.19:8080
+EXPO_PUBLIC_ENV=development
+```
+
+**Lưu ý:**
+- Thay `192.168.1.19` bằng IP máy tính của bạn
+- Android Emulator: dùng `http://10.0.2.2:8080`
+- iOS Simulator: dùng `http://localhost:8080`
+- Thiết bị thật: dùng IP thực của máy tính (cùng WiFi)
+
+### 📄 File `config/apiConfig.ts`
+
+```typescript
+import Constants from 'expo-constants'
+
+type Environment = 'development' | 'staging' | 'production'
+
+interface ApiConfigType {
+  apiUrl: string
+  socketUrl: string
+  timeout: number
+}
+
+// 🔥 Lấy từ .env
+const ENV = (Constants.expoConfig?.extra?.env || 'development') as Environment
+
+const API_CONFIG: Record<Environment, ApiConfigType> = {
+  development: {
+    apiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8080/api',
+    socketUrl: process.env.EXPO_PUBLIC_SOCKET_URL || 'http://10.0.2.2:8080',
+    timeout: 30000, // 30s
+  },
+  staging: {
+    apiUrl: 'https://staging-api.bondhub.com/api',
+    socketUrl: 'https://staging-api.bondhub.com',
+    timeout: 30000,
+  },
+  production: {
+    apiUrl: 'https://api.bondhub.com/api',
+    socketUrl: 'https://api.bondhub.com',
+    timeout: 30000,
+  },
+}
+
+export const currentConfig = API_CONFIG[ENV]
+
+// API Endpoints
+export const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: '/auth/login',
+    REGISTER: '/auth/register',
+    REFRESH: '/auth/refresh',
+    VALIDATE: '/auth/validate',
+    LOGOUT: '/auth/logout',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
+    VERIFY_OTP: '/auth/verify-otp',
+  },
+  USER: {
+    PROFILE: '/user/profile',
+    UPDATE_PROFILE: '/user/profile',
+    SEARCH: '/user/search',
+    UPDATE_AVATAR: '/user/avatar',
+    CHANGE_PASSWORD: '/user/change-password',
+  },
+  MESSAGE: {
+    CONVERSATIONS: '/message/conversations',
+    SEND: '/message/send',
+    MESSAGES: '/message/:conversationId',
+  },
+  FRIEND: {
+    LIST: '/friend/list',
+    REQUESTS: '/friend/requests',
+    SEND_REQUEST: '/friend/request',
+    ACCEPT_REQUEST: '/friend/accept',
+    REJECT_REQUEST: '/friend/reject',
+  },
+  NOTIFICATION: {
+    LIST: '/notification/list',
+    READ: '/notification/:id/read',
+    READ_ALL: '/notification/read-all',
+  },
+}
+```
+
+### 📄 File `lib/http.ts` - Axios Instance
+
+```typescript
+import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios'
+import { currentConfig } from '@/config/apiConfig'
+import { useAuthStore } from '@/store/authStore'
+import { refreshToken } from '@/features/auth/api/auth.api'
+
+// 🔥 Tạo Axios instance
+export const http = axios.create({
+  baseURL: currentConfig.apiUrl,
+  timeout: currentConfig.timeout,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+})
+
+// 🔥 Request Interceptor - Attach token
+http.interceptors.request.use(
+  async (config: InternalAxiosRequestConfig) => {
+    const { accessToken } = useAuthStore.getState()
+    
+    if (accessToken && config.headers) {
+      config.headers.Authorization = `Bearer ${accessToken}`
+    }
+    
+    return config
+  },
+  (error) => Promise.reject(error)
+)
+
+// 🔥 Response Interceptor - Handle 401 & Refresh Token
+let isRefreshing = false
+let failedQueue: any[] = []
+
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error)
+    } else {
+      prom.resolve(token)
+    }
+  })
+  failedQueue = []
+}
+
+http.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const originalRequest: any = error.config
+
+    // 🔥 Auto refresh token khi 401
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject })
+        })
+          .then((token) => {
+            originalRequest.headers['Authorization'] = 'Bearer ' + token
+            return http(originalRequest)
+          })
+          .catch((err) => Promise.reject(err))
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
+
+      const { refreshToken: rToken, setTokens, clearAuth } = useAuthStore.getState()
+
+      if (!rToken) {
+        clearAuth()
+        return Promise.reject(error)
+      }
+
+      try {
+        const response = await refreshToken(rToken)
+        const newAccessToken = response.data.access_token
+
+        setTokens(newAccessToken, rToken)
+        processQueue(null, newAccessToken)
+
+        originalRequest.headers['Authorization'] = 'Bearer ' + newAccessToken
+        return http(originalRequest)
+      } catch (err) {
+        processQueue(err, null)
+        clearAuth()
+        return Promise.reject(err)
+      } finally {
+        isRefreshing = false
+      }
+    }
+
+    return Promise.reject(error)
+  }
+)
+
+export default http
+```
+
+### 📄 File `store/authStore.ts` - Zustand Store
+
+```typescript
+import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
+import AsyncStorage from '@react-native-async-storage/async-storage'
+import * as SecureStore from 'expo-secure-store'
+
+interface User {
+  id: string
+  phoneNumber: string
+  displayName?: string
+  avatar?: string
+}
+
+interface AuthState {
+  user: User | null
+  accessToken: string | null
+  refreshToken: string | null
+  isAuthenticated: boolean
+  
+  // Actions
+  setUser: (user: User) => void
+  setTokens: (accessToken: string, refreshToken: string) => void
+  clearAuth: () => void
+  updateUser: (updates: Partial<User>) => void
+}
+
+// 🔥 Lưu token vào SecureStore
+const saveTokensToSecureStore = async (accessToken: string, refreshToken: string) => {
+  await SecureStore.setItemAsync('accessToken', accessToken)
+  await SecureStore.setItemAsync('refreshToken', refreshToken)
+}
+
+const clearTokensFromSecureStore = async () => {
+  await SecureStore.deleteItemAsync('accessToken')
+  await SecureStore.deleteItemAsync('refreshToken')
+}
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      accessToken: null,
+      refreshToken: null,
+      isAuthenticated: false,
+
+      setUser: (user) => {
+        set({ user, isAuthenticated: true })
+      },
+
+      setTokens: async (accessToken, refreshToken) => {
+        await saveTokensToSecureStore(accessToken, refreshToken)
+        set({ accessToken, refreshToken, isAuthenticated: true })
+      },
+
+      clearAuth: async () => {
+        await clearTokensFromSecureStore()
+        set({
+          user: null,
+          accessToken: null,
+          refreshToken: null,
+          isAuthenticated: false,
+        })
+      },
+
+      updateUser: (updates) => {
+        const currentUser = get().user
+        if (currentUser) {
+          set({ user: { ...currentUser, ...updates } })
+        }
+      },
+    }),
+    {
+      name: 'auth-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+      // ⚠️ Không lưu tokens vào AsyncStorage (dùng SecureStore)
+      partialize: (state) => ({
+        user: state.user,
+        isAuthenticated: state.isAuthenticated,
+      }),
+    }
+  )
+)
+```
+
+### 📄 File `lib/react-query.ts` - React Query Config
+
+```typescript
+import { QueryClient } from '@tanstack/react-query'
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 2,
+      refetchOnWindowFocus: false,
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      gcTime: 10 * 60 * 1000,    // 10 minutes
+    },
+    mutations: {
+      retry: 1,
+    },
+  },
+})
+```
+
+### 📄 File `app.json` - Expo Config
+
+```json
+{
+  "expo": {
+    "name": "zalo-app-mobile",
+    "slug": "zalo-app-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "zaloappmobile",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
 ```
 
 ---
 
-## 💻 Yêu cầu hệ thống
+## 📜 Scripts và Commands
+
+### Package.json Scripts
+
+```json
+{
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web",
+    "lint": "expo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "reset-project": "node ./scripts/reset-project.js"
+  }
+}
+```
+
+### Các lệnh thường dùng
+
+```bash
+# 🚀 Development
+npm start                    # Khởi động Expo Dev Server
+npm run android              # Chạy trên Android Emulator
+npm run ios                  # Chạy trên iOS Simulator
+npm run web                  # Chạy trên web browser
+
+# 🧹 Maintenance
+npm run format               # Format code với Prettier
+npm run lint                 # Kiểm tra lỗi ESLint
+npx expo start -c            # Clear cache và start
+npx expo install --check     # Kiểm tra dependencies
+
+# 🔧 Advanced
+npx expo start --tunnel      # Dùng tunnel (khi không cùng WiFi)
+npx expo start --offline     # Chạy offline mode
+npx expo prebuild            # Generate native code
+npx expo doctor              # Kiểm tra config
+
+# 📦 Build
+eas build --platform android  # Build APK (cần Expo EAS)
+eas build --platform ios      # Build IPA
+
+# 🧪 Testing
+npm test                     # Chạy tests (nếu có)
+```
+
+---
+
+## 🏗 Kiến trúc & Patterns
 
 ### Cho Mobile Development
 
@@ -485,6 +974,177 @@ npx expo start -c
 
 # Reset project
 npm run reset-project
+```
+
+---
+
+## 🏗 Kiến trúc & Patterns
+
+### 1. Feature-based Architecture
+
+Dự án sử dụng **Feature-based folder structure** thay vì layer-based:
+
+```
+✅ GOOD (Feature-based)
+features/
+├── auth/
+│   ├── api/
+│   ├── components/
+│   ├── hooks/
+│   └── queries/
+└── user/
+    ├── api/
+    └── components/
+
+❌ BAD (Layer-based)
+src/
+├── components/     # Tất cả components
+├── hooks/          # Tất cả hooks
+└── api/            # Tất cả APIs
+```
+
+**Ưu điểm:**
+- Dễ scale khi thêm tính năng mới
+- Code liên quan gom lại 1 chỗ
+- Dễ refactor/xóa feature
+
+### 2. State Management Strategy
+
+```
+┌─────────────────────────────────────────┐
+│           Component Tree                │
+├─────────────────────────────────────────┤
+│  ┌──────────────┐  ┌─────────────────┐ │
+│  │  Local State │  │  Server State   │ │
+│  │  (useState)  │  │ (React Query)   │ │
+│  └──────────────┘  └─────────────────┘ │
+│                                         │
+│  ┌─────────────────────────────────┐   │
+│  │     Global State (Zustand)      │   │
+│  │  - Auth (user, tokens)          │   │
+│  │  - Theme                        │   │
+│  └─────────────────────────────────┘   │
+└─────────────────────────────────────────┘
+```
+
+**Nguyên tắc:**
+- **Local State**: UI state (modal open/close, form inputs)
+- **Zustand**: Global app state (auth, theme, settings)
+- **React Query**: Server data (API responses, caching)
+
+### 3. Data Flow
+
+```
+Component
+    ↓
+Custom Hook (use-auth.ts)
+    ↓
+React Query (useMutation/useQuery)
+    ↓
+API Layer (auth.api.ts)
+    ↓
+Axios Instance (lib/http.ts)
+    ↓
+Backend API (Spring Boot)
+```
+
+### 4. Token Refresh Flow
+
+```
+1. User login
+   → Save access_token (SecureStore) ✓
+   → Save refresh_token (SecureStore) ✓
+   → Save user (AsyncStorage via Zustand) ✓
+
+2. API call
+   → Interceptor attach Bearer token
+   → Request sent
+
+3. Token expired (401)
+   → Interceptor catch 401
+   → Call /auth/refresh with refresh_token
+   → Save new tokens
+   → Retry original request
+
+4. Refresh token expired
+   → Clear all auth data
+   → Redirect to login
+```
+
+### 5. Form Validation với Zod
+
+```typescript
+// Schema
+import { z } from 'zod'
+
+export const loginSchema = z.object({
+  phoneNumber: z.string().min(10).max(11),
+  password: z.string().min(6),
+})
+
+// Component sử dụng
+const handleSubmit = (data: LoginFormData) => {
+  // Data đã được validate bởi Zod
+  loginMutation.mutate(data)
+}
+```
+
+### 6. Error Handling
+
+```typescript
+// Centralized error handler
+export const handleApiError = (error: any): string => {
+  if (axios.isAxiosError(error)) {
+    const message = error.response?.data?.message
+    return message || 'Đã có lỗi xảy ra'
+  }
+  return 'Lỗi không xác định'
+}
+
+// Usage in component
+import Toast from 'react-native-toast-message'
+
+try {
+  await login(data)
+} catch (error) {
+  const message = handleApiError(error)
+  Toast.show({ type: 'error', text1: message })
+}
+```
+
+### 7. Internationalization (i18n)
+
+```typescript
+// Component usage
+import { useTranslation } from 'react-i18next'
+
+const { t, i18n } = useTranslation()
+
+<Text>{t('auth.login')}</Text>
+
+// Đổi ngôn ngữ
+i18n.changeLanguage('en')
+```
+
+### 8. Routing với Expo Router
+
+```typescript
+// File-based routing
+app/
+├── _layout.tsx           → /
+├── (tabs)/
+│   ├── index.tsx        → / (home)
+│   └── profile.tsx      → /profile
+└── auth/
+    ├── login.tsx        → /auth/login
+    └── register.tsx     → /auth/register
+
+// Navigation
+import { router } from 'expo-router'
+
+router.push('/auth/login')
+router.replace('/') // No back
+router.back()
 ```
 
 ---

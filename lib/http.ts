@@ -82,7 +82,8 @@ const performRefresh = async (): Promise<string | null> => {
       throw new Error('No refresh token available')
     }
 
-    const response = await axios.post(`${apiConfig.apiUrl}${API_ENDPOINTS.AUTH.REFRESH}`, { refreshToken })
+    const deviceId = await secureStorage.getDeviceId() || 'mobile-device'
+    const response = await axios.post(`${apiConfig.apiUrl}${API_ENDPOINTS.AUTH.REFRESH}`, { deviceId, refreshToken })
 
     // Backend returns camelCase: accessToken, refreshToken
     const { accessToken, refreshToken: newRefreshToken } = response.data.data

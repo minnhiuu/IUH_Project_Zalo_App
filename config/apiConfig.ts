@@ -46,19 +46,27 @@ export const API_ENDPOINTS = {
     VALIDATE: '/auth/validate', // GET ?token=xxx
     FORGOT_PASSWORD: '/auth/forgot-password', // POST - Request OTP for password reset
     RESET_PASSWORD: '/auth/reset-password', // POST - Reset password with OTP
+    CHANGE_PASSWORD: '/auth/change-password', // POST - Change password (authenticated)
     QR: {
       GENERATE: '/auth/qr/generate',
       WAIT: (qrId: string) => `/auth/qr/wait/${qrId}`,
+      MOBILE: '/auth/qr/mobile', // Endpoint for mobile to scan/accept/reject
+      STATUS: '/auth/qr/status', // Get QR status
       SCAN: '/auth/qr/scan',
       ACCEPT: '/auth/qr/accept',
       REJECT: '/auth/qr/reject'
     }
   },
   USER: {
-    PROFILE: '/user/profile',
-    UPDATE_PROFILE: '/user/profile',
-    SEARCH: '/user/search',
-    GET_BY_ID: (id: string) => `/user/${id}`
+    ME: '/users/me', // GET - Get current user profile
+    PROFILE: '/users/profile', // Deprecated - use ME
+    UPDATE_PROFILE: '/users/profile',
+    SEARCH: '/users/search',
+    GET_BY_ID: (id: string) => `/users/${id}`
+  },
+  DEVICE: {
+    ACTIVE_SESSIONS: '/auth/devices/active-sessions', // GET - Get all active devices
+    DELETE: (id: string) => `/auth/devices/${id}` // DELETE - Delete a device
   },
   MESSAGE: {
     CONVERSATIONS: '/message/conversations',
@@ -68,6 +76,22 @@ export const API_ENDPOINTS = {
   NOTIFICATION: {
     LIST: '/notification',
     MARK_READ: (id: string) => `/notification/${id}/read`
+  },
+  FRIENDSHIP: {
+    // Friend requests
+    SEND_REQUEST: '/friendships/requests', // POST
+    ACCEPT_REQUEST: (friendshipId: string) => `/friendships/requests/${friendshipId}/accept`, // PUT
+    DECLINE_REQUEST: (friendshipId: string) => `/friendships/requests/${friendshipId}/decline`, // PUT
+    CANCEL_REQUEST: (friendshipId: string) => `/friendships/requests/${friendshipId}/cancel`, // PUT
+    RECEIVED_REQUESTS: '/friendships/requests/received', // GET
+    SENT_REQUESTS: '/friendships/requests/sent', // GET
+    // Friends
+    MY_FRIENDS: '/friendships/friends', // GET
+    UNFRIEND: (friendId: string) => `/friendships/friends/${friendId}`, // DELETE
+    // Status & mutual
+    CHECK_STATUS: (userId: string) => `/friendships/status/${userId}`, // GET
+    MUTUAL_FRIENDS: (userId: string) => `/friendships/mutual/${userId}`, // GET
+    MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count`, // GET
   }
 } as const
 

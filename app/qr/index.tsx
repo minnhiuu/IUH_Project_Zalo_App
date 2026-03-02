@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next'
 import { useQrScanMutation } from '@/features/auth/queries/use-mutations'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import * as ImagePicker from 'expo-image-picker'
-import { Box, VStack, HStack, Center } from '@gluestack-ui/themed'
 
 export default function QrScanScreen() {
   const { t } = useTranslation()
@@ -154,7 +153,7 @@ export default function QrScanScreen() {
   }
 
   return (
-    <Box flex={1} bg='$black'>
+    <View style={{ flex: 1, backgroundColor: 'black' }}>
       <CameraView
         style={StyleSheet.absoluteFillObject}
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
@@ -164,63 +163,79 @@ export default function QrScanScreen() {
 
       <SafeAreaView style={{ flex: 1, justifyContent: 'space-between' }} edges={['top', 'bottom']}>
         {/* Header */}
-        <HStack alignItems='center' justifyContent='space-between' px='$4' py='$2'>
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            paddingHorizontal: 16,
+            paddingVertical: 8
+          }}
+        >
           <TouchableOpacity onPress={() => router.back()} style={{ padding: 8 }}>
             <Ionicons name='close' size={30} color='white' />
           </TouchableOpacity>
           <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold' }}>Quét mã QR</Text>
           <View style={{ width: 40 }} />
-        </HStack>
+        </View>
 
         {/* Scan Area Container */}
-        <VStack alignItems='center' justifyContent='center'>
-          <Box width={256} height={256} position='relative'>
+        <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+          <View style={{ width: 256, height: 256, position: 'relative' }}>
             {/* Corners */}
-            <Box
-              position='absolute'
-              top={0}
-              left={0}
-              width='$8'
-              height='$8'
-              borderTopWidth={4}
-              borderLeftWidth={4}
-              borderColor='$primary600'
-              borderTopLeftRadius='$2xl'
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: 32,
+                height: 32,
+                borderTopWidth: 4,
+                borderLeftWidth: 4,
+                borderColor: '#0068FF',
+                borderTopLeftRadius: 16
+              }}
             />
-            <Box
-              position='absolute'
-              top={0}
-              right={0}
-              width='$8'
-              height='$8'
-              borderTopWidth={4}
-              borderRightWidth={4}
-              borderColor='$primary600'
-              borderTopRightRadius='$2xl'
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                right: 0,
+                width: 32,
+                height: 32,
+                borderTopWidth: 4,
+                borderRightWidth: 4,
+                borderColor: '#0068FF',
+                borderTopRightRadius: 16
+              }}
             />
-            <Box
-              position='absolute'
-              bottom={0}
-              left={0}
-              width='$8'
-              height='$8'
-              borderBottomWidth={4}
-              borderLeftWidth={4}
-              borderColor='$primary600'
-              borderBottomLeftRadius='$2xl'
+            <View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                left: 0,
+                width: 32,
+                height: 32,
+                borderBottomWidth: 4,
+                borderLeftWidth: 4,
+                borderColor: '#0068FF',
+                borderBottomLeftRadius: 16
+              }}
             />
-            <Box
-              position='absolute'
-              bottom={0}
-              right={0}
-              width='$8'
-              height='$8'
-              borderBottomWidth={4}
-              borderRightWidth={4}
-              borderColor='$primary600'
-              borderBottomRightRadius='$2xl'
+            <View
+              style={{
+                position: 'absolute',
+                bottom: 0,
+                right: 0,
+                width: 32,
+                height: 32,
+                borderBottomWidth: 4,
+                borderRightWidth: 4,
+                borderColor: '#0068FF',
+                borderBottomRightRadius: 16
+              }}
             />
-          </Box>
+          </View>
 
           <View
             style={{
@@ -235,29 +250,56 @@ export default function QrScanScreen() {
               Hướng camera về phía mã QR để quét
             </Text>
           </View>
-        </VStack>
+        </View>
 
         {/* Footer */}
-        <HStack justifyContent='space-around' alignItems='center' pb='$12'>
+        <View
+          style={{
+            flexDirection: 'row',
+            justifyContent: 'space-around',
+            alignItems: 'center',
+            paddingBottom: 48
+          }}
+        >
           <TouchableOpacity style={{ alignItems: 'center', width: 96 }} onPress={pickImage}>
-            <Center bg='rgba(255,255,255,0.1)' width={56} height={56} rounded='$full' mb='$2'>
+            <View
+              style={{
+                backgroundColor: 'rgba(255,255,255,0.1)',
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                marginBottom: 8,
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
               <Ionicons name='image-outline' size={26} color='white' />
-            </Center>
+            </View>
             <Text style={{ color: 'white', fontSize: 12 }}>Chọn ảnh</Text>
           </TouchableOpacity>
 
           <TouchableOpacity style={{ alignItems: 'center', width: 96 }} onPress={() => setTorch(!torch)}>
-            <Center width={56} height={56} rounded='$full' mb='$2' bg={torch ? '$yellow400' : 'rgba(255,255,255,0.1)'}>
+            <View
+              style={{
+                width: 56,
+                height: 56,
+                borderRadius: 28,
+                marginBottom: 8,
+                backgroundColor: torch ? '#FACC15' : 'rgba(255,255,255,0.1)',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
               <Ionicons
                 name={torch ? 'flashlight' : 'flashlight-outline'}
                 size={26}
                 color={torch ? 'black' : 'white'}
               />
-            </Center>
+            </View>
             <Text style={{ color: 'white', fontSize: 12 }}>{torch ? 'Tắt đèn' : 'Bật đèn'}</Text>
           </TouchableOpacity>
-        </HStack>
+        </View>
       </SafeAreaView>
-    </Box>
+    </View>
   )
 }

@@ -27,6 +27,8 @@ export const authKeys = {
 
   resetPassword: () => [...authKeys.all(), 'reset-password'] as const,
 
+  changePassword: () => [...authKeys.all(), 'change-password'] as const,
+
   generateQr: () => [...authKeys.all(), 'generate-qr'] as const,
 
   qrStatus: (qrId: string) => [...authKeys.all(), 'qr-status', qrId] as const,
