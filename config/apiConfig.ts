@@ -60,7 +60,8 @@ export const API_ENDPOINTS = {
   USER: {
     ME: '/users/me', // GET - Get current user profile
     PROFILE: '/users/profile', // Deprecated - use ME
-    UPDATE_PROFILE: '/users/profile',
+    UPDATE_PROFILE: '/users/me', // PUT - Update current user profile
+    UPDATE_BIO: '/users/profile/bio', // PATCH - Update bio only
     SEARCH: '/users/search',
     GET_BY_ID: (id: string) => `/users/${id}`
   },

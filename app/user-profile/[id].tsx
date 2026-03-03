@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { View, TouchableOpacity, Image, ScrollView, Dimensions, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
@@ -8,7 +8,7 @@ import { Text } from '@/components/ui/text'
 import { SEMANTIC, BRAND } from '@/constants/theme'
 import { useFriendshipStatus } from '@/features/friend/queries/use-queries'
 import { useSendFriendRequest } from '@/features/friend/queries/use-mutations'
-import { useUserById } from '@/features/users/queries/use-queries'
+import { useUserById, useMyProfile } from '@/features/users/queries/use-queries'
 import { useTheme } from '@/context/theme-context'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
@@ -21,14 +21,15 @@ export default function UserProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { isDark } = useTheme()
 
+  const { data: myProfile } = useMyProfile()
   const { data: userProfile, isLoading: profileLoading } = useUserById(id as string)
-  const { data: friendshipStatus, isLoading: statusLoading } = useFriendshipStatus(id as string)
+  const { data: friendshipStatus, isLoading: statusLoading } = useFriendshipStatus(id as string, id !== myProfile?.id)
   const sendFriendRequest = useSendFriendRequest()
 
   const isLoading = profileLoading || statusLoading
+  const isOwner = myProfile?.id === id
   const isFriend = friendshipStatus?.areFriends === true
   const isPending = friendshipStatus?.status === 'PENDING'
-  const isRequester = friendshipStatus?.requestedBy !== null
 
   const handleAddFriend = () => {
     if (!id) return
@@ -179,8 +180,8 @@ export default function UserProfileScreen() {
         <View
           style={{
             backgroundColor: isDark ? '#22262B' : '#fff',
-            paddingTop: AVATAR_SIZE / 2 + 12,
-            paddingBottom: 24,
+            paddingTop: AVATAR_SIZE / 2 + 16,
+            paddingBottom: 20,
             alignItems: 'center'
           }}
         >
@@ -189,8 +190,57 @@ export default function UserProfileScreen() {
             {userProfile.fullName}
           </Text>
 
-          {/* Bio or not-friend hint */}
-          {!isFriend && (
+          {/* Bio - Show if exists */}
+          {userProfile.bio && (
+            <Text
+              style={{
+                fontSize: 15,
+                color: isDark ? '#B6C1CF' : '#6B7280',
+                textAlign: 'center',
+                paddingHorizontal: 32,
+                lineHeight: 22
+              }}
+            >
+              {userProfile.bio}
+            </Text>
+          )}
+
+          {/* Owner Profile: Update Profile Link */}
+          {isOwner && (
+            <TouchableOpacity
+              onPress={() => router.push('/user-profile/edit-bio' as any)}
+              style={{
+                marginTop: 16,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 6
+              }}
+            >
+              <Ionicons name='pencil-outline' size={16} color='#0068FF' />
+              <Text style={{ fontSize: 15, color: '#0068FF', fontWeight: '400' }}>
+                {t('profile.owner.updateProfile')}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Friend Profile: No Activity Message */}
+          {!isOwner && isFriend && (
+            <Text
+              style={{
+                fontSize: 14,
+                color: isDark ? '#B6C1CF' : '#6b7280',
+                textAlign: 'center',
+                marginTop: 12,
+                paddingHorizontal: 40,
+                lineHeight: 20
+              }}
+            >
+              {t('profile.friend.noActivity', { name: userProfile.fullName.split(' ')[0] })}
+            </Text>
+          )}
+
+          {/* Stranger Profile: Not Friend Message */}
+          {!isOwner && !isFriend && (
             <Text
               style={{
                 fontSize: 14,
@@ -205,189 +255,434 @@ export default function UserProfileScreen() {
             </Text>
           )}
 
-          {userProfile.bio && isFriend && (
-            <Text
+          {/* Action Buttons - Only for non-owner */}
+          {!isOwner && (
+            <View
               style={{
-                fontSize: 14,
-                color: isDark ? '#B6C1CF' : '#6b7280',
-                textAlign: 'center',
-                marginTop: 8,
-                paddingHorizontal: 40
-              }}
-            >
-              {userProfile.bio}
-            </Text>
-          )}
-
-          {/* Action Buttons */}
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 12,
-              marginTop: 20,
-              paddingHorizontal: 24
-            }}
-          >
-            {/* Message Button */}
-            <TouchableOpacity
-              onPress={handleMessage}
-              activeOpacity={0.7}
-              style={{
-                flex: 1,
                 flexDirection: 'row',
                 alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 12,
-                borderRadius: 24,
-                backgroundColor: isDark ? 'rgba(0, 104, 255, 0.15)' : BRAND.blueLight,
-                gap: 8
+                gap: 12,
+                marginTop: 20,
+                paddingHorizontal: 24
               }}
             >
-              <Ionicons name='chatbubble-ellipses-outline' size={20} color={isDark ? '#0068FF' : SEMANTIC.primary} />
-              <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#0068FF' : SEMANTIC.primary }}>
-                {t('friend.actions.message')}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Add Friend / Status Button */}
-            {!isFriend && !isPending && (
+              {/* Message Button */}
               <TouchableOpacity
-                onPress={handleAddFriend}
-                disabled={sendFriendRequest.isPending}
+                onPress={handleMessage}
                 activeOpacity={0.7}
                 style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                  backgroundColor: isDark ? '#2C323A' : '#F3F4F6',
+                  flex: 1,
+                  flexDirection: 'row',
                   alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                {sendFriendRequest.isPending ? (
-                  <ActivityIndicator size='small' color='#0068FF' />
-                ) : (
-                  <Ionicons name='person-add-outline' size={22} color={isDark ? '#DFE2E7' : '#374151'} />
-                )}
-              </TouchableOpacity>
-            )}
-
-            {isPending && (
-              <View
-                style={{
-                  paddingHorizontal: 14,
+                  justifyContent: 'center',
                   paddingVertical: 12,
                   borderRadius: 24,
-                  backgroundColor: isDark ? '#2C323A' : '#F3F4F6'
+                  backgroundColor: isDark ? 'rgba(0, 104, 255, 0.15)' : BRAND.blueLight,
+                  gap: 8
                 }}
               >
-                <Text style={{ fontSize: 13, fontWeight: '500', color: isDark ? '#B6C1CF' : '#6b7280' }}>
-                  {t('friend.status.pending')}
+                <Ionicons name='chatbubble-ellipses-outline' size={20} color={isDark ? '#0068FF' : SEMANTIC.primary} />
+                <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#0068FF' : SEMANTIC.primary }}>
+                  {t('friend.actions.message')}
                 </Text>
-              </View>
-            )}
-          </View>
-        </View>
+              </TouchableOpacity>
 
-        {/* Friend Suggestions Section */}
-        <View style={{ backgroundColor: isDark ? '#22262B' : '#fff', marginTop: 8, paddingVertical: 16 }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingHorizontal: 16,
-              marginBottom: 14
-            }}
-          >
-            <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#DFE2E7' : '#111827' }}>
-              👋 {t('friend.profile.friendSuggestion')}
-            </Text>
-            <TouchableOpacity>
-              <Text style={{ fontSize: 14, color: isDark ? '#B6C1CF' : '#6b7280' }}>{t('friend.profile.seeMore')}</Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Suggestion Cards (placeholder) */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
-          >
-            {[1, 2, 3].map((i) => (
-              <View
-                key={i}
-                style={{
-                  width: 140,
-                  backgroundColor: isDark ? '#2C323A' : '#fff',
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
-                  paddingVertical: 16,
-                  paddingHorizontal: 12,
-                  alignItems: 'center',
-                  position: 'relative'
-                }}
-              >
-                {/* Close button */}
+              {/* Add Friend / Status Button */}
+              {!isFriend && !isPending && (
                 <TouchableOpacity
+                  onPress={handleAddFriend}
+                  disabled={sendFriendRequest.isPending}
+                  activeOpacity={0.7}
                   style={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    width: 24,
-                    height: 24,
-                    borderRadius: 12,
-                    backgroundColor: isDark ? '#1A1D21' : '#F3F4F6',
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
+                    backgroundColor: isDark ? '#2C323A' : '#F3F4F6',
                     alignItems: 'center',
                     justifyContent: 'center'
                   }}
                 >
-                  <Ionicons name='close' size={14} color={isDark ? '#B6C1CF' : '#9ca3af'} />
+                  {sendFriendRequest.isPending ? (
+                    <ActivityIndicator size='small' color='#0068FF' />
+                  ) : (
+                    <Ionicons name='person-add-outline' size={22} color={isDark ? '#DFE2E7' : '#374151'} />
+                  )}
                 </TouchableOpacity>
+              )}
 
-                <Image
-                  source={{ uri: `https://i.pravatar.cc/100?img=${i + 10}` }}
+              {isPending && (
+                <View
                   style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 28,
-                    backgroundColor: isDark ? '#1A1D21' : '#E5E7EB',
-                    marginBottom: 8
-                  }}
-                />
-                <Text
-                  style={{
-                    fontSize: 13,
-                    fontWeight: '500',
-                    color: isDark ? '#DFE2E7' : '#111827',
-                    textAlign: 'center'
-                  }}
-                  numberOfLines={1}
-                >
-                  {['Nguyễn Tha...', 'Mai Thị Quỳ...', 'Minh'][i - 1]}
-                </Text>
-
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  style={{
-                    marginTop: 10,
-                    paddingVertical: 6,
-                    paddingHorizontal: 20,
-                    borderRadius: 16,
-                    borderWidth: 1,
-                    borderColor: '#0068FF'
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                    borderRadius: 24,
+                    backgroundColor: isDark ? '#2C323A' : '#F3F4F6'
                   }}
                 >
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#0068FF' }}>
-                    {t('friend.actions.addFriend')}
+                  <Text style={{ fontSize: 13, fontWeight: '500', color: isDark ? '#B6C1CF' : '#6b7280' }}>
+                    {t('friend.status.pending')}
                   </Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </ScrollView>
+                </View>
+              )}
+            </View>
+          )}
         </View>
+
+        {/* Owner Profile: Tabs Section */}
+        {isOwner && (
+          <View style={{ backgroundColor: isDark ? '#1A1D21' : '#E5E7EB', paddingVertical: 12 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+            >
+              {/* Customize Style */}
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#fff',
+                  borderRadius: 12,
+                  paddingVertical: 18,
+                  paddingHorizontal: 22,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 120,
+                  borderWidth: 1,
+                  borderColor: isDark ? 'rgba(0,0,0,0.1)' : '#D1D5DB',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.04,
+                  shadowRadius: 3,
+                  elevation: 1
+                }}
+              >
+                <View
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 25,
+                    backgroundColor: '#E8F3FF',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 12
+                  }}
+                >
+                  <Ionicons name='person-outline' size={26} color='#0068FF' />
+                </View>
+                <Text style={{ fontSize: 13, color: '#111827', textAlign: 'center', fontWeight: '500' }}>
+                  {t('profile.owner.customizeStyle')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* My Photos */}
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#fff',
+                  borderRadius: 12,
+                  paddingVertical: 18,
+                  paddingHorizontal: 22,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 120,
+                  borderWidth: 1,
+                  borderColor: isDark ? 'rgba(0,0,0,0.1)' : '#D1D5DB',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.04,
+                  shadowRadius: 3,
+                  elevation: 1
+                }}
+              >
+                <View
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 25,
+                    backgroundColor: '#E8F3FF',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 12
+                  }}
+                >
+                  <Ionicons name='image-outline' size={26} color='#0068FF' />
+                </View>
+                <Text style={{ fontSize: 13, color: '#111827', textAlign: 'center', fontWeight: '500' }}>
+                  {t('profile.owner.myPhotos')}
+                </Text>
+              </TouchableOpacity>
+
+              {/* Storage */}
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#fff',
+                  borderRadius: 12,
+                  paddingVertical: 18,
+                  paddingHorizontal: 22,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minWidth: 120,
+                  borderWidth: 1,
+                  borderColor: isDark ? 'rgba(0,0,0,0.1)' : '#D1D5DB',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.04,
+                  shadowRadius: 3,
+                  elevation: 1
+                }}
+              >
+                <View
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 25,
+                    backgroundColor: '#E8F3FF',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 12
+                  }}
+                >
+                  <Ionicons name='file-tray-full-outline' size={26} color='#0068FF' />
+                </View>
+                <Text style={{ fontSize: 13, color: '#111827', textAlign: 'center', fontWeight: '500' }}>
+                  {t('profile.owner.storage')}
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
+        )}
+
+        {/* Owner Profile: Journal Prompt */}
+        {isOwner && (
+          <View style={{ backgroundColor: isDark ? '#22262B' : '#fff', marginTop: 12, paddingVertical: 32, paddingHorizontal: 20 }}>
+            {/* Illustration */}
+            <View style={{ alignItems: 'center', marginBottom: 24 }}>
+              <View
+                style={{
+                  width: 140,
+                  height: 140,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  position: 'relative'
+                }}
+              >
+                {/* Heart icon - top left */}
+                <View style={{ position: 'absolute', top: 10, left: 15 }}>
+                  <View
+                    style={{
+                      width: 40,
+                      height: 40,
+                      borderRadius: 20,
+                      backgroundColor: '#FFE5E5',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      shadowColor: '#FF6B6B',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.2,
+                      shadowRadius: 4,
+                      elevation: 2
+                    }}
+                  >
+                    <Ionicons name='heart' size={20} color='#FF6B6B' />
+                  </View>
+                </View>
+
+                {/* Chat bubble - top right */}
+                <View style={{ position: 'absolute', top: 25, right: 10 }}>
+                  <View
+                    style={{
+                      width: 34,
+                      height: 34,
+                      borderRadius: 17,
+                      backgroundColor: '#D4F4F2',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      shadowColor: '#4ECDC4',
+                      shadowOffset: { width: 0, height: 2 },
+                      shadowOpacity: 0.2,
+                      shadowRadius: 4,
+                      elevation: 2
+                    }}
+                  >
+                    <Ionicons name='chatbubble' size={16} color='#4ECDC4' />
+                  </View>
+                </View>
+
+                {/* Phone/Card in center */}
+                <View
+                  style={{
+                    width: 70,
+                    height: 90,
+                    borderRadius: 10,
+                    backgroundColor: isDark ? '#2C323A' : '#fff',
+                    borderWidth: 2,
+                    borderColor: isDark ? '#3E444A' : '#E5E7EB',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: 12,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3
+                  }}
+                >
+                  <Ionicons name='person-circle-outline' size={36} color={isDark ? '#B6C1CF' : '#9CA3AF'} />
+                  <View style={{ width: 32, height: 3, backgroundColor: isDark ? '#3E444A' : '#D1D5DB', marginTop: 6, borderRadius: 2 }} />
+                  <View style={{ width: 24, height: 3, backgroundColor: isDark ? '#3E444A' : '#E5E7EB', marginTop: 3, borderRadius: 2 }} />
+                  <View style={{ width: 28, height: 3, backgroundColor: isDark ? '#3E444A' : '#E5E7EB', marginTop: 3, borderRadius: 2 }} />
+                </View>
+              </View>
+            </View>
+
+            {/* Title */}
+            <Text
+              style={{
+                fontSize: 19,
+                fontWeight: '600',
+                color: isDark ? '#DFE2E7' : '#111827',
+                textAlign: 'center',
+                marginBottom: 12,
+                lineHeight: 26
+              }}
+            >
+              {t('profile.owner.todayQuestion', { name: userProfile.fullName.split(' ').pop() })}
+            </Text>
+
+            {/* Description */}
+            <Text
+              style={{
+                fontSize: 15,
+                color: isDark ? '#B6C1CF' : '#6b7280',
+                textAlign: 'center',
+                lineHeight: 22,
+                marginBottom: 24,
+                paddingHorizontal: 10
+              }}
+            >
+              {t('profile.owner.journalPrompt')}
+            </Text>
+
+            {/* Post to Journal Button */}
+            <TouchableOpacity
+              style={{
+                paddingVertical: 13,
+                borderRadius: 30,
+                backgroundColor: '#0068FF',
+                alignItems: 'center',
+                justifyContent: 'center',
+                shadowColor: '#0068FF',
+                shadowOffset: { width: 0, height: 4 },
+                shadowOpacity: 0.3,
+                shadowRadius: 8,
+                elevation: 4
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>
+                {t('profile.owner.postToJournal')}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* Friend Suggestions Section - Only for Stranger Profile */}
+        {!isOwner && !isFriend && (
+          <View style={{ backgroundColor: isDark ? '#22262B' : '#fff', marginTop: 8, paddingVertical: 16 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 16,
+                marginBottom: 14
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#DFE2E7' : '#111827' }}>
+                👋 {t('friend.profile.friendSuggestion')}
+              </Text>
+              <TouchableOpacity>
+                <Text style={{ fontSize: 14, color: isDark ? '#B6C1CF' : '#6b7280' }}>{t('friend.profile.seeMore')}</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Suggestion Cards (placeholder) */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+            >
+              {[1, 2, 3].map((i) => (
+                <View
+                  key={i}
+                  style={{
+                    width: 140,
+                    backgroundColor: isDark ? '#2C323A' : '#fff',
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: isDark ? 'rgba(255,255,255,0.05)' : '#E5E7EB',
+                    paddingVertical: 16,
+                    paddingHorizontal: 12,
+                    alignItems: 'center',
+                    position: 'relative'
+                  }}
+                >
+                  {/* Close button */}
+                  <TouchableOpacity
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      width: 24,
+                      height: 24,
+                      borderRadius: 12,
+                      backgroundColor: isDark ? '#1A1D21' : '#F3F4F6',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <Ionicons name='close' size={14} color={isDark ? '#B6C1CF' : '#9ca3af'} />
+                  </TouchableOpacity>
+
+                  <Image
+                    source={{ uri: `https://i.pravatar.cc/100?img=${i + 10}` }}
+                    style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 28,
+                      backgroundColor: isDark ? '#1A1D21' : '#E5E7EB',
+                      marginBottom: 8
+                    }}
+                  />
+                  <Text
+                    style={{
+                      fontSize: 13,
+                      fontWeight: '500',
+                      color: isDark ? '#DFE2E7' : '#111827',
+                      textAlign: 'center'
+                    }}
+                    numberOfLines={1}
+                  >
+                    {['Nguyễn Tha...', 'Mai Thị Quỳ...', 'Minh'][i - 1]}
+                  </Text>
+
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={{
+                      marginTop: 10,
+                      paddingVertical: 6,
+                      paddingHorizontal: 20,
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: '#0068FF'
+                    }}
+                  >
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#0068FF' }}>
+                      {t('friend.actions.addFriend')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
       </ScrollView>
     </View>
   )

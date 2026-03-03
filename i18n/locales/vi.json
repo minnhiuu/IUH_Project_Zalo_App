@@ -571,6 +571,26 @@
     "promo": {
       "title": "Tặng bạn ưu đãi năm mới từ zStyle",
       "subtitle": "Chỉ từ 10.700đ/tháng, nhận ưu đãi ngay"
+    },
+    "owner": {
+      "updateProfile": "Cập nhật giới thiệu bản thân",
+      "updateSuccess": "Cập nhật thông tin thành công",
+      "customizeStyle": "Cài zStyle",
+      "myPhotos": "Ảnh của tôi",
+      "storage": "Kho lưu trữ",
+      "todayQuestion": "Hôm nay {{name}} có gì vui?",
+      "journalPrompt": "Đây là Nhật ký của bạn - Hãy làm đầy Nhật ký với những dấu ấn cuộc đời và kỷ niệm đáng nhớ nhé!",
+      "postToJournal": "Đăng lên Nhật ký"
+    },
+    "editBio": {
+      "title": "Chính sửa lời giới thiệu",
+      "placeholder": "Thêm giới thiệu bản thân",
+      "shareToJournal": "Chia sẻ lên nhật ký",
+      "characterCount": "{{current}}/{{max}}"
+    },
+    "friend": {
+      "noActivity": "{{name}} chưa có hoạt động nào. Hãy trò chuyện để hiểu nhau hơn.",
+      "message": "Nhắn tin"
     }
   }
 }

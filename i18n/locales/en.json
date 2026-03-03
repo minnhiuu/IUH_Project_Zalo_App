@@ -543,6 +543,26 @@
     "promo": {
       "title": "New year special offer from zStyle",
       "subtitle": "From only 10,700đ/month, get offer now"
+    },
+    "owner": {
+      "updateProfile": "Update bio",
+      "updateSuccess": "Profile updated successfully",
+      "customizeStyle": "Customize zStyle",
+      "myPhotos": "My photos",
+      "storage": "Storage",
+      "todayQuestion": "What's new with {{name}} today?",
+      "journalPrompt": "This is your Journal - Fill it with life moments and memorable experiences!",
+      "postToJournal": "Post to Journal"
+    },
+    "editBio": {
+      "title": "Edit bio",
+      "placeholder": "Add your bio",
+      "shareToJournal": "Share to journal",
+      "characterCount": "{{current}}/{{max}}"
+    },
+    "friend": {
+      "noActivity": "{{name}} has no activity yet. Start a conversation to get to know each other better.",
+      "message": "Message"
     }
   }
 }

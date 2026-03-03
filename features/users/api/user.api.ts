@@ -8,6 +8,9 @@ export const getMyProfile = () => http.get<ApiResponse<UserResponse>>(API_ENDPOI
 export const updateProfile = (data: UserUpdateRequest) =>
   http.put<ApiResponse<UserResponse>>(API_ENDPOINTS.USER.UPDATE_PROFILE, data)
 
+export const updateBio = (bio: string) =>
+  http.patch<ApiResponse<UserResponse>>(API_ENDPOINTS.USER.UPDATE_BIO, { bio })
+
 export const searchUsers = (keyword: string) =>
   http.get<ApiResponse<{ data: UserSummaryResponse[] }>>(API_ENDPOINTS.USER.SEARCH, {
     params: { keyword, size: 20 }
@@ -18,6 +21,7 @@ export const getUserById = (userId: string) => http.get<ApiResponse<UserResponse
 export const userApi = {
   getMyProfile,
   updateProfile,
+  updateBio,
   searchUsers,
   getUserById
 }
