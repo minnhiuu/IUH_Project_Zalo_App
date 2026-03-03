@@ -31,34 +31,61 @@ export default function AccountSecurityScreen() {
 
       {/* Personal Info Card */}
       <Pressable
-        style={{
+        style={({ pressed }: { pressed: boolean }) => ({
           marginHorizontal: 16,
           marginTop: 8,
-          padding: 16,
-          borderRadius: 12,
+          borderRadius: 16,
           backgroundColor: '#ffffff',
           borderWidth: 1,
           borderColor: '#e5e7eb',
-          flexDirection: 'row',
-          alignItems: 'center'
-        }}
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.05,
+          shadowRadius: 2,
+          elevation: 2,
+        })}
         onPress={() => {}}
       >
-        <Avatar size="lg">
-          <AvatarFallbackText style={{ fontSize: 18, color: '#ffffff' }}>
-            {user?.fullName?.[0] || 'U'}
-          </AvatarFallbackText>
-          {user?.avatar && <AvatarImage source={{ uri: user.avatar }} />}
-        </Avatar>
-        <VStack style={{ flex: 1, marginLeft: 12 }}>
-          <Text style={{ fontSize: 13, color: '#6b7280' }}>
-            {t('settings.accountSecurity.personalInfo')}
-          </Text>
-          <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827' }}>
-            {user?.fullName || 'N/A'}
-          </Text>
-        </VStack>
-        <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+        <HStack style={{ alignItems: 'center', padding: 16, borderRadius: 16, overflow: 'hidden' }}>
+          {/* Avatar with blue ring */}
+          <View style={{
+            padding: 2,
+            borderRadius: 999,
+            borderWidth: 2,
+            borderColor: '#0068FF',
+            marginRight: 14,
+          }}>
+            <Avatar size="lg">
+              <AvatarFallbackText style={{ fontSize: 18, color: '#ffffff' }}>
+                {user?.fullName?.[0] || 'U'}
+              </AvatarFallbackText>
+              {user?.avatar && <AvatarImage source={{ uri: user.avatar }} />}
+            </Avatar>
+          </View>
+
+          {/* Name & Label */}
+          <VStack style={{ flex: 1 }}>
+            <Text style={{ fontSize: 12, fontWeight: '500', color: '#0068FF' }}>
+              {t('settings.accountSecurity.personalInfo')}
+            </Text>
+            <Text style={{ fontSize: 17, fontWeight: '700', color: '#111827', marginTop: 2 }}>
+              {user?.fullName || 'N/A'}
+            </Text>
+          </VStack>
+
+          {/* Chevron pill */}
+          <View style={{
+            width: 28,
+            height: 28,
+            borderRadius: 999,
+            backgroundColor: '#f3f4f6',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginLeft: 8,
+          }}>
+            <Ionicons name="chevron-forward" size={16} color="#6b7280" />
+          </View>
+        </HStack>
       </Pressable>
 
       {/* Phone, Email, QR */}
