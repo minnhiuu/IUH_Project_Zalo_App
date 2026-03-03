@@ -1,91 +1,160 @@
-import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
-import * as SecureStore from 'expo-secure-store';
-import apiConfig from './apiConfig';
+import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios'
+import * as SecureStore from 'expo-secure-store'
+import i18n from '@/i18n'
+import apiConfig, { API_ENDPOINTS } from './apiConfig'
 
 const axiosInstance = axios.create({
   baseURL: apiConfig.apiUrl,
-  timeout: 30000,
+  timeout: apiConfig.timeout,
   headers: {
     'Content-Type': 'application/json',
-  },
-});
+    Accept: 'application/json'
+  }
+})
 
-// Request interceptor - Add auth token
+let isRefreshing = false
+
+let failedQueue: Array<{
+  resolve: (token: string | null) => void
+  reject: (error: AxiosError) => void
+}> = []
+
+const processQueue = (error: AxiosError | null, token: string | null = null) => {
+  failedQueue.forEach((promise) => {
+    if (error) {
+      promise.reject(error)
+    } else {
+      promise.resolve(token)
+    }
+  })
+  failedQueue = []
+}
+
 axiosInstance.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     try {
-      const token = await SecureStore.getItemAsync('access_token');
+      const token = await SecureStore.getItemAsync('access_token')
       if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
+        config.headers.Authorization = `Bearer ${token}`
       }
     } catch (error) {
-      console.error('Error getting token:', error);
+      console.error('Error getting token:', error)
     }
-    return config;
+    return config
   },
   (error: AxiosError) => {
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
-);
+)
 
-// Response interceptor - Handle errors & token refresh
 axiosInstance.interceptors.response.use(
   (response: AxiosResponse) => {
-    return response;
+    return response
   },
   async (error: AxiosError) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean }
+    const t = i18n.t
 
-    // Handle 401 Unauthorized - Token expired
     if (error.response?.status === 401 && !originalRequest._retry) {
-      originalRequest._retry = true;
+      // Avoid refreshing for the refresh endpoint itself
+      if (originalRequest.url?.includes(API_ENDPOINTS.AUTH.REFRESH)) {
+        return Promise.reject(error)
+      }
+
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({
+            resolve: (token) => {
+              if (token && originalRequest.headers) {
+                originalRequest.headers.Authorization = `Bearer ${token}`
+              }
+              resolve(axiosInstance(originalRequest))
+            },
+            reject: (err) => {
+              reject(err)
+            }
+          })
+        })
+      }
+
+      originalRequest._retry = true
+      isRefreshing = true
 
       try {
-        const refreshToken = await SecureStore.getItemAsync('refresh_token');
-        
-        if (refreshToken) {
-          const response = await axios.post(`${apiConfig.apiUrl}/auth/refresh-token`, {
-            refreshToken,
-          });
+        const refreshToken = await SecureStore.getItemAsync('refresh_token')
 
-          if (response.data.success) {
-            const { accessToken, refreshToken: newRefreshToken } = response.data.data.tokens;
-            
-            await SecureStore.setItemAsync('access_token', accessToken);
-            await SecureStore.setItemAsync('refresh_token', newRefreshToken);
+        if (!refreshToken) {
+          throw new Error(t('auth.refresh.refreshFailed'))
+        }
 
-            if (originalRequest.headers) {
-              originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-            }
+        const response = await axios.post(`${apiConfig.apiUrl}${API_ENDPOINTS.AUTH.REFRESH}`, {
+          refreshToken
+        })
 
-            return axiosInstance(originalRequest);
+        if (response.data.success) {
+          const { accessToken, refreshToken: newRefreshToken } = response.data.data
+
+          await SecureStore.setItemAsync('access_token', accessToken)
+          await SecureStore.setItemAsync('refresh_token', newRefreshToken)
+
+          processQueue(null, accessToken)
+
+          if (originalRequest.headers) {
+            originalRequest.headers.Authorization = `Bearer ${accessToken}`
           }
+
+          return axiosInstance(originalRequest)
+        } else {
+          throw new Error(t('auth.refresh.refreshFailed'))
         }
       } catch (refreshError) {
-        // Refresh failed - clear tokens and redirect to login
-        await SecureStore.deleteItemAsync('access_token');
-        await SecureStore.deleteItemAsync('refresh_token');
-        
-        // You can emit an event here to handle logout in the app
-        console.error('Token refresh failed:', refreshError);
+        processQueue(refreshError as AxiosError, null)
+
+        await SecureStore.deleteItemAsync('access_token')
+        await SecureStore.deleteItemAsync('refresh_token')
+
+        console.error('Token refresh failed:', refreshError)
+
+        return Promise.reject(new Error(t('auth.errors.sessionExpired')))
+      } finally {
+        isRefreshing = false
       }
     }
 
-    // Handle other errors
     if (error.response) {
-      // Server responded with error status
-      const errorMessage = (error.response.data as any)?.message || 'Đã có lỗi xảy ra';
-      console.error('API Error:', errorMessage);
+      const status = error.response.status
+      const data = error.response.data as { message?: string }
+
+      let errorMessage: string
+
+      switch (status) {
+        case 400:
+          errorMessage = data?.message || t('common.error')
+          break
+        case 403:
+          errorMessage = t('auth.errors.unauthorized')
+          break
+        case 404:
+          errorMessage = data?.message || t('common.error')
+          break
+        case 429:
+          errorMessage = t('auth.errors.tooManyAttempts')
+          break
+        case 500:
+        default:
+          errorMessage = t('auth.errors.serverError')
+          break
+      }
+
+      console.error('API Error:', errorMessage)
     } else if (error.request) {
-      // Request was made but no response
-      console.error('Network Error: Không thể kết nối đến server');
+      console.error('Network Error:', t('common.networkError'))
     } else {
-      // Something else happened
-      console.error('Error:', error.message);
+      console.error('Error:', error.message)
     }
 
-    return Promise.reject(error);
+    return Promise.reject(error)
   }
-);
+)
 
-export default axiosInstance;
+export default axiosInstance

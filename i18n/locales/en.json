@@ -1,0 +1,557 @@
+{
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "retry": "Retry",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "close": "Close",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "success": "Success",
+    "warning": "Warning",
+    "networkError": "Unable to connect to server. Please check your internet connection.",
+    "unknownError": "An unexpected error occurred. Please try again.",
+    "or": "OR"
+  },
+  "auth": {
+    "welcome": {
+      "title": "Zalo",
+      "subtitle": "Stable video calls\nGreat conversations",
+      "loginButton": "Login",
+      "registerButton": "Create new account",
+      "language": "English"
+    },
+    "login": {
+      "title": "Login",
+      "subtitle": "Please enter your email and password to login",
+      "email": "Email",
+      "emailPlaceholder": "Enter email",
+      "phone": "Phone number",
+      "phonePlaceholder": "Enter phone number",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password",
+      "loginButton": "Login",
+      "forgotPassword": "Forgot password",
+      "noAccount": "Don't have an account?",
+      "register": "Register now",
+      "loginSuccess": "Login successful",
+      "loginFailed": "Login failed",
+      "loginWithQR": "Login with QR code",
+      "rememberPassword": "Remember login",
+      "emailTab": "EMAIL",
+      "phoneTab": "PHONE NUMBER",
+      "qrTab": "SCAN QR CODE",
+      "show": "Show",
+      "hide": "Hide",
+      "captchaPlaceholder": "Verification code",
+      "or": "Or",
+      "loginWithPassword": "LOGIN WITH PASSWORD",
+      "loginWithoutPassword": "LOGIN WITHOUT PASSWORD",
+      "loginWithFacebook": "Login with Facebook",
+      "qrInstruction": "Scan QR code to login Zalo on this device",
+      "otpSent": "OTP sent",
+      "checkPhone": "Please check your email"
+    },
+    "register": {
+      "title": "Create Account",
+      "subtitle": "Please enter your information to create a new account",
+      "email": "Email",
+      "emailPlaceholder": "Enter email address",
+      "phone": "Phone number",
+      "phonePlaceholder": "Enter phone number",
+      "fullName": "Your name",
+      "fullNamePlaceholder": "Enter display name",
+      "password": "Password",
+      "passwordPlaceholder": "Enter password (at least 8 characters)",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter password",
+      "registerButton": "Register",
+      "hasAccount": "Already have an account?",
+      "login": "Login",
+      "registerSuccess": "Registration successful",
+      "registerFailed": "Registration failed",
+      "otpSent": "OTP sent to your email",
+      "terms": "By registering, you agree to",
+      "termsOfService": "Terms of Service",
+      "and": "and",
+      "privacyPolicy": "Privacy Policy",
+      "ofZalo": "of Zalo"
+    },
+    "otp": {
+      "title": "Verify OTP",
+      "verifyEmail": "Verify your email",
+      "enterCode": "Enter the 6-digit code sent to",
+      "resendIn": "Resend in",
+      "codeExpired": "Code has expired",
+      "resend": "Resend code",
+      "verify": "Verify"
+    },
+    "logout": {
+      "title": "Logout",
+      "confirm": "Are you sure you want to logout?",
+      "logoutButton": "Logout",
+      "logoutSuccess": "Logged out successfully",
+      "logoutFailed": "Logout failed"
+    },
+    "refresh": {
+      "refreshing": "Refreshing session...",
+      "refreshFailed": "Session expired. Please login again.",
+      "refreshSuccess": "Session refreshed successfully"
+    },
+    "validation": {
+      "emailRequired": "Please enter email",
+      "emailInvalid": "Invalid email address",
+      "phoneRequired": "Please enter phone number",
+      "phoneInvalid": "Invalid phone number",
+      "passwordRequired": "Please enter password",
+      "passwordMinLength": "Password must be at least 8 characters",
+      "passwordMaxLength": "Password must not exceed 50 characters",
+      "confirmPasswordRequired": "Please confirm your password",
+      "passwordMismatch": "Passwords do not match",
+      "fullNameRequired": "Please enter your name",
+      "fullNameMinLength": "Name must be at least 2 characters",
+      "fullNameMaxLength": "Name must not exceed 50 characters",
+      "otpRequired": "Please enter OTP",
+      "otpInvalid": "Invalid OTP",
+      "captchaRequired": "Please enter verification code",
+      "captchaInvalid": "Invalid verification code"
+    },
+    "errors": {
+      "invalidCredentials": "Invalid phone number or password",
+      "accountLocked": "Account is locked. Please contact support.",
+      "accountNotFound": "Account not found",
+      "phoneExists": "Phone number is already in use",
+      "tooManyAttempts": "Too many attempts. Please try again later.",
+      "sessionExpired": "Session expired. Please login again.",
+      "unauthorized": "You are not authorized to perform this action.",
+      "serverError": "Server error. Please try again later."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "search": "Search",
+    "sections": {
+      "security": "SECURITY",
+      "data": "DATA",
+      "notificationsCommunication": "NOTIFICATIONS & COMMUNICATION",
+      "interface": "INTERFACE",
+      "support": "SUPPORT",
+      "general": "GENERAL",
+      "display": "DISPLAY",
+      "media": "MEDIA",
+      "advanced": "ADVANCED",
+      "deviceManagement": "DEVICES",
+      "personalInfo": "PERSONAL INFO",
+      "activity": "ACTIVITY",
+      "blockReport": "BLOCK & REPORT",
+      "storageDetails": "STORAGE DETAILS",
+      "backupSettings": "BACKUP SETTINGS",
+      "notificationTypes": "NOTIFICATION TYPES",
+      "callSettings": "CALL SETTINGS",
+      "quality": "QUALITY",
+      "recentActivity": "RECENT ACTIVITY",
+      "filter": "FILTER",
+      "sync": "SYNC",
+      "language": "LANGUAGE"
+    },
+    "menu": {
+      "accountSecurity": {
+        "title": "Account & Security",
+        "subtitle": "Manage account and security"
+      },
+      "privacy": {
+        "title": "Privacy",
+        "subtitle": "Privacy settings"
+      },
+      "dataOnDevice": {
+        "title": "Data on Device",
+        "subtitle": "Manage storage data"
+      },
+      "backupRestore": {
+        "title": "Backup & Restore",
+        "subtitle": "Backup and restore data"
+      },
+      "notifications": {
+        "title": "Notifications",
+        "subtitle": "Notification settings"
+      },
+      "messages": {
+        "title": "Messages",
+        "subtitle": "Message settings"
+      },
+      "calls": {
+        "title": "Calls",
+        "subtitle": "Call settings"
+      },
+      "journal": {
+        "title": "Journal",
+        "subtitle": "View activity history"
+      },
+      "contacts": {
+        "title": "Contacts",
+        "subtitle": "Manage contacts"
+      },
+      "interfaceLanguage": {
+        "title": "Interface & Language",
+        "subtitle": "Customize interface and language"
+      },
+      "about": {
+        "title": "About Zalo",
+        "subtitle": "Version and app information"
+      },
+      "support": {
+        "title": "Contact Support",
+        "subtitle": "Help and support"
+      },
+      "switchAccount": "Switch account"
+    },
+    "accountSecurity": {
+      "sections": {
+        "account": "Account",
+        "security": "Security",
+        "login": "Login"
+      },
+      "personalInfo": "Personal info",
+      "myQR": "My QR code",
+      "phone": "Phone number",
+      "email": "Email",
+      "notLinked": "Not linked",
+      "securityCheck": "Security check",
+      "securityCheckSubtitle": "3 security issues to resolve",
+      "lockZalo": "Lock Zalo",
+      "off": "Off",
+      "twoFactor": "Two-factor authentication",
+      "twoFactorSubtitle": "Enhance account security",
+      "loginDevices": "Login devices",
+      "changePassword": "Change Password",
+      "changePasswordSubtitle": "Update your password",
+      "biometrics": "Biometrics",
+      "biometricsSubtitle": "Fingerprint, Face ID",
+      "deviceManagement": "Device management",
+      "deviceManagementSubtitle": "View logged in devices"
+    },
+    "deviceManagement": {
+      "title": "Device Management",
+      "description": "Manage devices logged into your account",
+      "loading": "Loading devices...",
+      "noDevices": "No devices found",
+      "activeDevices": "Active Devices",
+      "inactiveDevices": "Inactive Devices",
+      "activeStatus": "Active",
+      "currentDevice": "This Device",
+      "logout": "Log out",
+      "logoutOthers": "Log out of other devices",
+      "logoutOthersConfirm": "Are you sure you want to log out of all other devices?",
+      "logoutOthersSuccess": "Logged out of all other devices",
+      "logoutOthersError": "Failed to log out of other devices",
+      "deleteConfirm": "Are you sure you want to delete this device?",
+      "deleteSuccess": "Device deleted successfully",
+      "deleteError": "Failed to delete device"
+    },
+    "privacy": {
+      "sections": {
+        "personal": "Personal",
+        "messagesAndCalls": "Messages and calls",
+        "journal": "Journal",
+        "searchAndFriend": "Search sources and friend requests",
+        "utilities": "Utility permissions"
+      },
+      "birthday": "Birthday",
+      "showAccessStatus": "Show access status",
+      "on": "On",
+      "off": "Off",
+      "showSeenStatus": "Show \"Seen\" status",
+      "allowMessaging": "Allow messaging",
+      "everyone": "Everyone",
+      "allowCalls": "Allow calls",
+      "friendsAndContacted": "Friends and previously contacted",
+      "allowViewAndComment": "Allow viewing and commenting",
+      "blockAndHide": "Block and hide",
+      "manageFriendSources": "Manage search and friend sources",
+      "utilities": "Utilities",
+      "friends": "Friends",
+      "blockList": "Block list",
+      "blockListSubtitle": "Manage blocked users"
+    },
+    "dataOnDevice": {
+      "totalUsed": "Total used",
+      "percentOfPhone": "{{percent}}% of phone storage",
+      "zaloData": "Zalo data",
+      "zCloudDescription": "Free up phone storage by saving photos and videos to zCloud for free",
+      "learnMore": "Learn more",
+      "cache": "Cache",
+      "mediaLargeFiles": "Photos, videos, files larger than 5 MB",
+      "chatData": "Chat data",
+      "images": "Images",
+      "videos": "Videos",
+      "documents": "Documents",
+      "audio": "Audio",
+      "clearCache": "Clear cache",
+      "clearCacheSubtitle": "Free up storage space",
+      "manageData": "Manage data",
+      "manageDataSubtitle": "Customize storage settings"
+    },
+    "backupRestore": {
+      "lastBackup": "Last backup",
+      "today": "Today",
+      "autoBackup": "Auto backup",
+      "autoBackupSubtitle": "Backup data daily",
+      "backupOverWifi": "Backup over Wi-Fi",
+      "backupOverWifiSubtitle": "Only backup on Wi-Fi connection",
+      "backupContent": "Backup content",
+      "backupContentSubtitle": "Messages, Photos, Videos",
+      "backupNow": "Backup now",
+      "restoreData": "Restore data"
+    },
+    "notifications": {
+      "allowNotifications": "Allow notifications",
+      "allowNotificationsSubtitle": "Receive push notifications",
+      "sound": "Sound",
+      "soundSubtitle": "Play sound for notifications",
+      "vibration": "Vibration",
+      "vibrationSubtitle": "Vibrate for notifications",
+      "messagesNotif": "Messages",
+      "messagesNotifSubtitle": "New message notifications",
+      "groupsNotif": "Groups",
+      "groupsNotifSubtitle": "Notifications from groups",
+      "friendRequests": "Friend requests",
+      "friendRequestsSubtitle": "New friend requests",
+      "doNotDisturb": "Do not disturb",
+      "doNotDisturbSubtitle": "Turn off notifications on schedule"
+    },
+    "messages": {
+      "messagePreview": "Message preview",
+      "messagePreviewSubtitle": "Show content in notifications",
+      "fontSize": "Font size",
+      "fontSizeMedium": "Medium",
+      "chatTheme": "Chat theme",
+      "chatThemeSubtitle": "Wallpaper and colors",
+      "autoDownload": "Auto download",
+      "autoDownloadSubtitle": "Auto download photos/videos",
+      "saveToLibrary": "Save to library",
+      "saveToLibrarySubtitle": "Auto save photos/videos",
+      "endToEndEncryption": "End-to-end encryption",
+      "endToEndEncryptionSubtitle": "Secure messages",
+      "archivedMessages": "Archived messages",
+      "archivedMessagesSubtitle": "View archived conversations"
+    },
+    "calls": {
+      "allowCalls": "Allow calls",
+      "allowCallsSubtitle": "Receive voice calls",
+      "allowVideoCalls": "Allow video calls",
+      "allowVideoCallsSubtitle": "Receive video calls",
+      "audioQuality": "Audio quality",
+      "automatic": "Automatic",
+      "videoQuality": "Video quality",
+      "hd": "HD",
+      "ringtone": "Ringtone",
+      "ringtoneSubtitle": "Customize ringtone",
+      "callHistory": "Call history",
+      "callHistorySubtitle": "View recent calls"
+    },
+    "journal": {
+      "login": "Login",
+      "passwordChange": "Password change",
+      "newFriend": "New friend",
+      "activityType": "Activity type",
+      "all": "All",
+      "timeRange": "Time range",
+      "last7Days": "Last 7 days",
+      "exportLog": "Export log",
+      "clearLog": "Clear log"
+    },
+    "contacts": {
+      "syncContacts": "Sync contacts",
+      "syncContactsSubtitle": "Sync with device contacts",
+      "allContacts": "All contacts",
+      "contactsCount": "{{count}} contacts",
+      "favorites": "Favorites",
+      "friendRequestsList": "Friend requests",
+      "requestsCount": "{{count}} requests"
+    },
+    "interfaceLanguage": {
+      "darkMode": "Dark mode",
+      "darkModeSubtitle": "Dark theme interface",
+      "themeColor": "Theme color",
+      "blue": "Blue",
+      "appLanguage": "App language",
+      "vietnamese": "Vietnamese",
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System",
+      "changeFontSize": "Change font size",
+      "changeLanguage": "Change language",
+      "appearance": "Appearance",
+      "languageSection": "Language"
+    },
+    "about": {
+      "version": "Version {{version}}",
+      "description": "Zalo is a free messaging and calling app that helps you connect with friends and family easily and quickly.",
+      "copyright": "© 2024 Zalo. All rights reserved."
+    },
+    "support": {
+      "faq": "Frequently asked questions",
+      "faqSubtitle": "Find quick answers",
+      "chatSupport": "Chat with support",
+      "chatSupportSubtitle": "Contact directly via chat",
+      "email": "Email",
+      "hotline": "Hotline"
+    },
+    "changePassword": {
+      "title": "Change Password",
+      "currentPassword": "Current password",
+      "currentPasswordPlaceholder": "Enter current password",
+      "newPassword": "New password",
+      "newPasswordPlaceholder": "Enter new password (at least 8 characters)",
+      "confirmPassword": "Confirm new password",
+      "confirmPasswordPlaceholder": "Re-enter new password",
+      "changeButton": "Change Password",
+      "changing": "Changing...",
+      "success": "Password changed successfully",
+      "error": "Failed to change password"
+    }
+  },
+  "tabs": {
+    "messages": "Messages",
+    "contacts": "Contacts",
+    "discover": "Discover",
+    "timeline": "Timeline",
+    "profile": "Profile"
+  },
+  "messages": {
+    "title": "Messages",
+    "search": "Search",
+    "newMessage": "New message",
+    "noMessages": "No messages yet",
+    "online": "Active now",
+    "offline": "Offline",
+    "typing": "Typing...",
+    "seen": "Seen",
+    "sent": "Sent",
+    "group": "Group",
+    "members": "members"
+  },
+  "contacts": {
+    "title": "Contacts",
+    "search": "Search",
+    "tabs": {
+      "friends": "Friends",
+      "groups": "Groups",
+      "oa": "OA"
+    },
+    "friendRequest": "Friend requests",
+    "birthday": "Birthday",
+    "filters": {
+      "all": "All",
+      "new": "New friends",
+      "recent": "Recently active"
+    },
+    "addFriend": "Add friend",
+    "noContacts": "No contacts yet"
+  },
+  "friendRequests": {
+    "title": "Friend Requests",
+    "tabs": {
+      "received": "Received",
+      "sent": "Sent"
+    },
+    "actions": {
+      "accept": "Accept",
+      "decline": "Decline",
+      "withdraw": "Withdraw"
+    },
+    "source": {
+      "phoneContact": "From phone contacts",
+      "friendSuggestion": "People you may know",
+      "qrCode": "From QR code",
+      "nearby": "From nearby",
+      "group": "From group {{groupName}}"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{{count}} minutes ago",
+      "hoursAgo": "{{count}} hours ago",
+      "daysAgo": "{{count}} days ago",
+      "weeksAgo": "{{count}} weeks ago"
+    },
+    "empty": {
+      "received": "No friend requests",
+      "sent": "No friend requests sent"
+    },
+    "success": {
+      "accepted": "Friend request accepted",
+      "declined": "Friend request declined",
+      "withdrawn": "Friend request withdrawn"
+    },
+    "viewMore": "VIEW MORE"
+  },
+  "discover": {
+    "title": "Discover",
+    "search": "Search",
+    "services": {
+      "video": "Zalo Video",
+      "gameCenter": "Game Center",
+      "miniApp": "Mini App",
+      "shop": "Shop",
+      "payment": "Payment",
+      "official": "Official Page"
+    }
+  },
+  "timeline": {
+    "title": "Timeline",
+    "search": "Search",
+    "stories": "Stories",
+    "addStory": "Add story",
+    "newPost": "New post",
+    "like": "Like",
+    "comment": "Comment",
+    "share": "Share",
+    "viewAll": "View all",
+    "noStories": "No stories yet",
+    "noPosts": "No posts yet"
+  },
+  "profile": {
+    "title": "Profile",
+    "search": "Search",
+    "online": "Active now",
+    "menu": {
+      "zCloud": "zCloud",
+      "zCloudDesc": "Cloud storage for your data",
+      "zStyle": "zStyle – Stand out on Zalo",
+      "zStyleDesc": "Wallpapers and music for Zalo calls",
+      "myDocs": "My Documents",
+      "myDocsDesc": "Save important messages",
+      "storage": "Device storage",
+      "storageDesc": "Manage your Zalo data",
+      "qrWallet": "QR Wallet",
+      "qrWalletDesc": "Store and display important QR codes",
+      "accountSecurity": "Account and security",
+      "privacy": "Privacy",
+      "settings": "Settings"
+    },
+    "promo": {
+      "title": "New year special offer from zStyle",
+      "subtitle": "From only 10,700đ/month, get offer now"
+    }
+  },
+  "search": {
+    "placeholder": "Search",
+    "tabs": {
+      "mine": "Mine",
+      "explore": "Explore"
+    },
+    "miniAppsUsed": "Mini Apps used",
+    "recentContacts": "Recent contacts",
+    "edit": "Edit",
+    "manageHistory": "Manage search history",
+    "exploreContent": "Explore interesting content"
+  }
+}
