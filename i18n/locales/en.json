@@ -522,13 +522,6 @@
     "title": "Profile",
     "search": "Search",
     "online": "Active now",
-    "updateBio": "Update your bio",
-    "noActivity": "{{name}} hasn't had any activity yet. Start chatting to know each other better.",
-    "owner": {
-      "setupZStyle": "Setup zStyle",
-      "myPhotos": "My Photos",
-      "storage": "Storage"
-    },
     "menu": {
       "zCloud": "zCloud",
       "zCloudDesc": "Cloud storage for your data",
