@@ -13,6 +13,14 @@ export interface ApiError {
   errors?: Record<string, string[]>
 }
 
+export interface PageResponse<T> {
+  data: T
+  page: number
+  totalPages: number
+  limit: number
+  totalItems: number
+}
+
 export interface PaginatedResponse<T> {
   data: T[]
   pagination: {

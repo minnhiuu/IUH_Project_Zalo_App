@@ -1,10 +1,5 @@
 import React, { useState, useRef } from 'react'
-import {
-  View,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native'
+import { View, FlatList, KeyboardAvoidingView, Platform } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { ChatHeader, MessageBubble, ChatInputBar } from '@/features/message/components'
@@ -24,50 +19,50 @@ const MOCK_MESSAGES: MockMessage[] = [
     id: '1',
     content: 'Ch hiểu về elasticsearch mà',
     timestamp: '16:56',
-    isOwn: false,
+    isOwn: false
   },
   {
     id: '2',
     content: 'Nào hiểu đi r hiểu s nó k ăn',
     timestamp: '16:56',
-    isOwn: false,
+    isOwn: false
   },
   {
     id: '3',
     content: 'T nghiên cứu sync mongo với es',
     timestamp: '16:57',
-    isOwn: false,
+    isOwn: false
   },
   {
     id: '4',
     content: 'Phải 2 ngày',
     timestamp: '16:57',
-    isOwn: false,
+    isOwn: false
   },
   {
     id: '5',
     content: 'Để tối ưu',
     timestamp: '16:58',
-    isOwn: false,
+    isOwn: false
   },
   {
     id: '6',
     content: 'T insert tới 10k user để test time mà',
     timestamp: '16:58',
-    isOwn: false,
+    isOwn: false
   },
   {
     id: '7',
     content: 'Oke siêng vậy 😄',
     timestamp: '16:59',
-    isOwn: true,
+    isOwn: true
   },
   {
     id: '8',
     content: 'Mà sao tìm theo sdt không ra vậy?',
     timestamp: '17:00',
-    isOwn: true,
-  },
+    isOwn: true
+  }
 ]
 
 export default function ChatScreen() {
@@ -89,7 +84,7 @@ export default function ChatScreen() {
       id: String(Date.now()),
       content: inputText.trim(),
       timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-      isOwn: true,
+      isOwn: true
     }
     setMessages((prev) => [...prev, newMsg])
     setInputText('')
@@ -107,7 +102,7 @@ export default function ChatScreen() {
         name={params.name || 'Chat'}
         avatar={params.avatar}
         userId={params.userId || params.id}
-        subtitle="Vừa mới truy cập"
+        subtitle='Vừa mới truy cập'
         onProfilePress={() => {
           const targetUserId = params.userId || params.id
           if (targetUserId) {
@@ -128,9 +123,7 @@ export default function ChatScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={{ paddingVertical: 12 }}
           showsVerticalScrollIndicator={false}
-          onContentSizeChange={() =>
-            flatListRef.current?.scrollToEnd({ animated: false })
-          }
+          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
           renderItem={({ item, index }) => {
             const prevMsg = index > 0 ? messages[index - 1] : null
             const showAvatar = !item.isOwn && (prevMsg?.isOwn || index === 0)
@@ -152,12 +145,7 @@ export default function ChatScreen() {
 
         {/* Input Bar */}
         <SafeAreaView edges={['bottom']} style={{ backgroundColor: '#fff' }}>
-          <ChatInputBar
-            value={inputText}
-            onChangeText={setInputText}
-            onSend={handleSend}
-            placeholder="Tin nhắn"
-          />
+          <ChatInputBar value={inputText} onChangeText={setInputText} onSend={handleSend} placeholder='Tin nhắn' />
         </SafeAreaView>
       </KeyboardAvoidingView>
     </View>

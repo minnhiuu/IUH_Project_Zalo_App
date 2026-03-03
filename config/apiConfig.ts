@@ -91,7 +91,7 @@ export const API_ENDPOINTS = {
     // Status & mutual
     CHECK_STATUS: (userId: string) => `/friendships/status/${userId}`, // GET
     MUTUAL_FRIENDS: (userId: string) => `/friendships/mutual/${userId}`, // GET
-    MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count`, // GET
+    MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count` // GET
   }
 } as const
 

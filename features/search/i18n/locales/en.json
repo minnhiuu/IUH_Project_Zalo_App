@@ -1,0 +1,43 @@
+{
+  "search": {
+    "placeholder": "Search",
+    "noResults": "No results found for \"{{query}}\"",
+    "miniAppsUsed": "Mini Apps used",
+    "recentContacts": "Recent contacts",
+    "edit": "Edit",
+    "manageHistory": "Manage search history",
+    "exploreContent": "Explore interesting content",
+    "tabs": {
+      "mine": "Mine",
+      "explore": "Explore",
+      "all": "All",
+      "contacts": "Contacts",
+      "messages": "Messages",
+      "discover": "Discover"
+    },
+    "sections": {
+      "discover": "Discover",
+      "contacts": "Contacts",
+      "messages": "Messages",
+      "seeMore": "See more"
+    },
+    "recent": {
+      "contacts": "Recent contacts",
+      "quickAccess": "Quick access",
+      "queries": "Recent searches",
+      "editHistory": "Manage history"
+    },
+    "action": {
+      "add": "Add",
+      "accept": "Accept",
+      "message": "Message"
+    },
+    "editHistory": {
+      "title": "Search History",
+      "showQuickAccess": "Show quick access",
+      "searchHistory": "SEARCH HISTORY",
+      "saveContacts": "Save recently contacted",
+      "saveQueries": "Save recent keyword searches"
+    }
+  }
+}
