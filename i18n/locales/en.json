@@ -19,7 +19,8 @@
     "warning": "Warning",
     "networkError": "Unable to connect to server. Please check your internet connection.",
     "unknownError": "An unexpected error occurred. Please try again.",
-    "or": "OR"
+    "or": "OR",
+    "logout": "Log out"
   },
   "auth": {
     "welcome": {
@@ -257,9 +258,28 @@
       "logoutOthersConfirm": "Are you sure you want to log out of all other devices?",
       "logoutOthersSuccess": "Logged out of all other devices",
       "logoutOthersError": "Failed to log out of other devices",
+      "logoutDevice": "Log out this device",
+      "logoutDeviceConfirm": "Are you sure you want to log out this device?",
+      "logoutDeviceSuccess": "Device logged out successfully",
+      "logoutDeviceError": "Failed to log out this device",
       "deleteConfirm": "Are you sure you want to delete this device?",
       "deleteSuccess": "Device deleted successfully",
-      "deleteError": "Failed to delete device"
+      "deleteError": "Failed to delete device",
+      "detail": {
+        "deviceId": "Device ID",
+        "sessionId": "Session ID",
+        "os": "Operating System",
+        "browser": "Browser",
+        "ipAddress": "IP Address",
+        "accountId": "Account ID",
+        "lastActiveTime": "Last Active",
+        "issuedAt": "Session Issued",
+        "expiresAt": "Session Expires",
+        "createdAt": "Created At",
+        "lastModifiedAt": "Last Modified",
+        "createdBy": "Created By",
+        "lastModifiedBy": "Modified By"
+      }
     },
     "privacy": {
       "sections": {

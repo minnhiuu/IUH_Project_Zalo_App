@@ -66,7 +66,9 @@ export const API_ENDPOINTS = {
   },
   DEVICE: {
     ACTIVE_SESSIONS: '/auth/devices/active-sessions', // GET - Get all active devices
-    DELETE: (id: string) => `/auth/devices/${id}` // DELETE - Delete a device
+    DELETE: (id: string) => `/auth/devices/${id}`, // DELETE - Delete a device
+    LOGOUT_DEVICE: '/auth/logout-device', // POST - Logout a specific device by sessionId
+    LOGOUT_OTHERS: '/auth/logout-others' // POST - Logout all other devices
   },
   MESSAGE: {
     CONVERSATIONS: '/message/conversations',
@@ -91,7 +93,7 @@ export const API_ENDPOINTS = {
     // Status & mutual
     CHECK_STATUS: (userId: string) => `/friendships/status/${userId}`, // GET
     MUTUAL_FRIENDS: (userId: string) => `/friendships/mutual/${userId}`, // GET
-    MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count`, // GET
+    MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count` // GET
   }
 } as const
 

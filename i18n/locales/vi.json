@@ -19,7 +19,8 @@
     "warning": "Cảnh báo",
     "networkError": "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet.",
     "unknownError": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.",
-    "or": "HOẶC"
+    "or": "HOặC",
+    "logout": "Đăng xuất"
   },
   "auth": {
     "welcome": {
@@ -285,9 +286,28 @@
       "logoutOthersConfirm": "Bạn có chắc muốn đăng xuất tất cả thiết bị khác?",
       "logoutOthersSuccess": "Đã đăng xuất khỏi tất cả thiết bị khác",
       "logoutOthersError": "Không thể đăng xuất khỏi thiết bị khác",
+      "logoutDevice": "Đăng xuất thiết bị này",
+      "logoutDeviceConfirm": "Bạn có chắc muốn đăng xuất thiết bị này?",
+      "logoutDeviceSuccess": "Đã đăng xuất thiết bị thành công",
+      "logoutDeviceError": "Không thể đăng xuất thiết bị",
       "deleteConfirm": "Bạn có chắc muốn xóa thiết bị này?",
       "deleteSuccess": "Đã xóa thiết bị thành công",
-      "deleteError": "Không thể xóa thiết bị"
+      "deleteError": "Không thể xóa thiết bị",
+      "detail": {
+        "deviceId": "ID thiết bị",
+        "sessionId": "ID phiên",
+        "os": "Hệ điều hành",
+        "browser": "Trình duyệt",
+        "ipAddress": "Địa chỉ IP",
+        "accountId": "ID tài khoản",
+        "lastActiveTime": "Hoạt động lần cuối",
+        "issuedAt": "Cấp phiên lúc",
+        "expiresAt": "Phiên hết hạn lúc",
+        "createdAt": "Ngày tạo",
+        "lastModifiedAt": "Sửa đổi lần cuối",
+        "createdBy": "Tạo bởi",
+        "lastModifiedBy": "Sửa bởi"
+      }
     },
     "privacy": {
       "sections": {
