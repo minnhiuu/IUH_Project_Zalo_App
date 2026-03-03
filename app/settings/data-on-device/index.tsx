@@ -3,39 +3,8 @@ import { View, Text, TouchableOpacity } from 'react-native'
 import SettingsDetailScreen from '@/components/SettingsDetailScreen'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
-
-function StorageBar() {
-  return (
-    <View className="h-2 rounded-full flex-row overflow-hidden bg-gray-200 mt-4">
-      <View style={{ flex: 0.35, backgroundColor: '#0068FF' }} />
-      <View style={{ flex: 0.25, backgroundColor: '#34D399' }} />
-      <View style={{ flex: 0.15, backgroundColor: '#FBBF24' }} />
-      <View style={{ flex: 0.25, backgroundColor: '#E5E7EB' }} />
-    </View>
-  )
-}
-
-function DataRow({ icon, iconColor, title, size, onCleanup }: {
-  icon: string; iconColor: string; title: string; size: string; onCleanup?: () => void
-}) {
-  return (
-    <View className="flex-row items-center px-4 py-3.5 border-b border-gray-100">
-      <Ionicons name={icon as any} size={24} color={iconColor} />
-      <Text className="flex-1 text-base text-gray-800 ml-3">{title}</Text>
-      <View className="flex-row items-center gap-3">
-        <Text className="text-sm text-gray-500">{size}</Text>
-        {onCleanup && (
-          <TouchableOpacity
-            onPress={onCleanup}
-            className="px-3 py-1 rounded-full bg-gray-100"
-          >
-            <Text className="text-sm font-medium" style={{ color: '#0068FF' }}>Dọn dẹp</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
-  )
-}
+import { SectionLabel, SettingsCard } from '@/features/settings'
+import { StorageBar, DataRow } from '@/features/settings/data-on-device'
 
 export default function DataOnDeviceScreen() {
   const { t } = useTranslation()
@@ -43,18 +12,20 @@ export default function DataOnDeviceScreen() {
   return (
     <SettingsDetailScreen title={t('settings.menu.dataOnDevice.title')}>
       {/* Storage Overview */}
-      <View className="bg-white px-4 py-4 mt-2">
-        <StorageBar />
-        <View className="flex-row items-baseline mt-4 gap-2">
-          <Text className="text-3xl font-bold text-gray-900">3.82 GB</Text>
-          <Text className="text-sm text-gray-500">
-            {t('settings.dataOnDevice.percentOfPhone', { percent: '6.41' })}
+      <SettingsCard marginTop={8}>
+        <View className="px-4 py-4">
+          <StorageBar />
+          <View className="flex-row items-baseline mt-4 gap-2">
+            <Text className="text-3xl font-bold text-gray-900">3.82 GB</Text>
+            <Text className="text-sm text-gray-500">
+              {t('settings.dataOnDevice.percentOfPhone', { percent: '6.41' })}
+            </Text>
+          </View>
+          <Text className="text-sm text-gray-400 mt-1">
+            {t('settings.dataOnDevice.zaloData')}
           </Text>
         </View>
-        <Text className="text-sm text-gray-400 mt-1">
-          {t('settings.dataOnDevice.zaloData')}
-        </Text>
-      </View>
+      </SettingsCard>
 
       {/* zCloud Promo */}
       <View className="mx-4 mt-3 rounded-xl p-4" style={{ backgroundColor: '#EFF6FF' }}>
@@ -72,8 +43,9 @@ export default function DataOnDeviceScreen() {
         </TouchableOpacity>
       </View>
 
-      {/* Data Sections */}
-      <View className="bg-white mt-4">
+      {/* Data breakdown */}
+      <SectionLabel title={t('settings.sections.storage') || 'Storage'} />
+      <SettingsCard marginTop={0}>
         <DataRow
           icon="layers-outline" iconColor="#0068FF"
           title={t('settings.dataOnDevice.cache')}
@@ -89,7 +61,7 @@ export default function DataOnDeviceScreen() {
           title={t('settings.dataOnDevice.chatData')}
           size="866.5 MB" onCleanup={() => { }}
         />
-      </View>
+      </SettingsCard>
 
       <View className="h-8" />
     </SettingsDetailScreen>

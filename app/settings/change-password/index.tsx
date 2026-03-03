@@ -1,39 +1,11 @@
 import React, { useState } from 'react'
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native'
-import { Ionicons } from '@expo/vector-icons'
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { useTranslation } from 'react-i18next'
 
 import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import { PasswordField } from '@/features/settings/change-password'
 import { changePasswordRequestSchema } from '@/features/auth/schemas'
 import { useChangePasswordMutation } from '@/features/auth/queries/use-mutations'
-
-function PasswordField({ label, value, onChangeText, placeholder, show, onToggleShow, error, disabled }: {
-    label: string; value: string; onChangeText: (v: string) => void
-    placeholder: string; show: boolean; onToggleShow: () => void
-    error?: string; disabled: boolean
-}) {
-    return (
-        <View className="gap-1.5">
-            <Text className="text-sm font-medium text-gray-600">{label}</Text>
-            <View className={`flex-row items-center border rounded-lg px-3 py-2.5 bg-white ${error ? 'border-red-400' : 'border-gray-300'}`}>
-                <TextInput
-                    className="flex-1 text-base text-gray-900"
-                    placeholder={placeholder}
-                    placeholderTextColor="#9CA3AF"
-                    value={value}
-                    onChangeText={onChangeText}
-                    secureTextEntry={!show}
-                    autoCapitalize="none"
-                    editable={!disabled}
-                />
-                <TouchableOpacity onPress={onToggleShow} className="pl-2">
-                    <Ionicons name={show ? 'eye-off-outline' : 'eye-outline'} size={20} color="#9CA3AF" />
-                </TouchableOpacity>
-            </View>
-            {error && <Text className="text-xs text-red-500">{error}</Text>}
-        </View>
-    )
-}
 
 export default function ChangePasswordScreen() {
     const { t } = useTranslation()
