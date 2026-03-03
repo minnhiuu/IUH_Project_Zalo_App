@@ -1,6 +1,6 @@
 import React from 'react'
 import { View } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { useTranslation } from 'react-i18next'
 import { SectionLabel, ActionRow, SettingsDivider, SettingsCard } from '@/features/settings'
 
@@ -9,7 +9,7 @@ export default function SupportScreen() {
 
     return (
         <SettingsDetailScreen title={t('settings.menu.support.title')}>
-            <SectionLabel title={t('settings.sections.support') || 'Get Help'} />
+            <SectionLabel blue title={t('settings.sections.support') || 'Get Help'} />
             <SettingsCard>
                 <ActionRow
                     icon="book-outline" iconBg="#E8F0FE" iconColor="#0068FF"

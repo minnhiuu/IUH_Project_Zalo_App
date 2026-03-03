@@ -1,6 +1,6 @@
 import React from 'react'
 import { View } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { useTranslation } from 'react-i18next'
 import { SectionLabel, ActionRow, SettingsDivider, SettingsCard } from '@/features/settings'
 import { ActivityRow } from '@/features/settings/journal'
@@ -10,7 +10,7 @@ export default function JournalScreen() {
 
     return (
         <SettingsDetailScreen title={t('settings.menu.journal.title')}>
-            <SectionLabel title={t('settings.sections.recentActivity')} />
+            <SectionLabel blue title={t('settings.sections.recentActivity')} />
             <SettingsCard marginTop={0}>
                 <ActivityRow
                     icon="log-in-outline" iconColor="#4CAF50"
@@ -31,7 +31,7 @@ export default function JournalScreen() {
                 />
             </SettingsCard>
 
-            <SectionLabel title={t('settings.sections.filter')} />
+            <SectionLabel blue title={t('settings.sections.filter')} />
             <SettingsCard marginTop={0}>
                 <ActionRow
                     icon="funnel-outline" iconBg="#F3E5F5" iconColor="#9C27B0"
@@ -48,7 +48,7 @@ export default function JournalScreen() {
                 />
             </SettingsCard>
 
-            <SectionLabel title={t('settings.sections.actions') || 'Actions'} />
+            <SectionLabel blue title={t('settings.sections.actions') || 'Actions'} />
             <SettingsCard marginTop={0}>
                 <ActionRow
                     icon="download-outline" iconBg="#E8F0FE" iconColor="#0068FF"

@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text, TouchableOpacity } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { SectionLabel, SettingsCard } from '@/features/settings'
@@ -44,7 +44,7 @@ export default function DataOnDeviceScreen() {
       </View>
 
       {/* Data breakdown */}
-      <SectionLabel title={t('settings.sections.storage') || 'Storage'} />
+      <SectionLabel blue title={t('settings.sections.storage') || 'Storage'} />
       <SettingsCard marginTop={0}>
         <DataRow
           icon="layers-outline" iconColor="#0068FF"

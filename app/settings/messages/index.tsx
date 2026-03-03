@@ -1,6 +1,6 @@
 import React from 'react'
 import { View } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { useTranslation } from 'react-i18next'
 import { SectionLabel, ActionRow, ToggleRow, SettingsDivider, SettingsCard } from '@/features/settings'
 
@@ -12,7 +12,7 @@ export default function MessagesScreen() {
 
     return (
         <SettingsDetailScreen title={t('settings.menu.messages.title')}>
-            <SectionLabel title={t('settings.sections.display')} />
+            <SectionLabel blue title={t('settings.sections.display')} />
             <SettingsCard>
                 <ToggleRow
                     icon="eye-outline" iconBg="#E8F0FE" iconColor="#0068FF"
@@ -36,7 +36,7 @@ export default function MessagesScreen() {
                 />
             </SettingsCard>
 
-            <SectionLabel title={t('settings.sections.media')} />
+            <SectionLabel blue title={t('settings.sections.media')} />
             <SettingsCard>
                 <ToggleRow
                     icon="download-outline" iconBg="#E8F5E9" iconColor="#4CAF50"
@@ -53,7 +53,7 @@ export default function MessagesScreen() {
                 />
             </SettingsCard>
 
-            <SectionLabel title={t('settings.sections.advanced')} />
+            <SectionLabel blue title={t('settings.sections.advanced')} />
             <SettingsCard>
                 <ActionRow
                     icon="lock-closed-outline" iconBg="#E8F0FE" iconColor="#0068FF"

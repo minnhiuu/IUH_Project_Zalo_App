@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useMyDevices } from '@/features/device/queries/use-queries'
@@ -65,7 +65,7 @@ export default function DeviceManagementScreen() {
                     <View className="gap-6">
                         {activeDevices.length > 0 && (
                             <View className="gap-2">
-                                <SectionLabel title={t('settings.deviceManagement.activeDevices')} />
+                                <SectionLabel blue title={t('settings.deviceManagement.activeDevices')} />
                                 {activeDevices.map((device) => (
                                     <DeviceItem
                                         key={device.id}
@@ -82,7 +82,7 @@ export default function DeviceManagementScreen() {
 
                         {inactiveDevices.length > 0 && (
                             <View className="gap-2">
-                                <SectionLabel title={t('settings.deviceManagement.inactiveDevices')} />
+                                <SectionLabel blue title={t('settings.deviceManagement.inactiveDevices')} />
                                 {inactiveDevices.map((device) => (
                                     <DeviceItem
                                         key={device.id}
@@ -103,8 +103,8 @@ export default function DeviceManagementScreen() {
                             onPress={handleLogoutOtherDevices}
                             disabled={logoutOtherDevicesMutation.isPending || devices.length <= 1}
                             className={`flex-row items-center justify-center gap-2 border rounded-lg py-3 px-4 ${logoutOtherDevicesMutation.isPending || devices.length <= 1
-                                    ? 'border-gray-200 opacity-50'
-                                    : 'border-red-200 bg-red-50'
+                                ? 'border-gray-200 opacity-50'
+                                : 'border-red-200 bg-red-50'
                                 }`}
                         >
                             {logoutOtherDevicesMutation.isPending && (

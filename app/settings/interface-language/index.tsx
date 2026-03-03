@@ -1,6 +1,6 @@
 import React from 'react'
 import { View } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/context'
 import { BRAND } from '@/constants/theme'

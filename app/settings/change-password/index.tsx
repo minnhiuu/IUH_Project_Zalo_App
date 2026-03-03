@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { useTranslation } from 'react-i18next'
 
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { PasswordField } from '@/features/settings/change-password'
 import { changePasswordRequestSchema } from '@/features/auth/schemas'
 import { useChangePasswordMutation } from '@/features/auth/queries/use-mutations'

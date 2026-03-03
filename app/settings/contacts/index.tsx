@@ -1,6 +1,6 @@
 import React from 'react'
 import { View } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { useTranslation } from 'react-i18next'
 import { SectionLabel, ActionRow, ToggleRow, SettingsDivider, SettingsCard } from '@/features/settings'
 
@@ -10,7 +10,7 @@ export default function ContactsScreen() {
 
     return (
         <SettingsDetailScreen title={t('settings.menu.contacts.title')}>
-            <SectionLabel title={t('settings.sections.sync')} />
+            <SectionLabel blue title={t('settings.sections.sync')} />
             <SettingsCard>
                 <ToggleRow
                     icon="sync-outline" iconBg="#E8F5E9" iconColor="#4CAF50"
@@ -20,7 +20,7 @@ export default function ContactsScreen() {
                 />
             </SettingsCard>
 
-            <SectionLabel title={t('settings.sections.management') || 'Management'} />
+            <SectionLabel blue title={t('settings.sections.management') || 'Management'} />
             <SettingsCard>
                 <ActionRow
                     icon="people-outline" iconBg="#E3F2FD" iconColor="#2196F3"

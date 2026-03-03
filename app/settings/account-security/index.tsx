@@ -1,22 +1,16 @@
 import React from 'react'
 import { View } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { Ionicons } from '@expo/vector-icons'
 import { Box, VStack, HStack, Text, Switch, MenuItem, Avatar } from '@/components/ui'
 import { AvatarImage, AvatarFallbackText } from '@/components/ui/avatar'
 import { Pressable } from '@/components/ui/pressable'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
+import { SectionLabel } from '@/features/settings'
 import { useAuthStore } from '@/store'
 
-// Section header - blue text like Zalo
-const SectionHeader = ({ title }: { title: string }) => (
-  <Box style={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, backgroundColor: '#f5f5f5' }}>
-    <Text style={{ fontSize: 14, fontWeight: '600', color: '#0068FF' }}>
-      {title}
-    </Text>
-  </Box>
-)
+
 
 export default function AccountSecurityScreen() {
   const { t } = useTranslation()
@@ -27,7 +21,7 @@ export default function AccountSecurityScreen() {
   return (
     <SettingsDetailScreen title={t('settings.menu.accountSecurity.title')}>
       {/* Tài khoản Section */}
-      <SectionHeader title={t('settings.accountSecurity.sections.account')} />
+      <SectionLabel blue title={t('settings.accountSecurity.sections.account')} />
 
       {/* Personal Info Card */}
       <Pressable
@@ -44,7 +38,7 @@ export default function AccountSecurityScreen() {
           shadowRadius: 2,
           elevation: 2,
         })}
-        onPress={() => {}}
+        onPress={() => { }}
       >
         <HStack style={{ alignItems: 'center', padding: 16, borderRadius: 16, overflow: 'hidden' }}>
           {/* Avatar with blue ring */}
@@ -95,25 +89,25 @@ export default function AccountSecurityScreen() {
           iconColor="#555"
           title={t('settings.accountSecurity.phone')}
           subtitle={user?.phoneNumber || 'N/A'}
-          onPress={() => {}}
+          onPress={() => { }}
         />
         <MenuItem
           icon="mail-outline"
           iconColor="#555"
           title={t('settings.accountSecurity.email')}
           subtitle={user?.email || t('settings.accountSecurity.notLinked')}
-          onPress={() => {}}
+          onPress={() => { }}
         />
         <MenuItem
           icon="qr-code-outline"
           iconColor="#555"
           title={t('settings.accountSecurity.myQR')}
-          onPress={() => {}}
+          onPress={() => { }}
         />
       </VStack>
 
       {/* Bảo mật Section */}
-      <SectionHeader title={t('settings.accountSecurity.sections.security')} />
+      <SectionLabel blue title={t('settings.accountSecurity.sections.security')} />
 
       <VStack style={{ backgroundColor: '#ffffff' }}>
         <MenuItem
@@ -127,7 +121,7 @@ export default function AccountSecurityScreen() {
               <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
             </HStack>
           }
-          onPress={() => {}}
+          onPress={() => { }}
         />
         <MenuItem
           icon="lock-closed-outline"
@@ -141,12 +135,12 @@ export default function AccountSecurityScreen() {
               <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
             </HStack>
           }
-          onPress={() => {}}
+          onPress={() => { }}
         />
       </VStack>
 
       {/* Đăng nhập Section */}
-      <SectionHeader title={t('settings.accountSecurity.sections.login')} />
+      <SectionLabel blue title={t('settings.accountSecurity.sections.login')} />
 
       <VStack style={{ backgroundColor: '#ffffff' }}>
         <HStack style={{ paddingHorizontal: 16, paddingVertical: 14, alignItems: 'center' }}>

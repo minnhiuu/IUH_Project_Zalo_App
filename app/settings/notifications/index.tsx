@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text, Switch, TouchableOpacity } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { SectionLabel, ActionRow, ToggleRow, SettingsDivider, SettingsCard } from '@/features/settings'
@@ -13,7 +13,7 @@ export default function NotificationsScreen() {
 
   return (
     <SettingsDetailScreen title={t('settings.menu.notifications.title')}>
-      <SectionLabel title={t('settings.sections.general')} />
+      <SectionLabel blue title={t('settings.sections.general')} />
       <SettingsCard>
         <ToggleRow
           icon="notifications-outline" iconBg="#E8F0FE" iconColor="#0068FF"
@@ -37,7 +37,7 @@ export default function NotificationsScreen() {
         />
       </SettingsCard>
 
-      <SectionLabel title={t('settings.sections.notificationTypes')} />
+      <SectionLabel blue title={t('settings.sections.notificationTypes')} />
       <SettingsCard>
         <ActionRow
           icon="chatbubble-outline" iconBg="#E8F5E9" iconColor="#4CAF50"
@@ -61,7 +61,7 @@ export default function NotificationsScreen() {
         />
       </SettingsCard>
 
-      <SectionLabel title={t('settings.sections.doNotDisturb') || 'Do Not Disturb'} />
+      <SectionLabel blue title={t('settings.sections.doNotDisturb') || 'Do Not Disturb'} />
       <SettingsCard>
         <ActionRow
           icon="moon-outline" iconBg="#ECEFF1" iconColor="#607D8B"

@@ -188,7 +188,12 @@
       "recentActivity": "HOẠT ĐỘNG GẦN ĐÂY",
       "filter": "BỘ LỌC",
       "sync": "ĐỒNG BỘ",
-      "language": "NGÔN NGỮ"
+      "language": "NGÔN NGỮ",
+      "storage": "DUNG LƯỢNG",
+      "doNotDisturb": "KHÔNG LÀM PHIỀN",
+      "management": "QUẢN LÝ",
+      "actions": "HÀNH ĐỘNG",
+      "other": "KHÁC"
     },
     "menu": {
       "accountSecurity": {

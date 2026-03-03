@@ -160,7 +160,12 @@
       "recentActivity": "RECENT ACTIVITY",
       "filter": "FILTER",
       "sync": "SYNC",
-      "language": "LANGUAGE"
+      "language": "LANGUAGE",
+      "storage": "STORAGE",
+      "doNotDisturb": "DO NOT DISTURB",
+      "management": "MANAGEMENT",
+      "actions": "ACTIONS",
+      "other": "OTHER"
     },
     "menu": {
       "accountSecurity": {

@@ -1,6 +1,6 @@
 import React from 'react'
 import { View } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { useTranslation } from 'react-i18next'
 import { SectionLabel, ActionRow, ToggleRow, SettingsDivider, SettingsCard } from '@/features/settings'
 
@@ -11,7 +11,7 @@ export default function CallsScreen() {
 
     return (
         <SettingsDetailScreen title={t('settings.menu.calls.title')}>
-            <SectionLabel title={t('settings.sections.callSettings')} />
+            <SectionLabel blue title={t('settings.sections.callSettings')} />
             <SettingsCard>
                 <ToggleRow
                     icon="call-outline" iconBg="#E8F0FE" iconColor="#0068FF"
@@ -28,7 +28,7 @@ export default function CallsScreen() {
                 />
             </SettingsCard>
 
-            <SectionLabel title={t('settings.sections.quality')} />
+            <SectionLabel blue title={t('settings.sections.quality')} />
             <SettingsCard>
                 <ActionRow
                     icon="musical-notes-outline" iconBg="#E8F5E9" iconColor="#4CAF50"
@@ -45,7 +45,7 @@ export default function CallsScreen() {
                 />
             </SettingsCard>
 
-            <SectionLabel title={t('settings.sections.other') || 'Other'} />
+            <SectionLabel blue title={t('settings.sections.other') || 'Other'} />
             <SettingsCard>
                 <ActionRow
                     icon="musical-note-outline" iconBg="#FFF3E0" iconColor="#FF9800"

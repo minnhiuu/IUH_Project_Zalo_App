@@ -1,6 +1,6 @@
 import React from 'react'
 import { View } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { useTranslation } from 'react-i18next'
 import { SectionLabel, ActionRow, ToggleRow, SettingsDivider, SettingsCard } from '@/features/settings'
 import { LastBackupBanner } from '@/features/settings/backup-restore'
@@ -17,7 +17,7 @@ export default function BackupRestoreScreen() {
                 timestamp={`${t('settings.backupRestore.today')}, 10:30`}
             />
 
-            <SectionLabel title={t('settings.sections.backupSettings')} />
+            <SectionLabel blue title={t('settings.sections.backupSettings')} />
             <SettingsCard>
                 <ToggleRow
                     icon="cloud-upload-outline" iconBg="#E8F0FE" iconColor="#0068FF"
@@ -41,7 +41,7 @@ export default function BackupRestoreScreen() {
                 />
             </SettingsCard>
 
-            <SectionLabel title={t('settings.sections.actions') || 'Actions'} />
+            <SectionLabel blue title={t('settings.sections.actions') || 'Actions'} />
             <SettingsCard>
                 <ActionRow
                     icon="cloud-upload-outline" iconBg="#E8F0FE" iconColor="#0068FF"

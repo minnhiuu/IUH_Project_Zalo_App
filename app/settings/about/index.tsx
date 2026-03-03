@@ -1,6 +1,6 @@
 import React from 'react'
 import { View, Text } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { SettingsCard } from '@/features/settings'
