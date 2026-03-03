@@ -57,25 +57,27 @@ export default function ProfileScreen() {
               <ActivityIndicator size="large" color="#0068FF" />
             </Box>
           ) : (
-            <HStack style={{ alignItems: 'center' }} space="md">
-              <Box style={{ position: 'relative' }}>
-                <Avatar size="xl">
-                  <AvatarFallbackText style={{ fontSize: 24, color: '#ffffff' }}>
-                    {user?.fullName ? getInitials(user.fullName) : 'U'}
-                  </AvatarFallbackText>
-                  {user?.avatar && (
-                    <AvatarImage source={{ uri: user.avatar }} />
-                  )}
-                </Avatar>
-                {/* Online status indicator */}
-                <Box style={{ position: 'absolute', bottom: -2, right: -2, width: 16, height: 16, backgroundColor: '#22c55e', borderRadius: 8, borderWidth: 2, borderColor: '#ffffff' }} />
-              </Box>
-              <VStack style={{ flex: 1 }}>
-                <Text size="lg" bold style={{ color: '#111827' }}>
-                  {user?.fullName || 'User'}
-                </Text>
-              </VStack>
-            </HStack>
+            <Pressable onPress={() => router.push('/user-profile/me' as any)}>
+              <HStack style={{ alignItems: 'center' }} space="md">
+                <Box style={{ position: 'relative' }}>
+                  <Avatar size="xl">
+                    <AvatarFallbackText style={{ fontSize: 24, color: '#ffffff' }}>
+                      {user?.fullName ? getInitials(user.fullName) : 'U'}
+                    </AvatarFallbackText>
+                    {user?.avatar && (
+                      <AvatarImage source={{ uri: user.avatar }} />
+                    )}
+                  </Avatar>
+                  {/* Online status indicator */}
+                  <Box style={{ position: 'absolute', bottom: -2, right: -2, width: 16, height: 16, backgroundColor: '#22c55e', borderRadius: 8, borderWidth: 2, borderColor: '#ffffff' }} />
+                </Box>
+                <VStack style={{ flex: 1 }}>
+                  <Text size="lg" bold style={{ color: '#111827' }}>
+                    {user?.fullName || 'User'}
+                  </Text>
+                </VStack>
+              </HStack>
+            </Pressable>
           )}
         </Card>
 

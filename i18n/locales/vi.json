@@ -550,6 +550,13 @@
     "title": "Cá nhân",
     "search": "Tìm kiếm",
     "online": "Đang hoạt động",
+    "updateBio": "Cập nhật giới thiệu bản thân",
+    "noActivity": "{{name}} chưa có hoạt động nào. Hãy trò chuyện để hiểu nhau hơn.",
+    "owner": {
+      "setupZStyle": "Cài zStyle",
+      "myPhotos": "Ảnh của tôi",
+      "storage": "Kho lưu trữ"
+    },
     "menu": {
       "zCloud": "zCloud",
       "zCloudDesc": "Không gian lưu trữ dữ liệu trên đám mây",

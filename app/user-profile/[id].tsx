@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import {
   View,
   TouchableOpacity,
@@ -13,9 +13,10 @@ import { useRouter, useLocalSearchParams } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Text } from '@/components/ui/text'
 import { SEMANTIC, BRAND } from '@/constants/theme'
-import { useUserById } from '@/features/user/queries/use-queries'
+import { useUserById, useMyProfile } from '@/features/user/queries/use-queries'
 import { useFriendshipStatus } from '@/features/friend/queries/use-queries'
 import { useSendFriendRequest } from '@/features/friend/queries/use-mutations'
+import { useAuth } from '@/features/auth'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 const COVER_HEIGHT = 260
@@ -25,15 +26,23 @@ export default function UserProfileScreen() {
   const { t } = useTranslation()
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
+  const { user: currentUser } = useAuth()
 
-  const { data: userProfile, isLoading: profileLoading } = useUserById(id)
-  const { data: friendshipStatus, isLoading: statusLoading } = useFriendshipStatus(id)
+  // Check if viewing own profile
+  const isOwnProfile = id === currentUser?.id || id === 'me'
+
+  // Fetch data based on profile type
+  const { data: myProfile, isLoading: myProfileLoading } = useMyProfile()
+  const { data: otherUserProfile, isLoading: otherProfileLoading } = useUserById(id, !isOwnProfile)
+  const { data: friendshipStatus, isLoading: statusLoading } = useFriendshipStatus(id, !isOwnProfile)
   const sendFriendRequest = useSendFriendRequest()
 
-  const isLoading = profileLoading || statusLoading
+  // Determine which profile to show
+  const userProfile = isOwnProfile ? myProfile : otherUserProfile
+  const isLoading = isOwnProfile ? myProfileLoading : (otherProfileLoading || statusLoading)
+  
   const isFriend = friendshipStatus?.areFriends === true
   const isPending = friendshipStatus?.status === 'PENDING'
-  const isRequester = friendshipStatus?.requestedBy !== null
 
   const handleAddFriend = () => {
     if (!id) return
@@ -185,8 +194,33 @@ export default function UserProfileScreen() {
             {userProfile.fullName}
           </Text>
 
-          {/* Bio or not-friend hint */}
-          {!isFriend && (
+          {/* Owner Profile - Update Bio Link */}
+          {isOwnProfile && (
+            <TouchableOpacity style={{ marginTop: 8 }}>
+              <Text style={{ fontSize: 15, color: SEMANTIC.primary }}>
+                ✏️ {t('profile.updateBio')}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Friend Profile - Activity Status */}
+          {!isOwnProfile && isFriend && !userProfile.bio && (
+            <Text
+              style={{
+                fontSize: 14,
+                color: '#9ca3af',
+                textAlign: 'center',
+                marginTop: 12,
+                paddingHorizontal: 40,
+                lineHeight: 22,
+              }}
+            >
+              {t('profile.noActivity', { name: userProfile.fullName })}
+            </Text>
+          )}
+
+          {/* Non-Friend Profile - Warning Message */}
+          {!isOwnProfile && !isFriend && (
             <Text
               style={{
                 fontSize: 14,
@@ -201,7 +235,7 @@ export default function UserProfileScreen() {
             </Text>
           )}
 
-          {userProfile.bio && isFriend && (
+          {userProfile.bio && (isFriend || isOwnProfile) && (
             <Text
               style={{
                 fontSize: 14,
@@ -216,172 +250,312 @@ export default function UserProfileScreen() {
           )}
 
           {/* Action Buttons */}
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 12,
-              marginTop: 20,
-              paddingHorizontal: 24,
-            }}
-          >
-            {/* Message Button */}
-            <TouchableOpacity
-              onPress={handleMessage}
-              activeOpacity={0.7}
+          {isOwnProfile ? (
+            // Owner Profile - 3 Feature Buttons
+            <View
               style={{
-                flex: 1,
                 flexDirection: 'row',
                 alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 12,
-                borderRadius: 24,
-                backgroundColor: BRAND.blueLight,
-                gap: 8,
+                justifyContent: 'space-around',
+                marginTop: 20,
+                marginHorizontal: 20,
+                gap: 12,
               }}
             >
-              <Ionicons name="chatbubble-ellipses-outline" size={20} color={SEMANTIC.primary} />
-              <Text style={{ fontSize: 16, fontWeight: '600', color: SEMANTIC.primary }}>
-                {t('friend.actions.message')}
-              </Text>
-            </TouchableOpacity>
-
-            {/* Add Friend / Status Button */}
-            {!isFriend && !isPending && (
               <TouchableOpacity
-                onPress={handleAddFriend}
-                disabled={sendFriendRequest.isPending}
-                activeOpacity={0.7}
                 style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: 24,
-                  backgroundColor: '#F3F4F6',
+                  flex: 1,
                   alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                {sendFriendRequest.isPending ? (
-                  <ActivityIndicator size="small" color="#0068FF" />
-                ) : (
-                  <Ionicons name="person-add-outline" size={22} color="#374151" />
-                )}
-              </TouchableOpacity>
-            )}
-
-            {isPending && (
-              <View
-                style={{
-                  paddingHorizontal: 14,
                   paddingVertical: 12,
-                  borderRadius: 24,
-                  backgroundColor: '#F3F4F6',
+                  paddingHorizontal: 8,
                 }}
               >
-                <Text style={{ fontSize: 13, fontWeight: '500', color: '#6b7280' }}>
-                  {t('friend.status.pending')}
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
-
-        {/* Friend Suggestions Section */}
-        <View style={{ backgroundColor: '#fff', marginTop: 8, paddingVertical: 16 }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              paddingHorizontal: 16,
-              marginBottom: 14,
-            }}
-          >
-            <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827' }}>
-              👋 {t('friend.profile.friendSuggestion')}
-            </Text>
-            <TouchableOpacity>
-              <Text style={{ fontSize: 14, color: '#6b7280' }}>
-                {t('friend.profile.seeMore')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {/* Suggestion Cards (placeholder) */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
-          >
-            {[1, 2, 3].map((i) => (
-              <View
-                key={i}
-                style={{
-                  width: 140,
-                  backgroundColor: '#fff',
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: '#E5E7EB',
-                  paddingVertical: 16,
-                  paddingHorizontal: 12,
-                  alignItems: 'center',
-                  position: 'relative',
-                }}
-              >
-                {/* Close button */}
-                <TouchableOpacity
+                <View
                   style={{
-                    position: 'absolute',
-                    top: 8,
-                    right: 8,
-                    width: 24,
-                    height: 24,
-                    borderRadius: 12,
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: '#F3F4F6',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 6,
+                  }}
+                >
+                  <Ionicons name="brush-outline" size={22} color="#374151" />
+                </View>
+                <Text style={{ fontSize: 13, color: '#374151', textAlign: 'center' }}>
+                  {t('profile.owner.setupZStyle')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  paddingVertical: 12,
+                  paddingHorizontal: 8,
+                }}
+              >
+                <View
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: '#F3F4F6',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 6,
+                  }}
+                >
+                  <Ionicons name="images-outline" size={22} color="#374151" />
+                </View>
+                <Text style={{ fontSize: 13, color: '#374151', textAlign: 'center' }}>
+                  {t('profile.owner.myPhotos')}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  flex: 1,
+                  alignItems: 'center',
+                  paddingVertical: 12,
+                  paddingHorizontal: 8,
+                }}
+              >
+                <View
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 22,
+                    backgroundColor: '#F3F4F6',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginBottom: 6,
+                  }}
+                >
+                  <Ionicons name="archive-outline" size={22} color="#374151" />
+                </View>
+                <Text style={{ fontSize: 13, color: '#374151', textAlign: 'center' }}>
+                  {t('profile.owner.storage')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : (
+            // Other User Profile - Message + Add Friend Buttons
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 12,
+                marginTop: 20,
+                paddingHorizontal: 24,
+              }}
+            >
+              {/* Message Button - Only show if not friend (friends have floating button) */}
+              {!isFriend && (
+                <TouchableOpacity
+                  onPress={handleMessage}
+                  activeOpacity={0.7}
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: 12,
+                    borderRadius: 24,
+                    backgroundColor: BRAND.blueLight,
+                    gap: 8,
+                  }}
+                >
+                  <Ionicons name="chatbubble-ellipses-outline" size={20} color={SEMANTIC.primary} />
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: SEMANTIC.primary }}>
+                    {t('friend.actions.message')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {/* Add Friend / Status Button */}
+              {!isFriend && !isPending && (
+                <TouchableOpacity
+                  onPress={handleAddFriend}
+                  disabled={sendFriendRequest.isPending}
+                  activeOpacity={0.7}
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
                     backgroundColor: '#F3F4F6',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  <Ionicons name="close" size={14} color="#9ca3af" />
+                  {sendFriendRequest.isPending ? (
+                    <ActivityIndicator size="small" color="#0068FF" />
+                  ) : (
+                    <Ionicons name="person-add-outline" size={22} color="#374151" />
+                  )}
                 </TouchableOpacity>
+              )}
 
-                <Image
-                  source={{ uri: `https://i.pravatar.cc/100?img=${i + 10}` }}
+              {isPending && (
+                <View
                   style={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: 28,
-                    backgroundColor: '#E5E7EB',
-                    marginBottom: 8,
-                  }}
-                />
-                <Text
-                  style={{ fontSize: 13, fontWeight: '500', color: '#111827', textAlign: 'center' }}
-                  numberOfLines={1}
-                >
-                  {['Nguyễn Tha...', 'Mai Thị Quỳ...', 'Minh'][i - 1]}
-                </Text>
-
-                <TouchableOpacity
-                  activeOpacity={0.7}
-                  style={{
-                    marginTop: 10,
-                    paddingVertical: 6,
-                    paddingHorizontal: 20,
-                    borderRadius: 16,
-                    borderWidth: 1,
-                    borderColor: '#0068FF',
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                    borderRadius: 24,
+                    backgroundColor: '#F3F4F6',
                   }}
                 >
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#0068FF' }}>
-                    {t('friend.actions.addFriend')}
+                  <Text style={{ fontSize: 13, fontWeight: '500', color: '#6b7280' }}>
+                    {t('friend.status.pending')}
                   </Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </ScrollView>
+                </View>
+              )}
+            </View>
+          )}
         </View>
+
+        {/* Friend Suggestions Section - Only for other users */}
+        {!isOwnProfile && (
+          <View style={{ backgroundColor: '#fff', marginTop: 8, paddingVertical: 16 }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingHorizontal: 16,
+                marginBottom: 14,
+              }}
+            >
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827' }}>
+                👋 {t('friend.profile.friendSuggestion')}
+              </Text>
+              <TouchableOpacity>
+                <Text style={{ fontSize: 14, color: '#6b7280' }}>
+                  {t('friend.profile.seeMore')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Suggestion Cards (placeholder) */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 16, gap: 12 }}
+            >
+              {[1, 2, 3].map((i) => (
+                <View
+                  key={i}
+                  style={{
+                    width: 140,
+                    backgroundColor: '#fff',
+                    borderRadius: 12,
+                    borderWidth: 1,
+                    borderColor: '#E5E7EB',
+                    paddingVertical: 16,
+                    paddingHorizontal: 12,
+                    alignItems: 'center',
+                    position: 'relative',
+                  }}
+                >
+                  {/* Close button */}
+                  <TouchableOpacity
+                    style={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                      width: 24,
+                      height: 24,
+                      borderRadius: 12,
+                      backgroundColor: '#F3F4F6',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <Ionicons name="close" size={14} color="#9ca3af" />
+                  </TouchableOpacity>
+
+                  <Image
+                    source={{ uri: `https://i.pravatar.cc/100?img=${i + 10}` }}
+                    style={{
+                      width: 56,
+                      height: 56,
+                      borderRadius: 28,
+                      backgroundColor: '#E5E7EB',
+                      marginBottom: 8,
+                    }}
+                  />
+                  <Text
+                    style={{ fontSize: 13, fontWeight: '500', color: '#111827', textAlign: 'center' }}
+                    numberOfLines={1}
+                  >
+                    {['Nguyễn Tha...', 'Mai Thị Quỳ...', 'Minh'][i - 1]}
+                  </Text>
+
+                  <TouchableOpacity
+                    activeOpacity={0.7}
+                    style={{
+                      marginTop: 10,
+                      paddingVertical: 6,
+                      paddingHorizontal: 20,
+                      borderRadius: 16,
+                      borderWidth: 1,
+                      borderColor: '#0068FF',
+                    }}
+                  >
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: '#0068FF' }}>
+                      {t('friend.actions.addFriend')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              ))}
+            </ScrollView>
+          </View>
+        )}
       </ScrollView>
+
+      {/* Floating Message Button - Only for Friends */}
+      {!isOwnProfile && isFriend && (
+        <SafeAreaView
+          edges={['bottom']}
+          style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            paddingHorizontal: 16,
+            paddingTop: 12,
+            paddingBottom: 8,
+            backgroundColor: 'rgba(255,255,255,0.98)',
+            borderTopWidth: 1,
+            borderTopColor: '#E5E7EB',
+          }}
+        >
+          <TouchableOpacity
+            onPress={handleMessage}
+            activeOpacity={0.8}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              paddingVertical: 14,
+              borderRadius: 28,
+              backgroundColor: SEMANTIC.primary,
+              gap: 8,
+              shadowColor: '#0068FF',
+              shadowOffset: { width: 0, height: 4 },
+              shadowOpacity: 0.2,
+              shadowRadius: 8,
+              elevation: 4,
+            }}
+          >
+            <Ionicons name="chatbubble-ellipses" size={20} color="#fff" />
+            <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>
+              {t('friend.actions.message')}
+            </Text>
+          </TouchableOpacity>
+        </SafeAreaView>
+      )}
     </View>
   )
 }
