@@ -43,3 +43,11 @@ export const QrSessionStatus = {
 } as const
 
 export type QrSessionStatus = (typeof QrSessionStatus)[keyof typeof QrSessionStatus]
+
+export const SearchType = {
+  User: 'USER',
+  Group: 'GROUP',
+  Keyword: 'KEYWORD'
+} as const
+
+export type SearchType = (typeof SearchType)[keyof typeof SearchType]

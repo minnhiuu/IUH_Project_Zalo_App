@@ -25,7 +25,7 @@
       "contacts": "Liên hệ gần đây",
       "quickAccess": "Truy cập nhanh",
       "queries": "Tìm kiếm gần đây",
-      "editHistory": "Quản lý lịch sử"
+      "editHistory": "Chỉnh sửa lịch sử tìm kiếm"
     },
     "action": {
       "add": "Kết bạn",
@@ -35,9 +35,13 @@
     "editHistory": {
       "title": "Lịch sử tìm kiếm",
       "showQuickAccess": "Hiện truy cập nhanh",
-      "searchHistory": "LỊCH SỬ TÌM KIẾM",
+      "searchHistory": "Lịch sử tìm kiếm",
       "saveContacts": "Lưu liên hệ vừa tìm",
       "saveQueries": "Lưu từ khóa vừa tìm"
+    },
+    "validation": {
+      "idRequired": "ID không được để trống",
+      "nameRequired": "Tên không được để trống"
     }
   }
 }

@@ -62,7 +62,14 @@ export const API_ENDPOINTS = {
     PROFILE: '/users/profile', // Deprecated - use ME
     UPDATE_PROFILE: '/users/profile',
     SEARCH: '/users/search',
-    GET_BY_ID: (id: string) => `/users/${id}`
+    GET_BY_ID: (id: string) => `/users/${id}`,
+    RECENT_SEARCH: {
+      ITEMS: '/users/recent-search/items',
+      QUERIES: '/users/recent-search/queries',
+      ADD: '/users/recent-search',
+      REMOVE: (id: string) => `/users/recent-search/${id}`,
+      CLEAR_ALL: '/users/recent-search/clear-all'
+    }
   },
   DEVICE: {
     ACTIVE_SESSIONS: '/auth/devices/active-sessions', // GET - Get all active devices
