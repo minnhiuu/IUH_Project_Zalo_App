@@ -3,6 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import React from 'react'
 import { TextInput, TouchableOpacity, View, TextInputProps } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { useTheme, useSemanticColors } from '@/context/theme-context'
 
 interface SearchHeaderProps extends TextInputProps {
   onBack?: () => void
@@ -34,20 +35,26 @@ export const SearchHeader = React.forwardRef<TextInput, SearchHeaderProps>(
     ref
   ) => {
     const insets = useSafeAreaInsets()
+    const { isDark } = useTheme()
+    const semantic = useSemanticColors()
 
     const InputContainer = onPress ? TouchableOpacity : View
     const inputContainerProps = onPress ? { onPress, activeOpacity: 0.9 } : {}
 
+    // In Zalo's dark mode, the header is dark.
+    // We use tokens that match global.css dark values.
+    const gradientColors = isDark ? ([semantic.input, semantic.divider] as const) : (['#0068FF', '#0055DD'] as const) // Blue gradient for light mode
+
     return (
       <LinearGradient
-        colors={['#0068FF', '#0055DD']}
+        colors={gradientColors}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={[{ paddingTop: insets.top }, containerStyle]}
       >
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, height: 56 }}>
           {onBack && (
-            <TouchableOpacity onPress={onBack} style={{ marginRight: 12 }}>
+            <TouchableOpacity onPress={onBack} style={{ padding: 4, marginRight: 8 }}>
               <Ionicons name='arrow-back' size={24} color='white' />
             </TouchableOpacity>
           )}
@@ -55,8 +62,8 @@ export const SearchHeader = React.forwardRef<TextInput, SearchHeaderProps>(
           <InputContainer
             style={{
               flex: 1,
-              height: 36,
-              backgroundColor: onPress ? 'rgba(255, 255, 255, 0.22)' : 'white',
+              height: 40,
+              backgroundColor: isDark ? semantic.backgroundSecondary : 'rgba(255, 255, 255, 0.22)',
               borderRadius: 8,
               flexDirection: 'row',
               alignItems: 'center',
@@ -64,34 +71,35 @@ export const SearchHeader = React.forwardRef<TextInput, SearchHeaderProps>(
             }}
             {...inputContainerProps}
           >
-            <Ionicons name='search' size={18} color={onPress ? 'white' : '#666'} style={{ marginRight: 8 }} />
+            <Ionicons name='search' size={18} color='white' style={{ marginRight: 8 }} />
             <TextInput
               ref={ref}
               style={{
                 flex: 1,
                 height: '100%',
-                color: onPress ? 'white' : 'black',
+                color: 'white',
                 fontSize: 16,
                 padding: 0
               }}
               placeholder={placeholder}
-              placeholderTextColor={onPress ? 'rgba(255, 255, 255, 0.8)' : '#999'}
+              placeholderTextColor='rgba(255, 255, 255, 0.7)'
               value={value}
               onChangeText={onChangeText}
               returnKeyType='search'
               editable={!onPress}
+              selectionColor={semantic.primary}
               pointerEvents={onPress ? 'none' : 'auto'}
               {...props}
             />
             {value && value.length > 0 && onClear && (
               <TouchableOpacity onPress={onClear} style={{ padding: 4 }}>
-                <Ionicons name='close-circle' size={18} color='#666' />
+                <Ionicons name='close-circle' size={18} color='rgba(255, 255, 255, 0.6)' />
               </TouchableOpacity>
             )}
           </InputContainer>
 
           {showQr && (
-            <TouchableOpacity onPress={onQrPress} style={{ marginLeft: 12 }}>
+            <TouchableOpacity onPress={onQrPress} style={{ padding: 8, marginLeft: 8 }}>
               <Ionicons name='qr-code' size={22} color='white' />
             </TouchableOpacity>
           )}

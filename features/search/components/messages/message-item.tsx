@@ -23,20 +23,20 @@ export function MessageSearchResult({
   return (
     <BaseSearchResultItem item={item} onPress={onPress} avatarName={item.senderName}>
       <View className='flex-row justify-between items-center mb-1'>
-        <Text className='text-gray-900 font-medium'>{item.senderName}</Text>
-        <Text className='text-gray-400 text-xs'>{item.time}</Text>
+        <Text className='text-foreground font-medium'>{item.senderName}</Text>
+        <Text className='text-muted-foreground text-xs'>{item.time}</Text>
       </View>
 
       <HighlightText
         text={item.lastMessage}
         highlight={searchQuery}
-        className='text-gray-500 text-xs'
+        className='text-muted-foreground text-xs line-clamp-2'
         highlightClassName='text-primary font-medium'
       />
 
       <TouchableOpacity className='flex-row items-center mt-1'>
-        <Text className='text-gray-400 text-xs'>{item.matchCount} matching results</Text>
-        <Ionicons name='chevron-forward' size={12} color='#999' />
+        <Text className='text-muted-foreground text-xs'>{item.matchCount} matching results</Text>
+        <Ionicons name='chevron-forward' size={12} color='#99A' />
       </TouchableOpacity>
     </BaseSearchResultItem>
   )

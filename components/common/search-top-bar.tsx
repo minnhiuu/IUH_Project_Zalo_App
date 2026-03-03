@@ -59,13 +59,15 @@ export function SearchTopBar({
       />
 
       {tabs.length > 0 && setActiveTab && (
-        <View className='bg-white flex-row border-b border-gray-100'>
+        <View className='bg-background flex-row border-b border-divider'>
           {tabs.map((tab) => (
             <TouchableOpacity key={tab.key} onPress={() => setActiveTab(tab.key)} className='flex-1 items-center py-3'>
-              <Text className={`text-sm ${activeTab === tab.key ? 'text-gray-900 font-bold' : 'text-gray-500'}`}>
+              <Text
+                className={`text-sm font-medium ${activeTab === tab.key ? 'text-primary' : 'text-muted-foreground'}`}
+              >
                 {tab.label}
               </Text>
-              {activeTab === tab.key && <View className='absolute bottom-0 w-full h-0.5 bg-primary' />}
+              {activeTab === tab.key && <View className='absolute bottom-0 w-full h-[3px] bg-primary' />}
             </TouchableOpacity>
           ))}
         </View>

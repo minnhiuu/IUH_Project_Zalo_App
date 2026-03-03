@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { Header, Avatar, Text, Box, VStack, HStack, Card, Divider } from '@/components/ui'
 import { AvatarImage, AvatarFallbackText } from '@/components/ui/avatar'
 import { Pressable } from '@/components/ui/pressable'
-import { useMyProfile } from '@/features/user'
+import { useMyProfile } from '@/features/users'
 import { SEMANTIC, BRAND } from '@/constants/theme'
 
 interface MenuItem {

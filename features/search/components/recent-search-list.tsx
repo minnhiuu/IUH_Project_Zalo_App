@@ -1,5 +1,5 @@
 import { UserAvatar } from '@/components/common/user-avatar'
-import { RecentSearch } from '@/features/search/schema/search-schema'
+import { RecentSearch } from '@/features/search/schemas/search-schema'
 import { storage, STORAGE_KEYS } from '@/utils/storageUtils'
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect, useRouter } from 'expo-router'
@@ -19,7 +19,8 @@ const MOCK_QUICK_ACCESS = [
   { id: '2', name: 'Zalo Video', icon: 'play-circle-outline', color: '#A78BFA' },
   { id: '3', name: 'Add', icon: 'add', color: '#E5E7EB', isAdd: true }
 ]
-export function RecentSearchScreen({ searches, onSelect, onRemove, onClear }: RecentSearchListProps) {
+
+export function RecentSearchList({ searches, onSelect, onRemove, onClear }: RecentSearchListProps) {
   const { t } = useTranslation()
   const router = useRouter()
   const [showQuickAccess, setShowQuickAccess] = useState(true)
@@ -46,11 +47,15 @@ export function RecentSearchScreen({ searches, onSelect, onRemove, onClear }: Re
   const queries = searches.filter((item) => item.type === 'keyword')
 
   return (
-    <ScrollView className='flex-1 bg-white' keyboardShouldPersistTaps='handled' showsVerticalScrollIndicator={false}>
+    <ScrollView
+      className='flex-1 bg-background'
+      keyboardShouldPersistTaps='handled'
+      showsVerticalScrollIndicator={false}
+    >
       {showContacts && contacts.length > 0 && (
         <View className='mt-5'>
           <View className='flex-row items-center justify-between px-4 mb-3'>
-            <Text className='font-bold text-gray-900'>{t('search.recent.contacts')}</Text>
+            <Text className='font-bold text-foreground'>{t('search.recent.contacts')}</Text>
           </View>
 
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className='pl-4 pb-4'>
@@ -61,7 +66,7 @@ export function RecentSearchScreen({ searches, onSelect, onRemove, onClear }: Re
                 onPress={() => onSelect(contact)}
               >
                 <TouchableOpacity
-                  className='absolute top-0 right-1 z-10 bg-gray-100 rounded-full p-0.5'
+                  className='absolute top-0 right-1 z-10 bg-muted rounded-full p-0.5'
                   onPress={(e) => {
                     e.stopPropagation()
                     onRemove(contact.id)
@@ -71,54 +76,54 @@ export function RecentSearchScreen({ searches, onSelect, onRemove, onClear }: Re
                 </TouchableOpacity>
 
                 <UserAvatar source={contact.avatar} name={contact.displayName} size='lg' />
-                <Text className='text-xs text-center text-gray-800 mt-1' numberOfLines={2}>
+                <Text className='text-xs text-center text-foreground mt-1' numberOfLines={2}>
                   {contact.displayName}
                 </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
-          <View className='h-2 bg-gray-50 my-2' />
+          <View className='h-2 bg-background-secondary my-2' />
         </View>
       )}
 
       {showQuickAccess && (
         <>
           <View className='mt-2'>
-            <Text className='font-bold text-gray-900 px-4 mb-3'>{t('search.recent.quickAccess')}</Text>
+            <Text className='font-bold text-foreground px-4 mb-3'>{t('search.recent.quickAccess')}</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className='pl-4 pb-2'>
               {MOCK_QUICK_ACCESS.map((item) => (
                 <TouchableOpacity key={item.id} className='mr-6 items-center w-16'>
                   <View
-                    className={`w-12 h-12 rounded-xl items-center justify-center mb-1 ${item.isAdd ? 'bg-gray-100' : ''}`}
+                    className={`w-12 h-12 rounded-xl items-center justify-center mb-1 ${item.isAdd ? 'bg-muted' : 'bg-background'}`}
                     style={!item.isAdd ? { backgroundColor: item.color + '20' } : {}}
                   >
-                    <Ionicons name={item.icon as any} size={24} color={item.isAdd ? '#6B7280' : item.color} />
+                    <Ionicons name={item.icon as any} size={24} color={item.isAdd ? '#9FACBC' : item.color} />
                   </View>
-                  <Text className='text-xs text-center text-gray-700' numberOfLines={2}>
+                  <Text className='text-xs text-center text-muted-foreground' numberOfLines={2}>
                     {item.name}
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </View>
-          <View className='h-2 bg-gray-50 my-2' />
+          <View className='h-2 bg-background-secondary my-2' />
         </>
       )}
 
       {showQueries && queries.length > 0 && (
         <View className='mt-2 pb-10'>
           <View className='flex-row items-center justify-between px-4 mb-2'>
-            <Text className='font-bold text-gray-900'>{t('search.recent.queries')}</Text>
+            <Text className='font-bold text-foreground'>{t('search.recent.queries')}</Text>
           </View>
           {queries.map((query) => (
             <TouchableOpacity
               key={query.id}
-              className='flex-row items-center px-4 py-3 active:bg-gray-50'
+              className='flex-row items-center px-4 py-3 active:bg-muted'
               onPress={() => onSelect(query)}
             >
-              <Ionicons name='search-outline' size={24} color='#6B7280' />
+              <Ionicons name='search-outline' size={24} color='#9FACBC' />
               <View className='flex-1 ml-4'>
-                <Text className='text-gray-900 text-base'>{query.displayName}</Text>
+                <Text className='text-foreground text-base'>{query.displayName}</Text>
               </View>
               <TouchableOpacity
                 onPress={(e) => {
@@ -127,7 +132,7 @@ export function RecentSearchScreen({ searches, onSelect, onRemove, onClear }: Re
                 }}
                 className='p-1'
               >
-                <Ionicons name='close' size={16} color='#9CA3AF' />
+                <Ionicons name='close' size={16} color='#9FACBC' />
               </TouchableOpacity>
             </TouchableOpacity>
           ))}
@@ -138,8 +143,8 @@ export function RecentSearchScreen({ searches, onSelect, onRemove, onClear }: Re
         className='flex-row items-center px-4 pt-2 pb-4 mb-8'
         onPress={() => router.push('/search/edit-history')}
       >
-        <Text className='text-blue-500 font-medium text-base mr-1'>{t('search.recent.editHistory')}</Text>
-        <Ionicons name='chevron-forward' size={16} color='#3B82F6' />
+        <Text className='text-primary font-medium text-base mr-1'>{t('search.recent.editHistory')}</Text>
+        <Ionicons name='chevron-forward' size={16} color='#0068FF' />
       </TouchableOpacity>
     </ScrollView>
   )

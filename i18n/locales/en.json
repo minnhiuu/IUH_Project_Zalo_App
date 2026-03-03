@@ -544,17 +544,5 @@
       "title": "New year special offer from zStyle",
       "subtitle": "From only 10,700đ/month, get offer now"
     }
-  },
-  "search": {
-    "placeholder": "Search",
-    "tabs": {
-      "mine": "Mine",
-      "explore": "Explore"
-    },
-    "miniAppsUsed": "Mini Apps used",
-    "recentContacts": "Recent contacts",
-    "edit": "Edit",
-    "manageHistory": "Manage search history",
-    "exploreContent": "Explore interesting content"
   }
 }

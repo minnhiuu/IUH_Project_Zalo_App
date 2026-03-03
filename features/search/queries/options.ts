@@ -15,6 +15,7 @@ export const searchOptions = {
   usersInfinite: (query: string) => ({
     queryKey: searchKeys.usersInfinite(query),
     queryFn: async ({ pageParam = 0 }) => {
+      await new Promise((resolve) => setTimeout(resolve, 1500))
       const response = await searchApi.searchUsers(query, pageParam as number, 10)
       return response.data.data
     },

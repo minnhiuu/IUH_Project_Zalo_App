@@ -1,4 +1,4 @@
-import { Container, SearchTopBar } from '@/components'
+import { SearchTopBar } from '@/components'
 import { useInfiniteSearchUsers } from '../queries/use-queries'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Ionicons } from '@expo/vector-icons'
@@ -10,8 +10,8 @@ import { AllTab } from './all/all-tab'
 import { ContactsTab } from './contacts/contacts-tab'
 import { MessagesTab } from './messages/messages-tab'
 import { DiscoverTab } from './discover/discover-tab'
-import { RecentSearchScreen } from './recent-search-screen'
-import { RecentSearch } from '../schema/search-schema'
+import { RecentSearchList } from './recent-search-list'
+import { RecentSearch } from '../schemas/search-schema'
 import { storage, STORAGE_KEYS } from '@/utils/storageUtils'
 
 export type SearchTab = 'all' | 'contacts' | 'messages' | 'discover'
@@ -28,11 +28,11 @@ const MOCK_MESSAGES = [
 ]
 
 const MOCK_CONTACTS = [
-  { id: 'c1', fullName: 'Anh Tí', email: 'anhti@gmail.com', avatar: null },
-  { id: 'c2', fullName: 'Ân', email: 'an@gmail.com', avatar: null }
+  { id: 'c1', fullName: 'test1', email: 'test1@gmail.com', avatar: null },
+  { id: 'c2', fullName: 'test2', email: 'test2@gmail.com', avatar: null }
 ]
 
-export function SearchScreen() {
+export function Search() {
   const router = useRouter()
   const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState('')
@@ -128,7 +128,7 @@ export function SearchScreen() {
     addToRecent({ ...item, timestamp: Date.now() })
 
     if (item.type === 'user') {
-      router.push(`/user/${item.id}` as any)
+      router.push(`/user-profile/${item.id}` as any)
     } else {
       setSearchQuery(item.displayName)
     }
@@ -146,7 +146,9 @@ export function SearchScreen() {
     return (
       <View className='flex-1 items-center justify-center p-10 mt-10'>
         <Ionicons name='search-outline' size={64} color='#E5E7EB' />
-        <Text className='text-gray-500 mt-4 text-center'>{t('search.noResults', { query: debouncedQuery })}</Text>
+        <Text className='text-muted-foreground mt-4 text-center'>
+          {t('search.noResults', { query: debouncedQuery })}
+        </Text>
       </View>
     )
   }
@@ -158,27 +160,37 @@ export function SearchScreen() {
   )
 
   const onItemPress = (item: any) => {
-    const isMock = item.id.startsWith('m') || item.id.startsWith('c')
-    const isUser = activeTab === 'discover' || !isMock
+    const isMessage = item.id.startsWith('m')
+    const isUserOrContact = !isMessage
 
-    if (isUser) {
+    if (isUserOrContact) {
       addToRecent({
         id: item.id,
         type: 'user',
-        displayName: item.fullName,
+        displayName: item.fullName || item.senderName,
         avatar: item.avatar,
         timestamp: Date.now()
       })
-      router.push(`/user/${item.id}` as any)
+      router.push(`/user-profile/${item.id}` as any)
     } else {
       console.log('Selected item:', item.id)
     }
   }
 
+  const filteredContacts = MOCK_CONTACTS.filter((c) => c.fullName.toLowerCase().includes(debouncedQuery.toLowerCase()))
+  const filteredMessages = MOCK_MESSAGES.filter(
+    (m) =>
+      m.senderName.toLowerCase().includes(debouncedQuery.toLowerCase()) ||
+      m.lastMessage.toLowerCase().includes(debouncedQuery.toLowerCase())
+  )
+
+  const hasApiResults = infiniteSearchResults?.pages?.some((page) => page?.data && page.data.length > 0)
+  const hasResults = hasApiResults || filteredContacts.length > 0 || filteredMessages.length > 0
+
   const renderContent = () => {
     if (!searchQuery) {
       return (
-        <RecentSearchScreen
+        <RecentSearchList
           searches={recentSearches}
           onSelect={handleRecentSelect}
           onRemove={removeFromRecent}
@@ -189,7 +201,7 @@ export function SearchScreen() {
 
     if (activeTab === 'discover') {
       return (
-        <View className='flex-1 bg-gray-100'>
+        <View className='flex-1 bg-background-secondary'>
           {isLoading && !infiniteSearchResults ? (
             renderLoading()
           ) : (
@@ -208,23 +220,23 @@ export function SearchScreen() {
 
     if (activeTab === 'contacts') {
       return (
-        <View className='flex-1 bg-gray-100'>
-          <ContactsTab mockContacts={MOCK_CONTACTS} searchQuery={searchQuery} onItemPress={onItemPress} />
+        <View className='flex-1 bg-background-secondary'>
+          <ContactsTab mockContacts={filteredContacts} searchQuery={searchQuery} onItemPress={onItemPress} />
         </View>
       )
     }
 
     if (activeTab === 'messages') {
       return (
-        <View className='flex-1 bg-gray-100'>
-          <MessagesTab mockMessages={MOCK_MESSAGES} searchQuery={searchQuery} onItemPress={onItemPress} />
+        <View className='flex-1 bg-background-secondary'>
+          <MessagesTab mockMessages={filteredMessages} searchQuery={searchQuery} onItemPress={onItemPress} />
         </View>
       )
     }
 
     return (
       <ScrollView
-        className='flex-1 bg-gray-100'
+        className='flex-1 bg-background-secondary'
         keyboardShouldPersistTaps='handled'
         onScrollBeginDrag={() => Keyboard.dismiss()}
       >
@@ -233,15 +245,14 @@ export function SearchScreen() {
           <>
             <AllTab
               searchResults={infiniteSearchResults}
-              searchQuery={searchQuery}
-              mockMessages={MOCK_MESSAGES}
-              mockContacts={MOCK_CONTACTS}
+              searchQuery={debouncedQuery}
+              mockMessages={filteredMessages}
+              mockContacts={filteredContacts}
               setActiveTab={setActiveTab}
               onItemPress={onItemPress}
             />
 
-            {(!infiniteSearchResults?.pages?.[0]?.data || infiniteSearchResults.pages[0].data.length === 0) &&
-              renderEmptyState()}
+            {!hasResults && renderEmptyState()}
           </>
         )}
       </ScrollView>
@@ -249,7 +260,7 @@ export function SearchScreen() {
   }
 
   return (
-    <Container safeAreaEdges={[]}>
+    <View className='flex-1 bg-background'>
       <SearchTopBar
         style={{ opacity: fadeAnim }}
         inputRef={inputRef}
@@ -264,7 +275,7 @@ export function SearchScreen() {
         onSubmitEditing={handleSearchSubmit}
       />
 
-      {renderContent()}
-    </Container>
+      <View className='flex-1'>{renderContent()}</View>
+    </View>
   )
 }

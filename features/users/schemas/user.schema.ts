@@ -28,9 +28,3 @@ export type UserSummaryResponse = {
   fullName: string
   avatar: string | null
 }
-
-export type UserSummaryResponse = {
-  id: string
-  fullName: string
-  avatar: string | null
-}

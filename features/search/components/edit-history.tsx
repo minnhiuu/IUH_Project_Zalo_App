@@ -1,6 +1,5 @@
-import { Container } from '@/components'
 import { UserAvatar } from '@/components/common/user-avatar'
-import { RecentSearch } from '@/features/search/schema/search-schema'
+import { RecentSearch } from '@/features/search/schemas/search-schema'
 import { storage, STORAGE_KEYS } from '@/utils/storageUtils'
 import { Ionicons } from '@expo/vector-icons'
 import { Stack, useRouter } from 'expo-router'
@@ -12,7 +11,7 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true)
 }
 
-export function EditHistoryScreen() {
+export function EditHistory() {
   const router = useRouter()
   const { t } = useTranslation()
   const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([])
@@ -73,7 +72,7 @@ export function EditHistoryScreen() {
   const queries = recentSearches.filter((s) => s.type === 'keyword')
 
   return (
-    <Container>
+    <View>
       <Stack.Screen options={{ headerShown: false }} />
 
       <View className='flex-row items-center p-4 border-b border-gray-100 bg-white'>
@@ -159,6 +158,6 @@ export function EditHistoryScreen() {
 
         <View className='h-20' />
       </ScrollView>
-    </Container>
+    </View>
   )
 }
