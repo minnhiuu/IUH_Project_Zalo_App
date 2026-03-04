@@ -608,6 +608,52 @@
       "takePhoto": "Chụp ảnh mới",
       "chooseFromGallery": "Chọn ảnh trên máy",
       "updateSuccess": "Cập nhật ảnh bìa thành công"
+    },
+    "menu": {
+      "information": "Thông tin",
+      "personalInfo": "Thông tin",
+      "changeNickname": "Đổi tên gọi nhớ",
+      "markAsBestFriend": "Đánh dấu bạn thân",
+      "introduceToFriends": "Giới thiệu cho bạn bè",
+      "notificationSection": "Thông báo",
+      "notifications": "Nhận thông báo về hoạt động mới của người này",
+      "blockAndHideSection": "Chặn và ẩn khỏi nhật ký",
+      "blockMyActivity": "Chặn xem hoạt động của tôi",
+      "hideTheirActivity": "Ẩn hoạt động của người này",
+      "reportSection": "Báo xấu",
+      "report": "Báo xấu",
+      "unfriend": "Xóa bạn"
+    },
+    "personalInfo": {
+      "title": "Thông tin cá nhân",
+      "gender": "Giới tính",
+      "dob": "Ngày sinh",
+      "phone": "Điện thoại",
+      "phoneNote": "Số điện thoại chỉ hiển thị với người có lưu số bạn trong danh bạ máy",
+      "phoneNoteOther": "Số điện thoại được hiển thị do danh bạ máy của bạn có lưu số người này",
+      "edit": "Chính sửa",
+      "male": "Nam",
+      "female": "Nữ",
+      "other": "Khác"
+    },
+    "editProfile": {
+      "title": "Chỉnh sửa thông tin",
+      "fullName": "Họ và tên",
+      "dob": "Ngày sinh",
+      "gender": "Giới tính",
+      "male": "Nam",
+      "female": "Nữ",
+      "save": "LƯU",
+      "updateSuccess": "Cập nhật thông tin thành công",
+      "selectDate": "Chọn ngày sinh",
+      "cancel": "Hủy",
+      "confirm": "Xác nhận"
+    }
+  },
+  "user": {
+    "update": {
+      "fullNameRequired": "Họ tên không được để trống",
+      "dobInvalid": "Ngày sinh phải là ngày trong quá khứ hoặc hiện tại"
     }
   }
 }

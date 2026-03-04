@@ -32,16 +32,15 @@ export default function UserProfileScreen() {
   const updateBackgroundMutation = useUpdateBackground()
 
   const isLoading = profileLoading || statusLoading
+  //TODO: retrieve owner's information from cache or context to avoid loading state on own profile
   const isOwner = myProfile?.id === id
   const isFriend = friendshipStatus?.areFriends === true
   const isPending = friendshipStatus?.status === 'PENDING'
 
-  // Action Sheet States
   const [showAvatarSheet, setShowAvatarSheet] = useState(false)
   const [showCoverSheet, setShowCoverSheet] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
 
-  // Request permissions on mount
   React.useEffect(() => {
     (async () => {
       const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync()
@@ -335,6 +334,7 @@ export default function UserProfileScreen() {
                   <Ionicons name='search' size={20} color='#fff' />
                 </TouchableOpacity>
                 <TouchableOpacity
+                  onPress={() => router.push(`/user-profile/menu?id=${id}` as any)}
                   style={{
                     width: 36,
                     height: 36,

@@ -1,15 +1,15 @@
 import http from '@/lib/http'
 import { API_ENDPOINTS } from '@/config/apiConfig'
 import type { ApiResponse } from '@/types/common.types'
-import type { UserResponse, UserUpdateRequest, UserSummaryResponse, UserImageResponse } from '../schemas/user.schema'
+import type { UserResponse, UserProfileResponse, UserUpdateRequest, UserSummaryResponse, UserImageResponse } from '../schemas/user.schema'
 
-export const getMyProfile = () => http.get<ApiResponse<UserResponse>>(API_ENDPOINTS.USER.ME)
+export const getMyProfile = () => http.get<ApiResponse<UserProfileResponse>>(API_ENDPOINTS.USER.ME)
 
 export const updateProfile = (data: UserUpdateRequest) =>
-  http.put<ApiResponse<UserResponse>>(API_ENDPOINTS.USER.UPDATE_PROFILE, data)
+  http.put<ApiResponse<UserProfileResponse>>(API_ENDPOINTS.USER.UPDATE_PROFILE, data)
 
 export const updateBio = (bio: string) =>
-  http.patch<ApiResponse<UserResponse>>(API_ENDPOINTS.USER.UPDATE_BIO, { bio })
+  http.patch<ApiResponse<UserProfileResponse>>(API_ENDPOINTS.USER.UPDATE_BIO, { bio })
 
 export const updateAvatar = (formData: FormData) =>
   http.patch<ApiResponse<UserImageResponse>>(API_ENDPOINTS.USER.UPDATE_AVATAR, formData, {

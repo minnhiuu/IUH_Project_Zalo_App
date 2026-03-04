@@ -65,7 +65,7 @@ export function ActionSheet({ visible, onClose, options, title, isDark = false }
         })
       ]).start()
     }
-  }, [visible])
+  }, [visible, backdropOpacity, translateY])
 
   const handleOptionPress = (onPress: () => void) => {
     // Close animation first, then execute callback
