@@ -29,7 +29,7 @@ export function ChatHeader({
   onProfilePress,
   onCall,
   onVideoCall,
-  onMenu,
+  onMenu
 }: ChatHeaderProps) {
   const router = useRouter()
 
@@ -42,20 +42,17 @@ export function ChatHeader({
             alignItems: 'center',
             paddingHorizontal: 12,
             paddingVertical: 8,
-            height: 52,
+            height: 52
           }}
         >
           {/* Back */}
-          <TouchableOpacity
-            onPress={onBack ?? (() => router.back())}
-            style={{ padding: 4, marginRight: 8 }}
-          >
-            <Ionicons name="chevron-back" size={24} color="#fff" />
+          <TouchableOpacity onPress={onBack ?? (() => router.back())} style={{ padding: 4, marginRight: 8 }}>
+            <Ionicons name='chevron-back' size={24} color='#fff' />
           </TouchableOpacity>
 
           {/* Avatar + Name */}
-          <TouchableOpacity 
-            style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }} 
+          <TouchableOpacity
+            style={{ flex: 1, flexDirection: 'row', alignItems: 'center' }}
             activeOpacity={0.7}
             onPress={() => {
               if (onProfilePress) {
@@ -72,33 +69,26 @@ export function ChatHeader({
                 height: 38,
                 borderRadius: 19,
                 backgroundColor: '#E5E7EB',
-                marginRight: 10,
+                marginRight: 10
               }}
             />
             <View style={{ flex: 1 }}>
-              <Text
-                style={{ fontSize: 17, fontWeight: '600', color: '#fff' }}
-                numberOfLines={1}
-              >
+              <Text style={{ fontSize: 17, fontWeight: '600', color: '#fff' }} numberOfLines={1}>
                 {name}
               </Text>
-              {subtitle && (
-                <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
-                  {subtitle}
-                </Text>
-              )}
+              {subtitle && <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>{subtitle}</Text>}
             </View>
           </TouchableOpacity>
 
           {/* Action Icons */}
           <TouchableOpacity onPress={onCall} style={{ padding: 8 }}>
-            <Ionicons name="call-outline" size={22} color="#fff" />
+            <Ionicons name='call-outline' size={22} color='#fff' />
           </TouchableOpacity>
           <TouchableOpacity onPress={onVideoCall} style={{ padding: 8 }}>
-            <Ionicons name="videocam-outline" size={22} color="#fff" />
+            <Ionicons name='videocam-outline' size={22} color='#fff' />
           </TouchableOpacity>
           <TouchableOpacity onPress={onMenu} style={{ padding: 8 }}>
-            <Ionicons name="menu-outline" size={22} color="#fff" />
+            <Ionicons name='menu-outline' size={22} color='#fff' />
           </TouchableOpacity>
         </View>
       </SafeAreaView>

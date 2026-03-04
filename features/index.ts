@@ -1,5 +1,5 @@
 // Export all features
 export * from './auth'
-export * from './user'
+export * from './users'
 export * from './friend'
 export * from './settings'

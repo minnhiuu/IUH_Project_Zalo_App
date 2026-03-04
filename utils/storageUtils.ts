@@ -12,7 +12,11 @@ const SECURE_KEYS = {
 const STORAGE_KEYS = {
   USER_DATA: 'user_data',
   APP_SETTINGS: 'app_settings',
-  ONBOARDING_COMPLETED: 'onboarding_completed'
+  ONBOARDING_COMPLETED: 'onboarding_completed',
+  RECENT_SEARCHES: 'recent_searches',
+  SEARCH_SHOW_QUICK_ACCESS: 'search_show_quick_access',
+  SEARCH_SAVE_CONTACTS: 'search_save_contacts',
+  SEARCH_SAVE_QUERIES: 'search_save_queries'
 }
 
 // Secure storage for sensitive data (tokens)

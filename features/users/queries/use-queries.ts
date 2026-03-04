@@ -21,7 +21,7 @@ export const useSearchUsers = (keyword: string, enabled: boolean = true) => {
       return response.data.data.data ?? response.data.data
     },
     enabled: enabled && keyword.length >= 2,
-    staleTime: 30 * 1000,
+    staleTime: 30 * 1000
   })
 }
 
@@ -33,6 +33,6 @@ export const useUserById = (userId: string, enabled: boolean = true) => {
       return response.data.data
     },
     enabled: enabled && !!userId,
-    staleTime: 2 * 60 * 1000,
+    staleTime: 2 * 60 * 1000
   })
 }

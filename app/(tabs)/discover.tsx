@@ -71,26 +71,34 @@ export default function DiscoverScreen() {
   return (
     <Box style={{ flex: 1, backgroundColor: '#ffffff' }}>
       {/* Header */}
-      <Header
-        showSearch
-        searchPlaceholder={t('discover.search')}
-        showQRButton
-      />
+      <Header showSearch searchPlaceholder={t('discover.search')} showQRButton />
 
       {/* Services List */}
       <ScrollView style={{ flex: 1 }}>
         {SERVICES.map((service, index) => (
-          <VStack key={service.id} space="xs">
-            <Pressable style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 16 }}>
+          <VStack key={service.id} space='xs'>
+            <Pressable
+              style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 16 }}
+            >
               {/* Icon */}
-              <Box style={{ width: 48, height: 48, backgroundColor: '#e0f2fe', borderRadius: 8, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-                <Ionicons name={service.icon as any} size={28} color="#0068FF" />
+              <Box
+                style={{
+                  width: 48,
+                  height: 48,
+                  backgroundColor: '#e0f2fe',
+                  borderRadius: 8,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 12
+                }}
+              >
+                <Ionicons name={service.icon as any} size={28} color='#0068FF' />
               </Box>
 
               {/* Content */}
-              <VStack style={{ flex: 1 }} space="xs">
-                <HStack space="sm" style={{ alignItems: 'center' }}>
-                  <Text size="md" bold>
+              <VStack style={{ flex: 1 }} space='xs'>
+                <HStack space='sm' style={{ alignItems: 'center' }}>
+                  <Text size='md' bold>
                     {service.title}
                   </Text>
                   {service.badge === 'red' && (
@@ -98,20 +106,18 @@ export default function DiscoverScreen() {
                   )}
                 </HStack>
                 {service.subtitle && (
-                  <Text style={{ color: '#6b7280', marginTop: 4 }} size="sm" numberOfLines={1}>
+                  <Text style={{ color: '#6b7280', marginTop: 4 }} size='sm' numberOfLines={1}>
                     {service.subtitle}
                   </Text>
                 )}
               </VStack>
 
               {/* Arrow */}
-              <Ionicons name="chevron-forward" size={20} color={SEMANTIC.iconMuted} />
+              <Ionicons name='chevron-forward' size={20} color={SEMANTIC.iconMuted} />
             </Pressable>
 
             {/* Divider */}
-            {index < SERVICES.length - 1 && (
-              <Divider style={{ marginLeft: 64 }} />
-            )}
+            {index < SERVICES.length - 1 && <Divider style={{ marginLeft: 64 }} />}
           </VStack>
         ))}
       </ScrollView>
