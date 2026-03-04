@@ -61,19 +61,31 @@ export const useFcm = () => {
   }, [setFcmTokenStore])
 
   useEffect(() => {
+    console.log(
+      '[FCM] registerDevice effect: userId=',
+      user?.id,
+      '| fcmToken=',
+      fcmToken ? '***' + fcmToken.slice(-6) : null
+    )
     if (user?.id && fcmToken) {
-      registerDevice({
-        userId: user.id,
-        token: fcmToken,
-        platform: RNPlatform.OS === 'android' ? Platform.Android : Platform.iOS
-      })
+      registerDevice(
+        {
+          token: fcmToken,
+          platform: RNPlatform.OS === 'android' ? Platform.Android : Platform.iOS
+        },
+        {
+          onSuccess: () => console.log('[FCM] registerDevice success'),
+          onError: (e) => console.error('[FCM] registerDevice error:', e)
+        }
+      )
     }
-  }, [user?.id, fcmToken, registerDevice])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, fcmToken])
 
   const unregister = async () => {
     const token = fcmToken || storedFcmToken
-    if (user?.id && token) {
-      unregisterDevice({ userId: user.id, token })
+    if (token) {
+      unregisterDevice(token)
     }
   }
 
@@ -82,6 +94,8 @@ export const useFcm = () => {
 
 async function registerForPushNotificationsAsync() {
   let token
+
+  console.log('[FCM] isDevice:', Device.isDevice, '| OS:', RNPlatform.OS)
 
   if (RNPlatform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
@@ -94,31 +108,32 @@ async function registerForPushNotificationsAsync() {
 
   if (Device.isDevice) {
     const { status: existingStatus } = await Notifications.getPermissionsAsync()
+    console.log('[FCM] existingStatus:', existingStatus)
     let finalStatus = existingStatus
 
     if (existingStatus !== 'granted') {
       const { status } = await Notifications.requestPermissionsAsync()
       finalStatus = status
+      console.log('[FCM] requestPermissions result:', status)
     }
 
     if (finalStatus !== 'granted') {
+      console.warn('[FCM] Permission not granted, finalStatus:', finalStatus)
       alert('Failed to get push token for push notification!')
       return
     }
 
     try {
       const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId
-
-      if (!projectId) {
-        console.warn('Project ID not found. Ensure EAS is configured.')
-      }
+      console.log('[FCM] projectId:', projectId)
 
       token = (await Notifications.getDevicePushTokenAsync()).data
+      console.log('[FCM] Token obtained:', token ? '***' + token.slice(-6) : null)
     } catch (e) {
-      console.error('Error fetching FCM Token:', e)
+      console.error('[FCM] Error fetching FCM Token:', e)
     }
   } else {
-    console.log('Must use physical device for Push Notifications')
+    console.warn('[FCM] Not a physical device — push notifications unavailable')
   }
 
   return token

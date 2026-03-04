@@ -8,6 +8,5 @@ export const useRegisterDeviceMutation = () =>
 
 export const useUnregisterDeviceMutation = () =>
   useMutation({
-    mutationFn: ({ userId, token }: { userId: string; token: string }) =>
-      notificationApi.unregisterDevice(userId, token)
+    mutationFn: (token: string) => notificationApi.unregisterDevice(token)
   })
