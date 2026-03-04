@@ -6,6 +6,7 @@ const SECURE_KEYS = {
   ACCESS_TOKEN: 'access_token',
   REFRESH_TOKEN: 'refresh_token',
   DEVICE_ID: 'device_id',
+  ACCEPT_LANGUAGE: 'accept_language',
 }
 
 const STORAGE_KEYS = {
@@ -43,6 +44,18 @@ export const secureStorage = {
 
   getDeviceId: async (): Promise<string | null> => {
     return await SecureStore.getItemAsync(SECURE_KEYS.DEVICE_ID)
+  },
+
+  setAcceptLanguage: async (lang: string): Promise<void> => {
+    await SecureStore.setItemAsync(SECURE_KEYS.ACCEPT_LANGUAGE, lang)
+  },
+
+  getAcceptLanguage: async (): Promise<string | null> => {
+    return await SecureStore.getItemAsync(SECURE_KEYS.ACCEPT_LANGUAGE)
+  },
+
+  clearAcceptLanguage: async (): Promise<void> => {
+    await SecureStore.deleteItemAsync(SECURE_KEYS.ACCEPT_LANGUAGE)
   },
 }
 

@@ -94,6 +94,10 @@ export const API_ENDPOINTS = {
     CHECK_STATUS: (userId: string) => `/friendships/status/${userId}`, // GET
     MUTUAL_FRIENDS: (userId: string) => `/friendships/mutual/${userId}`, // GET
     MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count` // GET
+  },
+  SETTINGS: {
+    ME_GENERAL: '/users/settings/me/general', // GET - GeneralSettings { languageEn: boolean }
+    GENERAL: '/users/settings/general'        // PUT - GeneralSettingsUpdateRequest
   }
 } as const
 

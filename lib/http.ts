@@ -2,6 +2,7 @@ import axios, { AxiosError, type InternalAxiosRequestConfig, type AxiosResponse 
 import { isTokenExpiringSoon } from '@/utils/jwt'
 import apiConfig, { API_ENDPOINTS } from '@/config/apiConfig'
 import { secureStorage } from '@/utils/storageUtils'
+import i18n from '@/i18n'
 
 export const getAccessToken = async (): Promise<string | null> => {
   try {
@@ -162,6 +163,11 @@ http.interceptors.request.use(
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`
     }
+
+    // Inject Accept-Language from SecureStore (saved from user's general settings),
+    // falling back to the active i18n locale for unauthenticated / first-load requests.
+    const storedLang = await secureStorage.getAcceptLanguage()
+    config.headers['Accept-Language'] = storedLang ?? i18n.language ?? 'vi'
 
     return config
   },
