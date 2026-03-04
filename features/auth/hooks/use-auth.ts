@@ -24,7 +24,6 @@ export const useAuth = () => {
    */
   const initializeAuth = async (): Promise<boolean> => {
     try {
-      const user = await authApi.getStoredUser()
       const accessToken = await getAccessToken()
       const refreshToken = await getRefreshToken()
 
@@ -33,15 +32,15 @@ export const useAuth = () => {
         const isValid = await authApi.validateToken(accessToken)
 
         if (isValid) {
-          store.loginSuccess({ accessToken, refreshToken, tokenType: 'Bearer', expiresIn: 0 }, user)
+          await store.loginSuccess()
           store.setInitialized(true)
           return true
         }
 
         // Token invalid, try refresh
         try {
-          const tokens = await authApi.refresh({ deviceId: 'mobile', refreshToken })
-          store.loginSuccess(tokens, user)
+          await authApi.refresh({ deviceId: 'mobile', refreshToken })
+          await store.loginSuccess()
           store.setInitialized(true)
           return true
         } catch {
@@ -67,7 +66,6 @@ export const useAuth = () => {
     isLoading: store.isLoading || loginMutation.isPending || logoutMutation.isPending,
     isInitialized: store.isInitialized,
     error: store.error,
-    fcmToken: store.fcmToken,
 
     // Actions
     login: loginMutation.mutate,
@@ -78,7 +76,6 @@ export const useAuth = () => {
     logoutAsync: logoutMutation.mutateAsync,
     refreshToken: refreshMutation.mutate,
     refreshTokenAsync: refreshMutation.mutateAsync,
-    setFcmToken: store.setFcmToken,
     initializeAuth,
 
     // Store actions

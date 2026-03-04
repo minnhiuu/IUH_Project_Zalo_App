@@ -1,8 +1,9 @@
-import { UserSummaryResponse } from '@/features/user'
+import { UserSummaryResponse } from '@/features/users'
 import React from 'react'
 import { Text, TouchableOpacity } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { SearchResultItem } from '@/features/search/components/core/search-result-item'
+import { useTheme } from '@/context/theme-context'
 
 interface DiscoverItemProps {
   item: UserSummaryResponse
@@ -12,11 +13,14 @@ interface DiscoverItemProps {
 
 export function DiscoverItem({ item, searchQuery, onPress }: DiscoverItemProps) {
   const { t } = useTranslation()
+  const { isDark } = useTheme()
 
   const idValue = item.id.charCodeAt(item.id.length - 1)
   const isRequest = idValue % 3 === 0
   const buttonText = isRequest ? t('search.action.accept') : t('search.action.add')
-  const buttonStyle = isRequest ? 'bg-primary' : 'bg-blue-50'
+
+  const buttonStyle = isRequest ? 'bg-primary' : isDark ? 'bg-primary/20' : 'bg-primary-50'
+
   const textStyle = isRequest ? 'text-white' : 'text-primary'
 
   return (

@@ -5,10 +5,12 @@ import { useTranslation } from 'react-i18next'
 
 import { authApi } from '../api'
 import { authKeys } from './keys'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useNotificationStore } from '@/store'
 import { handleErrorApi } from '@/utils/error-handler'
 import { getRefreshToken, setAccessToken, setRefreshToken, clearTokens } from '@/lib/http'
 import { storage } from '@/utils/storageUtils'
+import { userApi } from '@/features/users/api/user.api'
+import { userKeys } from '@/features/users/queries/keys'
 import { useUnregisterDeviceMutation } from '@/features/notifications/queries/use-mutation'
 
 export const useLoginMutation = () => {
@@ -32,8 +34,8 @@ export const useLoginMutation = () => {
       await setAccessToken(tokens.accessToken)
       await setRefreshToken(tokens.refreshToken)
 
-      loginSuccess()
-      queryClient.invalidateQueries({ queryKey: authKeys.user() })
+      // loginSuccess will fetch user profile
+      await loginSuccess()
 
       Toast.show({
         type: 'success',
@@ -115,9 +117,8 @@ export const useRegisterVerifyMutation = () => {
       await setAccessToken(tokens.accessToken)
       await setRefreshToken(tokens.refreshToken)
 
-      loginSuccess()
-
-      queryClient.invalidateQueries({ queryKey: authKeys.user() })
+      // loginSuccess will fetch user profile
+      await loginSuccess()
 
       Toast.show({
         type: 'success',
@@ -143,7 +144,8 @@ export const useLogoutMutation = () => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const router = useRouter()
-  const { logoutSuccess, setLoading, user, fcmToken } = useAuthStore()
+  const { logoutSuccess, setLoading, user } = useAuthStore()
+  const { fcmToken } = useNotificationStore()
   const unregisterMutation = useUnregisterDeviceMutation()
 
   return useMutation({
@@ -292,9 +294,8 @@ export const useResetPasswordMutation = () => {
       await setAccessToken(tokens.accessToken)
       await setRefreshToken(tokens.refreshToken)
 
-      loginSuccess()
-
-      queryClient.invalidateQueries({ queryKey: authKeys.user() })
+      // loginSuccess will fetch user profile
+      await loginSuccess()
 
       Toast.show({
         type: 'success',
@@ -389,6 +390,29 @@ export const useQrMobileMutation = () => {
       })
       router.back()
     },
+    onError: (error: Error) => {
+      handleErrorApi({ error })
+    }
+  })
+}
+
+export const useChangePasswordMutation = () => {
+  const { t } = useTranslation()
+  const router = useRouter()
+
+  return useMutation({
+    mutationKey: authKeys.changePassword(),
+    mutationFn: authApi.changePassword,
+
+    onSuccess: () => {
+      Toast.show({
+        type: 'success',
+        text1: t('settings.changePassword.success'),
+        visibilityTime: 2000
+      })
+      router.back()
+    },
+
     onError: (error: Error) => {
       handleErrorApi({ error })
     }

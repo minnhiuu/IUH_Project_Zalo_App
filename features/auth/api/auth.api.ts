@@ -2,7 +2,7 @@ import http from '@/lib/http'
 import { API_ENDPOINTS } from '@/config/apiConfig'
 import { storage } from '@/utils/storageUtils'
 import type { ApiResponse } from '@/types/common.types'
-import type { UserResponse } from '@/features/user/schemas/user.schema'
+import type { UserResponse } from '@/features/users/schemas/user.schema'
 import type {
   LoginRequest,
   RegisterInitRequest,
@@ -39,6 +39,9 @@ export const authApi = {
 
   logout: (request: LogoutRequest) => http.post<ApiResponse<void>>(API_ENDPOINTS.AUTH.LOGOUT, request),
 
+  changePassword: (request: { oldPassword: string; newPassword: string }) =>
+    http.post<ApiResponse<void>>(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, request),
+
   validateToken: (token: string) =>
     http.get<ApiResponse<boolean>>(API_ENDPOINTS.AUTH.VALIDATE, {
       params: { token }
@@ -61,6 +64,8 @@ export const authApi = {
   acceptQr: (request: QrMobileRequest) => http.post<ApiResponse<void>>(API_ENDPOINTS.AUTH.QR.ACCEPT, request),
 
   rejectQr: (request: QrMobileRequest) => http.post<ApiResponse<void>>(API_ENDPOINTS.AUTH.QR.REJECT, request),
+
+  logoutOthers: () => http.post<ApiResponse<void>>('/auth/logout-others'),
 
   getStoredUser: async (): Promise<UserResponse | null> => {
     return await storage.get<UserResponse>('user_data')

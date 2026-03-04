@@ -1,8 +1,9 @@
 import { UserAvatar } from '@/components/common/user-avatar'
-import { UserResponse, UserSummaryResponse } from '@/features/user'
+import { UserResponse, UserSummaryResponse } from '@/features/users'
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
+import { useTheme } from '@/context/theme-context'
 
 export interface ContactItemType {
   id: string
@@ -16,7 +17,7 @@ export type SearchResultItemData = UserResponse | ContactItemType | UserSummaryR
 export function HighlightText({
   text,
   highlight,
-  className = 'text-gray-900 font-medium',
+  className = 'text-foreground font-medium',
   highlightClassName = 'text-primary'
 }: {
   text: string
@@ -60,9 +61,9 @@ export function BaseSearchResultItem<T>({
   children
 }: BaseSearchResultItemProps<T>) {
   return (
-    <TouchableOpacity className='flex-row items-center bg-white pl-4' onPress={() => onPress(item)}>
+    <TouchableOpacity className='flex-row items-center bg-background pl-4' onPress={() => onPress(item)}>
       <UserAvatar size='lg' source={avatar} name={avatarName} className='mr-4' />
-      <View className='flex-1 flex-row items-center pr-4 py-5 border-b border-gray-50'>
+      <View className='flex-1 flex-row items-center pr-4 py-5 border-b border-divider'>
         <View className='flex-1 justify-center'>{children}</View>
         {action}
       </View>
@@ -83,12 +84,7 @@ export function SearchResultItem<T extends SearchResultItemData>({
   onPress,
   action
 }: SearchResultItemProps<T>) {
-  /* const getEmail = (item: SearchResultItemData) => {
-    if ('accountInfo' in item) {
-      return item.accountInfo?.email
-    }
-    return (item as ContactItemType).email
-  } */
+  const { isDark } = useTheme()
 
   const getAvatar = (item: SearchResultItemData) => {
     if ('avatar' in item) {
@@ -102,7 +98,7 @@ export function SearchResultItem<T extends SearchResultItemData>({
   const defaultAction = (
     <TouchableOpacity
       style={{
-        backgroundColor: '#F0F8FF',
+        backgroundColor: isDark ? '#2C323A' : '#F0F8FF',
         width: 36,
         height: 36,
         borderRadius: 18,

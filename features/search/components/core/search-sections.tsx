@@ -1,6 +1,8 @@
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
-import { Text, TouchableOpacity, View, FlatList, ActivityIndicator } from 'react-native'
+import { Text, TouchableOpacity, View, FlatList } from 'react-native'
+import { useTranslation } from 'react-i18next'
+import { SearchResultSkeleton } from './search-result-skeleton'
 
 interface SearchSectionProps<T> {
   title: string
@@ -12,28 +14,29 @@ interface SearchSectionProps<T> {
   onItemPress: (item: T) => void
   onEndReached?: () => void
   isFetchingNextPage?: boolean
+  scrollEnabled?: boolean
 }
 
 export function SearchSection<T extends { id: string }>({
   title,
   count,
   items,
-  // searchQuery,
   onSeeMore,
   renderItem,
-  // onItemPress,
   onEndReached,
   isFetchingNextPage,
   scrollEnabled = false
-}: SearchSectionProps<T> & { scrollEnabled?: boolean }) {
+}: SearchSectionProps<T>) {
+  const { t } = useTranslation()
+
   if (items.length === 0) return null
 
   if (onSeeMore || items.length < 10) {
     return (
-      <View className='bg-white mb-2'>
+      <View className='bg-background mb-2'>
         <View className='px-4 py-3 flex-row justify-between items-center'>
-          <Text className='text-gray-900 font-bold text-sm'>
-            {title} {count !== undefined && <Text className='text-gray-400 font-normal'>({count})</Text>}
+          <Text className='text-foreground font-bold text-sm'>
+            {title} {count !== undefined && <Text className='text-muted-foreground font-normal'>({count})</Text>}
           </Text>
         </View>
 
@@ -44,10 +47,10 @@ export function SearchSection<T extends { id: string }>({
         {onSeeMore && (
           <TouchableOpacity
             onPress={onSeeMore}
-            className='py-4 flex-row items-center justify-center border-t border-gray-50'
+            className='py-4 flex-row items-center justify-center border-t border-divider'
           >
-            <Text className='text-gray-900 font-bold mr-1'>Xem thêm</Text>
-            <Ionicons name='chevron-forward' size={16} color='#111827' />
+            <Text className='text-muted-foreground mr-1 text-[13px]'>{t('search.sections.seeMore')}</Text>
+            <Ionicons name='chevron-forward' size={14} className='text-muted-foreground' />
           </TouchableOpacity>
         )}
       </View>
@@ -55,10 +58,10 @@ export function SearchSection<T extends { id: string }>({
   }
 
   return (
-    <View className='bg-white flex-1'>
-      <View className='px-4 py-3 flex-row justify-between items-center bg-white z-10'>
-        <Text className='text-gray-900 font-bold text-sm'>
-          {title} {count !== undefined && <Text className='text-gray-400 font-normal'>({count})</Text>}
+    <View className='bg-background flex-1'>
+      <View className='px-4 py-3 flex-row justify-between items-center bg-background z-10'>
+        <Text className='text-foreground font-bold text-sm'>
+          {title} {count !== undefined && <Text className='text-muted-foreground font-normal'>({count})</Text>}
         </Text>
       </View>
       <FlatList
@@ -66,11 +69,13 @@ export function SearchSection<T extends { id: string }>({
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <>{renderItem(item)}</>}
         onEndReached={onEndReached}
-        onEndReachedThreshold={0.5}
+        onEndReachedThreshold={0.8}
         ListFooterComponent={
           isFetchingNextPage ? (
-            <View className='py-4'>
-              <ActivityIndicator size='small' color='#0068FF' />
+            <View className='pb-10'>
+              <SearchResultSkeleton />
+              <SearchResultSkeleton />
+              <SearchResultSkeleton />
             </View>
           ) : null
         }

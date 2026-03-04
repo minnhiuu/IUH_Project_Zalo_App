@@ -1,3 +1,113 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * ZALO THEME — CSS Variables (web-only mirror)
+ *
+ * ⚠️  Source of truth is constants/theme.ts (lightTokens / darkTokens).
+ *     Keep this file in sync when adding/changing tokens.
+ *     On native, GluestackProvider supplies these via NativeWind vars().
+ */
+
+:root {
+  --color-primary: #0068FF;
+  --color-primary-foreground: #FFFFFF;
+  --color-primary-hover: #005AE0;
+  --color-background: #FFFFFF;
+  --color-background-secondary: #F1F2F4;
+  --color-foreground: #081B3A;
+  --color-secondary: #EBECF0;
+  --color-secondary-foreground: #081B3A;
+  --color-secondary-hover: #C6CAD2;
+  --color-muted: #F1F2F4;
+  --color-muted-foreground: #5A6981;
+  --color-accent: #F1F2F4;
+  --color-accent-foreground: #081B3A;
+  --color-accent-hover: #E5E7EB;
+  --color-border: #DBDBDB;
+  --color-input: #DBDBDB;
+  --color-ring: #0068FF;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #081B3A;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #081B3A;
+  --color-destructive: #E53838;
+  --color-destructive-foreground: #FFFFFF;
+  --color-divider: #F1F2F4;
+  --color-disabled: #8B96A7;
+  --color-icon-muted: #9FACBC;
+  --color-icon-hover: #66A6FF;
+  --color-icon-secondary: #5A6981;
+  --color-sidebar: #005AE0;
+  --color-sidebar-foreground: #FFFFFF;
+  --color-sidebar-primary: #FFFFFF;
+  --color-sidebar-primary-foreground: #005AE0;
+  --color-sidebar-accent: #FFFFFF33;
+  --color-sidebar-accent-foreground: #FFFFFF;
+  --color-sidebar-border: #FFFFFF1A;
+  --color-sidebar-ring: #0068FF;
+  --color-typography-0: #FFFFFF;
+  --color-typography-50: #F2F2F2;
+  --color-typography-100: #E5E5E5;
+  --color-typography-200: #CCCCCC;
+  --color-typography-300: #B3B3B3;
+  --color-typography-400: #999999;
+  --color-typography-500: #808080;
+  --color-typography-600: #666666;
+  --color-typography-700: #4D4D4D;
+  --color-typography-800: #333333;
+  --color-typography-900: #171717;
+  --color-typography-950: #000000;
+}
+
+.dark {
+  --color-primary: #0068FF;
+  --color-primary-foreground: #FFFFFF;
+  --color-primary-hover: #005AE0;
+  --color-background: #22262B;
+  --color-background-secondary: #2C323A;
+  --color-foreground: #DFE2E7;
+  --color-secondary: #2C323A;
+  --color-secondary-foreground: #DFE2E7;
+  --color-secondary-hover: #38404A;
+  --color-muted: #3E444A;
+  --color-muted-foreground: #B6C1CF;
+  --color-accent: #3E444A;
+  --color-accent-foreground: #FFFFFF;
+  --color-accent-hover: #3E444A;
+  --color-border: #FFFFFF1A;
+  --color-input: #1A1D21;
+  --color-ring: #0068FF;
+  --color-card: #22262B;
+  --color-card-foreground: #FFFFFF;
+  --color-popover: #22262B;
+  --color-popover-foreground: #FFFFFF;
+  --color-destructive: #E53838;
+  --color-destructive-foreground: #FFFFFF;
+  --color-divider: #121416;
+  --color-disabled: #8B96A7;
+  --color-icon-muted: #9FACBC;
+  --color-icon-hover: #66A6FF;
+  --color-icon-secondary: #5A6981;
+  --color-sidebar: #121416;
+  --color-sidebar-foreground: #FFFFFF;
+  --color-sidebar-primary: #FFFFFF;
+  --color-sidebar-primary-foreground: #121416;
+  --color-sidebar-accent: #FFFFFF1A;
+  --color-sidebar-accent-foreground: #FFFFFF;
+  --color-sidebar-border: #FFFFFF0D;
+  --color-sidebar-ring: #0068FF;
+  --color-typography-0: #000000;
+  --color-typography-50: #171717;
+  --color-typography-100: #333333;
+  --color-typography-200: #4D4D4D;
+  --color-typography-300: #666666;
+  --color-typography-400: #808080;
+  --color-typography-500: #999999;
+  --color-typography-600: #B3B3B3;
+  --color-typography-700: #CCCCCC;
+  --color-typography-800: #E5E5E5;
+  --color-typography-900: #F2F2F2;
+  --color-typography-950: #FFFFFF;
+}

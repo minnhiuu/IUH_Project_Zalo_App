@@ -1,7 +1,7 @@
-export * from './components/search-screen'
-export * from './components/core/search-result-item'
-export * from './api/search.api'
-export * from './queries/keys'
-export * from './queries/options'
-export * from './queries/use-queries'
-export * from './schema/search-schema'
+export * from './schemas'
+export * from './api'
+export * from './queries'
+export * from './components'
+
+// Initialize search i18n (adds translations to global i18n)
+import './i18n'

@@ -1,4 +1,4 @@
-import { UserSummaryResponse } from '@/features/user'
+import { UserSummaryResponse } from '@/features/users'
 import { PageResponse } from '@/types/common.types'
 import { InfiniteData } from '@tanstack/react-query'
 import React from 'react'

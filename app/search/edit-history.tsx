@@ -1,5 +1,5 @@
-import { EditHistoryScreen } from '@/features/search/components/edit-history-screen'
+import { EditHistory } from '@/features/search'
 
-export default function EditHistoryRoute() {
-  return <EditHistoryScreen />
+export default function EditHistoryScreen() {
+  return <EditHistory />
 }

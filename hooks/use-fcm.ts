@@ -6,6 +6,7 @@ import Constants from 'expo-constants'
 import { useAuth } from '@/features/auth'
 import { useRegisterDeviceMutation, useUnregisterDeviceMutation } from '@/features/notifications/queries/use-mutation'
 import { Platform } from '@/constants'
+import { useNotificationStore } from '@/store'
 
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
@@ -18,7 +19,8 @@ Notifications.setNotificationHandler({
 })
 
 export const useFcm = () => {
-  const { user, setFcmToken: setFcmTokenStore, fcmToken: fcmTokenStore } = useAuth()
+  const { user } = useAuth()
+  const { fcmToken: storedFcmToken, setFcmToken: setFcmTokenStore } = useNotificationStore()
   const { mutate: registerDevice } = useRegisterDeviceMutation()
   const { mutate: unregisterDevice } = useUnregisterDeviceMutation()
 
@@ -69,7 +71,7 @@ export const useFcm = () => {
   }, [user?.id, fcmToken, registerDevice])
 
   const unregister = async () => {
-    const token = fcmToken || fcmTokenStore
+    const token = fcmToken || storedFcmToken
     if (user?.id && token) {
       unregisterDevice({ userId: user.id, token })
     }

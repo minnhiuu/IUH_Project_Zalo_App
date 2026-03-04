@@ -1,7 +1,11 @@
 import '../global.css'
 import i18n from '@/i18n'
+// Load feature-level i18n bundles (side-effect: registers translations)
+import '@/features/friend/i18n'
+import '@/features/search/i18n'
+import { SEMANTIC } from '@/constants/theme'
 
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
+import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
@@ -11,11 +15,12 @@ import Toast from 'react-native-toast-message'
 import { I18nextProvider } from 'react-i18next'
 import { useEffect } from 'react'
 import { View, Text, ActivityIndicator } from 'react-native'
+import { useFcm } from '@/hooks'
 
-import { GluestackProvider } from '@/components/ui'
-import { useColorScheme } from '@/hooks/use-color-scheme'
+import { GluestackProvider } from '@/components/ui/gluestack-ui-provider'
 import { useAuthStore } from '@/store'
 import { getAccessToken, getRefreshToken } from '@/lib/http'
+import { ThemeProvider, useTheme } from '@/context'
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -35,7 +40,7 @@ function SimpleLoadingScreen() {
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: '#0068FF'
+        backgroundColor: SEMANTIC.primary
       }}
     >
       <Text
@@ -58,6 +63,9 @@ function SimpleLoadingScreen() {
  */
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isInitialized, setInitialized, loginSuccess, logoutSuccess } = useAuthStore()
+
+  // Khởi động FCM: xin quyền, lấy token, register device lên server
+  useFcm()
   const segments = useSegments()
   const router = useRouter()
 
@@ -94,7 +102,8 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
         if (!isMounted) return
 
         if (accessToken && refreshToken) {
-          loginSuccess()
+          // loginSuccess will fetch user profile
+          await loginSuccess()
           console.log('[AuthGuard] User logged in with existing tokens')
         } else {
           logoutSuccess()
@@ -161,50 +170,50 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme()
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <I18nextProvider i18n={i18n}>
           <QueryClientProvider client={queryClient}>
-            <GluestackProvider>
-              <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-                <AuthGuard>
-                  <Stack
-                    screenOptions={{
-                      headerShown: false,
-                      animation: 'slide_from_right', // Default smooth transition
-                      animationDuration: 200
-                    }}
-                  >
-                    <Stack.Screen name='(tabs)' />
-                    <Stack.Screen name='auth' />
-                    <Stack.Screen
-                      name='search'
-                      options={{
-                        animation: 'fade',
-                        headerShown: false,
-                        presentation: 'transparentModal'
-                      }}
-                    />
-                    <Stack.Screen
-                      name='qr/index'
-                      options={{
-                        presentation: 'modal',
-                        animation: 'slide_from_bottom'
-                      }}
-                    />
-                    <Stack.Screen name='qr/confirm' />
-                  </Stack>
-                </AuthGuard>
-                <StatusBar style='auto' />
-                <Toast />
-              </ThemeProvider>
-            </GluestackProvider>
+            <ThemeProvider>
+              <ThemeAwareProviders />
+            </ThemeProvider>
           </QueryClientProvider>
         </I18nextProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
+  )
+}
+
+function ThemeAwareProviders() {
+  const { activeTheme, isDark } = useTheme()
+
+  return (
+    <GluestackProvider mode={activeTheme}>
+      <NavigationThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+        <AuthGuard>
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name='(tabs)' />
+            <Stack.Screen name='auth' />
+            <Stack.Screen name='settings' />
+            <Stack.Screen name='search' />
+            <Stack.Screen name='friend-requests' />
+            <Stack.Screen name='add-friend' />
+            <Stack.Screen name='user-profile/[id]' />
+            <Stack.Screen name='chat/[id]' />
+            <Stack.Screen
+              name='qr/index'
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom'
+              }}
+            />
+            <Stack.Screen name='qr/confirm' />
+          </Stack>
+        </AuthGuard>
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        <Toast />
+      </NavigationThemeProvider>
+    </GluestackProvider>
   )
 }
