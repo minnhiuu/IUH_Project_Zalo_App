@@ -591,6 +591,23 @@
     "friend": {
       "noActivity": "{{name}} chưa có hoạt động nào. Hãy trò chuyện để hiểu nhau hơn.",
       "message": "Nhắn tin"
+    },
+    "avatar": {
+      "title": "Ảnh đại diện",
+      "view": "Xem ảnh đại diện",
+      "chooseFromGallery": "Chọn ảnh trên máy",
+      "chooseFrame": "Chọn khung ảnh đại diện",
+      "chooseDecoration": "Chọn trang trí ảnh đại diện zStyle",
+      "updateSuccess": "Cập nhật ảnh đại diện thành công",
+      "takePhoto": "Chụp ảnh mới"
+    },
+    "cover": {
+      "title": "Ảnh bìa",
+      "chooseFromZStyle": "Chọn từ Kho ảnh zStyle",
+      "view": "Xem ảnh bìa",
+      "takePhoto": "Chụp ảnh mới",
+      "chooseFromGallery": "Chọn ảnh trên máy",
+      "updateSuccess": "Cập nhật ảnh bìa thành công"
     }
   }
 }

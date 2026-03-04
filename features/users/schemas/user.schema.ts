@@ -28,3 +28,7 @@ export type UserSummaryResponse = {
   fullName: string
   avatar: string | null
 }
+
+export type UserImageResponse = {
+  imageUrl: string
+}

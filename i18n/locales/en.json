@@ -563,6 +563,23 @@
     "friend": {
       "noActivity": "{{name}} has no activity yet. Start a conversation to get to know each other better.",
       "message": "Message"
+    },
+    "avatar": {
+      "title": "Profile Picture",
+      "view": "View profile picture",
+      "chooseFromGallery": "Choose from gallery",
+      "chooseFrame": "Choose profile frame",
+      "chooseDecoration": "Choose zStyle decoration",
+      "updateSuccess": "Profile picture updated successfully",
+      "takePhoto": "Take new photo"
+    },
+    "cover": {
+      "title": "Cover Photo",
+      "chooseFromZStyle": "Choose from zStyle Gallery",
+      "view": "View cover photo",
+      "takePhoto": "Take new photo",
+      "chooseFromGallery": "Choose from gallery",
+      "updateSuccess": "Cover photo updated successfully"
     }
   }
 }

@@ -59,3 +59,50 @@ export const useUpdateBio = () => {
     }
   })
 }
+
+export const useUpdateAvatar = () => {
+  const queryClient = useQueryClient()
+  const { t } = useTranslation()
+
+  return useMutation({
+    mutationFn: (formData: FormData) => userApi.updateAvatar(formData),
+    onSuccess: () => {
+      // Invalidate all user queries to refetch updated data
+      queryClient.invalidateQueries({ queryKey: userKeys.all })
+
+      Toast.show({
+        type: 'success',
+        text1: t('common.success'),
+        text2: t('profile.avatar.updateSuccess'),
+        visibilityTime: 2000
+      })
+    },
+    onError: (error: Error) => {
+      handleErrorApi({ error })
+    }
+  })
+}
+
+export const useUpdateBackground = () => {
+  const queryClient = useQueryClient()
+  const { t } = useTranslation()
+
+  return useMutation({
+    mutationFn: ({ formData, y }: { formData: FormData; y?: number }) => 
+      userApi.updateBackground(formData, y),
+    onSuccess: () => {
+      // Invalidate all user queries to refetch updated data
+      queryClient.invalidateQueries({ queryKey: userKeys.all })
+
+      Toast.show({
+        type: 'success',
+        text1: t('common.success'),
+        text2: t('profile.cover.updateSuccess'),
+        visibilityTime: 2000
+      })
+    },
+    onError: (error: Error) => {
+      handleErrorApi({ error })
+    }
+  })
+}

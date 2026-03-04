@@ -1,14 +1,17 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { View, TouchableOpacity, Image, ScrollView, Dimensions, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import * as ImagePicker from 'expo-image-picker'
 import { Text } from '@/components/ui/text'
+import { ActionSheet, type ActionSheetOption } from '@/components/ui'
 import { SEMANTIC, BRAND } from '@/constants/theme'
 import { useFriendshipStatus } from '@/features/friend/queries/use-queries'
 import { useSendFriendRequest } from '@/features/friend/queries/use-mutations'
 import { useUserById, useMyProfile } from '@/features/users/queries/use-queries'
+import { useUpdateAvatar, useUpdateBackground } from '@/features/users/queries/use-mutations'
 import { useTheme } from '@/context/theme-context'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
@@ -25,11 +28,144 @@ export default function UserProfileScreen() {
   const { data: userProfile, isLoading: profileLoading } = useUserById(id as string)
   const { data: friendshipStatus, isLoading: statusLoading } = useFriendshipStatus(id as string, id !== myProfile?.id)
   const sendFriendRequest = useSendFriendRequest()
+  const updateAvatarMutation = useUpdateAvatar()
+  const updateBackgroundMutation = useUpdateBackground()
 
   const isLoading = profileLoading || statusLoading
   const isOwner = myProfile?.id === id
   const isFriend = friendshipStatus?.areFriends === true
   const isPending = friendshipStatus?.status === 'PENDING'
+
+  // Action Sheet States
+  const [showAvatarSheet, setShowAvatarSheet] = useState(false)
+  const [showCoverSheet, setShowCoverSheet] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
+
+  // Request permissions on mount
+  React.useEffect(() => {
+    (async () => {
+      const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync()
+      const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync()
+      if (cameraStatus !== 'granted' || mediaStatus !== 'granted') {
+        console.warn('Camera or media library permissions not granted')
+      }
+    })()
+  }, [])
+
+  // Image picker helper
+  const pickImage = async (source: 'camera' | 'gallery'): Promise<string | null> => {
+    try {
+      let result: ImagePicker.ImagePickerResult
+
+      if (source === 'camera') {
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8
+        })
+      } else {
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8
+        })
+      }
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        return result.assets[0].uri
+      }
+      return null
+    } catch (error) {
+      console.error('Error picking image:', error)
+      return null
+    }
+  }
+
+  const pickCoverImage = async (source: 'camera' | 'gallery'): Promise<string | null> => {
+    try {
+      let result: ImagePicker.ImagePickerResult
+
+      if (source === 'camera') {
+        result = await ImagePicker.launchCameraAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [16, 9],
+          quality: 0.8
+        })
+      } else {
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [16, 9],
+          quality: 0.8
+        })
+      }
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        return result.assets[0].uri
+      }
+      return null
+    } catch (error) {
+      console.error('Error picking cover image:', error)
+      return null
+    }
+  }
+
+  // Upload avatar
+  const handleUpdateAvatar = async (source: 'camera' | 'gallery') => {
+    setShowAvatarSheet(false)
+    const imageUri = await pickImage(source)
+    if (!imageUri) return
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      const filename = imageUri.split('/').pop() || 'avatar.jpg'
+      const match = /\.(\w+)$/.exec(filename)
+      const type = match ? `image/${match[1]}` : 'image/jpeg'
+
+      formData.append('file', {
+        uri: imageUri,
+        name: filename,
+        type
+      } as any)
+
+      await updateAvatarMutation.mutateAsync(formData)
+    } catch (error) {
+      console.error('Error updating avatar:', error)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  // Upload background
+  const handleUpdateBackground = async (source: 'camera' | 'gallery') => {
+    setShowCoverSheet(false)
+    const imageUri = await pickCoverImage(source)
+    if (!imageUri) return
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      const filename = imageUri.split('/').pop() || 'background.jpg'
+      const match = /\.(\w+)$/.exec(filename)
+      const type = match ? `image/${match[1]}` : 'image/jpeg'
+
+      formData.append('file', {
+        uri: imageUri,
+        name: filename,
+        type
+      } as any)
+
+      await updateBackgroundMutation.mutateAsync({ formData, y: 0 })
+    } catch (error) {
+      console.error('Error updating background:', error)
+    } finally {
+      setIsUploading(false)
+    }
+  }
 
   const handleAddFriend = () => {
     if (!id) return
@@ -48,6 +184,61 @@ export default function UserProfileScreen() {
       }
     })
   }
+
+  // Avatar Action Sheet Options
+  const avatarOptions: ActionSheetOption[] = [
+    {
+      icon: 'person-circle-outline',
+      label: t('profile.avatar.view'),
+      onPress: () => console.log('View avatar')
+    },
+    {
+      icon: 'camera-outline',
+      label: t('profile.avatar.takePhoto'),
+      onPress: () => handleUpdateAvatar('camera')
+    },
+    {
+      icon: 'image-outline',
+      label: t('profile.avatar.chooseFromGallery'),
+      onPress: () => handleUpdateAvatar('gallery')
+    },
+    {
+      icon: 'crop-outline',
+      label: t('profile.avatar.chooseFrame'),
+      onPress: () => console.log('Choose frame')
+    },
+    {
+      icon: 'sparkles-outline',
+      label: t('profile.avatar.chooseDecoration'),
+      onPress: () => console.log('Choose decoration'),
+      iconColor: '#FF6B9D'
+    }
+  ]
+
+  // Cover Photo Action Sheet Options
+  const coverOptions: ActionSheetOption[] = [
+    {
+      icon: 'albums-outline',
+      label: t('profile.cover.chooseFromZStyle'),
+      onPress: () => console.log('Choose from zStyle'),
+      iconColor: '#FF6B9D'
+    },
+    {
+      icon: 'image-outline',
+      label: t('profile.cover.view'),
+      onPress: () => console.log('View cover photo')
+    },
+    {
+      icon: 'camera-outline',
+      label: t('profile.cover.takePhoto'),
+      onPress: () => handleUpdateBackground('camera')
+    },
+    {
+      icon: 'images-outline',
+      label: t('profile.cover.chooseFromGallery'),
+      onPress: () => handleUpdateBackground('gallery')
+    }
+  ]
 
   if (isLoading) {
     return (
@@ -86,19 +277,25 @@ export default function UserProfileScreen() {
         {/* Cover Photo + Avatar */}
         <View style={{ position: 'relative' }}>
           {/* Cover Photo */}
-          <Image
-            source={
-              userProfile.background
-                ? { uri: userProfile.background }
-                : { uri: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80' }
-            }
-            style={{
-              width: SCREEN_WIDTH,
-              height: COVER_HEIGHT,
-              backgroundColor: isDark ? '#1A1D21' : '#4A6B8A'
-            }}
-            resizeMode='cover'
-          />
+          <TouchableOpacity
+            activeOpacity={isOwner ? 0.8 : 1}
+            disabled={!isOwner}
+            onPress={() => isOwner && setShowCoverSheet(true)}
+          >
+            <Image
+              source={
+                userProfile.background
+                  ? { uri: userProfile.background }
+                  : { uri: 'https://images.unsplash.com/photo-1557683316-973673baf926?w=800&q=80' }
+              }
+              style={{
+                width: SCREEN_WIDTH,
+                height: COVER_HEIGHT,
+                backgroundColor: isDark ? '#1A1D21' : '#4A6B8A'
+              }}
+              resizeMode='cover'
+            />
+          </TouchableOpacity>
 
           {/* Back Button (floating) */}
           <SafeAreaView edges={['top']} style={{ position: 'absolute', top: 0, left: 0, right: 0 }}>
@@ -162,17 +359,23 @@ export default function UserProfileScreen() {
               zIndex: 10
             }}
           >
-            <Image
-              source={{ uri: userProfile.avatar || 'https://i.pravatar.cc/300' }}
-              style={{
-                width: AVATAR_SIZE,
-                height: AVATAR_SIZE,
-                borderRadius: AVATAR_SIZE / 2,
-                borderWidth: 3,
-                borderColor: isDark ? '#22262B' : '#fff',
-                backgroundColor: isDark ? '#2C323A' : '#E5E7EB'
-              }}
-            />
+            <TouchableOpacity
+              activeOpacity={isOwner ? 0.8 : 1}
+              disabled={!isOwner}
+              onPress={() => isOwner && setShowAvatarSheet(true)}
+            >
+              <Image
+                source={{ uri: userProfile.avatar || 'https://i.pravatar.cc/300' }}
+                style={{
+                  width: AVATAR_SIZE,
+                  height: AVATAR_SIZE,
+                  borderRadius: AVATAR_SIZE / 2,
+                  borderWidth: 3,
+                  borderColor: isDark ? '#22262B' : '#fff',
+                  backgroundColor: isDark ? '#2C323A' : '#E5E7EB'
+                }}
+              />
+            </TouchableOpacity>
           </View>
         </View>
 
@@ -330,7 +533,7 @@ export default function UserProfileScreen() {
 
         {/* Owner Profile: Tabs Section */}
         {isOwner && (
-          <View style={{ backgroundColor: isDark ? '#1A1D21' : '#E5E7EB', paddingVertical: 12 }}>
+          <View style={{ backgroundColor: isDark ? '#1A1D21' : '#fff', paddingVertical: 12 }}>
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
@@ -339,36 +542,37 @@ export default function UserProfileScreen() {
               {/* Customize Style */}
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#fff',
+                  backgroundColor: isDark ? '#2C323A' : '#fff',
                   borderRadius: 12,
-                  paddingVertical: 18,
-                  paddingHorizontal: 22,
+                  paddingVertical: 8,
+                  paddingHorizontal: 18,
+                  flexDirection: 'row',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: 120,
+                  justifyContent: 'flex-start',
+                  minWidth: 160,
                   borderWidth: 1,
                   borderColor: isDark ? 'rgba(0,0,0,0.1)' : '#D1D5DB',
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.04,
                   shadowRadius: 3,
-                  elevation: 1
+                  elevation: 1,
+                  gap: 12
                 }}
               >
                 <View
                   style={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 25,
-                    backgroundColor: '#E8F3FF',
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    backgroundColor: isDark ? '#2C323A' : '#E8F3FF',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 12
+                    justifyContent: 'center'
                   }}
                 >
-                  <Ionicons name='person-outline' size={26} color='#0068FF' />
+                  <Ionicons name='person-outline' size={18} color={isDark ? '#0068FF' : '#0068FF'} />
                 </View>
-                <Text style={{ fontSize: 13, color: '#111827', textAlign: 'center', fontWeight: '500' }}>
+                <Text style={{ fontSize: 13, color: isDark ? '#E5E7EB' : '#111827', fontWeight: '500', flex: 1 }}>
                   {t('profile.owner.customizeStyle')}
                 </Text>
               </TouchableOpacity>
@@ -376,36 +580,37 @@ export default function UserProfileScreen() {
               {/* My Photos */}
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#fff',
+                  backgroundColor: isDark ? '#2C323A' : '#fff',
                   borderRadius: 12,
-                  paddingVertical: 18,
-                  paddingHorizontal: 22,
+                  paddingVertical: 8,
+                  paddingHorizontal: 18,
+                  flexDirection: 'row',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: 120,
+                  justifyContent: 'flex-start',
+                  minWidth: 160,
                   borderWidth: 1,
                   borderColor: isDark ? 'rgba(0,0,0,0.1)' : '#D1D5DB',
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.04,
                   shadowRadius: 3,
-                  elevation: 1
+                  elevation: 1,
+                  gap: 12
                 }}
               >
                 <View
                   style={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 25,
-                    backgroundColor: '#E8F3FF',
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    backgroundColor: isDark ? '#2C323A' : '#E8F3FF',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 12
+                    justifyContent: 'center'
                   }}
                 >
-                  <Ionicons name='image-outline' size={26} color='#0068FF' />
+                  <Ionicons name='image-outline' size={18} color={isDark ? '#0068FF' : '#0068FF'} />
                 </View>
-                <Text style={{ fontSize: 13, color: '#111827', textAlign: 'center', fontWeight: '500' }}>
+                <Text style={{ fontSize: 13, color: isDark ? '#E5E7EB' : '#111827', fontWeight: '500', flex: 1 }}>
                   {t('profile.owner.myPhotos')}
                 </Text>
               </TouchableOpacity>
@@ -413,36 +618,37 @@ export default function UserProfileScreen() {
               {/* Storage */}
               <TouchableOpacity
                 style={{
-                  backgroundColor: '#fff',
+                  backgroundColor: isDark ? '#2C323A' : '#fff',
                   borderRadius: 12,
-                  paddingVertical: 18,
-                  paddingHorizontal: 22,
+                  paddingVertical: 8,
+                  paddingHorizontal: 18,
+                  flexDirection: 'row',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  minWidth: 120,
+                  justifyContent: 'flex-start',
+                  minWidth: 160,
                   borderWidth: 1,
                   borderColor: isDark ? 'rgba(0,0,0,0.1)' : '#D1D5DB',
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.04,
                   shadowRadius: 3,
-                  elevation: 1
+                  elevation: 1,
+                  gap: 12
                 }}
               >
                 <View
                   style={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: 25,
-                    backgroundColor: '#E8F3FF',
+                    width: 36,
+                    height: 36,
+                    borderRadius: 18,
+                    backgroundColor: isDark ? '#2C323A' : '#E8F3FF',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 12
+                    justifyContent: 'center'
                   }}
                 >
-                  <Ionicons name='file-tray-full-outline' size={26} color='#0068FF' />
+                  <Ionicons name='file-tray-full-outline' size={18} color={isDark ? '#0068FF' : '#0068FF'} />
                 </View>
-                <Text style={{ fontSize: 13, color: '#111827', textAlign: 'center', fontWeight: '500' }}>
+                <Text style={{ fontSize: 13, color: isDark ? '#E5E7EB' : '#111827', fontWeight: '500', flex: 1 }}>
                   {t('profile.owner.storage')}
                 </Text>
               </TouchableOpacity>
@@ -452,7 +658,7 @@ export default function UserProfileScreen() {
 
         {/* Owner Profile: Journal Prompt */}
         {isOwner && (
-          <View style={{ backgroundColor: isDark ? '#22262B' : '#fff', marginTop: 12, paddingVertical: 32, paddingHorizontal: 20 }}>
+          <View style={{ backgroundColor: isDark ? '#22262B' : '#fff', paddingVertical: 32, paddingHorizontal: 20 }}>
             {/* Illustration */}
             <View style={{ alignItems: 'center', marginBottom: 24 }}>
               <View
@@ -684,6 +890,58 @@ export default function UserProfileScreen() {
           </View>
         )}
       </ScrollView>
+
+      {/* Action Sheets */}
+      {isOwner && (
+        <>
+          <ActionSheet
+            visible={showAvatarSheet}
+            onClose={() => setShowAvatarSheet(false)}
+            options={avatarOptions}
+            title={t('profile.avatar.title')}
+            isDark={isDark}
+          />
+          <ActionSheet
+            visible={showCoverSheet}
+            onClose={() => setShowCoverSheet(false)}
+            options={coverOptions}
+            title={t('profile.cover.title')}
+            isDark={isDark}
+          />
+        </>
+      )}
+
+      {/* Upload Loading Overlay */}
+      {isUploading && (
+        <View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999
+          }}
+        >
+          <View
+            style={{
+              backgroundColor: isDark ? '#22262B' : '#fff',
+              borderRadius: 12,
+              padding: 24,
+              alignItems: 'center',
+              gap: 12
+            }}
+          >
+            <ActivityIndicator size='large' color='#0068FF' />
+            <Text style={{ fontSize: 16, color: isDark ? '#DFE2E7' : '#111827' }}>
+              {t('common.loading')}
+            </Text>
+          </View>
+        </View>
+      )}
     </View>
   )
 }
