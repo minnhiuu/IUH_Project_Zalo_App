@@ -497,6 +497,7 @@
     "actions": {
       "accept": "Đồng ý",
       "decline": "Từ chối",
+      "viewProfile": "Xem trang cá nhân",
       "withdraw": "Thu hồi"
     },
     "source": {

@@ -41,8 +41,6 @@ export const SearchHeader = React.forwardRef<TextInput, SearchHeaderProps>(
     const InputContainer = onPress ? TouchableOpacity : View
     const inputContainerProps = onPress ? { onPress, activeOpacity: 0.9 } : {}
 
-    // In Zalo's dark mode, the header is dark.
-    // We use tokens that match global.css dark values.
     const gradientColors = isDark ? ([semantic.input, semantic.divider] as const) : (['#0068FF', '#0055DD'] as const) // Blue gradient for light mode
 
     return (

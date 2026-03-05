@@ -154,7 +154,7 @@ export const useLogoutMutation = () => {
       // Unregister token before logout if possible
       if (user?.id && fcmToken) {
         try {
-          await unregisterMutation.mutateAsync({ userId: user.id, token: fcmToken })
+          await unregisterMutation.mutateAsync(fcmToken)
         } catch (error) {
           console.warn('Silent failure unregistering device on logout:', error)
         }

@@ -1,25 +1,80 @@
 import * as Device from 'expo-device'
 import * as Notifications from 'expo-notifications'
-import { useState, useEffect, useRef } from 'react'
-import { Platform as RNPlatform } from 'react-native'
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { Platform as RNPlatform, AppState } from 'react-native'
 import Constants from 'expo-constants'
+import { useRouter } from 'expo-router'
 import { useAuth } from '@/features/auth'
 import { useRegisterDeviceMutation, useUnregisterDeviceMutation } from '@/features/notifications/queries/use-mutation'
 import { Platform } from '@/constants'
 import { useNotificationStore } from '@/store'
+import { friendApi } from '@/features/friend/api/friend.api'
+import { useTranslation } from 'react-i18next'
+import i18n from '@/i18n'
 
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: false,
-    shouldShowBanner: true,
-    shouldShowList: true
-  })
+  handleNotification: async (notification) => {
+    const { title, body } = notification.request.content
+    const data = notification.request.content.data as Record<string, string>
+
+    console.log('[FCM] Received notification:', { title, body, data })
+
+    if (!title && data?.title) {
+      console.log('[FCM] Title empty, scheduling local notification from data')
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: data.title || title,
+          body: data.body || body || '',
+          data: data as unknown as Record<string, unknown>,
+          categoryIdentifier: data.categoryIdentifier || undefined,
+          sound: 'default',
+          // Thử dùng attachments để hiện Avatar
+          attachments: data.actorAvatar ? [{ identifier: 'avatar', url: data.actorAvatar, type: 'image' }] : []
+        },
+        trigger: null
+      })
+      return {
+        shouldShowAlert: false,
+        shouldPlaySound: false,
+        shouldSetBadge: false,
+        shouldShowBanner: false,
+        shouldShowList: false
+      }
+    }
+    return {
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+      shouldShowBanner: true,
+      shouldShowList: true
+    }
+  }
 })
 
+async function registerNotificationCategories() {
+  await Notifications.setNotificationCategoryAsync('friend_request', [
+    {
+      identifier: 'confirm',
+      buttonTitle: i18n.t('friendRequests.actions.accept'),
+      options: { opensAppToForeground: false }
+    },
+    {
+      identifier: 'decline',
+      buttonTitle: i18n.t('friendRequests.actions.decline'),
+      options: { isDestructive: true, opensAppToForeground: false }
+    },
+    {
+      identifier: 'view_profile',
+      buttonTitle: i18n.t('friendRequests.actions.viewProfile'),
+      options: { opensAppToForeground: true }
+    }
+  ])
+}
+
 export const useFcm = () => {
+  const router = useRouter()
   const { user } = useAuth()
+  const { i18n: i18nInstance } = useTranslation()
   const { fcmToken: storedFcmToken, setFcmToken: setFcmTokenStore } = useNotificationStore()
   const { mutate: registerDevice } = useRegisterDeviceMutation()
   const { mutate: unregisterDevice } = useUnregisterDeviceMutation()
@@ -28,6 +83,10 @@ export const useFcm = () => {
   const [notification, setNotification] = useState<Notifications.Notification | null>(null)
   const notificationListener = useRef<Notifications.Subscription | null>(null)
   const responseListener = useRef<Notifications.Subscription | null>(null)
+
+  useEffect(() => {
+    registerNotificationCategories()
+  }, [i18nInstance.language])
 
   useEffect(() => {
     registerForPushNotificationsAsync().then((token) => {
@@ -50,6 +109,18 @@ export const useFcm = () => {
     })
 
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
+      const actionId = response.actionIdentifier
+      const data = response.notification.request.content.data as Record<string, string>
+
+      if (actionId === 'confirm' && data.requestId) {
+        friendApi.acceptFriendRequest(data.requestId).catch(() => {})
+      } else if (actionId === 'decline' && data.requestId) {
+        friendApi.declineFriendRequest(data.requestId).catch(() => {})
+      } else if (actionId === 'view_profile' && data.actorId) {
+        // @ts-ignore - Dynamic path for router.push
+        router.push(`/user-profile/${data.actorId}`)
+      }
+
       console.log('Notification Response:', response)
     })
 
@@ -58,19 +129,15 @@ export const useFcm = () => {
       notificationListener.current?.remove()
       responseListener.current?.remove()
     }
-  }, [setFcmTokenStore])
+  }, [setFcmTokenStore, router])
 
-  useEffect(() => {
-    console.log(
-      '[FCM] registerDevice effect: userId=',
-      user?.id,
-      '| fcmToken=',
-      fcmToken ? '***' + fcmToken.slice(-6) : null
-    )
-    if (user?.id && fcmToken) {
+  const doRegister = useCallback(
+    (token: string) => {
+      if (!user?.id || !token) return
+      console.log('[FCM] registerDevice: userId=', user.id, '| token=***' + token.slice(-6))
       registerDevice(
         {
-          token: fcmToken,
+          token,
           platform: RNPlatform.OS === 'android' ? Platform.Android : Platform.iOS
         },
         {
@@ -78,9 +145,27 @@ export const useFcm = () => {
           onError: (e) => console.error('[FCM] registerDevice error:', e)
         }
       )
-    }
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.id, fcmToken])
+    [user?.id]
+  )
+
+  // Register on mount / user change / token change
+  useEffect(() => {
+    const token = fcmToken || storedFcmToken
+    doRegister(token ?? '')
+  }, [user?.id, fcmToken, doRegister, storedFcmToken])
+
+  // Re-register whenever app comes back to foreground (e.g. after DB wipe)
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        const token = fcmToken || storedFcmToken
+        if (token) doRegister(token)
+      }
+    })
+    return () => sub.remove()
+  }, [fcmToken, storedFcmToken, doRegister])
 
   const unregister = async () => {
     const token = fcmToken || storedFcmToken
