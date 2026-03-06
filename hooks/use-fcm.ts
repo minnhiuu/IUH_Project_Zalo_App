@@ -100,17 +100,19 @@ export const useFcm = () => {
   const responseListener = useRef<Notifications.Subscription | null>(null)
 
   useEffect(() => {
-    registerNotificationCategories()
+    registerNotificationCategories().catch((e) => console.error('[FCM] Error registering categories:', e))
   }, [i18nInstance.language])
 
   useEffect(() => {
-    registerForPushNotificationsAsync().then((token) => {
-      if (token) {
-        setFcmToken(token)
-        setFcmTokenStore(token)
-        console.log('FCM Token:', token)
-      }
-    })
+    registerForPushNotificationsAsync()
+      .then((token) => {
+        if (token) {
+          setFcmToken(token)
+          setFcmTokenStore(token)
+          console.log('FCM Token:', token)
+        }
+      })
+      .catch((e) => console.error('[FCM] Error in registerForPushNotificationsAsync:', e))
 
     const tokenRefreshListener = Notifications.addPushTokenListener((newToken) => {
       const token = newToken.data

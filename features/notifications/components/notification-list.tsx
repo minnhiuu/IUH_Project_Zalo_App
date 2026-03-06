@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react'
-import { View, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native'
+import { View, FlatList, ActivityIndicator } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
 import { useMyNotificationsQuery } from '../queries/use-queries'
-import { useMarkAsReadMutation, useMarkAllAsReadMutation } from '../queries/use-mutation'
+import { useMarkAsReadMutation } from '../queries/use-mutation'
 import { NotificationItem } from './notification-item'
 import type {
   NotificationGroupResponse,
@@ -25,29 +25,13 @@ interface Section {
 
 function NotificationSkeleton() {
   return (
-    <View style={{ paddingTop: 8 }}>
+    <View className='pt-2'>
       {Array.from({ length: 6 }).map((_, i) => (
-        <View
-          key={i}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: 16,
-            paddingVertical: 12,
-            gap: 12
-          }}
-        >
-          <View
-            style={{
-              width: 52,
-              height: 52,
-              borderRadius: 26,
-              backgroundColor: '#E5E7EB'
-            }}
-          />
-          <View style={{ flex: 1, gap: 8 }}>
-            <View style={{ height: 14, backgroundColor: '#E5E7EB', borderRadius: 6, width: '70%' }} />
-            <View style={{ height: 12, backgroundColor: '#E5E7EB', borderRadius: 6, width: '40%' }} />
+        <View key={i} className='flex-row items-center px-4 py-3 gap-3'>
+          <View className='w-[52px] h-[52px] rounded-full bg-gray-200' />
+          <View className='flex-1 gap-2'>
+            <View className='h-3.5 bg-gray-200 rounded-md w-[70%]' />
+            <View className='h-3 bg-gray-200 rounded-md w-[40%]' />
           </View>
         </View>
       ))}
@@ -59,7 +43,6 @@ export function NotificationList({ filter }: NotificationListProps) {
   const { t } = useTranslation()
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useMyNotificationsQuery(10, filter)
   const { mutate: markAsRead } = useMarkAsReadMutation()
-  const { mutate: markAllAsRead } = useMarkAllAsReadMutation()
 
   const sections: Section[] = useMemo(() => {
     if (!data) return []
@@ -94,8 +77,6 @@ export function NotificationList({ filter }: NotificationListProps) {
     [sections]
   )
 
-  const isEmpty = allItems.length === 0
-
   if (isLoading) return <NotificationSkeleton />
 
   return (
@@ -105,56 +86,11 @@ export function NotificationList({ filter }: NotificationListProps) {
         item.type === 'header' ? `header-${item.title}` : `item-${(item as any).id ?? index}`
       }
       contentContainerStyle={{ paddingBottom: 20 }}
-      ListHeaderComponent={
-        !isEmpty ? (
-          <View
-            style={{
-              flexDirection: 'row',
-              justifyContent: 'flex-end',
-              paddingHorizontal: 16,
-              paddingTop: 6,
-              paddingBottom: 2
-            }}
-          >
-            <TouchableOpacity onPress={() => markAllAsRead()}>
-              <Text style={{ fontSize: 14, color: '#0068FF', fontWeight: '500' }}>
-                {t('notification.action.markAllRead')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : null
-      }
       ListEmptyComponent={
-        <View
-          style={{
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-            paddingTop: 80,
-            paddingHorizontal: 32
-          }}
-        >
+        <View className='flex-1 items-center justify-center pt-20 px-8'>
           <Ionicons name='notifications-off-outline' size={64} color='#D1D5DB' />
-          <Text
-            style={{
-              fontSize: 18,
-              fontWeight: '700',
-              color: '#6B7280',
-              marginTop: 16,
-              textAlign: 'center'
-            }}
-          >
-            {t('notification.empty.title')}
-          </Text>
-          <Text
-            style={{
-              fontSize: 14,
-              color: '#9CA3AF',
-              marginTop: 8,
-              textAlign: 'center',
-              lineHeight: 20
-            }}
-          >
+          <Text className='text-lg font-bold text-gray-400 mt-4 text-center'>{t('notification.empty.title')}</Text>
+          <Text className='text-sm text-gray-400 mt-2 text-center leading-5'>
             {t('notification.empty.description')}
           </Text>
         </View>
@@ -162,14 +98,8 @@ export function NotificationList({ filter }: NotificationListProps) {
       renderItem={({ item }) => {
         if (item.type === 'header') {
           return (
-            <View
-              style={{
-                paddingHorizontal: 16,
-                paddingTop: 16,
-                paddingBottom: 6
-              }}
-            >
-              <Text style={{ fontSize: 16, fontWeight: '700', color: '#111827' }}>{item.title}</Text>
+            <View className='px-4 pt-4 pb-1.5'>
+              <Text className='text-base font-bold text-gray-900'>{item.title}</Text>
             </View>
           )
         }
@@ -187,7 +117,7 @@ export function NotificationList({ filter }: NotificationListProps) {
       onEndReachedThreshold={0.5}
       ListFooterComponent={
         isFetchingNextPage ? (
-          <View style={{ paddingVertical: 16, alignItems: 'center' }}>
+          <View className='py-4 items-center'>
             <ActivityIndicator size='small' color='#0068FF' />
           </View>
         ) : null

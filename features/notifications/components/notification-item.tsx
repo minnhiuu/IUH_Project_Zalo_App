@@ -87,114 +87,48 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
     <TouchableOpacity
       onPress={handlePress}
       activeOpacity={0.7}
-      style={{
-        flexDirection: 'row',
-        alignItems: 'flex-start',
-        paddingHorizontal: 16,
-        paddingVertical: 12,
-        backgroundColor: notification.read ? '#ffffff' : '#f0f7ff'
-      }}
+      className={`flex-row items-start px-4 py-3 ${notification.read ? 'bg-white' : 'bg-[#F0F7FF]'}`}
     >
       {/* Avatar with badge */}
-      <View style={{ marginRight: 12, position: 'relative' }}>
-        <Image
-          source={{ uri: avatarUri }}
-          style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#f3f4f6' }}
-        />
+      <View className='mr-3 relative'>
+        <Image source={{ uri: avatarUri }} className='w-14 h-14 rounded-full bg-gray-100' />
         <View
-          style={{
-            position: 'absolute',
-            bottom: -2,
-            right: -2,
-            backgroundColor: badge.color,
-            borderRadius: 12,
-            width: 22,
-            height: 22,
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderWidth: 2,
-            borderColor: '#fff'
-          }}
+          style={{ backgroundColor: badge.color }}
+          className='absolute -bottom-0.5 -right-0.5 rounded-full w-[22px] h-[22px] items-center justify-center border-2 border-white'
         >
           <Ionicons name={badge.icon} size={11} color='#fff' />
         </View>
       </View>
 
       {/* Content */}
-      <View style={{ flex: 1, paddingRight: 8 }}>
-        <Text
-          numberOfLines={3}
-          style={{
-            fontSize: 15,
-            lineHeight: 20,
-            color: '#374151'
-          }}
-        >
+      <View className='flex-1 pr-2'>
+        <Text numberOfLines={3} className='text-[15px] leading-[20px] text-gray-700'>
           {renderHtmlText(notification.body, { fontSize: 15 })}
         </Text>
-        <Text
-          style={{
-            fontSize: 13,
-            marginTop: 4,
-            color: '#9ca3af'
-          }}
-        >
-          {getTimeAgo(notification.lastModifiedAt)}
-        </Text>
+        <Text className='text-[12px] mt-1 text-gray-400'>{getTimeAgo(notification.lastModifiedAt)}</Text>
 
         {/* Action buttons (only for friend requests) */}
         {notification.type === 'FRIEND_REQUEST' && !notification.read && (
-          <View style={{ flexDirection: 'row', marginTop: 10, gap: 8 }}>
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                paddingVertical: 8,
-                borderRadius: 20,
-                backgroundColor: '#f3f4f6',
-                alignItems: 'center'
-              }}
-            >
-              <Text style={{ fontSize: 13, fontWeight: '600', color: '#4b5563' }}>Từ chối</Text>
+          <View className='flex-row mt-2.5 gap-2'>
+            <TouchableOpacity className='flex-1 py-2 rounded-full bg-gray-100 items-center border border-gray-200'>
+              <Text className='text-[13px] font-semibold text-gray-600'>Từ chối</Text>
             </TouchableOpacity>
-            <TouchableOpacity
-              style={{
-                flex: 1,
-                paddingVertical: 8,
-                borderRadius: 20,
-                backgroundColor: '#e0f2fe',
-                alignItems: 'center'
-              }}
-            >
-              <Text style={{ fontSize: 13, fontWeight: '600', color: '#0284c7' }}>Đồng ý</Text>
+            <TouchableOpacity className='flex-1 py-2 rounded-full bg-blue-50 items-center border border-blue-100'>
+              <Text className='text-[13px] font-semibold text-blue-600'>Đồng ý</Text>
             </TouchableOpacity>
           </View>
         )}
       </View>
 
       {/* Media Preview or Unread dot or Options */}
-      <View style={{ alignItems: 'flex-end', gap: 8 }}>
-        <TouchableOpacity style={{ padding: 4 }}>
+      <View className='items-end gap-2'>
+        <TouchableOpacity className='p-1'>
           <Ionicons name='ellipsis-horizontal' size={18} color='#9ca3af' />
         </TouchableOpacity>
 
-        {mediaUrl && (
-          <Image
-            source={{ uri: mediaUrl }}
-            style={{ width: 44, height: 44, borderRadius: 4, backgroundColor: '#f3f4f6' }}
-          />
-        )}
+        {mediaUrl && <Image source={{ uri: mediaUrl }} className='w-11 h-11 rounded bg-gray-100' />}
 
-        {!notification.read && !mediaUrl && (
-          <View
-            style={{
-              width: 8,
-              height: 8,
-              borderRadius: 4,
-              backgroundColor: '#0068FF',
-              marginTop: 4
-            }}
-          />
-        )}
+        {!notification.read && !mediaUrl && <View className='w-2 h-2 rounded-full bg-blue-500 mt-1' />}
       </View>
     </TouchableOpacity>
   )
