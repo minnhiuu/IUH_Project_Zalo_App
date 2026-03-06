@@ -1,0 +1,23 @@
+{
+  "notification": {
+    "title": "Notifications",
+    "filter": {
+      "all": "All",
+      "unread": "Unread"
+    },
+    "group": {
+      "newest": "Newest",
+      "today": "Today",
+      "previous": "Previous"
+    },
+    "empty": {
+      "title": "No notifications yet",
+      "description": "You'll see activity here when it happens."
+    },
+    "action": {
+      "accept": "Accept",
+      "decline": "Decline",
+      "markAllRead": "Mark all as read"
+    }
+  }
+}

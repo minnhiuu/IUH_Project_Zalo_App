@@ -1,0 +1,23 @@
+{
+  "notification": {
+    "title": "Thông báo",
+    "filter": {
+      "all": "Tất cả",
+      "unread": "Chưa đọc"
+    },
+    "group": {
+      "newest": "Mới nhất",
+      "today": "Hôm nay",
+      "previous": "Trước đó"
+    },
+    "empty": {
+      "title": "Bạn không có thông báo nào",
+      "description": "Bạn sẽ nhận được thông báo khi có hoạt động mới."
+    },
+    "action": {
+      "accept": "Đồng ý",
+      "decline": "Từ chối",
+      "markAllRead": "Đánh dấu tất cả là đã đọc"
+    }
+  }
+}
