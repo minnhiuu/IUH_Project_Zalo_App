@@ -17,22 +17,25 @@ Notifications.setNotificationHandler({
     const { title, body } = notification.request.content
     const data = notification.request.content.data as Record<string, string>
 
-    console.log('[FCM] Received notification:', { title, body, data })
+    console.log('[FCM] Received foreground notification:', { title, body, data })
 
-    if (!title && data?.title) {
-      console.log('[FCM] Title empty, scheduling local notification from data')
+    // 1. Trường hợp Data-only (Silent/Data-only message từ Server)
+    // Chúng ta tự tạo Local Notification để hiện đầy đủ Avatar + Nút bấm
+    if (!title && !body && data?.title) {
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: data.title || title,
-          body: data.body || body || '',
+          title: data.title,
+          body: data.body || '',
           data: data as unknown as Record<string, unknown>,
-          categoryIdentifier: data.categoryIdentifier || undefined,
+          categoryIdentifier: data.categoryIdentifier || 'friend_request',
           sound: 'default',
-          // Thử dùng attachments để hiện Avatar
+          // Ảnh đại diện cho iOS/Rich Media
           attachments: data.actorAvatar ? [{ identifier: 'avatar', url: data.actorAvatar, type: 'image' }] : []
         },
         trigger: null
       })
+
+      // Không cần hiện cảnh báo mặc định của hệ thống nữa vì đã tự hiện ở trên
       return {
         shouldShowAlert: false,
         shouldPlaySound: false,
@@ -41,12 +44,24 @@ Notifications.setNotificationHandler({
         shouldShowList: false
       }
     }
+
+    // 2. Trường hợp đã có Title/Body từ Server (Web/iOS system) -> Hiện luôn
+    if (title || body) {
+      return {
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: false,
+        shouldShowBanner: true,
+        shouldShowList: true
+      }
+    }
+
     return {
-      shouldShowAlert: true,
-      shouldPlaySound: true,
+      shouldShowAlert: false,
+      shouldPlaySound: false,
       shouldSetBadge: false,
-      shouldShowBanner: true,
-      shouldShowList: true
+      shouldShowBanner: false,
+      shouldShowList: false
     }
   }
 })
