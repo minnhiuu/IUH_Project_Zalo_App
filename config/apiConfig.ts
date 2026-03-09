@@ -92,6 +92,15 @@ export const API_ENDPOINTS = {
     CHECK_STATUS: (userId: string) => `/friendships/status/${userId}`, // GET
     MUTUAL_FRIENDS: (userId: string) => `/friendships/mutual/${userId}`, // GET
     MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count` // GET
+  },
+  BLOCK: {
+    BLOCK: '/blocks', // POST
+    UNBLOCK: (blockedUserId: string) => `/blocks/${blockedUserId}`, // DELETE
+    UPDATE_PREFERENCE: (blockedUserId: string) => `/blocks/${blockedUserId}/preferences`, // PATCH
+    LIST: '/blocks', // GET
+    LIST_DETAILS: '/blocks/details', // GET
+    CHECK: (userId: string) => `/blocks/${userId}/check`, // GET
+    DETAILS: (blockedUserId: string) => `/blocks/${blockedUserId}` // GET
   }
 } as const
 
