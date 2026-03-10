@@ -113,15 +113,15 @@ export default function MessagesScreen() {
                 params: {
                   id: conversation.id,
                   name: conversation.name,
-                  avatar: conversation.avatar,
-                },
+                  avatar: conversation.avatar
+                }
               })
             }
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               paddingHorizontal: 16,
-              paddingVertical: 14,
+              paddingVertical: 14
             }}
           >
             {/* Avatar */}
@@ -131,45 +131,55 @@ export default function MessagesScreen() {
                 style={{ width: 56, height: 56, borderRadius: 28, backgroundColor: '#E5E7EB' }}
               />
               {conversation.isGroup && (
-                <View style={{
-                  position: 'absolute', bottom: -1, right: -1,
-                  backgroundColor: '#3b82f6', borderRadius: 10,
-                  width: 20, height: 20,
-                  alignItems: 'center', justifyContent: 'center',
-                  borderWidth: 2, borderColor: '#ffffff'
-                }}>
-                  <Ionicons name="people" size={10} color="#ffffff" />
+                <View
+                  style={{
+                    position: 'absolute',
+                    bottom: -1,
+                    right: -1,
+                    backgroundColor: '#3b82f6',
+                    borderRadius: 10,
+                    width: 20,
+                    height: 20,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                  }}
+                >
+                  <Ionicons name='people' size={10} color='#ffffff' />
                 </View>
               )}
             </View>
 
             {/* Content */}
             <View style={{ flex: 1 }}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+              <View
+                style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}
+              >
                 <Text style={{ fontSize: 16, fontWeight: '600', color: '#111827', flex: 1 }} numberOfLines={1}>
                   {conversation.name}
                 </Text>
-                <Text style={{ fontSize: 13, color: '#9ca3af', marginLeft: 8 }}>
-                  {conversation.time}
-                </Text>
+                <Text style={{ fontSize: 13, color: '#9ca3af', marginLeft: 8 }}>{conversation.time}</Text>
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                <Text
-                  numberOfLines={1}
-                  style={{ flex: 1, fontSize: 14, color: '#6b7280' }}
-                >
+                <Text numberOfLines={1} style={{ flex: 1, fontSize: 14, color: '#6b7280' }}>
                   {conversation.lastMessage}
                 </Text>
                 {/* Unread Badge */}
                 {conversation.unread ? (
-                  <View style={{
-                    marginLeft: 8, backgroundColor: '#ef4444',
-                    borderRadius: 10, minWidth: 20, height: 20,
-                    paddingHorizontal: 6, alignItems: 'center', justifyContent: 'center'
-                  }}>
-                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#ffffff' }}>
-                      {conversation.unread}
-                    </Text>
+                  <View
+                    style={{
+                      marginLeft: 8,
+                      backgroundColor: '#ef4444',
+                      borderRadius: 10,
+                      minWidth: 20,
+                      height: 20,
+                      paddingHorizontal: 6,
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <Text style={{ fontSize: 11, fontWeight: '700', color: '#ffffff' }}>{conversation.unread}</Text>
                   </View>
                 ) : null}
               </View>

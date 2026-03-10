@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'
 import { View, SectionList, TouchableOpacity, ActivityIndicator } from 'react-native'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
 import { Header } from '@/components/ui'
@@ -22,7 +22,7 @@ function groupByLetter(friends: FriendResponse[]): { title: string; data: Friend
     .map(([title, data]) => ({ title, data }))
 }
 
-const ALPHABET = ['A','B','C','Đ','G','H','K','L','M','N','O','P','Q','R','S','T','V','X','Y','Z']
+const ALPHABET = ['A', 'B', 'C', 'Đ', 'G', 'H', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'V', 'X', 'Y', 'Z']
 
 export default function ContactsScreen() {
   const { t } = useTranslation()
@@ -34,20 +34,36 @@ export default function ContactsScreen() {
   const { data: friends = [], isLoading: friendsLoading } = useMyFriends()
   const { data: receivedRequests = [] } = useReceivedFriendRequests()
 
+  const sectionListRef = useRef<SectionList>(null)
   const sections = useMemo(() => groupByLetter(friends), [friends])
   const friendCount = friends.length
   const requestCount = receivedRequests.length
 
+  const handleAlphabetPress = useCallback(
+    (letter: string) => {
+      const sectionIndex = sections.findIndex((s) => s.title === letter)
+      if (sectionIndex !== -1 && sectionListRef.current) {
+        sectionListRef.current.scrollToLocation({
+          sectionIndex,
+          itemIndex: 0,
+          animated: true,
+          viewOffset: 0,
+        })
+      }
+    },
+    [sections]
+  )
+
   const tabs = [
     { key: 'friends' as const, label: t('contacts.tabs.friends') },
     { key: 'groups' as const, label: t('contacts.tabs.groups') },
-    { key: 'oa' as const, label: 'OA' },
+    { key: 'oa' as const, label: 'OA' }
   ]
 
   const filters = [
     { key: 'all' as const, label: t('contacts.filters.all'), count: friendCount },
     { key: 'new' as const, label: t('contacts.filters.new'), count: 0 },
-    { key: 'recent' as const, label: t('contacts.filters.recent'), count: 0 },
+    { key: 'recent' as const, label: t('contacts.filters.recent'), count: 0 }
   ]
 
   const handleFriendPress = (friend: FriendResponse) => {
@@ -56,8 +72,8 @@ export default function ContactsScreen() {
       params: {
         id: friend.userId,
         name: friend.userName,
-        avatar: friend.userAvatar || '',
-      },
+        avatar: friend.userAvatar || ''
+      }
     })
   }
 
@@ -91,14 +107,14 @@ export default function ContactsScreen() {
               paddingVertical: 12,
               alignItems: 'center',
               borderBottomWidth: activeTab === tab.key ? 2 : 0,
-              borderBottomColor: '#0068FF',
+              borderBottomColor: '#0068FF'
             }}
           >
             <Text
               style={{
                 fontSize: 15,
                 fontWeight: activeTab === tab.key ? '600' : '400',
-                color: activeTab === tab.key ? '#0068FF' : '#6b7280',
+                color: activeTab === tab.key ? '#0068FF' : '#6b7280'
               }}
             >
               {tab.label}
@@ -118,25 +134,26 @@ export default function ContactsScreen() {
             paddingHorizontal: 16,
             paddingVertical: 14,
             borderBottomWidth: 0.5,
-            borderBottomColor: '#f0f0f0',
+            borderBottomColor: '#f0f0f0'
           }}
         >
-          <View style={{
-            width: 48, height: 48, borderRadius: 24,
-            backgroundColor: BRAND.blueLight,
-            alignItems: 'center', justifyContent: 'center',
-            marginRight: 12,
-          }}>
-            <Ionicons name="person-add" size={22} color={SEMANTIC.primary} />
+          <View
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              backgroundColor: BRAND.blueLight,
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 12
+            }}
+          >
+            <Ionicons name='person-add' size={22} color={SEMANTIC.primary} />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>
-              {t('contacts.friendRequest')}
-            </Text>
+            <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>{t('contacts.friendRequest')}</Text>
           </View>
-          {requestCount > 0 && (
-            <Text style={{ fontSize: 14, color: '#6b7280' }}>({requestCount})</Text>
-          )}
+          {requestCount > 0 && <Text style={{ fontSize: 14, color: '#6b7280' }}>({requestCount})</Text>}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -147,34 +164,39 @@ export default function ContactsScreen() {
             paddingHorizontal: 16,
             paddingVertical: 14,
             borderBottomWidth: 6,
-            borderBottomColor: '#F3F4F6',
+            borderBottomColor: '#F3F4F6'
           }}
         >
-          <View style={{
-            width: 48, height: 48, borderRadius: 24,
-            backgroundColor: '#FFF7E6',
-            alignItems: 'center', justifyContent: 'center',
-            marginRight: 12,
-          }}>
-            <Ionicons name="gift" size={22} color="#F59E0B" />
+          <View
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              backgroundColor: '#FFF7E6',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 12
+            }}
+          >
+            <Ionicons name='gift' size={22} color='#F59E0B' />
           </View>
           <View style={{ flex: 1 }}>
-            <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>
-              {t('contacts.birthday')}
-            </Text>
+            <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>{t('contacts.birthday')}</Text>
           </View>
         </TouchableOpacity>
       </View>
 
       {/* Filters */}
-      <View style={{
-        flexDirection: 'row',
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        gap: 8,
-        borderBottomWidth: 0.5,
-        borderBottomColor: '#f0f0f0',
-      }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          paddingHorizontal: 16,
+          paddingVertical: 10,
+          gap: 8,
+          borderBottomWidth: 0.5,
+          borderBottomColor: '#f0f0f0'
+        }}
+      >
         {filters.map((filter) => (
           <TouchableOpacity
             key={filter.key}
@@ -185,14 +207,16 @@ export default function ContactsScreen() {
               paddingVertical: 8,
               borderRadius: 20,
               backgroundColor: activeFilter === filter.key ? BRAND.blueLight : '#F3F4F6',
-              alignItems: 'center',
+              alignItems: 'center'
             }}
           >
-            <Text style={{
-              fontSize: 13,
-              fontWeight: '500',
-              color: activeFilter === filter.key ? SEMANTIC.primary : '#6b7280',
-            }}>
+            <Text
+              style={{
+                fontSize: 13,
+                fontWeight: '500',
+                color: activeFilter === filter.key ? SEMANTIC.primary : '#6b7280'
+              }}
+            >
               {filter.label} {filter.count}
             </Text>
           </TouchableOpacity>
@@ -202,27 +226,27 @@ export default function ContactsScreen() {
       {/* Contacts List + Alphabet */}
       {friendsLoading ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <ActivityIndicator size="large" color="#0068FF" />
+          <ActivityIndicator size='large' color='#0068FF' />
           <Text style={{ color: '#9ca3af', marginTop: 12 }}>{t('friend.loading')}</Text>
         </View>
       ) : friends.length === 0 ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="people-outline" size={48} color="#D1D5DB" />
+          <Ionicons name='people-outline' size={48} color='#D1D5DB' />
           <Text style={{ color: '#9ca3af', marginTop: 12 }}>{t('friend.empty.friends')}</Text>
         </View>
       ) : (
         <View style={{ flex: 1, flexDirection: 'row' }}>
           <SectionList
+            ref={sectionListRef}
             sections={sections}
             style={{ flex: 1 }}
             keyExtractor={(item) => item.userId}
             stickySectionHeadersEnabled
             showsVerticalScrollIndicator={false}
+            onScrollToIndexFailed={() => {}}
             renderSectionHeader={({ section }) => (
               <View style={{ paddingHorizontal: 16, paddingVertical: 6, backgroundColor: '#F9FAFB' }}>
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#6b7280' }}>
-                  {section.title}
-                </Text>
+                <Text style={{ fontSize: 14, fontWeight: '600', color: '#6b7280' }}>{section.title}</Text>
               </View>
             )}
             renderItem={({ item }) => (
@@ -237,13 +261,27 @@ export default function ContactsScreen() {
 
           {/* Alphabet Sidebar */}
           <View style={{ justifyContent: 'center', paddingHorizontal: 4, paddingVertical: 4 }}>
-            {ALPHABET.map((letter) => (
-              <TouchableOpacity key={letter} style={{ paddingVertical: 1.5 }}>
-                <Text style={{ fontSize: 10, fontWeight: '500', color: '#6b7280', textAlign: 'center' }}>
-                  {letter}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {ALPHABET.map((letter) => {
+              const hasSection = sections.some((s) => s.title === letter)
+              return (
+                <TouchableOpacity
+                  key={letter}
+                  onPress={() => handleAlphabetPress(letter)}
+                  style={{ paddingVertical: 1.5 }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 10,
+                      fontWeight: hasSection ? '700' : '500',
+                      color: hasSection ? SEMANTIC.primary : '#6b7280',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {letter}
+                  </Text>
+                </TouchableOpacity>
+              )
+            })}
           </View>
         </View>
       )}

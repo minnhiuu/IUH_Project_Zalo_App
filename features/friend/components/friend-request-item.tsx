@@ -1,6 +1,7 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { View, TouchableOpacity, Image, ActivityIndicator } from 'react-native'
 import { useTranslation } from 'react-i18next'
+import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
 import { SEMANTIC, BRAND } from '@/constants/theme'
 import type { FriendRequestResponse } from '../schemas'
@@ -23,9 +24,20 @@ export function FriendRequestItem({
   isLoading = false,
 }: FriendRequestItemProps) {
   const { t } = useTranslation()
+  const [actionState, setActionState] = useState<'none' | 'accepted' | 'declined'>('none')
 
   const displayName = type === 'received' ? request.requestedUserName : request.receivedUserName
   const displayAvatar = type === 'received' ? request.requestedUserAvatar : request.receivedUserAvatar
+
+  const handleAccept = () => {
+    onAccept?.(request.id)
+    setActionState('accepted')
+  }
+
+  const handleDecline = () => {
+    onDecline?.(request.id)
+    setActionState('declined')
+  }
 
   const getTimeDisplay = (dateStr: string): string => {
     const timestamp = new Date(dateStr)
@@ -47,8 +59,8 @@ export function FriendRequestItem({
   }
 
   return (
-    <View style={{ paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff' }}>
-      <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+    <View style={{ paddingHorizontal: 16, paddingVertical: 12, backgroundColor: '#fff', flexDirection: type === 'sent' ? 'row' : 'column' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'flex-start', flex: 1 }}>
         {/* Avatar */}
         <Image
           source={{ uri: displayAvatar || 'https://i.pravatar.cc/150' }}
@@ -71,8 +83,8 @@ export function FriendRequestItem({
             {getTimeDisplay(request.createdAt)}
           </Text>
 
-          {/* Message bubble */}
-          {request.message && (
+          {/* Message bubble — only for received */}
+          {type === 'received' && request.message && (
             <View
               style={{
                 backgroundColor: '#F3F4F6',
@@ -93,10 +105,58 @@ export function FriendRequestItem({
             <View style={{ marginTop: 12, alignItems: 'center', paddingVertical: 10 }}>
               <ActivityIndicator size="small" color="#0068FF" />
             </View>
+          ) : actionState === 'accepted' ? (
+            <View style={{ marginTop: 12 }}>
+              <Text style={{ fontSize: 14, color: '#10B981', fontWeight: '600', marginBottom: 8 }}>
+                {t('friend.actions.accepted')}
+              </Text>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingVertical: 10,
+                  paddingHorizontal: 14,
+                  borderRadius: 20,
+                  backgroundColor: '#F3F4F6',
+                  alignSelf: 'flex-start',
+                  gap: 6,
+                }}
+              >
+                <Ionicons name="eye-off-outline" size={16} color="#374151" />
+                <Text style={{ fontSize: 13, fontWeight: '500', color: '#374151' }}>
+                  {t('friend.actions.blockActivity')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          ) : actionState === 'declined' ? (
+            <View style={{ marginTop: 12 }}>
+              <Text style={{ fontSize: 14, color: '#6b7280', fontWeight: '500', marginBottom: 8 }}>
+                {t('friend.actions.declined')}
+              </Text>
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingVertical: 10,
+                  paddingHorizontal: 14,
+                  borderRadius: 20,
+                  backgroundColor: '#FEF2F2',
+                  alignSelf: 'flex-start',
+                  gap: 6,
+                }}
+              >
+                <Ionicons name="time-outline" size={16} color="#DC2626" />
+                <Text style={{ fontSize: 13, fontWeight: '500', color: '#DC2626' }}>
+                  {t('friend.actions.block24h')}
+                </Text>
+              </TouchableOpacity>
+            </View>
           ) : type === 'received' ? (
             <View style={{ flexDirection: 'row', marginTop: 12, gap: 10 }}>
               <TouchableOpacity
-                onPress={() => onDecline?.(request.id)}
+                onPress={handleDecline}
                 activeOpacity={0.7}
                 style={{
                   flex: 1,
@@ -112,7 +172,7 @@ export function FriendRequestItem({
               </TouchableOpacity>
 
               <TouchableOpacity
-                onPress={() => onAccept?.(request.id)}
+                onPress={handleAccept}
                 activeOpacity={0.7}
                 style={{
                   flex: 1,
@@ -127,27 +187,29 @@ export function FriendRequestItem({
                 </Text>
               </TouchableOpacity>
             </View>
-          ) : (
-            <View style={{ flexDirection: 'row', marginTop: 12 }}>
-              <TouchableOpacity
-                onPress={() => onCancel?.(request.id)}
-                activeOpacity={0.7}
-                style={{
-                  paddingHorizontal: 20,
-                  paddingVertical: 10,
-                  borderRadius: 20,
-                  backgroundColor: '#E5E7EB',
-                  alignItems: 'center',
-                }}
-              >
-                <Text style={{ fontSize: 14, fontWeight: '600', color: '#374151' }}>
-                  {t('friend.actions.withdraw')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          )}
+          ) : null}
         </View>
       </View>
+
+      {/* Sent: withdraw button on same row, right-aligned */}
+      {!isLoading && type === 'sent' && (
+        <TouchableOpacity
+          onPress={() => onCancel?.(request.id)}
+          activeOpacity={0.7}
+          style={{
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderRadius: 16,
+            backgroundColor: '#E5E7EB',
+            alignSelf: 'center',
+            marginLeft: 8,
+          }}
+        >
+          <Text style={{ fontSize: 13, fontWeight: '600', color: '#374151' }}>
+            {t('friend.actions.withdraw')}
+          </Text>
+        </TouchableOpacity>
+      )}
     </View>
   )
 }

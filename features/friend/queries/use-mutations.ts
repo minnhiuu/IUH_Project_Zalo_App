@@ -13,8 +13,9 @@ export const useSendFriendRequest = () => {
 
   return useMutation({
     mutationFn: (request: FriendRequestSendRequest) => friendApi.sendFriendRequest(request),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: friendKeys.sentRequests() })
+      queryClient.invalidateQueries({ queryKey: friendKeys.status(variables.receiverId) })
 
       Toast.show({
         type: 'success',
@@ -35,9 +36,10 @@ export const useAcceptFriendRequest = () => {
   return useMutation({
     mutationFn: (friendshipId: string) => friendApi.acceptFriendRequest(friendshipId),
     onSuccess: () => {
-      // Invalidate both requests and friends list
+      // Invalidate requests, friends list, and all status caches
       queryClient.invalidateQueries({ queryKey: friendKeys.receivedRequests() })
       queryClient.invalidateQueries({ queryKey: friendKeys.myFriends() })
+      queryClient.invalidateQueries({ queryKey: friendKeys.all })
 
       Toast.show({
         type: 'success',
@@ -59,6 +61,7 @@ export const useDeclineFriendRequest = () => {
     mutationFn: (friendshipId: string) => friendApi.declineFriendRequest(friendshipId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: friendKeys.receivedRequests() })
+      queryClient.invalidateQueries({ queryKey: friendKeys.all })
 
       Toast.show({
         type: 'success',
@@ -80,6 +83,7 @@ export const useCancelFriendRequest = () => {
     mutationFn: (friendshipId: string) => friendApi.cancelFriendRequest(friendshipId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: friendKeys.sentRequests() })
+      queryClient.invalidateQueries({ queryKey: friendKeys.all })
 
       Toast.show({
         type: 'success',
