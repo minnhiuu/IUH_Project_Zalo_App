@@ -9,8 +9,8 @@ import { useAuthStore } from '@/store'
 import { handleErrorApi } from '@/utils/error-handler'
 import { getRefreshToken, setAccessToken, setRefreshToken, clearTokens } from '@/lib/http'
 import { storage } from '@/utils/storageUtils'
-import { userApi } from '@/features/user/api/user.api'
-import { userKeys } from '@/features/user/queries/keys'
+import { userApi } from '@/features/users/api/user.api'
+import { userKeys } from '@/features/users/queries/keys'
 
 export const useLoginMutation = () => {
   const { t } = useTranslation()

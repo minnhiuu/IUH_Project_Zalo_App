@@ -1,19 +1,12 @@
 import React, { useState, useCallback } from 'react'
-import {
-  View,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-  Image,
-  ScrollView,
-} from 'react-native'
+import { View, TouchableOpacity, TextInput, ActivityIndicator, Image, ScrollView } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Text } from '@/components/ui/text'
 import { useAuthStore } from '@/store'
-import { useSearchUsers } from '@/features/user/queries/use-queries'
+import { useSearchUsers } from '@/features/users/queries/use-queries'
 import { useDebounce } from '@/hooks/useDebounce'
 
 export default function AddFriendScreen() {
@@ -24,10 +17,7 @@ export default function AddFriendScreen() {
 
   const debouncedPhone = useDebounce(phoneNumber, 500)
   const shouldSearch = debouncedPhone.length >= 2
-  const { data: searchResults, isLoading: searching } = useSearchUsers(
-    debouncedPhone,
-    shouldSearch,
-  )
+  const { data: searchResults, isLoading: searching } = useSearchUsers(debouncedPhone, shouldSearch)
 
   const handleSearch = useCallback(() => {
     if (!phoneNumber.trim()) return
@@ -38,7 +28,7 @@ export default function AddFriendScreen() {
     (userId: string) => {
       router.push(`/user-profile/${userId}` as any)
     },
-    [router],
+    [router]
   )
 
   return (
@@ -52,11 +42,11 @@ export default function AddFriendScreen() {
               alignItems: 'center',
               paddingHorizontal: 16,
               paddingVertical: 12,
-              height: 52,
+              height: 52
             }}
           >
             <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 12 }}>
-              <Ionicons name="chevron-back" size={24} color="#fff" />
+              <Ionicons name='chevron-back' size={24} color='#fff' />
             </TouchableOpacity>
             <Text style={{ fontSize: 18, fontWeight: '600', color: '#fff', flex: 1 }}>
               {t('friend.addFriend.title')}
@@ -65,7 +55,7 @@ export default function AddFriendScreen() {
         </SafeAreaView>
       </View>
 
-      <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
+      <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps='handled'>
         {/* QR Card */}
         <View style={{ alignItems: 'center', paddingVertical: 24 }}>
           <View
@@ -75,7 +65,7 @@ export default function AddFriendScreen() {
               borderRadius: 16,
               paddingVertical: 24,
               paddingHorizontal: 20,
-              alignItems: 'center',
+              alignItems: 'center'
             }}
           >
             {/* User name */}
@@ -91,10 +81,10 @@ export default function AddFriendScreen() {
                 backgroundColor: '#fff',
                 borderRadius: 12,
                 alignItems: 'center',
-                justifyContent: 'center',
+                justifyContent: 'center'
               }}
             >
-              <Ionicons name="qr-code" size={140} color="#333" />
+              <Ionicons name='qr-code' size={140} color='#333' />
             </View>
 
             {/* Hint text */}
@@ -104,7 +94,7 @@ export default function AddFriendScreen() {
                 color: 'rgba(255,255,255,0.8)',
                 textAlign: 'center',
                 marginTop: 16,
-                lineHeight: 18,
+                lineHeight: 18
               }}
             >
               {t('friend.addFriend.qrHint')}
@@ -120,7 +110,7 @@ export default function AddFriendScreen() {
             marginHorizontal: 16,
             borderBottomWidth: 0.5,
             borderBottomColor: '#E5E7EB',
-            paddingVertical: 8,
+            paddingVertical: 8
           }}
         >
           {/* Country Code */}
@@ -132,11 +122,11 @@ export default function AddFriendScreen() {
               paddingVertical: 10,
               borderRightWidth: 0.5,
               borderRightColor: '#E5E7EB',
-              marginRight: 12,
+              marginRight: 12
             }}
           >
             <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>+84</Text>
-            <Ionicons name="chevron-down" size={16} color="#6b7280" style={{ marginLeft: 4 }} />
+            <Ionicons name='chevron-down' size={16} color='#6b7280' style={{ marginLeft: 4 }} />
           </View>
 
           {/* Phone Input */}
@@ -144,13 +134,13 @@ export default function AddFriendScreen() {
             value={phoneNumber}
             onChangeText={setPhoneNumber}
             placeholder={t('friend.addFriend.phoneInput')}
-            placeholderTextColor="#9ca3af"
-            keyboardType="phone-pad"
+            placeholderTextColor='#9ca3af'
+            keyboardType='phone-pad'
             style={{
               flex: 1,
               fontSize: 16,
               color: '#111827',
-              paddingVertical: 10,
+              paddingVertical: 10
             }}
           />
 
@@ -164,14 +154,10 @@ export default function AddFriendScreen() {
               borderRadius: 20,
               backgroundColor: phoneNumber.trim() ? '#0068FF' : '#E5E7EB',
               alignItems: 'center',
-              justifyContent: 'center',
+              justifyContent: 'center'
             }}
           >
-            <Ionicons
-              name="arrow-forward"
-              size={20}
-              color={phoneNumber.trim() ? '#fff' : '#9ca3af'}
-            />
+            <Ionicons name='arrow-forward' size={20} color={phoneNumber.trim() ? '#fff' : '#9ca3af'} />
           </TouchableOpacity>
         </View>
 
@@ -180,10 +166,8 @@ export default function AddFriendScreen() {
           <View style={{ marginTop: 8 }}>
             {searching ? (
               <View style={{ padding: 20, alignItems: 'center' }}>
-                <ActivityIndicator size="small" color="#0068FF" />
-                <Text style={{ fontSize: 13, color: '#9ca3af', marginTop: 8 }}>
-                  {t('friend.addFriend.searching')}
-                </Text>
+                <ActivityIndicator size='small' color='#0068FF' />
+                <Text style={{ fontSize: 13, color: '#9ca3af', marginTop: 8 }}>{t('friend.addFriend.searching')}</Text>
               </View>
             ) : searchResults && searchResults.length > 0 ? (
               searchResults.map((result) => (
@@ -197,7 +181,7 @@ export default function AddFriendScreen() {
                     paddingHorizontal: 16,
                     paddingVertical: 12,
                     borderBottomWidth: 0.5,
-                    borderBottomColor: '#f0f0f0',
+                    borderBottomColor: '#f0f0f0'
                   }}
                 >
                   <Image
@@ -207,22 +191,18 @@ export default function AddFriendScreen() {
                       height: 48,
                       borderRadius: 24,
                       backgroundColor: '#E5E7EB',
-                      marginRight: 12,
+                      marginRight: 12
                     }}
                   />
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>
-                      {result.fullName}
-                    </Text>
+                    <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>{result.fullName}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color="#9ca3af" />
+                  <Ionicons name='chevron-forward' size={20} color='#9ca3af' />
                 </TouchableOpacity>
               ))
             ) : debouncedPhone.length >= 2 ? (
               <View style={{ padding: 20, alignItems: 'center' }}>
-                <Text style={{ fontSize: 14, color: '#9ca3af' }}>
-                  {t('friend.addFriend.noResult')}
-                </Text>
+                <Text style={{ fontSize: 14, color: '#9ca3af' }}>{t('friend.addFriend.noResult')}</Text>
               </View>
             ) : null}
           </View>
@@ -240,7 +220,7 @@ export default function AddFriendScreen() {
                 paddingHorizontal: 16,
                 paddingVertical: 16,
                 borderBottomWidth: 0.5,
-                borderBottomColor: '#f0f0f0',
+                borderBottomColor: '#f0f0f0'
               }}
             >
               <View
@@ -250,14 +230,12 @@ export default function AddFriendScreen() {
                   borderRadius: 8,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  marginRight: 14,
+                  marginRight: 14
                 }}
               >
-                <Ionicons name="scan-outline" size={28} color="#0068FF" />
+                <Ionicons name='scan-outline' size={28} color='#0068FF' />
               </View>
-              <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>
-                {t('friend.addFriend.scanQR')}
-              </Text>
+              <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>{t('friend.addFriend.scanQR')}</Text>
             </TouchableOpacity>
 
             {/* People You May Know */}
@@ -269,7 +247,7 @@ export default function AddFriendScreen() {
                 paddingHorizontal: 16,
                 paddingVertical: 16,
                 borderBottomWidth: 0.5,
-                borderBottomColor: '#f0f0f0',
+                borderBottomColor: '#f0f0f0'
               }}
             >
               <View
@@ -279,10 +257,10 @@ export default function AddFriendScreen() {
                   borderRadius: 8,
                   alignItems: 'center',
                   justifyContent: 'center',
-                  marginRight: 14,
+                  marginRight: 14
                 }}
               >
-                <Ionicons name="people-outline" size={28} color="#0068FF" />
+                <Ionicons name='people-outline' size={28} color='#0068FF' />
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>

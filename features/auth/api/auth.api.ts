@@ -2,7 +2,7 @@ import http from '@/lib/http'
 import { API_ENDPOINTS } from '@/config/apiConfig'
 import { storage } from '@/utils/storageUtils'
 import type { ApiResponse } from '@/types/common.types'
-import type { UserResponse } from '@/features/user/schemas/user.schema'
+import type { UserResponse } from '@/features/users/schemas/user.schema'
 import type {
   LoginRequest,
   RegisterInitRequest,

@@ -8,7 +8,10 @@
     "save": "Lưu",
     "delete": "Xóa",
     "edit": "Chỉnh sửa",
-    "back": "Quay lại",
+    "chat": "Nhắn tin",
+    "seeMore": "Xem thêm",
+    "add": "Thêm",
+    "goBack": "Quay lại",
     "next": "Tiếp theo",
     "done": "Hoàn tất",
     "close": "Đóng",
@@ -631,17 +634,5 @@
       "title": "Tặng bạn ưu đãi năm mới từ zStyle",
       "subtitle": "Chỉ từ 10.700đ/tháng, nhận ưu đãi ngay"
     }
-  },
-  "search": {
-    "placeholder": "Tìm kiếm",
-    "tabs": {
-      "mine": "Của tôi",
-      "explore": "Khám phá"
-    },
-    "miniAppsUsed": "Mini App đã sử dụng",
-    "recentContacts": "Liên hệ đã tìm",
-    "edit": "Sửa",
-    "manageHistory": "Quản lý lịch sử tìm kiếm",
-    "exploreContent": "Khám phá nội dung thú vị"
   }
 }

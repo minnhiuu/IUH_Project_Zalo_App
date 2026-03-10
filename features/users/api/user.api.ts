@@ -10,15 +10,14 @@ export const updateProfile = (data: UserUpdateRequest) =>
 
 export const searchUsers = (keyword: string) =>
   http.get<ApiResponse<{ data: UserSummaryResponse[] }>>(API_ENDPOINTS.USER.SEARCH, {
-    params: { keyword, size: 20 },
+    params: { keyword, size: 20 }
   })
 
-export const getUserById = (userId: string) =>
-  http.get<ApiResponse<UserResponse>>(API_ENDPOINTS.USER.GET_BY_ID(userId))
+export const getUserById = (userId: string) => http.get<ApiResponse<UserResponse>>(API_ENDPOINTS.USER.GET_BY_ID(userId))
 
 export const userApi = {
   getMyProfile,
   updateProfile,
   searchUsers,
-  getUserById,
+  getUserById
 }

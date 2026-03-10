@@ -18,5 +18,3 @@ export { Input, InputField, InputSlot, InputIcon } from './input'
 // Custom Components
 export { Header } from './header'
 export { MenuItem } from './menu-item'
-export { ConfirmDialog } from './confirm-dialog'
-
