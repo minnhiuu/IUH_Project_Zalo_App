@@ -1,30 +1,49 @@
 import type { AxiosResponse } from 'axios'
-import http from '@/lib/http'
-import { API_ENDPOINTS } from '@/config/apiConfig'
 import { secureStorage } from '@/utils/storageUtils'
 import i18n from '@/i18n'
 import type { ApiResponse } from '@/types/common.types'
+import { settingsApi } from '@/features/settings/api'
+import { toAppLanguage, toLanguageCode } from '@/features/settings/schemas'
 
 export interface GeneralSettings {
   languageEn: boolean
-  showAllFriends: boolean
 }
 
 /**
- * Fetches the authenticated user's general settings from the backend.
- * Endpoint: GET /users/settings/me/general
+ * Compatibility wrapper for old callsites.
  */
-export const getGeneralSettings = (): Promise<AxiosResponse<ApiResponse<GeneralSettings>>> =>
-  http.get<ApiResponse<GeneralSettings>>(API_ENDPOINTS.SETTINGS.ME_GENERAL)
+export const getGeneralSettings = async (): Promise<AxiosResponse<ApiResponse<GeneralSettings>>> => {
+  const response = await settingsApi.getLanguageAndInterfaceSettings()
+
+  return {
+    ...response,
+    data: {
+      ...response.data,
+      data: {
+        languageEn: response.data.data.language === 'EN'
+      }
+    }
+  }
+}
 
 /**
- * Updates the user's general settings (languageEn, showAllFriends) on the backend.
- * Endpoint: PUT /users/settings/general
+ * Compatibility wrapper for old callsites.
  */
 export const updateGeneralSettings = (
   data: Partial<GeneralSettings>
-): Promise<AxiosResponse<ApiResponse<GeneralSettings>>> =>
-  http.put<ApiResponse<GeneralSettings>>(API_ENDPOINTS.SETTINGS.GENERAL, data)
+): Promise<AxiosResponse<ApiResponse<GeneralSettings>>> => {
+  const language = typeof data.languageEn === 'boolean' ? toAppLanguage(data.languageEn ? 'en' : 'vi') : undefined
+
+  return settingsApi.updateLanguageAndInterfaceSettings({ language }).then((response) => ({
+    ...response,
+    data: {
+      ...response.data,
+      data: {
+        languageEn: response.data.data.languageAndInterface.language === 'EN'
+      }
+    }
+  }))
+}
 
 /**
  * Fetches the user's general settings and syncs the language preference into
@@ -39,7 +58,7 @@ export const syncAcceptLanguage = async (): Promise<void> => {
     const response = await getGeneralSettings()
     const settings = response?.data?.data
     if (settings) {
-      const lang = settings.languageEn ? 'en' : 'vi'
+      const lang = toLanguageCode(settings.languageEn ? 'EN' : 'VI')
       await secureStorage.setAcceptLanguage(lang)
       if (i18n.language !== lang) {
         await i18n.changeLanguage(lang)
@@ -54,5 +73,5 @@ export const syncAcceptLanguage = async (): Promise<void> => {
 export const generalSettingsApi = {
   getGeneralSettings,
   updateGeneralSettings,
-  syncAcceptLanguage,
+  syncAcceptLanguage
 }

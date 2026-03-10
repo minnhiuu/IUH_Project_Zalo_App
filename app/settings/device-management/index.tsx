@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
-import { View, Text, TouchableOpacity, Alert, ActivityIndicator } from 'react-native'
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useMyDevices } from '@/features/device/queries/use-queries'
 import { useDeleteDevice } from '@/features/device/queries/use-mutations'
 import { SectionLabel } from '@/features/settings'
+import { ConfirmDialog } from '@/components/ui'
 import {
   DeviceItem,
   DeviceDetailModal,
@@ -21,42 +22,52 @@ export default function DeviceManagementScreen() {
   const logoutOtherDevicesMutation = useLogoutOtherDevices()
   const logoutDeviceMutation = useLogoutDevice()
   const [selectedDevice, setSelectedDevice] = useState<DeviceResponse | null>(null)
+  const [confirmConfig, setConfirmConfig] = useState<{
+    visible: boolean
+    message: string
+    confirmText?: string
+    onConfirm: () => void
+  }>({ visible: false, message: '', onConfirm: () => { } })
 
   const handleDeleteDevice = (deviceId: string) => {
-    Alert.alert(t('settings.deviceManagement.deleteConfirm'), '', [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.delete'),
-        style: 'destructive',
-        onPress: () => deleteDeviceMutation.mutate(deviceId)
+    setConfirmConfig({
+      visible: true,
+      message: t('settings.deviceManagement.deleteConfirm'),
+      confirmText: t('common.delete'),
+      onConfirm: () => {
+        deleteDeviceMutation.mutate(deviceId)
+        setConfirmConfig((prev) => ({ ...prev, visible: false }))
       }
-    ])
+    })
   }
 
   const handleLogoutDevice = (sessionId: string) => {
-    Alert.alert(t('settings.deviceManagement.logoutDeviceConfirm'), '', [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.logout'),
-        style: 'destructive',
-        onPress: () => logoutDeviceMutation.mutate(sessionId)
+    setConfirmConfig({
+      visible: true,
+      message: t('settings.deviceManagement.logoutDeviceConfirm'),
+      confirmText: t('common.logout'),
+      onConfirm: () => {
+        logoutDeviceMutation.mutate(sessionId)
+        setConfirmConfig((prev) => ({ ...prev, visible: false }))
       }
-    ])
+    })
   }
 
   const handleLogoutOtherDevices = () => {
-    Alert.alert(t('settings.deviceManagement.logoutOthersConfirm'), '', [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('common.logout'),
-        style: 'destructive',
-        onPress: () => logoutOtherDevicesMutation.mutate()
+    setConfirmConfig({
+      visible: true,
+      message: t('settings.deviceManagement.logoutOthersConfirm'),
+      confirmText: t('common.logout'),
+      onConfirm: () => {
+        logoutOtherDevicesMutation.mutate()
+        setConfirmConfig((prev) => ({ ...prev, visible: false }))
       }
-    ])
+    })
   }
 
-  const activeDevices = devices?.filter((d) => d.isActive) || []
-  const inactiveDevices = devices?.filter((d) => !d.isActive) || []
+  const activeDevices = devices?.currentDevice || []
+  const inactiveDevices = devices?.otherDevices || []
+  const totalDevicesCount = activeDevices.length + inactiveDevices.length
 
   return (
     <SettingsDetailScreen title={t('settings.deviceManagement.title')}>
@@ -68,7 +79,7 @@ export default function DeviceManagementScreen() {
             <ActivityIndicator />
             <Text className='text-sm text-gray-500'>{t('settings.deviceManagement.loading')}</Text>
           </View>
-        ) : devices && devices.length > 0 ? (
+        ) : totalDevicesCount > 0 ? (
           <View className='gap-6'>
             {activeDevices.length > 0 && (
               <View className='gap-2'>
@@ -104,12 +115,11 @@ export default function DeviceManagementScreen() {
 
             <TouchableOpacity
               onPress={handleLogoutOtherDevices}
-              disabled={logoutOtherDevicesMutation.isPending || devices.length <= 1}
-              className={`flex-row items-center justify-center gap-2 border rounded-lg py-3 px-4 ${
-                logoutOtherDevicesMutation.isPending || devices.length <= 1
-                  ? 'border-gray-200 opacity-50'
-                  : 'border-red-200 bg-red-50'
-              }`}
+              disabled={logoutOtherDevicesMutation.isPending || totalDevicesCount <= 1}
+              className={`flex-row items-center justify-center gap-2 border rounded-lg py-3 px-4 ${logoutOtherDevicesMutation.isPending || totalDevicesCount <= 1
+                ? 'border-gray-200 opacity-50'
+                : 'border-red-200 bg-red-50'
+                }`}
             >
               {logoutOtherDevicesMutation.isPending && <ActivityIndicator size='small' color='#EF4444' />}
               <Ionicons name='log-out-outline' size={20} color='#EF4444' />
@@ -137,6 +147,16 @@ export default function DeviceManagementScreen() {
           onLogoutDevice={handleLogoutDevice}
         />
       )}
+
+      <ConfirmDialog
+        visible={confirmConfig.visible}
+        message={confirmConfig.message}
+        onConfirm={confirmConfig.onConfirm}
+        onCancel={() => setConfirmConfig((prev) => ({ ...prev, visible: false }))}
+        destructive
+        confirmText={confirmConfig.confirmText || t('common.confirm') || 'Confirm'}
+        cancelText={t('common.cancel')}
+      />
     </SettingsDetailScreen>
   )
 }

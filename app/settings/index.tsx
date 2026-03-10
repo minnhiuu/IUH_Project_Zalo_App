@@ -19,9 +19,9 @@ export default function SettingsScreen() {
 
   return (
     <Box style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
-      <Header 
-        title={t('settings.title')} 
-        showBackButton={true} 
+      <Header
+        title={t('settings.title')}
+        showBackButton={true}
         onBackPress={() => router.back()}
         showSearch
         searchPlaceholder={t('settings.search')}
@@ -125,7 +125,7 @@ export default function SettingsScreen() {
             icon="people-circle-outline"
             iconColor="#2196F3"
             title={t('settings.menu.switchAccount')}
-            onPress={() => {}}
+            onPress={() => { }}
           />
           <MenuItem
             icon="log-out-outline"

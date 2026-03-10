@@ -123,7 +123,11 @@
       "otpRequired": "Please enter OTP",
       "otpInvalid": "Invalid OTP",
       "captchaRequired": "Please enter verification code",
-      "captchaInvalid": "Invalid verification code"
+      "captchaInvalid": "Invalid verification code",
+      "currentPasswordRequired": "Please enter your current password",
+      "newPasswordMinLength": "New password must be at least 8 characters",
+      "passwordRegex": "Password must include lowercase, uppercase letters, numbers, and special characters",
+      "confirmNewPasswordRequired": "Please confirm your new password"
     },
     "errors": {
       "invalidCredentials": "Invalid phone number or password",
@@ -242,7 +246,8 @@
       "biometrics": "Biometrics",
       "biometricsSubtitle": "Fingerprint, Face ID",
       "deviceManagement": "Device management",
-      "deviceManagementSubtitle": "View logged in devices"
+      "deviceManagementSubtitle": "View logged in devices",
+      "updateFailed": "Failed to update security settings"
     },
     "deviceManagement": {
       "title": "Device Management",
@@ -298,9 +303,12 @@
       "everyone": "Everyone",
       "allowCalls": "Allow calls",
       "friendsAndContacted": "Friends and previously contacted",
+      "onlyMe": "Only me",
       "allowViewAndComment": "Allow viewing and commenting",
       "blockAndHide": "Block and hide",
       "manageFriendSources": "Manage search and friend sources",
+      "friendSourceByPhone": "Phone number",
+      "friendSourceByQr": "QR code",
       "utilities": "Utilities",
       "friends": "Friends",
       "blockList": "Block list",
@@ -327,6 +335,7 @@
     "backupRestore": {
       "lastBackup": "Last backup",
       "today": "Today",
+      "never": "Never",
       "autoBackup": "Auto backup",
       "autoBackupSubtitle": "Backup data daily",
       "backupOverWifi": "Backup over Wi-Fi",
@@ -350,13 +359,22 @@
       "friendRequests": "Friend requests",
       "friendRequestsSubtitle": "New friend requests",
       "doNotDisturb": "Do not disturb",
-      "doNotDisturbSubtitle": "Turn off notifications on schedule"
+      "doNotDisturbSubtitle": "Turn off notifications on schedule",
+      "dndEnabled": "Enable do not disturb",
+      "dndStartTime": "Start time",
+      "dndEndTime": "End time",
+      "timePickerHour": "Hour",
+      "timePickerMinute": "Minute",
+      "timeInputPlaceholder": "HH:mm",
+      "invalidTimeFormat": "Invalid time format. Use HH:mm"
     },
     "messages": {
       "messagePreview": "Message preview",
       "messagePreviewSubtitle": "Show content in notifications",
       "fontSize": "Font size",
+      "fontSizeSmall": "Small",
       "fontSizeMedium": "Medium",
+      "fontSizeLarge": "Large",
       "chatTheme": "Chat theme",
       "chatThemeSubtitle": "Wallpaper and colors",
       "autoDownload": "Auto download",
@@ -366,7 +384,10 @@
       "endToEndEncryption": "End-to-end encryption",
       "endToEndEncryptionSubtitle": "Secure messages",
       "archivedMessages": "Archived messages",
-      "archivedMessagesSubtitle": "View archived conversations"
+      "archivedMessagesSubtitle": "View archived conversations",
+      "archivedMessagesPlaceholder": "Archived messages screen is coming soon.",
+      "on": "On",
+      "off": "Off"
     },
     "calls": {
       "allowCalls": "Allow calls",
@@ -374,9 +395,14 @@
       "allowVideoCalls": "Allow video calls",
       "allowVideoCallsSubtitle": "Receive video calls",
       "audioQuality": "Audio quality",
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
       "automatic": "Automatic",
       "videoQuality": "Video quality",
+      "sd": "SD",
       "hd": "HD",
+      "fullHd": "Full HD",
       "ringtone": "Ringtone",
       "ringtoneSubtitle": "Customize ringtone",
       "callHistory": "Call history",
@@ -389,13 +415,17 @@
       "activityType": "Activity type",
       "all": "All",
       "timeRange": "Time range",
+      "allTime": "All time",
       "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
       "exportLog": "Export log",
       "clearLog": "Clear log"
     },
     "contacts": {
       "syncContacts": "Sync contacts",
       "syncContactsSubtitle": "Sync with device contacts",
+      "autoAddFromPhoneContacts": "Auto add from phone contacts",
+      "autoAddFromPhoneContactsSubtitle": "Automatically add new contacts from your phone",
       "allContacts": "All contacts",
       "contactsCount": "{{count}} contacts",
       "favorites": "Favorites",
@@ -414,6 +444,9 @@
       "dark": "Dark",
       "system": "System",
       "changeFontSize": "Change font size",
+      "fontSizeSmall": "Small",
+      "fontSizeMedium": "Medium",
+      "fontSizeLarge": "Large",
       "changeLanguage": "Change language",
       "selectLanguage": "Select language",
       "languageChangedSuccess": "Language changed successfully",

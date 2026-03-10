@@ -2,6 +2,7 @@ import React from 'react'
 import { View, Text, Pressable } from 'react-native'
 import { BRAND } from '@/constants/theme'
 import type { ThemeMode } from '@/context'
+import { useThemeColors } from '@/context/theme-context'
 import { ThemePreview } from './theme-preview'
 
 interface ThemeCardProps {
@@ -13,6 +14,7 @@ interface ThemeCardProps {
 }
 
 export function ThemeCard({ mode, label, isSelected, onPress, isDark }: ThemeCardProps) {
+    const themeColors = useThemeColors()
     return (
         <Pressable onPress={onPress} style={{ flex: 1, alignItems: 'center', paddingHorizontal: 8 }}>
             <View
@@ -21,7 +23,7 @@ export function ThemeCard({ mode, label, isSelected, onPress, isDark }: ThemeCar
                     aspectRatio: 1.5,
                     borderRadius: 10,
                     borderWidth: isSelected ? 2.5 : 1,
-                    borderColor: isSelected ? BRAND.blue : isDark ? '#3E444A' : '#E0E0E0',
+                    borderColor: isSelected ? BRAND.blue : themeColors.border,
                     overflow: 'hidden',
                 }}
             >
@@ -35,7 +37,7 @@ export function ThemeCard({ mode, label, isSelected, onPress, isDark }: ThemeCar
                         height: 20,
                         borderRadius: 10,
                         borderWidth: 2,
-                        borderColor: isSelected ? BRAND.blue : isDark ? '#5A6981' : '#BBBBBB',
+                        borderColor: isSelected ? BRAND.blue : themeColors.iconMuted,
                         alignItems: 'center',
                         justifyContent: 'center',
                     }}
@@ -47,7 +49,7 @@ export function ThemeCard({ mode, label, isSelected, onPress, isDark }: ThemeCar
                     )}
                 </View>
                 {/* Use plain style to avoid NativeWind interop issues inside Pressable */}
-                <Text style={{ fontSize: 14, color: '#374151' }}>{label}</Text>
+                <Text style={{ fontSize: 14, color: themeColors.text }}>{label}</Text>
             </View>
         </Pressable>
     )

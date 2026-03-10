@@ -1,11 +1,19 @@
 import React from 'react'
 import { View, Text, TouchableOpacity } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { cssInterop } from 'nativewind'
+
+cssInterop(Ionicons, {
+    className: {
+        target: 'style',
+        nativeStyleToProp: { color: true },
+    },
+})
 
 interface ActionRowProps {
     icon: string
-    iconBg: string
-    iconColor: string
+    iconBgClass?: string
+    iconColorClass?: string
     title: string
     subtitle?: string
     onPress: () => void
@@ -16,8 +24,8 @@ interface ActionRowProps {
 
 export function ActionRow({
     icon,
-    iconBg,
-    iconColor,
+    iconBgClass = 'bg-secondary',
+    iconColorClass = 'text-icon-secondary',
     title,
     subtitle,
     onPress,
@@ -26,20 +34,19 @@ export function ActionRow({
 }: ActionRowProps) {
     return (
         <TouchableOpacity
-            className="flex-row items-center px-4 py-3 gap-3 bg-white active:bg-gray-50"
+            className="flex-row items-center px-4 py-3 gap-3 bg-background active:bg-secondary"
             onPress={onPress}
         >
             <View
-                className="w-10 h-10 rounded-full items-center justify-center"
-                style={{ backgroundColor: iconBg }}
+                className={`w-10 h-10 rounded-full items-center justify-center ${iconBgClass}`}
             >
-                <Ionicons name={icon as any} size={22} color={iconColor} />
+                <Ionicons name={icon as any} size={22} className={iconColorClass} />
             </View>
 
             <View className="flex-1">
-                <Text className="text-base text-gray-900">{title}</Text>
+                <Text className="text-base text-foreground">{title}</Text>
                 {subtitle && (
-                    <Text className="text-sm text-gray-500 mt-0.5">{subtitle}</Text>
+                    <Text className="text-sm text-muted-foreground mt-0.5">{subtitle}</Text>
                 )}
             </View>
 

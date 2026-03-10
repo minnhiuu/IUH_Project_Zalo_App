@@ -17,6 +17,7 @@ export default function ChangePasswordScreen() {
     const [showOldPassword, setShowOldPassword] = useState(false)
     const [showNewPassword, setShowNewPassword] = useState(false)
     const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+    const [logoutOtherDevices, setLogoutOtherDevices] = useState(true)
     const [errors, setErrors] = useState<Record<string, string>>({})
 
     const handleSubmit = async () => {
@@ -24,13 +25,13 @@ export default function ChangePasswordScreen() {
         if (!result.success) {
             const fieldErrors: Record<string, string> = {}
             result.error.issues.forEach((error) => {
-                if (error.path[0]) fieldErrors[error.path[0] as string] = error.message
+                if (error.path[0]) fieldErrors[error.path[0] as string] = t(error.message as any)
             })
             setErrors(fieldErrors)
             return
         }
         setErrors({})
-        await changePasswordMutation.mutateAsync({ oldPassword, newPassword })
+        await changePasswordMutation.mutateAsync({ oldPassword, newPassword, confirmPassword, logoutOtherDevices })
     }
 
     const isSubmitting = changePasswordMutation.isPending
@@ -68,6 +69,20 @@ export default function ChangePasswordScreen() {
                     error={errors.confirmPassword}
                     disabled={isSubmitting}
                 />
+
+                <TouchableOpacity
+                    onPress={() => setLogoutOtherDevices(!logoutOtherDevices)}
+                    disabled={isSubmitting}
+                    activeOpacity={0.7}
+                    className="flex-row items-center justify-between py-2"
+                >
+                    <Text className="text-sm font-medium text-gray-700">
+                        {t('settings.deviceManagement.logoutOthers')}
+                    </Text>
+                    <View className={`w-11 h-6 rounded-full justify-center px-1 transition-colors ${logoutOtherDevices ? 'bg-blue-600' : 'bg-gray-200'}`}>
+                        <View className={`w-4 h-4 rounded-full bg-white transition-transform ${logoutOtherDevices ? 'translate-x-5' : 'translate-x-0'}`} />
+                    </View>
+                </TouchableOpacity>
 
                 <TouchableOpacity
                     onPress={handleSubmit}

@@ -12,28 +12,28 @@ export default function SupportScreen() {
             <SectionLabel blue title={t('settings.sections.support') || 'Get Help'} />
             <SettingsCard>
                 <ActionRow
-                    icon="book-outline" iconBg="#E8F0FE" iconColor="#0068FF"
+                    icon="book-outline" iconBgClass="bg-primary/10" iconColorClass="text-primary"
                     title={t('settings.support.faq')}
                     subtitle={t('settings.support.faqSubtitle')}
                     onPress={() => { }}
                 />
                 <SettingsDivider />
                 <ActionRow
-                    icon="chatbubble-outline" iconBg="#E8F5E9" iconColor="#4CAF50"
+                    icon="chatbubble-outline" iconBgClass="bg-emerald-100 dark:bg-emerald-900/20" iconColorClass="text-emerald-500"
                     title={t('settings.support.chatSupport')}
                     subtitle={t('settings.support.chatSupportSubtitle')}
                     onPress={() => { }}
                 />
                 <SettingsDivider />
                 <ActionRow
-                    icon="mail-outline" iconBg="#FFF3E0" iconColor="#FF9800"
+                    icon="mail-outline" iconBgClass="bg-orange-100 dark:bg-orange-900/20" iconColorClass="text-orange-500"
                     title={t('settings.support.email')}
                     subtitle="support@zalo.me"
                     onPress={() => { }}
                 />
                 <SettingsDivider />
                 <ActionRow
-                    icon="call-outline" iconBg="#E3F2FD" iconColor="#2196F3"
+                    icon="call-outline" iconBgClass="bg-blue-100 dark:bg-blue-900/20" iconColorClass="text-blue-500"
                     title={t('settings.support.hotline')}
                     subtitle="1900 1234"
                     onPress={() => { }}

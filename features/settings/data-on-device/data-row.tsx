@@ -13,13 +13,13 @@ interface DataRowProps {
 
 export function DataRow({ icon, iconColor, title, size, cleanupLabel = 'Dọn dẹp', onCleanup }: DataRowProps) {
     return (
-        <View className="flex-row items-center px-4 py-3.5 border-b border-gray-100">
+        <View className="flex-row items-center px-4 py-3.5 border-b border-border">
             <Ionicons name={icon as any} size={24} color={iconColor} />
-            <Text className="flex-1 text-base text-gray-800 ml-3">{title}</Text>
+            <Text className="flex-1 text-base text-foreground ml-3">{title}</Text>
             <View className="flex-row items-center gap-3">
-                <Text className="text-sm text-gray-500">{size}</Text>
+                <Text className="text-sm text-muted-foreground">{size}</Text>
                 {onCleanup && (
-                    <TouchableOpacity onPress={onCleanup} className="px-3 py-1 rounded-full bg-gray-100">
+                    <TouchableOpacity onPress={onCleanup} className="px-3 py-1 rounded-full bg-secondary">
                         <Text className="text-sm font-medium" style={{ color: '#0068FF' }}>{cleanupLabel}</Text>
                     </TouchableOpacity>
                 )}

@@ -1,1 +1,2 @@
-// No screen-specific components — uses only shared settings components
+export { messageSettingsApi, getMessageSettings, updateMessageSettings } from './api/message-settings.api'
+export { useMessageSettingsQuery, useUpdateMessageSettingsMutation } from './queries/use-message-settings.query'

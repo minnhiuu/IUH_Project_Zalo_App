@@ -25,15 +25,15 @@ export function PasswordField({
 }: PasswordFieldProps) {
     return (
         <View className="gap-1.5">
-            <Text className="text-sm font-medium text-gray-600">{label}</Text>
+            <Text className="text-sm font-medium text-muted-foreground">{label}</Text>
             <View
-                className={`flex-row items-center border rounded-lg px-3 py-2.5 bg-white ${error ? 'border-red-400' : 'border-gray-300'
+                className={`flex-row items-center border rounded-lg px-3 py-2.5 bg-background ${error ? 'border-destructive' : 'border-border'
                     }`}
             >
                 <TextInput
-                    className="flex-1 text-base text-gray-900"
+                    className="flex-1 text-base text-foreground"
                     placeholder={placeholder}
-                    placeholderTextColor="#9CA3AF"
+                    placeholderTextColor="#9FACBC"
                     value={value}
                     onChangeText={onChangeText}
                     secureTextEntry={!show}
@@ -44,11 +44,11 @@ export function PasswordField({
                     <Ionicons
                         name={show ? 'eye-off-outline' : 'eye-outline'}
                         size={20}
-                        color="#9CA3AF"
+                        color="#9FACBC"
                     />
                 </TouchableOpacity>
             </View>
-            {error && <Text className="text-xs text-red-500">{error}</Text>}
+            {error && <Text className="text-xs text-destructive">{error}</Text>}
         </View>
     )
 }

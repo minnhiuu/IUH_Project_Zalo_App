@@ -1,22 +1,26 @@
 import React from 'react'
-import { View } from 'react-native'
+import { View, TouchableOpacity, Image, Text as RNText } from 'react-native'
 import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { Ionicons } from '@expo/vector-icons'
-import { Box, VStack, HStack, Text, Switch, MenuItem, Avatar } from '@/components/ui'
+import { Box, HStack, VStack, Text, Avatar } from '@/components/ui'
 import { AvatarImage, AvatarFallbackText } from '@/components/ui/avatar'
 import { Pressable } from '@/components/ui/pressable'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
-import { SectionLabel } from '@/features/settings'
+import { SectionLabel, SettingsCard, SettingsDivider } from '@/features/settings'
+import { ActionRow } from '@/features/settings/components/action-row'
+import { ToggleRow } from '@/features/settings/components/toggle-row'
 import { useAuthStore } from '@/store'
-
-
+import { useAccountSecuritySettingsQuery, useUpdateAccountSecuritySettingsMutation } from '@/features/settings'
 
 export default function AccountSecurityScreen() {
   const { t } = useTranslation()
   const router = useRouter()
   const { user } = useAuthStore()
-  const [twoFactorEnabled, setTwoFactorEnabled] = React.useState(false)
+  const { data: accountSecuritySettings, isLoading } = useAccountSecuritySettingsQuery()
+  const updateAccountSecurity = useUpdateAccountSecuritySettingsMutation()
+
+  const twoFactorEnabled = accountSecuritySettings?.twoFactorEnabled ?? false
 
   return (
     <SettingsDetailScreen title={t('settings.menu.accountSecurity.title')}>
@@ -24,160 +28,115 @@ export default function AccountSecurityScreen() {
       <SectionLabel blue title={t('settings.accountSecurity.sections.account')} />
 
       {/* Personal Info Card */}
-      <Pressable
-        style={({ pressed }: { pressed: boolean }) => ({
-          marginHorizontal: 16,
-          marginTop: 8,
-          borderRadius: 16,
-          backgroundColor: '#ffffff',
-          borderWidth: 1,
-          borderColor: '#e5e7eb',
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.05,
-          shadowRadius: 2,
-          elevation: 2,
-        })}
-        onPress={() => { }}
+      <TouchableOpacity
+        className='mx-4 my-2 rounded-2xl bg-background border border-border shadow-sm active:bg-secondary'
+        onPress={() => {}}
       >
-        <HStack style={{ alignItems: 'center', padding: 16, borderRadius: 16, overflow: 'hidden' }}>
+        <View className='flex-row items-center p-4 rounded-2xl overflow-hidden'>
           {/* Avatar with blue ring */}
-          <View style={{
-            padding: 2,
-            borderRadius: 999,
-            borderWidth: 2,
-            borderColor: '#0068FF',
-            marginRight: 14,
-          }}>
-            <Avatar size="lg">
-              <AvatarFallbackText style={{ fontSize: 18, color: '#ffffff' }}>
-                {user?.fullName?.[0] || 'U'}
-              </AvatarFallbackText>
-              {user?.avatar && <AvatarImage source={{ uri: user.avatar }} />}
-            </Avatar>
+          <View className='p-0.5 rounded-full border-2 border-primary mr-3.5'>
+            <View className='w-14 h-14 rounded-full bg-primary/10 items-center justify-center overflow-hidden'>
+              {user?.avatar ? (
+                <Image source={{ uri: user.avatar }} className='w-full h-full' />
+              ) : (
+                <RNText className='text-xl font-medium text-primary'>{user?.fullName?.[0] || 'U'}</RNText>
+              )}
+            </View>
           </View>
 
           {/* Name & Label */}
-          <VStack style={{ flex: 1 }}>
-            <Text style={{ fontSize: 12, fontWeight: '500', color: '#0068FF' }}>
-              {t('settings.accountSecurity.personalInfo')}
-            </Text>
-            <Text style={{ fontSize: 17, fontWeight: '700', color: '#111827', marginTop: 2 }}>
-              {user?.fullName || 'N/A'}
-            </Text>
-          </VStack>
+          <View className='flex-1 flex-col'>
+            <RNText className='text-xs font-medium text-primary'>{t('settings.accountSecurity.personalInfo')}</RNText>
+            <RNText className='text-[17px] font-bold text-foreground mt-0.5'>{user?.fullName || 'N/A'}</RNText>
+          </View>
 
           {/* Chevron pill */}
-          <View style={{
-            width: 28,
-            height: 28,
-            borderRadius: 999,
-            backgroundColor: '#f3f4f6',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginLeft: 8,
-          }}>
-            <Ionicons name="chevron-forward" size={16} color="#6b7280" />
+          <View className='w-7 h-7 rounded-full bg-secondary items-center justify-center ml-2'>
+            <Ionicons name='chevron-forward' size={16} className='text-icon-secondary' />
           </View>
-        </HStack>
-      </Pressable>
+        </View>
+      </TouchableOpacity>
 
       {/* Phone, Email, QR */}
-      <VStack style={{ backgroundColor: '#ffffff', marginTop: 8 }}>
-        <MenuItem
-          icon="call-outline"
-          iconColor="#555"
+      <SettingsCard>
+        <ActionRow
+          icon='call-outline'
           title={t('settings.accountSecurity.phone')}
           subtitle={user?.phoneNumber || 'N/A'}
-          onPress={() => { }}
+          onPress={() => {}}
         />
-        <MenuItem
-          icon="mail-outline"
-          iconColor="#555"
+        <SettingsDivider inset={68} />
+        <ActionRow
+          icon='mail-outline'
           title={t('settings.accountSecurity.email')}
           subtitle={user?.email || t('settings.accountSecurity.notLinked')}
-          onPress={() => { }}
+          onPress={() => {}}
         />
-        <MenuItem
-          icon="qr-code-outline"
-          iconColor="#555"
-          title={t('settings.accountSecurity.myQR')}
-          onPress={() => { }}
-        />
-      </VStack>
+        <SettingsDivider inset={68} />
+        <ActionRow icon='qr-code-outline' title={t('settings.accountSecurity.myQR')} onPress={() => {}} />
+      </SettingsCard>
 
       {/* Bảo mật Section */}
       <SectionLabel blue title={t('settings.accountSecurity.sections.security')} />
 
-      <VStack style={{ backgroundColor: '#ffffff' }}>
-        <MenuItem
-          icon="shield-checkmark-outline"
-          iconColor="#555"
+      <SettingsCard>
+        <ActionRow
+          icon='shield-checkmark-outline'
           title={t('settings.accountSecurity.securityCheck')}
           subtitle={t('settings.accountSecurity.securityCheckSubtitle')}
           rightComponent={
             <HStack style={{ alignItems: 'center', gap: 4 }}>
-              <Ionicons name="warning" size={18} color="#F59E0B" />
-              <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+              <Ionicons name='warning' size={18} color='#F59E0B' />
+              <Ionicons name='chevron-forward' size={20} color='#C7C7CC' />
             </HStack>
           }
-          onPress={() => { }}
+          onPress={() => {}}
         />
-        <MenuItem
-          icon="lock-closed-outline"
-          iconColor="#555"
+        <SettingsDivider inset={68} />
+        <ActionRow
+          icon='lock-closed-outline'
           title={t('settings.accountSecurity.lockZalo')}
           rightComponent={
             <HStack style={{ alignItems: 'center', gap: 4 }}>
-              <Text style={{ fontSize: 14, color: '#6b7280' }}>
-                {t('settings.accountSecurity.off')}
-              </Text>
-              <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
+              <Text style={{ fontSize: 14, color: '#6b7280' }}>{t('settings.accountSecurity.off')}</Text>
+              <Ionicons name='chevron-forward' size={20} color='#C7C7CC' />
             </HStack>
           }
-          onPress={() => { }}
+          onPress={() => {}}
         />
-      </VStack>
+      </SettingsCard>
 
       {/* Đăng nhập Section */}
       <SectionLabel blue title={t('settings.accountSecurity.sections.login')} />
 
-      <VStack style={{ backgroundColor: '#ffffff' }}>
-        <HStack style={{ paddingHorizontal: 16, paddingVertical: 14, alignItems: 'center' }}>
-          <View style={{ width: 32, height: 32, alignItems: 'center', justifyContent: 'center', marginRight: 12 }}>
-            <Ionicons name="shield-outline" size={24} color="#555" />
-          </View>
-          <VStack style={{ flex: 1 }}>
-            <Text style={{ fontSize: 16, color: '#000000' }}>
-              {t('settings.accountSecurity.twoFactor')}
-            </Text>
-            <Text style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>
-              {t('settings.accountSecurity.twoFactorSubtitle')}
-            </Text>
-          </VStack>
-          <Switch value={twoFactorEnabled} onValueChange={setTwoFactorEnabled} />
-        </HStack>
+      <SettingsCard>
+        <ToggleRow
+          icon='shield-outline'
+          title={t('settings.accountSecurity.twoFactor')}
+          subtitle={t('settings.accountSecurity.twoFactorSubtitle')}
+          value={twoFactorEnabled}
+          disabled={isLoading || updateAccountSecurity.isPending}
+          onValueChange={(val) => updateAccountSecurity.mutate({ twoFactorEnabled: val })}
+        />
 
-        <Box style={{ height: 0.5, backgroundColor: '#f0f0f0', marginLeft: 60 }} />
+        <SettingsDivider inset={68} />
 
-        <MenuItem
-          icon="phone-portrait-outline"
-          iconColor="#555"
+        <ActionRow
+          icon='phone-portrait-outline'
           title={t('settings.accountSecurity.deviceManagement')}
           subtitle={t('settings.accountSecurity.deviceManagementSubtitle')}
           onPress={() => router.push('/settings/device-management' as any)}
         />
 
-        <Box style={{ height: 0.5, backgroundColor: '#f0f0f0', marginLeft: 60 }} />
+        <SettingsDivider inset={68} />
 
-        <MenuItem
-          icon="lock-closed-outline"
-          iconColor="#555"
+        <ActionRow
+          icon='lock-closed-outline'
           title={t('settings.accountSecurity.changePassword')}
           subtitle={t('settings.accountSecurity.changePasswordSubtitle')}
           onPress={() => router.push('/settings/change-password' as any)}
         />
-      </VStack>
+      </SettingsCard>
 
       <Box style={{ height: 32 }} />
     </SettingsDetailScreen>

@@ -17,7 +17,7 @@ export default function SettingsDetailScreen({ title, children }: SettingsDetail
     const headerBg = isDark ? colors.background : HEADER.backgroundColor
 
     return (
-        <View style={{ flex: 1, backgroundColor: '#f2f2f7' }}>
+        <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
             {/* Header */}
             <View style={{ backgroundColor: headerBg }}>
                 <SafeAreaView edges={['top']} style={{ backgroundColor: headerBg }}>

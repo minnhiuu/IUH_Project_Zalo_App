@@ -13,7 +13,7 @@ interface SettingsCardProps {
  */
 export function SettingsCard({ children, marginTop = 3 }: SettingsCardProps) {
     return (
-        <View className="bg-white" style={{ marginTop }}>
+        <View className="bg-background" style={{ marginTop }}>
             {children}
         </View>
     )

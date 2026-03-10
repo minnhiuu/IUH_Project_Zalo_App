@@ -65,7 +65,7 @@ export const API_ENDPOINTS = {
     GET_BY_ID: (id: string) => `/users/${id}`
   },
   DEVICE: {
-    ACTIVE_SESSIONS: '/auth/devices/active-sessions', // GET - Get all active devices
+    SESSIONS: '/auth/devices/sessions', // GET - Get grouped active devices with sessions
     DELETE: (id: string) => `/auth/devices/${id}`, // DELETE - Delete a device
     LOGOUT_DEVICE: '/auth/logout-device', // POST - Logout a specific device by sessionId
     LOGOUT_OTHERS: '/auth/logout-others' // POST - Logout all other devices
@@ -96,8 +96,19 @@ export const API_ENDPOINTS = {
     MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count` // GET
   },
   SETTINGS: {
-    ME_GENERAL: '/users/settings/me/general', // GET - GeneralSettings { languageEn: boolean }
-    GENERAL: '/users/settings/general'        // PUT - GeneralSettingsUpdateRequest
+    ME: '/users/settings/me', // GET - UserSettingResponse (all sections)
+    BY_USER: (userId: string) => `/users/settings/${userId}`,
+    ME_SECTION: (section: string) => `/users/settings/me/${section}`,
+    LANGUAGE_AND_INTERFACE: '/users/settings/me/language-and-interface',
+    NOTIFICATION: '/users/settings/me/notification',
+    MESSAGE: '/users/settings/me/message',
+    CALL: '/users/settings/me/call',
+    PRIVACY: '/users/settings/me/privacy',
+    CONTACT: '/users/settings/me/contact',
+    BACKUP_RESTORE: '/users/settings/me/backup-restore',
+    ACCOUNT_SECURITY: '/users/settings/me/account-security',
+    JOURNAL: '/users/settings/me/journal',
+    DATA_ON_DEVICE: '/users/settings/me/data-on-device'
   }
 } as const
 

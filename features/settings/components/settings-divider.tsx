@@ -9,7 +9,7 @@ interface SettingsDividerProps {
 export function SettingsDivider({ inset = 64 }: SettingsDividerProps) {
     return (
         <View
-            className="h-px bg-gray-100"
+            className="h-px bg-divider"
             style={inset ? { marginLeft: inset } : undefined}
         />
     )
