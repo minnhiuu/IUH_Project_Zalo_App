@@ -25,6 +25,6 @@ export type DeviceResponse = {
 }
 
 export type DeviceListResponse = {
-  currentDevice: DeviceResponse[]
+  activeDevices: DeviceResponse[]
   otherDevices: DeviceResponse[]
 }

@@ -49,6 +49,9 @@ export function DeviceDetailModal({
 
   const isMobile = device.deviceType === DeviceType.MOBILE
   const isCurrent = device.isCurrentDevice
+  const isInactive = !Boolean(device.isActive)
+  const canShowLogout = !isCurrent && !isInactive && !!onLogoutDevice
+  const canShowDelete = !isCurrent && isInactive && !!onDelete
 
   const formatTimestamp = (ts: number | null | undefined) => (ts ? format(fromUnixTime(ts), 'Pp') : null)
   const formatDate = (d: string | null | undefined) => (d ? format(new Date(d), 'Pp') : null)
@@ -56,7 +59,6 @@ export function DeviceDetailModal({
   return (
     <BottomSheet visible={visible} onClose={onClose}>
       <View style={{ maxHeight: SCREEN_HEIGHT * 0.5 }}>
-
         {/* Header */}
         <View className='flex-row items-center px-4 py-3 border-b border-border'>
           <View
@@ -90,10 +92,7 @@ export function DeviceDetailModal({
             label={t('settings.deviceManagement.detail.lastActiveTime')}
             value={formatDate(device.lastActiveTime)}
           />
-          <DetailRow
-            label={t('settings.deviceManagement.detail.issuedAt')}
-            value={formatTimestamp(device.issuedAt)}
-          />
+          <DetailRow label={t('settings.deviceManagement.detail.issuedAt')} value={formatTimestamp(device.issuedAt)} />
           <DetailRow
             label={t('settings.deviceManagement.detail.expiresAt')}
             value={formatTimestamp(device.expiresAt)}
@@ -108,13 +107,13 @@ export function DeviceDetailModal({
         </ScrollView>
 
         {/* Actions */}
-        {!isCurrent && (onLogoutDevice || onDelete) && (
+        {(canShowLogout || canShowDelete) && (
           <View className='px-4 pt-3 pb-4 gap-2 border-t border-border'>
-            {onLogoutDevice && (
+            {canShowLogout && (
               <TouchableOpacity
                 onPress={() => {
                   onClose()
-                  onLogoutDevice(device.sessionId)
+                  onLogoutDevice?.(device.sessionId)
                 }}
                 disabled={isPendingLogout}
                 className='flex-row items-center justify-center gap-2 border border-orange-200 bg-orange-50 rounded-lg py-3'
@@ -127,11 +126,11 @@ export function DeviceDetailModal({
                 <Text className='text-orange-600 font-medium text-sm'>{logoutLabel}</Text>
               </TouchableOpacity>
             )}
-            {onDelete && (
+            {canShowDelete && (
               <TouchableOpacity
                 onPress={() => {
                   onClose()
-                  onDelete(device.id)
+                  onDelete?.(device.id)
                 }}
                 disabled={isPendingDelete}
                 className='flex-row items-center justify-center gap-2 border border-red-200 bg-red-50 rounded-lg py-3'
@@ -146,7 +145,6 @@ export function DeviceDetailModal({
             )}
           </View>
         )}
-
       </View>
     </BottomSheet>
   )

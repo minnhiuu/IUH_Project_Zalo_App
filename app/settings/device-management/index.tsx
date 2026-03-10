@@ -27,7 +27,7 @@ export default function DeviceManagementScreen() {
     message: string
     confirmText?: string
     onConfirm: () => void
-  }>({ visible: false, message: '', onConfirm: () => { } })
+  }>({ visible: false, message: '', onConfirm: () => {} })
 
   const handleDeleteDevice = (deviceId: string) => {
     setConfirmConfig({
@@ -65,7 +65,7 @@ export default function DeviceManagementScreen() {
     })
   }
 
-  const activeDevices = devices?.currentDevice || []
+  const activeDevices = devices?.activeDevices || []
   const inactiveDevices = devices?.otherDevices || []
   const totalDevicesCount = activeDevices.length + inactiveDevices.length
 
@@ -116,10 +116,11 @@ export default function DeviceManagementScreen() {
             <TouchableOpacity
               onPress={handleLogoutOtherDevices}
               disabled={logoutOtherDevicesMutation.isPending || totalDevicesCount <= 1}
-              className={`flex-row items-center justify-center gap-2 border rounded-lg py-3 px-4 ${logoutOtherDevicesMutation.isPending || totalDevicesCount <= 1
-                ? 'border-gray-200 opacity-50'
-                : 'border-red-200 bg-red-50'
-                }`}
+              className={`flex-row items-center justify-center gap-2 border rounded-lg py-3 px-4 ${
+                logoutOtherDevicesMutation.isPending || totalDevicesCount <= 1
+                  ? 'border-gray-200 opacity-50'
+                  : 'border-red-200 bg-red-50'
+              }`}
             >
               {logoutOtherDevicesMutation.isPending && <ActivityIndicator size='small' color='#EF4444' />}
               <Ionicons name='log-out-outline' size={20} color='#EF4444' />
