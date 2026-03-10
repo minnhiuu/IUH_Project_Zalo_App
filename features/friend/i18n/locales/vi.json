@@ -58,7 +58,7 @@
     "loading": "Đang tải...",
     "error": "Có lỗi xảy ra, vui lòng thử lại",
     "addFriend": {
-      "title": "Thêm bạn",
+      "title": "Kết bạn",
       "phoneInput": "Nhập số điện thoại",
       "scanQR": "Quét mã QR",
       "mayKnow": "Bạn bè có thể quen",
@@ -66,7 +66,10 @@
       "qrHint": "Quét mã để thêm bạn Zalo với tôi",
       "noResult": "Không tìm thấy người dùng",
       "searching": "Đang tìm kiếm...",
-      "defaultMessage": "Xin chào, mình là {{name}}. Kết bạn với mình nhé!"
+      "defaultMessage": "Xin chào, mình là {{name}}. Kết bạn với mình nhé!",
+      "messagePlaceholder": "Nhập lời nhắn gửi kèm...",
+      "blockActivityLabel": "Chặn người này xem hoạt động của tôi",
+      "sendRequest": "Gửi yêu cầu"
     },
     "profile": {
       "notFriendJournal": "Bạn chưa thể xem nhật ký của {{name}} khi chưa là bạn bè",

@@ -14,8 +14,9 @@ export const useSendFriendRequest = () => {
   return useMutation({
     mutationFn: (request: FriendRequestSendRequest) => friendApi.sendFriendRequest(request),
     onSuccess: (_data, variables) => {
+      // Invalidate and immediately refetch status for the receiver
       queryClient.invalidateQueries({ queryKey: friendKeys.sentRequests() })
-      queryClient.invalidateQueries({ queryKey: friendKeys.status(variables.receiverId) })
+      queryClient.refetchQueries({ queryKey: friendKeys.status(variables.receiverId) })
 
       Toast.show({
         type: 'success',
@@ -80,10 +81,15 @@ export const useCancelFriendRequest = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (friendshipId: string) => friendApi.cancelFriendRequest(friendshipId),
-    onSuccess: () => {
+    mutationFn: ({ friendshipId }: { friendshipId: string; userId?: string }) =>
+      friendApi.cancelFriendRequest(friendshipId),
+    onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: friendKeys.sentRequests() })
       queryClient.invalidateQueries({ queryKey: friendKeys.all })
+      // Refetch status for the specific user if provided
+      if (variables.userId) {
+        queryClient.refetchQueries({ queryKey: friendKeys.status(variables.userId) })
+      }
 
       Toast.show({
         type: 'success',

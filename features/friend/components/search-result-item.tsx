@@ -2,10 +2,12 @@ import React from 'react'
 import { View, TouchableOpacity, Image, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
+import { useRouter } from 'expo-router'
 import { Text } from '@/components/ui/text'
 import { SEMANTIC, BRAND } from '@/constants/theme'
 import { useFriendshipStatus } from '@/features/friend/queries'
-import { useSendFriendRequest, useCancelFriendRequest } from '@/features/friend/queries'
+import { useCancelFriendRequest } from '@/features/friend/queries'
+import { FriendStatus } from '@/features/friend/schemas'
 import { useAuthStore } from '@/store'
 
 interface SearchResultItemProps {
@@ -20,27 +22,32 @@ interface SearchResultItemProps {
 
 export function SearchResultItem({ user: resultUser, onPress }: SearchResultItemProps) {
   const { t } = useTranslation()
+  const router = useRouter()
   const currentUser = useAuthStore((s) => s.user)
   const { data: status, isLoading: statusLoading } = useFriendshipStatus(resultUser.id)
-  const sendRequest = useSendFriendRequest()
   const cancelRequest = useCancelFriendRequest()
 
   const isMe = currentUser?.id === resultUser.id
 
-  const handleSendRequest = () => {
-    const defaultMessage = t('friend.addFriend.defaultMessage', {
-      name: currentUser?.fullName || '',
+  // Navigate to Add Friend Confirmation screen instead of direct API call
+  const handleAddFriend = () => {
+    router.push({
+      pathname: '/add-friend-confirm/[id]' as any,
+      params: {
+        id: resultUser.id,
+        fullName: resultUser.fullName,
+        avatar: resultUser.avatar || '',
+      },
     })
-    sendRequest.mutate({ receiverId: resultUser.id, message: defaultMessage })
   }
 
   const handleCancel = () => {
     if (status?.friendshipId) {
-      cancelRequest.mutate(status.friendshipId)
+      cancelRequest.mutate({ friendshipId: status.friendshipId, userId: resultUser.id })
     }
   }
 
-  const isMutating = sendRequest.isPending || cancelRequest.isPending
+  const isMutating = cancelRequest.isPending
 
   const renderActionButton = () => {
     if (isMe) return null
@@ -48,32 +55,15 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
       return <ActivityIndicator size="small" color="#0068FF" />
     }
 
-    // Already friends
     if (status?.areFriends) {
-      return (
-        <TouchableOpacity
-          onPress={() => onPress?.(resultUser.id)}
-          activeOpacity={0.7}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingVertical: 8,
-            paddingHorizontal: 14,
-            borderRadius: 18,
-            backgroundColor: '#F3F4F6',
-            gap: 4,
-          }}
-        >
-          <Ionicons name="chatbubble-outline" size={16} color="#6b7280" />
-          <Text style={{ fontSize: 13, fontWeight: '600', color: '#6b7280' }}>
-            {t('friend.actions.message')}
-          </Text>
-        </TouchableOpacity>
-      )
+      return null
     }
 
-    // Pending — I sent
-    if (status?.status === 'PENDING' && status?.requestedBy === currentUser?.id) {
+    // Check if I sent a pending request
+    const isPending = status?.status === FriendStatus.PENDING
+    const iSentRequest = status?.requestedBy === currentUser?.id
+
+    if (isPending && iSentRequest) {
       return (
         <TouchableOpacity
           onPress={handleCancel}
@@ -103,35 +93,15 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
       )
     }
 
-    // Pending — They sent me
-    if (status?.status === 'PENDING') {
-      return (
-        <TouchableOpacity
-          onPress={() => onPress?.(resultUser.id)}
-          activeOpacity={0.7}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingVertical: 8,
-            paddingHorizontal: 14,
-            borderRadius: 18,
-            backgroundColor: BRAND.blueLight,
-            gap: 4,
-          }}
-        >
-          <Ionicons name="checkmark-circle-outline" size={16} color={SEMANTIC.primary} />
-          <Text style={{ fontSize: 13, fontWeight: '600', color: SEMANTIC.primary }}>
-            {t('friend.actions.accept')}
-          </Text>
-        </TouchableOpacity>
-      )
+    // They sent me a request - don't show button
+    if (isPending) {
+      return null
     }
 
-    // No relationship → Kết bạn
+    // Not friends - show "Kết bạn" button (navigates to confirmation screen)
     return (
       <TouchableOpacity
-        onPress={handleSendRequest}
-        disabled={isMutating}
+        onPress={handleAddFriend}
         activeOpacity={0.7}
         style={{
           flexDirection: 'row',
@@ -143,16 +113,10 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
           gap: 4,
         }}
       >
-        {isMutating ? (
-          <ActivityIndicator size="small" color={SEMANTIC.primary} />
-        ) : (
-          <>
-            <Ionicons name="person-add-outline" size={16} color={SEMANTIC.primary} />
-            <Text style={{ fontSize: 13, fontWeight: '600', color: SEMANTIC.primary }}>
-              {t('friend.actions.addFriend')}
-            </Text>
-          </>
-        )}
+        <Ionicons name="person-add-outline" size={16} color={SEMANTIC.primary} />
+        <Text style={{ fontSize: 13, fontWeight: '600', color: SEMANTIC.primary }}>
+          {t('friend.actions.addFriend')}
+        </Text>
       </TouchableOpacity>
     )
   }

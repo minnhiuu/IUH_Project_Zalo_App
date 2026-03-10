@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import { Text } from '@/components/ui/text'
 import { SEMANTIC, BRAND } from '@/constants/theme'
 import { useFriendshipStatus } from '@/features/friend/queries/use-queries'
-import { useSendFriendRequest, useUnfriend } from '@/features/friend/queries/use-mutations'
+import { useUnfriend } from '@/features/friend/queries/use-mutations'
 import { useUserById } from '@/features/users/queries/use-queries'
 import { useTheme } from '@/context/theme-context'
 
@@ -23,7 +23,6 @@ export default function UserProfileScreen() {
 
   const { data: userProfile, isLoading: profileLoading } = useUserById(id as string)
   const { data: friendshipStatus, isLoading: statusLoading } = useFriendshipStatus(id as string)
-  const sendFriendRequest = useSendFriendRequest()
   const unfriend = useUnfriend()
 
   const isLoading = profileLoading || statusLoading
@@ -31,9 +30,17 @@ export default function UserProfileScreen() {
   const isPending = friendshipStatus?.status === 'PENDING'
   const isRequester = friendshipStatus?.requestedBy !== null
 
+  // Navigate to Add Friend Confirmation screen
   const handleAddFriend = () => {
-    if (!id) return
-    sendFriendRequest.mutate({ receiverId: id as string })
+    if (!id || !userProfile) return
+    router.push({
+      pathname: '/add-friend-confirm/[id]' as any,
+      params: {
+        id: id as string,
+        fullName: userProfile.fullName,
+        avatar: userProfile.avatar || '',
+      },
+    })
   }
 
   const handleUnfriend = () => {
@@ -300,7 +307,6 @@ export default function UserProfileScreen() {
             {!isFriend && !isPending && (
               <TouchableOpacity
                 onPress={handleAddFriend}
-                disabled={sendFriendRequest.isPending}
                 activeOpacity={0.7}
                 style={{
                   width: 48,
@@ -311,11 +317,7 @@ export default function UserProfileScreen() {
                   justifyContent: 'center'
                 }}
               >
-                {sendFriendRequest.isPending ? (
-                  <ActivityIndicator size='small' color='#0068FF' />
-                ) : (
-                  <Ionicons name='person-add-outline' size={22} color={isDark ? '#DFE2E7' : '#374151'} />
-                )}
+                <Ionicons name='person-add-outline' size={22} color={isDark ? '#DFE2E7' : '#374151'} />
               </TouchableOpacity>
             )}
 

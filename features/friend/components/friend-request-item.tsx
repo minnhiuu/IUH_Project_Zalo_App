@@ -11,7 +11,7 @@ interface FriendRequestItemProps {
   type: 'received' | 'sent'
   onAccept?: (friendshipId: string) => void
   onDecline?: (friendshipId: string) => void
-  onCancel?: (friendshipId: string) => void
+  onCancel?: (friendshipId: string, userId: string) => void
   isLoading?: boolean
 }
 
@@ -194,7 +194,7 @@ export function FriendRequestItem({
       {/* Sent: withdraw button on same row, right-aligned */}
       {!isLoading && type === 'sent' && (
         <TouchableOpacity
-          onPress={() => onCancel?.(request.id)}
+          onPress={() => onCancel?.(request.id, request.receivedUserId)}
           activeOpacity={0.7}
           style={{
             paddingHorizontal: 16,

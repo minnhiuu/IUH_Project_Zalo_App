@@ -66,7 +66,10 @@
       "qrHint": "Scan code to add me on Zalo",
       "noResult": "User not found",
       "searching": "Searching...",
-      "defaultMessage": "Hi, I'm {{name}}. Let's be friends!"
+      "defaultMessage": "Hi, I'm {{name}}. Let's be friends!",
+      "messagePlaceholder": "Enter a message...",
+      "blockActivityLabel": "Block this person from viewing my activity",
+      "sendRequest": "Send Request"
     },
     "profile": {
       "notFriendJournal": "You can't view {{name}}'s journal until you are friends",

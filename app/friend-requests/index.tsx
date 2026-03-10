@@ -81,9 +81,9 @@ export default function FriendRequestsScreen() {
     })
   }
 
-  const handleCancel = (friendshipId: string) => {
+  const handleCancel = (friendshipId: string, userId: string) => {
     addLoadingId(friendshipId)
-    cancelMutation.mutate(friendshipId, {
+    cancelMutation.mutate({ friendshipId, userId }, {
       onSettled: () => removeLoadingId(friendshipId),
     })
   }
