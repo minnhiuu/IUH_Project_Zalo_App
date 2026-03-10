@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { isAxiosError } from 'axios'
 import Toast from 'react-native-toast-message'
 import { useTranslation } from 'react-i18next'
 import { getLanguageAndInterfaceSettings, updateLanguageAndInterfaceSettings } from '../api/interface-language.api'
@@ -56,6 +57,10 @@ export const useUpdateLanguageAndInterfaceMutation = () => {
 
       if (context?.previousMySettings) {
         queryClient.setQueryData(settingsKeys.me(), context.previousMySettings)
+      }
+
+      if (isAxiosError(_error) && _error.response?.status === 401) {
+        return
       }
 
       Toast.show({

@@ -57,13 +57,38 @@ export const clearTokens = async (): Promise<void> => {
   }
 }
 
+type UnauthorizedHandler = () => void | Promise<void>
+
+let unauthorizedHandler: UnauthorizedHandler | null = null
+let isHandlingUnauthorized = false
+
+export const setUnauthorizedHandler = (handler: UnauthorizedHandler | null): void => {
+  unauthorizedHandler = handler
+}
+
+const handleUnauthorizedSession = async (): Promise<void> => {
+  if (isHandlingUnauthorized) return
+
+  isHandlingUnauthorized = true
+  try {
+    await clearTokens()
+    await unauthorizedHandler?.()
+  } catch (error) {
+    console.error('[http] handleUnauthorizedSession error:', error)
+  } finally {
+    setTimeout(() => {
+      isHandlingUnauthorized = false
+    }, 300)
+  }
+}
+
 // Refresh token logic
 let isRefreshing = false
 let refreshPromise: Promise<string | null> | null = null
-let failedQueue: Array<{
+let failedQueue: {
   resolve: (token: string | null) => void
   reject: (error: Error) => void
-}> = []
+}[] = []
 
 const processQueue = (error: Error | null, token: string | null = null): void => {
   failedQueue.forEach((prom) => {
@@ -189,9 +214,19 @@ http.interceptors.response.use(
       _retry?: boolean
     }
 
+    const isAuthRequest =
+      originalRequest?.url?.includes('/auth/login') ||
+      originalRequest?.url?.includes('/auth/register') ||
+      originalRequest?.url?.includes('/auth/refresh')
+
     // Handle 401 - try to refresh token
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (originalRequest.url?.includes('/auth/refresh')) {
+        await handleUnauthorizedSession()
+        return Promise.reject(error)
+      }
+
+      if (isAuthRequest) {
         return Promise.reject(error)
       }
 
@@ -218,8 +253,13 @@ http.interceptors.response.use(
         }
         return http(originalRequest)
       } catch (refreshError) {
+        await handleUnauthorizedSession()
         return Promise.reject(refreshError)
       }
+    }
+
+    if (error.response?.status === 401 && !isAuthRequest) {
+      await handleUnauthorizedSession()
     }
 
     return Promise.reject(error)
