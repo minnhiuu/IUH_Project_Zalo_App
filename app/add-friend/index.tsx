@@ -24,10 +24,23 @@ export default function AddFriendScreen() {
 
   const debouncedPhone = useDebounce(phoneNumber, 500)
   const shouldSearch = debouncedPhone.length >= 2
-  const { data: searchResults, isLoading: searching } = useSearchUsers(
+  const { data: searchResults, isLoading: searching, error, isError } = useSearchUsers(
     debouncedPhone,
     shouldSearch,
   )
+
+  // Debug logging
+  React.useEffect(() => {
+    if (shouldSearch) {
+      console.log('[AddFriend] Searching for:', debouncedPhone, 'shouldSearch:', shouldSearch)
+    }
+    if (isError) {
+      console.error('[AddFriend] Search error:', (error as any)?.response?.status, (error as any)?.response?.data || (error as any)?.message)
+    }
+    if (searchResults) {
+      console.log('[AddFriend] Search results:', searchResults?.length, 'items')
+    }
+  }, [shouldSearch, debouncedPhone, isError, error, searchResults])
 
   const handleSearch = useCallback(() => {
     if (!phoneNumber.trim()) return
@@ -183,6 +196,17 @@ export default function AddFriendScreen() {
                 <ActivityIndicator size="small" color="#0068FF" />
                 <Text style={{ fontSize: 13, color: '#9ca3af', marginTop: 8 }}>
                   {t('friend.addFriend.searching')}
+                </Text>
+              </View>
+            ) : isError ? (
+              <View style={{ padding: 20, alignItems: 'center' }}>
+                <Ionicons name="alert-circle-outline" size={24} color="#EF4444" />
+                <Text style={{ fontSize: 14, color: '#EF4444', marginTop: 8, textAlign: 'center' }}>
+                  {(error as any)?.response?.status === 401
+                    ? 'Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.'
+                    : (error as any)?.message?.includes('Network')
+                      ? 'Không thể kết nối đến server. Kiểm tra kết nối mạng.'
+                      : `Lỗi tìm kiếm: ${(error as any)?.response?.data?.message || (error as any)?.message || 'Unknown error'}`}
                 </Text>
               </View>
             ) : searchResults && searchResults.length > 0 ? (
