@@ -571,6 +571,89 @@
     "promo": {
       "title": "Tặng bạn ưu đãi năm mới từ zStyle",
       "subtitle": "Chỉ từ 10.700đ/tháng, nhận ưu đãi ngay"
+    },
+    "owner": {
+      "updateProfile": "Cập nhật giới thiệu bản thân",
+      "updateSuccess": "Cập nhật thông tin thành công",
+      "customizeStyle": "Cài zStyle",
+      "myPhotos": "Ảnh của tôi",
+      "storage": "Kho lưu trữ",
+      "todayQuestion": "Hôm nay {{name}} có gì vui?",
+      "journalPrompt": "Đây là Nhật ký của bạn - Hãy làm đầy Nhật ký với những dấu ấn cuộc đời và kỷ niệm đáng nhớ nhé!",
+      "postToJournal": "Đăng lên Nhật ký"
+    },
+    "editBio": {
+      "title": "Chính sửa lời giới thiệu",
+      "placeholder": "Thêm giới thiệu bản thân",
+      "shareToJournal": "Chia sẻ lên nhật ký",
+      "characterCount": "{{current}}/{{max}}"
+    },
+    "friend": {
+      "noActivity": "{{name}} chưa có hoạt động nào. Hãy trò chuyện để hiểu nhau hơn.",
+      "message": "Nhắn tin"
+    },
+    "avatar": {
+      "title": "Ảnh đại diện",
+      "view": "Xem ảnh đại diện",
+      "chooseFromGallery": "Chọn ảnh trên máy",
+      "chooseFrame": "Chọn khung ảnh đại diện",
+      "chooseDecoration": "Chọn trang trí ảnh đại diện zStyle",
+      "updateSuccess": "Cập nhật ảnh đại diện thành công",
+      "takePhoto": "Chụp ảnh mới"
+    },
+    "cover": {
+      "title": "Ảnh bìa",
+      "chooseFromZStyle": "Chọn từ Kho ảnh zStyle",
+      "view": "Xem ảnh bìa",
+      "takePhoto": "Chụp ảnh mới",
+      "chooseFromGallery": "Chọn ảnh trên máy",
+      "updateSuccess": "Cập nhật ảnh bìa thành công"
+    },
+    "menu": {
+      "information": "Thông tin",
+      "personalInfo": "Thông tin",
+      "changeNickname": "Đổi tên gọi nhớ",
+      "markAsBestFriend": "Đánh dấu bạn thân",
+      "introduceToFriends": "Giới thiệu cho bạn bè",
+      "notificationSection": "Thông báo",
+      "notifications": "Nhận thông báo về hoạt động mới của người này",
+      "blockAndHideSection": "Chặn và ẩn khỏi nhật ký",
+      "blockMyActivity": "Chặn xem hoạt động của tôi",
+      "hideTheirActivity": "Ẩn hoạt động của người này",
+      "reportSection": "Báo xấu",
+      "report": "Báo xấu",
+      "unfriend": "Xóa bạn"
+    },
+    "personalInfo": {
+      "title": "Thông tin cá nhân",
+      "gender": "Giới tính",
+      "dob": "Ngày sinh",
+      "phone": "Điện thoại",
+      "phoneNote": "Số điện thoại chỉ hiển thị với người có lưu số bạn trong danh bạ máy",
+      "phoneNoteOther": "Số điện thoại được hiển thị do danh bạ máy của bạn có lưu số người này",
+      "edit": "Chính sửa",
+      "male": "Nam",
+      "female": "Nữ",
+      "other": "Khác"
+    },
+    "editProfile": {
+      "title": "Chỉnh sửa thông tin",
+      "fullName": "Họ và tên",
+      "dob": "Ngày sinh",
+      "gender": "Giới tính",
+      "male": "Nam",
+      "female": "Nữ",
+      "save": "LƯU",
+      "updateSuccess": "Cập nhật thông tin thành công",
+      "selectDate": "Chọn ngày sinh",
+      "cancel": "Hủy",
+      "confirm": "Xác nhận"
+    }
+  },
+  "user": {
+    "update": {
+      "fullNameRequired": "Họ tên không được để trống",
+      "dobInvalid": "Ngày sinh phải là ngày trong quá khứ hoặc hiện tại"
     }
   }
 }
