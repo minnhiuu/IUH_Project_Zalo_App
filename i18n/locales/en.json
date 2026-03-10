@@ -605,6 +605,89 @@
     "promo": {
       "title": "New year special offer from zStyle",
       "subtitle": "From only 10,700đ/month, get offer now"
+    },
+    "owner": {
+      "updateProfile": "Update bio",
+      "updateSuccess": "Profile updated successfully",
+      "customizeStyle": "Customize zStyle",
+      "myPhotos": "My photos",
+      "storage": "Storage",
+      "todayQuestion": "What's new with {{name}} today?",
+      "journalPrompt": "This is your Journal - Fill it with life moments and memorable experiences!",
+      "postToJournal": "Post to Journal"
+    },
+    "editBio": {
+      "title": "Edit bio",
+      "placeholder": "Add your bio",
+      "shareToJournal": "Share to journal",
+      "characterCount": "{{current}}/{{max}}"
+    },
+    "friend": {
+      "noActivity": "{{name}} has no activity yet. Start a conversation to get to know each other better.",
+      "message": "Message"
+    },
+    "avatar": {
+      "title": "Profile Picture",
+      "view": "View profile picture",
+      "chooseFromGallery": "Choose from gallery",
+      "chooseFrame": "Choose profile frame",
+      "chooseDecoration": "Choose zStyle decoration",
+      "updateSuccess": "Profile picture updated successfully",
+      "takePhoto": "Take new photo"
+    },
+    "cover": {
+      "title": "Cover Photo",
+      "chooseFromZStyle": "Choose from zStyle Gallery",
+      "view": "View cover photo",
+      "takePhoto": "Take new photo",
+      "chooseFromGallery": "Choose from gallery",
+      "updateSuccess": "Cover photo updated successfully"
+    },
+    "menu": {
+      "information": "Information",
+      "personalInfo": "Personal information",
+      "changeNickname": "Change nickname",
+      "markAsBestFriend": "Mark as best friend",
+      "introduceToFriends": "Introduce to friends",
+      "notificationSection": "Notifications",
+      "notifications": "Receive notifications about this person's new activities",
+      "blockAndHideSection": "Block and hide from journal",
+      "blockMyActivity": "Block view of my activity",
+      "hideTheirActivity": "Hide this person's activity",
+      "reportSection": "Report",
+      "report": "Report",
+      "unfriend": "Unfriend"
+    },
+    "personalInfo": {
+      "title": "Personal information",
+      "gender": "Gender",
+      "dob": "Date of birth",
+      "phone": "Phone",
+      "phoneNote": "Phone number is only visible to people who have your number in their contacts",
+      "phoneNoteOther": "Phone number is displayed because your contacts have this person's number",
+      "edit": "Edit",
+      "male": "Male",
+      "female": "Female",
+      "other": "Other"
+    },
+    "editProfile": {
+      "title": "Edit information",
+      "fullName": "Full name",
+      "dob": "Date of birth",
+      "gender": "Gender",
+      "male": "Male",
+      "female": "Female",
+      "save": "SAVE",
+      "updateSuccess": "Profile updated successfully",
+      "selectDate": "Select date of birth",
+      "cancel": "Cancel",
+      "confirm": "Confirm"
+    }
+  },
+  "user": {
+    "update": {
+      "fullNameRequired": "Full name is required",
+      "dobInvalid": "Date of birth must be in the past or present"
     }
   }
 }
