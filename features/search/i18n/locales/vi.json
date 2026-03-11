@@ -13,7 +13,8 @@
       "all": "Tất cả",
       "contacts": "Liên hệ",
       "messages": "Tin nhắn",
-      "discover": "Khám phá"
+      "discover": "Khám phá",
+      "file": "File"
     },
     "sections": {
       "discover": "Khám phá",
@@ -42,6 +43,8 @@
     "validation": {
       "idRequired": "ID không được để trống",
       "nameRequired": "Tên không được để trống"
-    }
+    },
+    "findByPhone": "Tìm bạn qua số điện thoại:",
+    "phoneNumber": "Số điện thoại:"
   }
 }

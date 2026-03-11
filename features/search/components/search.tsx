@@ -7,6 +7,7 @@ import {
   useRemoveRecentSearch,
   useClearAllRecentSearch
 } from '../queries'
+import { useMyProfile } from '@/features/users'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -21,7 +22,7 @@ import { RecentSearchList } from './recent-search-list'
 import { RecentSearchResponse } from '../schemas/search-schema'
 import { SearchType } from '@/constants/enum'
 
-export type SearchTab = 'all' | 'contacts' | 'messages' | 'discover'
+export type SearchTab = 'all' | 'contacts' | 'messages' | 'discover' | 'file'
 
 const MOCK_MESSAGES = [
   {
@@ -58,7 +59,8 @@ export function Search() {
 
   const { data: recentItems = [], refetch: refetchItems } = useRecentSearchItems()
   const { data: recentQueriesData = [], refetch: refetchQueries } = useRecentSearchQueries()
-
+  const { data: myProfile } = useMyProfile()
+ 
   const addRecentSearch = useAddRecentSearch()
   const removeRecentSearch = useRemoveRecentSearch()
   const clearAllRecentSearch = useClearAllRecentSearch()
@@ -92,10 +94,13 @@ export function Search() {
 
   const handleSearchSubmit = () => {
     if (!searchQuery.trim()) return
-
+ 
+    const trimmedQuery = searchQuery.trim()
+    const isSelfPhone = myProfile?.phoneNumber === trimmedQuery
+ 
     addRecentSearch.mutate({
-      id: `k-${Date.now()}`,
-      name: searchQuery.trim(),
+      id: isSelfPhone ? myProfile.id : `k-${Date.now()}`,
+      name: trimmedQuery,
       type: SearchType.Keyword
     })
   }
@@ -127,7 +132,8 @@ export function Search() {
     { key: 'all', label: t('search.tabs.all') },
     { key: 'contacts', label: t('search.tabs.contacts') },
     { key: 'messages', label: t('search.tabs.messages') },
-    { key: 'discover', label: t('search.tabs.discover') }
+    { key: 'discover', label: t('search.tabs.discover') },
+    { key: 'file', label: t('search.tabs.file') }
   ]
 
   const renderEmptyState = () => {
@@ -152,6 +158,11 @@ export function Search() {
     const isMessage = item.id.startsWith('m')
 
     if (!isMessage) {
+      if (item.id === myProfile?.id) {
+        router.push(`/user-profile/${item.id}` as any)
+        return
+      }
+ 
       addRecentSearch.mutate({
         id: item.id,
         name: item.fullName || item.senderName,

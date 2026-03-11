@@ -13,7 +13,8 @@
       "all": "All",
       "contacts": "Contacts",
       "messages": "Messages",
-      "discover": "Discover"
+      "discover": "Discover",
+      "file": "File"
     },
     "sections": {
       "discover": "Discover",
@@ -42,6 +43,8 @@
     "validation": {
       "idRequired": "ID is required",
       "nameRequired": "Name is required"
-    }
+    },
+    "findByPhone": "Find friends by phone number:",
+    "phoneNumber": "Phone number:"
   }
 }
