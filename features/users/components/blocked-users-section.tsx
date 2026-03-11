@@ -149,7 +149,7 @@ function BlockedUserItem({ user, onUnblock, isPending }: BlockedUserItemProps) {
 }
 
 export function BlockedUsersSection() {
-  const { data: blockedUsers, isLoading } = useMyBlockedUsers()
+  const { data: blockedUsers, isLoading, isError, refetch } = useMyBlockedUsers()
   const unblockMutation = useUnblockUser()
 
   const handleUnblock = (user: BlockedUserDetailResponse) => {
@@ -174,14 +174,27 @@ export function BlockedUsersSection() {
     )
   }
 
+  if (isError) {
+    return (
+      <View style={{ alignItems: 'center', paddingVertical: 48 }}>
+        <Ionicons name='alert-circle-outline' size={48} color='#CBD5E1' />
+        <Text style={{ color: '#64748B', marginTop: 12, fontSize: 15 }}>Không thể tải danh sách</Text>
+        <TouchableOpacity
+          onPress={() => refetch()}
+          style={{ marginTop: 12, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#CBD5E1' }}
+        >
+          <Text style={{ fontSize: 13, color: '#374151' }}>Thử lại</Text>
+        </TouchableOpacity>
+      </View>
+    )
+  }
+
   if (!blockedUsers || blockedUsers.length === 0) {
     return (
       <View style={{ alignItems: 'center', paddingVertical: 48 }}>
         <Ionicons name='ban-outline' size={48} color='#CBD5E1' />
         <Text style={{ color: '#64748B', marginTop: 12, fontSize: 15 }}>Bạn chưa chặn ai</Text>
-        <Text style={{ color: '#94A3B8', marginTop: 4, fontSize: 13 }}>
-          Khi bạn chặn người dùng, họ sẽ xuất hiện ở đây
-        </Text>
+
       </View>
     )
   }
@@ -190,7 +203,10 @@ export function BlockedUsersSection() {
     <FlatList
       data={blockedUsers}
       keyExtractor={(item) => item.id}
+      style={{ flex: 1 }}
       contentContainerStyle={{ padding: 16 }}
+      onRefresh={() => refetch()}
+      refreshing={isLoading}
       renderItem={({ item }) => (
         <BlockedUserItem
           user={item}

@@ -6,7 +6,7 @@ index 1234567..abcdefg 100644
    "main": "index.js",
    "module": "index.js",
    "types": "index.d.ts",
-   "version": "1.0.23",
+   "version": "1.0.28",
 -  "react-native": "src/index",
 -  "source": "src/index",
 +  "react-native": "index.js",

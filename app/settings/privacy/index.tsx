@@ -4,6 +4,7 @@ import SettingsDetailScreen from '@/components/SettingsDetailScreen'
 import { Ionicons } from '@expo/vector-icons'
 import { Box, VStack, HStack, Text, MenuItem } from '@/components/ui'
 import { useTranslation } from 'react-i18next'
+import { useRouter } from 'expo-router'
 
 // Section header - blue text like Zalo
 const SectionHeader = ({ title }: { title: string }) => (
@@ -16,6 +17,7 @@ const SectionHeader = ({ title }: { title: string }) => (
 
 export default function PrivacyScreen() {
   const { t } = useTranslation()
+  const router = useRouter()
 
   return (
     <SettingsDetailScreen title={t('settings.menu.privacy.title')}>
@@ -107,7 +109,7 @@ export default function PrivacyScreen() {
           icon="ban-outline"
           iconColor="#555"
           title={t('settings.privacy.blockAndHide')}
-          onPress={() => {}}
+          onPress={() => router.push('/settings/privacy/blocked-users')}
         />
       </VStack>
 
