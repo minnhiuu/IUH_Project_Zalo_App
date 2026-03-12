@@ -65,8 +65,15 @@ export const API_ENDPOINTS = {
     UPDATE_AVATAR: '/users/profile/avatar', // PATCH - Update avatar
     UPDATE_BACKGROUND: '/users/profile/background', // PATCH - Update background
     UPDATE_BACKGROUND_POSITION: '/users/profile/background/position', // PATCH - Update background position
-    SEARCH: '/users/search',
-    GET_BY_ID: (id: string) => `/users/${id}`
+    SEARCH: '/search/users',
+    GET_BY_ID: (id: string) => `/users/${id}`,
+    RECENT_SEARCH: {
+      ITEMS: '/search/recent/items',
+      QUERIES: '/search/recent/queries',
+      ADD: '/search/recent',
+      REMOVE: (id: string) => `/search/recent/${id}`,
+      CLEAR_ALL: '/search/recent/clear-all'
+    }
   },
   DEVICE: {
     ACTIVE_SESSIONS: '/auth/devices/active-sessions', // GET - Get all active devices
