@@ -21,6 +21,7 @@ export interface DoNotDisturbSettings {
 
 export interface NotificationSettings {
   allowNotifications: boolean
+  allowNotificationsByDeviceId: Record<string, boolean>
   notifSound: boolean
   notifVibration: boolean
   notifMessages: boolean
