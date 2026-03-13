@@ -56,3 +56,9 @@ export const getTimeAgo = (dateString: string): string => {
 
   return formatFullDate(dateString)
 }
+
+export const formatDate = (dateString: string): string => {
+  if (!dateString) return ''
+  const date = parseISO(dateString)
+  return format(date, 'dd/MM/yyyy')
+}

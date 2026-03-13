@@ -55,3 +55,21 @@ export const searchFilter = (text: string, query: string): boolean => {
   const normalizedQuery = removeVietnameseTones(query.toLowerCase())
   return normalizedText.includes(normalizedQuery)
 }
+
+export const formatPhoneNumber = (phoneNumber: string): string => {
+  if (!phoneNumber) return ''
+  // Remove all non-digit characters
+  const cleaned = phoneNumber.replace(/\D/g, '')
+  
+  // Format: +84 xxx xxx xxx
+  if (cleaned.startsWith('84')) {
+    return `+${cleaned.slice(0, 2)} ${cleaned.slice(2, 5)} ${cleaned.slice(5, 8)} ${cleaned.slice(8)}`
+  }
+  
+  // Format: 0xxx xxx xxx
+  if (cleaned.startsWith('0')) {
+    return `${cleaned.slice(0, 4)} ${cleaned.slice(4, 7)} ${cleaned.slice(7)}`
+  }
+  
+  return phoneNumber
+}

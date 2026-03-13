@@ -1,5 +1,6 @@
 import { UserAvatar } from '@/components/common/user-avatar'
-import { RecentSearch } from '@/features/search/schemas/search-schema'
+import { RecentSearchResponse } from '@/features/search/schemas/search-schema'
+import { SearchType } from '@/constants/enum'
 import { storage, STORAGE_KEYS } from '@/utils/storageUtils'
 import { Ionicons } from '@expo/vector-icons'
 import { useFocusEffect, useRouter } from 'expo-router'
@@ -8,9 +9,9 @@ import { useTranslation } from 'react-i18next'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
 interface RecentSearchListProps {
-  searches: RecentSearch[]
-  onSelect: (item: RecentSearch) => void
-  onRemove: (id: string) => void
+  searches: RecentSearchResponse[]
+  onSelect: (item: RecentSearchResponse) => void
+  onRemove: (id: string, type: SearchType) => void
   onClear: () => void
 }
 
@@ -43,8 +44,8 @@ export function RecentSearchList({ searches, onSelect, onRemove, onClear }: Rece
     if (queries !== null) setShowQueries(queries)
   }
 
-  const contacts = searches.filter((item) => item.type === 'user')
-  const queries = searches.filter((item) => item.type === 'keyword')
+  const contacts = searches.filter((item) => item.type === SearchType.User || item.type === SearchType.Group)
+  const queries = searches.filter((item) => item.type === SearchType.Keyword)
 
   return (
     <ScrollView
@@ -69,20 +70,20 @@ export function RecentSearchList({ searches, onSelect, onRemove, onClear }: Rece
                   className='absolute top-0 right-1 z-10 bg-muted rounded-full p-0.5'
                   onPress={(e) => {
                     e.stopPropagation()
-                    onRemove(contact.id)
+                    onRemove(contact.id, contact.type)
                   }}
                 >
                   <Ionicons name='close' size={12} color='gray' />
                 </TouchableOpacity>
 
-                <UserAvatar source={contact.avatar} name={contact.displayName} size='lg' />
+                <UserAvatar source={contact.avatar} name={contact.name} size='lg' />
                 <Text className='text-xs text-center text-foreground mt-1' numberOfLines={2}>
-                  {contact.displayName}
+                  {contact.name}
                 </Text>
               </TouchableOpacity>
             ))}
           </ScrollView>
-          <View className='h-2 bg-background-secondary my-2' />
+          <View className='h-px bg-border mx-0 mt-2' />
         </View>
       )}
 
@@ -106,7 +107,7 @@ export function RecentSearchList({ searches, onSelect, onRemove, onClear }: Rece
               ))}
             </ScrollView>
           </View>
-          <View className='h-2 bg-background-secondary my-2' />
+          <View className='h-px bg-border mx-0 mt-2' />
         </>
       )}
 
@@ -123,12 +124,12 @@ export function RecentSearchList({ searches, onSelect, onRemove, onClear }: Rece
             >
               <Ionicons name='search-outline' size={24} color='#9FACBC' />
               <View className='flex-1 ml-4'>
-                <Text className='text-foreground text-base'>{query.displayName}</Text>
+                <Text className='text-foreground text-base'>{query.name}</Text>
               </View>
               <TouchableOpacity
                 onPress={(e) => {
                   e.stopPropagation()
-                  onRemove(query.id)
+                  onRemove(query.id, query.type)
                 }}
                 className='p-1'
               >

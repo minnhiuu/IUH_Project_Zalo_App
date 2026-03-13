@@ -1,114 +1,109 @@
 import React from 'react'
-import { Box, VStack, HStack, Text, Divider, Switch, MenuItem } from '@/components/ui'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
-import { Ionicons } from '@expo/vector-icons'
 import { View } from 'react-native'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { useTranslation } from 'react-i18next'
+import { useRouter } from 'expo-router'
+import {
+  SectionLabel,
+  ActionRow,
+  ToggleRow,
+  SettingsDivider,
+  SettingsCard,
+  type AudioQuality,
+  type VideoQuality,
+  useCallSettingsQuery,
+  useUpdateCallSettingsMutation
+} from '@/features/settings'
 
 export default function CallsScreen() {
- const { t } = useTranslation()
- const [allowCalls, setAllowCalls] = React.useState(true)
- const [allowVideoCalls, setAllowVideoCalls] = React.useState(true)
+  const { t } = useTranslation()
+  const router = useRouter()
+  const { data: callSettings, isLoading } = useCallSettingsQuery()
+  const updateCall = useUpdateCallSettingsMutation()
 
- return (
- <SettingsDetailScreen title={t('settings.menu.calls.title')}>
- {/* Call Settings */}
- <Box className="bg-background mt-2">
- <Box className="px-4 py-2 bg-background-secondary">
- <Text size="sm" className="text-muted-foreground font-medium">
- {t('settings.sections.callSettings')}
- </Text>
- </Box>
+  const allowCalls = callSettings?.allowCalls ?? true
+  const allowVideoCalls = callSettings?.allowVideoCalls ?? true
+  const keepCallHistory = callSettings?.keepCallHistory ?? true
+  const audioQuality = callSettings?.audioQuality ?? 'AUTOMATIC'
+  const videoQuality = callSettings?.videoQuality ?? 'HD'
 
- <HStack className="px-4 py-3 items-center" space="md">
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E8F0FE', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='call-outline' size={22} color='#0068FF' />
- </View>
- <VStack className="flex-1">
- <Text size="md" className="text-foreground">
- {t('settings.calls.allowCalls')}
- </Text>
- <Text size="sm" className="text-muted-foreground mt-0.5">
- {t('settings.calls.allowCallsSubtitle')}
- </Text>
- </VStack>
- <Switch value={allowCalls} onValueChange={setAllowCalls} />
- </HStack>
- <Divider className="ml-16" />
+  const toggle = (field: 'allowCalls' | 'allowVideoCalls' | 'keepCallHistory', value: boolean) => {
+    updateCall.mutate({ [field]: value })
+  }
 
- <HStack className="px-4 py-3 items-center" space="md">
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E3F2FD', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='videocam-outline' size={22} color='#2196F3' />
- </View>
- <VStack className="flex-1">
- <Text size="md" className="text-foreground">
- {t('settings.calls.allowVideoCalls')}
- </Text>
- <Text size="sm" className="text-muted-foreground mt-0.5">
- {t('settings.calls.allowVideoCallsSubtitle')}
- </Text>
- </VStack>
- <Switch value={allowVideoCalls} onValueChange={setAllowVideoCalls} />
- </HStack>
- </Box>
+  const audioQualitySubtitle =
+    {
+      LOW: t('settings.calls.low'),
+      HIGH: t('settings.calls.high'),
+      AUTOMATIC: t('settings.calls.automatic')
+    }[audioQuality as AudioQuality] ?? t('settings.calls.automatic')
 
- {/* Quality Settings */}
- <Box className="bg-background mt-4">
- <Box className="px-4 py-2 bg-background-secondary">
- <Text size="sm" className="text-muted-foreground font-medium">
- {t('settings.sections.quality')}
- </Text>
- </Box>
+  const videoQualitySubtitle =
+    {
+      SD: t('settings.calls.sd'),
+      HD: t('settings.calls.hd')
+    }[videoQuality as VideoQuality] ?? t('settings.calls.hd')
 
- <MenuItem
- title={t('settings.calls.audioQuality')}
- subtitle={t('settings.calls.automatic')}
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E8F5E9', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='musical-notes-outline' size={22} color='#4CAF50' />
- </View>
- }
- onPress={() => {}}
- />
- <Divider className="ml-16" />
+  return (
+    <SettingsDetailScreen title={t('settings.menu.calls.title')}>
+      <SectionLabel blue title={t('settings.sections.callSettings')} />
+      <SettingsCard>
+        <ToggleRow
+          icon='call-outline'
+          title={t('settings.calls.allowCalls')}
+          subtitle={t('settings.calls.allowCallsSubtitle')}
+          value={allowCalls}
+          onValueChange={(v) => toggle('allowCalls', v)}
+          disabled={isLoading || updateCall.isPending}
+        />
+        <SettingsDivider />
+        <ToggleRow
+          icon='videocam-outline'
+          title={t('settings.calls.allowVideoCalls')}
+          subtitle={t('settings.calls.allowVideoCallsSubtitle')}
+          value={allowVideoCalls}
+          onValueChange={(v) => toggle('allowVideoCalls', v)}
+          disabled={isLoading || updateCall.isPending}
+        />
+      </SettingsCard>
 
- <MenuItem
- title={t('settings.calls.videoQuality')}
- subtitle={t('settings.calls.hd')}
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#F3E5F5', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='videocam-outline' size={22} color='#9C27B0' />
- </View>
- }
- onPress={() => {}}
- />
- </Box>
+      <SectionLabel blue title={t('settings.sections.quality')} />
+      <SettingsCard>
+        <ActionRow
+          icon='musical-notes-outline'
+          title={t('settings.calls.audioQuality')}
+          subtitle={audioQualitySubtitle}
+          onPress={() => router.push('/settings/calls/audio-quality' as any)}
+        />
+        <SettingsDivider />
+        <ActionRow
+          icon='videocam-outline'
+          title={t('settings.calls.videoQuality')}
+          subtitle={videoQualitySubtitle}
+          onPress={() => router.push('/settings/calls/video-quality' as any)}
+        />
+      </SettingsCard>
 
- {/* Other Settings */}
- <Box className="bg-background mt-4 mb-8">
- <MenuItem
- title={t('settings.calls.ringtone')}
- subtitle={t('settings.calls.ringtoneSubtitle')}
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF3E0', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='musical-note-outline' size={22} color='#FF9800' />
- </View>
- }
- onPress={() => {}}
- />
- <Divider className="ml-16" />
+      <SectionLabel blue title={t('settings.sections.other') || 'Other'} />
+      <SettingsCard>
+        <ActionRow
+          icon='musical-note-outline'
+          title={t('settings.calls.ringtone')}
+          subtitle={t('settings.calls.ringtoneSubtitle')}
+          onPress={() => {}}
+        />
+        <SettingsDivider />
+        <ToggleRow
+          icon='time-outline'
+          title={t('settings.calls.callHistory')}
+          subtitle={t('settings.calls.callHistorySubtitle')}
+          value={keepCallHistory}
+          onValueChange={(v) => toggle('keepCallHistory', v)}
+          disabled={isLoading || updateCall.isPending}
+        />
+      </SettingsCard>
 
- <MenuItem
- title={t('settings.calls.callHistory')}
- subtitle={t('settings.calls.callHistorySubtitle')}
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#ECEFF1', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='time-outline' size={22} color='#607D8B' />
- </View>
- }
- onPress={() => {}}
- />
- </Box>
- </SettingsDetailScreen>
- )
+      <View className='h-8' />
+    </SettingsDetailScreen>
+  )
 }

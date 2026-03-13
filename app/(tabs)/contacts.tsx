@@ -3,12 +3,13 @@ import { View, SectionList, TouchableOpacity, ActivityIndicator } from 'react-na
 import { useState, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
-import { Header } from '@/components/ui'
+
 import { Text } from '@/components/ui/text'
 import { useMyFriends, useReceivedFriendRequests } from '@/features/friend/queries'
 import { FriendListItem } from '@/features/friend/components'
 import type { FriendResponse } from '@/features/friend/schemas'
 import { SEMANTIC, BRAND } from '@/constants/theme'
+import { Header } from '@/components'
 
 function groupByLetter(friends: FriendResponse[]): { title: string; data: FriendResponse[] }[] {
   const groups: Record<string, FriendResponse[]> = {}
