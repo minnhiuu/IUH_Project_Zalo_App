@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'ax
 import * as SecureStore from 'expo-secure-store'
 import i18n from '@/i18n'
 import apiConfig, { API_ENDPOINTS } from './apiConfig'
+import { secureStorage } from '@/utils/storageUtils'
 
 const axiosInstance = axios.create({
   baseURL: apiConfig.apiUrl,
@@ -40,6 +41,16 @@ axiosInstance.interceptors.request.use(
     } catch (error) {
       console.error('Error getting token:', error)
     }
+
+    // Inject Accept-Language from SecureStore (synced from user's general settings),
+    // falling back to the active i18n locale for unauthenticated / first-load requests.
+    try {
+      const storedLang = await secureStorage.getAcceptLanguage()
+      config.headers['Accept-Language'] = storedLang ?? i18n.language ?? 'vi'
+    } catch {
+      config.headers['Accept-Language'] = i18n.language ?? 'vi'
+    }
+
     return config
   },
   (error: AxiosError) => {

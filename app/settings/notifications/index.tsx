@@ -1,131 +1,158 @@
-import React from 'react'
-import { View } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import React, { useMemo, useState } from 'react'
+import { Text, View } from 'react-native'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { Ionicons } from '@expo/vector-icons'
-import { Box, VStack, HStack, Text, Divider, Switch, MenuItem } from '@/components/ui'
 import { useTranslation } from 'react-i18next'
+import { useRouter } from 'expo-router'
+import {
+  SectionLabel,
+  ActionRow,
+  ToggleRow,
+  SwitchBottomSheet,
+  SettingsDivider,
+  SettingsCard,
+  useNotificationSettingsQuery,
+  useUpdateNotificationSettingsMutation,
+  type NotificationSettings
+} from '@/features/settings'
+
+type NotificationTypeKey = 'notifMessages' | 'notifGroups' | 'notifFriendRequests'
+
+const NOTIFICATION_TYPE_ITEMS: { key: NotificationTypeKey; icon: string; titleKey: string; subtitleKey: string }[] = [
+  {
+    key: 'notifMessages',
+    icon: 'chatbubble-outline',
+    titleKey: 'settings.notifications.messagesNotif',
+    subtitleKey: 'settings.notifications.messagesNotifSubtitle'
+  },
+  {
+    key: 'notifGroups',
+    icon: 'people-outline',
+    titleKey: 'settings.notifications.groupsNotif',
+    subtitleKey: 'settings.notifications.groupsNotifSubtitle'
+  },
+  {
+    key: 'notifFriendRequests',
+    icon: 'person-add-outline',
+    titleKey: 'settings.notifications.friendRequests',
+    subtitleKey: 'settings.notifications.friendRequestsSubtitle'
+  }
+]
 
 export default function NotificationsScreen() {
   const { t } = useTranslation()
-  const [allowNotifications, setAllowNotifications] = React.useState(true)
-  const [sound, setSound] = React.useState(true)
-  const [vibration, setVibration] = React.useState(true)
+  const router = useRouter()
+  const { data: notifSettings, isLoading } = useNotificationSettingsQuery()
+  const updateNotification = useUpdateNotificationSettingsMutation()
+  const [activeTypeKey, setActiveTypeKey] = useState<NotificationTypeKey | null>(null)
+
+  const allowNotifications = notifSettings?.allowNotifications ?? true
+  const sound = notifSettings?.notifSound ?? true
+  const vibration = notifSettings?.notifVibration ?? true
+
+  const toggle = (field: string, value: boolean) => {
+    updateNotification.mutate({ [field]: value })
+  }
+
+  const activeTypeConfig = useMemo(() => {
+    if (!activeTypeKey) return null
+    return NOTIFICATION_TYPE_ITEMS.find((item) => item.key === activeTypeKey) ?? null
+  }, [activeTypeKey])
+
+  const activeTypeValue = activeTypeKey ? Boolean(notifSettings?.[activeTypeKey]) : false
+
+  const handleToggleNotificationType = (nextValue: boolean) => {
+    if (!activeTypeKey || updateNotification.isPending || !allowNotifications) return
+
+    updateNotification.mutate({ [activeTypeKey]: nextValue } as Partial<NotificationSettings>, {
+      onSuccess: () => {
+        setActiveTypeKey(null)
+      }
+    })
+  }
 
   return (
     <SettingsDetailScreen title={t('settings.menu.notifications.title')}>
-      {/* General Settings */}
-      <Box className="bg-background mt-2">
-        <Box className="px-4 py-2 bg-background-secondary">
-          <Text size="sm" className="text-muted-foreground font-medium">
-            {t('settings.sections.general')}
-          </Text>
-        </Box>
-
-        <HStack className="px-4 py-3 items-center" space="md">
-          <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E8F0FE', alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="notifications-outline" size={22} color="#0068FF" />
-          </View>
-          <VStack className="flex-1">
-            <Text size="md" className="text-foreground">
-              {t('settings.notifications.allowNotifications')}
-            </Text>
-            <Text size="sm" className="text-muted-foreground mt-0.5">
-              {t('settings.notifications.allowNotificationsSubtitle')}
-            </Text>
-          </VStack>
-          <Switch value={allowNotifications} onValueChange={setAllowNotifications} />
-        </HStack>
-        <Divider className="ml-16" />
-
-        <HStack className="px-4 py-3 items-center" space="md">
-          <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E3F2FD', alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="volume-high-outline" size={22} color="#2196F3" />
-          </View>
-          <VStack className="flex-1">
-            <Text size="md" className="text-foreground">
-              {t('settings.notifications.sound')}
-            </Text>
-            <Text size="sm" className="text-muted-foreground mt-0.5">
-              {t('settings.notifications.soundSubtitle')}
-            </Text>
-          </VStack>
-          <Switch value={sound} onValueChange={setSound} />
-        </HStack>
-        <Divider className="ml-16" />
-
-        <HStack className="px-4 py-3 items-center" space="md">
-          <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#F3E5F5', alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="phone-portrait-outline" size={22} color="#9C27B0" />
-          </View>
-          <VStack className="flex-1">
-            <Text size="md" className="text-foreground">
-              {t('settings.notifications.vibration')}
-            </Text>
-            <Text size="sm" className="text-muted-foreground mt-0.5">
-              {t('settings.notifications.vibrationSubtitle')}
-            </Text>
-          </VStack>
-          <Switch value={vibration} onValueChange={setVibration} />
-        </HStack>
-      </Box>
-
-      {/* Notification Types */}
-      <Box className="bg-background mt-4">
-        <Box className="px-4 py-2 bg-background-secondary">
-          <Text size="sm" className="text-muted-foreground font-medium">
-            {t('settings.sections.notificationTypes')}
-          </Text>
-        </Box>
-
-        <MenuItem
-          title={t('settings.notifications.messagesNotif')}
-          subtitle={t('settings.notifications.messagesNotifSubtitle')}
-          leftComponent={
-            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E8F5E9', alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="chatbubble-outline" size={22} color="#4CAF50" />
-            </View>
-          }
-          onPress={() => {}}
+      <SectionLabel blue title={t('settings.sections.general')} />
+      <SettingsCard>
+        <ToggleRow
+          icon='notifications-outline'
+          title={t('settings.notifications.allowNotifications')}
+          subtitle={t('settings.notifications.allowNotificationsSubtitle')}
+          value={allowNotifications}
+          onValueChange={(v) => toggle('allowNotifications', v)}
+          disabled={isLoading || updateNotification.isPending}
         />
-        <Divider className="ml-16" />
-
-        <MenuItem
-          title={t('settings.notifications.groupsNotif')}
-          subtitle={t('settings.notifications.groupsNotifSubtitle')}
-          leftComponent={
-            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF3E0', alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="people-outline" size={22} color="#FF9800" />
-            </View>
-          }
-          onPress={() => {}}
+        <SettingsDivider />
+        <ToggleRow
+          icon='volume-high-outline'
+          title={t('settings.notifications.sound')}
+          subtitle={t('settings.notifications.soundSubtitle')}
+          value={sound}
+          onValueChange={(v) => toggle('notifSound', v)}
+          disabled={isLoading || updateNotification.isPending || !allowNotifications}
         />
-        <Divider className="ml-16" />
-
-        <MenuItem
-          title={t('settings.notifications.friendRequests')}
-          subtitle={t('settings.notifications.friendRequestsSubtitle')}
-          leftComponent={
-            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E3F2FD', alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="person-add-outline" size={22} color="#2196F3" />
-            </View>
-          }
-          onPress={() => {}}
+        <SettingsDivider />
+        <ToggleRow
+          icon='phone-portrait-outline'
+          title={t('settings.notifications.vibration')}
+          subtitle={t('settings.notifications.vibrationSubtitle')}
+          value={vibration}
+          onValueChange={(v) => toggle('notifVibration', v)}
+          disabled={isLoading || updateNotification.isPending || !allowNotifications}
         />
-      </Box>
+      </SettingsCard>
 
-      {/* DND */}
-      <Box className="bg-background mt-4 mb-8">
-        <MenuItem
+      <SectionLabel blue title={t('settings.sections.notificationTypes')} />
+      <SettingsCard>
+        {NOTIFICATION_TYPE_ITEMS.map((item, index) => {
+          const isOn = Boolean(notifSettings?.[item.key])
+
+          return (
+            <React.Fragment key={item.key}>
+              <ActionRow
+                icon={item.icon}
+                title={t(item.titleKey)}
+                subtitle={t(item.subtitleKey)}
+                rightComponent={
+                  <View className='flex-row items-center gap-1'>
+                    <Text className='text-sm text-muted-foreground'>
+                      {t(isOn ? 'settings.privacy.on' : 'settings.privacy.off')}
+                    </Text>
+                    <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+                  </View>
+                }
+                onPress={() => {
+                  if (isLoading || updateNotification.isPending || !allowNotifications) return
+                  setActiveTypeKey(item.key)
+                }}
+              />
+              {index < NOTIFICATION_TYPE_ITEMS.length - 1 && <SettingsDivider />}
+            </React.Fragment>
+          )
+        })}
+      </SettingsCard>
+
+      <SectionLabel blue title={t('settings.sections.doNotDisturb') || 'Do Not Disturb'} />
+      <SettingsCard>
+        <ActionRow
+          icon='moon-outline'
           title={t('settings.notifications.doNotDisturb')}
           subtitle={t('settings.notifications.doNotDisturbSubtitle')}
-          leftComponent={
-            <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#ECEFF1', alignItems: 'center', justifyContent: 'center' }}>
-              <Ionicons name="moon-outline" size={22} color="#607D8B" />
-            </View>
-          }
-          onPress={() => {}}
+          onPress={() => router.push('/settings/notifications/do-not-disturb' as any)}
         />
-      </Box>
+      </SettingsCard>
+
+      <View className='h-8' />
+
+      <SwitchBottomSheet
+        visible={Boolean(activeTypeKey && activeTypeConfig)}
+        title={activeTypeConfig ? t(activeTypeConfig.titleKey) : ''}
+        value={activeTypeValue}
+        onClose={() => setActiveTypeKey(null)}
+        onValueChange={handleToggleNotificationType}
+        isSaving={updateNotification.isPending}
+      />
     </SettingsDetailScreen>
   )
 }

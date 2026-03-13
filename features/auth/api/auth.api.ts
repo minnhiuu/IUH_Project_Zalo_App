@@ -17,7 +17,8 @@ import type {
   ForgotPasswordResponse,
   QrGenerationResponse,
   QrStatusResponse,
-  QrSessionStatus
+  QrSessionStatus,
+  ChangePasswordRequest
 } from '../schemas'
 
 export const authApi = {
@@ -39,7 +40,7 @@ export const authApi = {
 
   logout: (request: LogoutRequest) => http.post<ApiResponse<void>>(API_ENDPOINTS.AUTH.LOGOUT, request),
 
-  changePassword: (request: { oldPassword: string; newPassword: string }) =>
+  changePassword: (request: ChangePasswordRequest) =>
     http.post<ApiResponse<void>>(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, request),
 
   validateToken: (token: string) =>

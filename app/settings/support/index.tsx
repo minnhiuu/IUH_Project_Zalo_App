@@ -1,64 +1,46 @@
 import React from 'react'
 import { View } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
-import { Ionicons } from '@expo/vector-icons'
-import { Box, Divider, MenuItem } from '@/components/ui'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { useTranslation } from 'react-i18next'
+import { SectionLabel, ActionRow, SettingsDivider, SettingsCard } from '@/features/settings'
 
 export default function SupportScreen() {
- const { t } = useTranslation()
+    const { t } = useTranslation()
 
- return (
- <SettingsDetailScreen title={t('settings.menu.support.title')}>
- {/* Support Options */}
- <Box className="bg-background mt-2 mb-8">
- <MenuItem
- title={t('settings.support.faq')}
- subtitle={t('settings.support.faqSubtitle')}
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E8F0FE', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='book-outline' size={22} color='#0068FF' />
- </View>
- }
- onPress={() => {}}
- />
- <Divider className="ml-16" />
+    return (
+        <SettingsDetailScreen title={t('settings.menu.support.title')}>
+            <SectionLabel blue title={t('settings.sections.support') || 'Get Help'} />
+            <SettingsCard>
+                <ActionRow
+                    icon="book-outline" iconBgClass="bg-primary/10" iconColorClass="text-primary"
+                    title={t('settings.support.faq')}
+                    subtitle={t('settings.support.faqSubtitle')}
+                    onPress={() => { }}
+                />
+                <SettingsDivider />
+                <ActionRow
+                    icon="chatbubble-outline" iconBgClass="bg-emerald-100 dark:bg-emerald-900/20" iconColorClass="text-emerald-500"
+                    title={t('settings.support.chatSupport')}
+                    subtitle={t('settings.support.chatSupportSubtitle')}
+                    onPress={() => { }}
+                />
+                <SettingsDivider />
+                <ActionRow
+                    icon="mail-outline" iconBgClass="bg-orange-100 dark:bg-orange-900/20" iconColorClass="text-orange-500"
+                    title={t('settings.support.email')}
+                    subtitle="support@zalo.me"
+                    onPress={() => { }}
+                />
+                <SettingsDivider />
+                <ActionRow
+                    icon="call-outline" iconBgClass="bg-blue-100 dark:bg-blue-900/20" iconColorClass="text-blue-500"
+                    title={t('settings.support.hotline')}
+                    subtitle="1900 1234"
+                    onPress={() => { }}
+                />
+            </SettingsCard>
 
- <MenuItem
- title={t('settings.support.chatSupport')}
- subtitle={t('settings.support.chatSupportSubtitle')}
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E8F5E9', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='chatbubble-outline' size={22} color='#4CAF50' />
- </View>
- }
- onPress={() => {}}
- />
- <Divider className="ml-16" />
-
- <MenuItem
- title={t('settings.support.email')}
- subtitle='support@zalo.me'
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF3E0', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='mail-outline' size={22} color='#FF9800' />
- </View>
- }
- onPress={() => {}}
- />
- <Divider className="ml-16" />
-
- <MenuItem
- title={t('settings.support.hotline')}
- subtitle='1900 1234'
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E3F2FD', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='call-outline' size={22} color='#2196F3' />
- </View>
- }
- onPress={() => {}}
- />
- </Box>
- </SettingsDetailScreen>
- )
+            <View className="h-8" />
+        </SettingsDetailScreen>
+    )
 }
