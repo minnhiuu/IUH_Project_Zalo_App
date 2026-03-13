@@ -11,6 +11,7 @@ import { useNotificationStore } from '@/store'
 import { friendApi } from '@/features/friend/api/friend.api'
 import { useTranslation } from 'react-i18next'
 import i18n from '@/i18n'
+import { secureStorage } from '@/utils/storageUtils'
 
 Notifications.setNotificationHandler({
   handleNotification: async (notification) => {
@@ -149,13 +150,23 @@ export const useFcm = () => {
   }, [setFcmTokenStore, router])
 
   const doRegister = useCallback(
-    (token: string) => {
+    async (token: string) => {
       if (!user?.id || !token) return
-      console.log('[FCM] registerDevice: userId=', user.id, '| token=***' + token.slice(-6))
+      
+      let deviceId = await secureStorage.getDeviceId()
+      if (!deviceId) {
+        // Fallback if not found in storage (should not happen if logged in correctly)
+        deviceId = RNPlatform.OS === 'android' ? 'android-unknown' : 'ios-unknown'
+      }
+
+      console.log('[FCM] registerDevice: userId=', user.id, '| deviceId=', deviceId, '| token=***' + token.slice(-6))
+      
       registerDevice(
         {
           token,
-          platform: RNPlatform.OS === 'android' ? Platform.Android : Platform.iOS
+          platform: RNPlatform.OS === 'android' ? Platform.Android : Platform.iOS,
+          deviceId: deviceId,
+          locale: i18n.language
         },
         {
           onSuccess: () => console.log('[FCM] registerDevice success'),
@@ -163,15 +174,14 @@ export const useFcm = () => {
         }
       )
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [user?.id]
+    [user?.id, registerDevice]
   )
 
   // Register on mount / user change / token change
   useEffect(() => {
     const token = fcmToken || storedFcmToken
     doRegister(token ?? '')
-  }, [user?.id, fcmToken, doRegister, storedFcmToken])
+  }, [user?.id, fcmToken, doRegister, storedFcmToken, i18nInstance.language])
 
   // Re-register whenever app comes back to foreground (e.g. after DB wipe)
   useEffect(() => {

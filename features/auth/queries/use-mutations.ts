@@ -1,4 +1,4 @@
-﻿import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'expo-router'
 import Toast from 'react-native-toast-message'
 import { useTranslation } from 'react-i18next'
@@ -30,6 +30,10 @@ export const useLoginMutation = () => {
 
     onSuccess: async (response) => {
       const tokens = response.data.data
+
+      console.log('--- TEST ACCESS TOKEN START ---')
+      console.log(tokens.accessToken)
+      console.log('--- TEST ACCESS TOKEN END ---')
 
       await setAccessToken(tokens.accessToken)
       await setRefreshToken(tokens.refreshToken)
