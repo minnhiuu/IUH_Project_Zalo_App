@@ -1,0 +1,50 @@
+{
+  "search": {
+    "placeholder": "Tìm kiếm",
+    "noResults": "Không tìm thấy kết quả cho \"{{query}}\"",
+    "miniAppsUsed": "Mini App đã sử dụng",
+    "recentContacts": "Liên hệ đã tìm",
+    "edit": "Sửa",
+    "manageHistory": "Quản lý lịch sử tìm kiếm",
+    "exploreContent": "Khám phá nội dung thú vị",
+    "tabs": {
+      "mine": "Của tôi",
+      "explore": "Khám phá",
+      "all": "Tất cả",
+      "contacts": "Liên hệ",
+      "messages": "Tin nhắn",
+      "discover": "Khám phá",
+      "file": "File"
+    },
+    "sections": {
+      "discover": "Khám phá",
+      "contacts": "Liên hệ",
+      "messages": "Tin nhắn",
+      "seeMore": "Xem thêm"
+    },
+    "recent": {
+      "contacts": "Liên hệ gần đây",
+      "quickAccess": "Truy cập nhanh",
+      "queries": "Tìm kiếm gần đây",
+      "editHistory": "Chỉnh sửa lịch sử tìm kiếm"
+    },
+    "action": {
+      "add": "Kết bạn",
+      "accept": "Đồng ý",
+      "message": "Nhắn tin"
+    },
+    "editHistory": {
+      "title": "Lịch sử tìm kiếm",
+      "showQuickAccess": "Hiện truy cập nhanh",
+      "searchHistory": "Lịch sử tìm kiếm",
+      "saveContacts": "Lưu liên hệ vừa tìm",
+      "saveQueries": "Lưu từ khóa vừa tìm"
+    },
+    "validation": {
+      "idRequired": "ID không được để trống",
+      "nameRequired": "Tên không được để trống"
+    },
+    "findByPhone": "Tìm bạn qua số điện thoại:",
+    "phoneNumber": "Số điện thoại:"
+  }
+}

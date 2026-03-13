@@ -1,38 +1,38 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState } from 'react'
 
 interface UseLoadingReturn {
-  isLoading: boolean;
-  startLoading: () => void;
-  stopLoading: () => void;
-  withLoading: <T>(asyncFn: () => Promise<T>) => Promise<T>;
+  isLoading: boolean
+  startLoading: () => void
+  stopLoading: () => void
+  withLoading: <T>(asyncFn: () => Promise<T>) => Promise<T>
 }
 
 export const useLoading = (initialState = false): UseLoadingReturn => {
-  const [isLoading, setIsLoading] = useState(initialState);
+  const [isLoading, setIsLoading] = useState(initialState)
 
   const startLoading = useCallback(() => {
-    setIsLoading(true);
-  }, []);
+    setIsLoading(true)
+  }, [])
 
   const stopLoading = useCallback(() => {
-    setIsLoading(false);
-  }, []);
+    setIsLoading(false)
+  }, [])
 
   const withLoading = useCallback(async <T>(asyncFn: () => Promise<T>): Promise<T> => {
     try {
-      setIsLoading(true);
-      return await asyncFn();
+      setIsLoading(true)
+      return await asyncFn()
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  }, []);
+  }, [])
 
   return {
     isLoading,
     startLoading,
     stopLoading,
-    withLoading,
-  };
-};
+    withLoading
+  }
+}
 
-export default useLoading;
+export default useLoading

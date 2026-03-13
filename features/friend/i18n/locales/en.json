@@ -1,0 +1,81 @@
+{
+  "friend": {
+    "title": "Friend Requests",
+    "tabs": {
+      "received": "Received",
+      "sent": "Sent"
+    },
+    "actions": {
+      "accept": "Accept",
+      "decline": "Decline",
+      "withdraw": "Withdraw",
+      "addFriend": "Add Friend",
+      "unfriend": "Unfriend",
+      "cancelRequest": "Cancel Request",
+      "message": "Message",
+      "call": "Call",
+      "videoCall": "Video Call",
+      "accepted": "Friend request accepted",
+      "declined": "Friend request declined",
+      "blockActivity": "Block this person from viewing my activity",
+      "block24h": "Block from resending request for 24h"
+    },
+    "source": {
+      "phoneContact": "From contacts",
+      "friendSuggestion": "People you may know",
+      "qrCode": "From QR code",
+      "nearby": "From nearby",
+      "group": "From group {{groupName}}"
+    },
+    "time": {
+      "justNow": "Just now",
+      "minutesAgo": "{{count}} minutes ago",
+      "hoursAgo": "{{count}} hours ago",
+      "daysAgo": "{{count}} days ago",
+      "weeksAgo": "{{count}} weeks ago"
+    },
+    "empty": {
+      "received": "No friend requests received",
+      "sent": "No friend requests sent",
+      "friends": "No friends yet"
+    },
+    "toast": {
+      "sendSuccess": "Friend request sent",
+      "acceptSuccess": "Friend request accepted",
+      "declineSuccess": "Friend request declined",
+      "cancelSuccess": "Friend request withdrawn",
+      "unfriendSuccess": "Unfriended successfully"
+    },
+    "status": {
+      "pending": "Pending",
+      "accepted": "Friends",
+      "declined": "Declined",
+      "cancelled": "Cancelled",
+      "notFriend": "Not friends"
+    },
+    "mutualFriends": "{{count}} mutual friends",
+    "viewMore": "VIEW MORE",
+    "loading": "Loading...",
+    "error": "Something went wrong, please try again",
+    "addFriend": {
+      "title": "Add Friend",
+      "phoneInput": "Enter phone number",
+      "scanQR": "Scan QR Code",
+      "mayKnow": "People you may know",
+      "mayKnowHint": "View sent friend requests on Contacts page",
+      "qrHint": "Scan code to add me on Zalo",
+      "noResult": "User not found",
+      "searching": "Searching...",
+      "defaultMessage": "Hi, I'm {{name}}. Let's be friends!",
+      "messagePlaceholder": "Enter a message...",
+      "blockActivityLabel": "Block this person from viewing my activity",
+      "sendRequest": "Send Request"
+    },
+    "profile": {
+      "notFriendJournal": "You can't view {{name}}'s journal until you are friends",
+      "unfriendConfirm": "Are you sure you want to unfriend {{name}}?",
+      "friendSuggestion": "New semester, new friends",
+      "seeMore": "See more"
+    }
+  }
+}
