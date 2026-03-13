@@ -343,29 +343,29 @@ export default function EditProfileScreen() {
           </View>
 
           {/* Save Button */}
-        <TouchableOpacity
-          onPress={handleSave}
-          disabled={updateProfileMutation.isPending}
-          style={{
-            marginTop: 40,
-            marginBottom: 12,
-            paddingVertical: 10,
-            borderRadius: 25,
-            backgroundColor: '#0068FF',
-            alignItems: 'center'
-          }}
-        >
-          {updateProfileMutation.isPending ? (
-            <ActivityIndicator color='#fff' />
-          ) : (
-            <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff', letterSpacing: 2 }}>
-              {t('profile.editProfile.save')}
-            </Text>
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleSave}
+            disabled={updateProfileMutation.isPending}
+            style={{
+              marginTop: 40,
+              marginBottom: 12,
+              paddingVertical: 10,
+              borderRadius: 25,
+              backgroundColor: '#0068FF',
+              alignItems: 'center'
+            }}
+          >
+            {updateProfileMutation.isPending ? (
+              <ActivityIndicator color='#fff' />
+            ) : (
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff', letterSpacing: 2 }}>
+                {t('profile.editProfile.save')}
+              </Text>
+            )}
+          </TouchableOpacity>
         </View>
 
-        
+
       </ScrollView>
 
       {/* Date Picker Modal */}
