@@ -13,6 +13,7 @@ import { useSendFriendRequest } from '@/features/friend/queries/use-mutations'
 import { useUserById, useMyProfile } from '@/features/users/queries/use-queries'
 import { useUpdateAvatar, useUpdateBackground } from '@/features/users/queries/use-mutations'
 import { useTheme } from '@/context/theme-context'
+import { handleErrorApi } from '@/utils/error-handler'
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window')
 const COVER_HEIGHT = 260
@@ -46,7 +47,9 @@ export default function UserProfileScreen() {
       const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync()
       const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync()
       if (cameraStatus !== 'granted' || mediaStatus !== 'granted') {
-        console.warn('Camera or media library permissions not granted')
+        if (__DEV__) {
+          console.warn(t('profile.errors.permissionsNotGranted'))
+        }
       }
     })()
   }, [])
@@ -132,8 +135,8 @@ export default function UserProfileScreen() {
       } as any)
 
       await updateAvatarMutation.mutateAsync(formData)
-    } catch (error) {
-      console.error('Error updating avatar:', error)
+    } catch (error: unknown) {
+      handleErrorApi({ error })
     } finally {
       setIsUploading(false)
     }
@@ -159,8 +162,8 @@ export default function UserProfileScreen() {
       } as any)
 
       await updateBackgroundMutation.mutateAsync({ formData, y: 0 })
-    } catch (error) {
-      console.error('Error updating background:', error)
+    } catch (error: unknown) {
+      handleErrorApi({ error })
     } finally {
       setIsUploading(false)
     }

@@ -53,17 +53,17 @@ export default function UserProfileMenuScreen() {
         },
         ...(isFriend
           ? [
-              {
-                label: t('profile.menu.markAsBestFriend'),
-                showSwitch: true,
-                switchValue: false,
-                onSwitchChange: (value: boolean) => console.log('Mark as best friend', value)
-              },
-              {
-                label: t('profile.menu.introduceToFriends'),
-                onPress: () => console.log('Introduce to friends')
-              }
-            ]
+            {
+              label: t('profile.menu.markAsBestFriend'),
+              showSwitch: true,
+              switchValue: false,
+              onSwitchChange: (value: boolean) => console.log('Mark as best friend', value)
+            },
+            {
+              label: t('profile.menu.introduceToFriends'),
+              onPress: () => console.log('Introduce to friends')
+            }
+          ]
           : [])
       ]
     },

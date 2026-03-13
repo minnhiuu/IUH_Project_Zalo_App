@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback } from 'react'
 import { View, TextInput, TouchableOpacity, Switch, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
@@ -8,6 +8,7 @@ import { Text } from '@/components/ui/text'
 import { useTheme } from '@/context/theme-context'
 import { useMyProfile } from '@/features/users/queries/use-queries'
 import { useUpdateBio } from '@/features/users/queries/use-mutations'
+import { handleErrorApi } from '@/utils/error-handler'
 
 const MAX_BIO_LENGTH = 100
 
@@ -21,16 +22,19 @@ export default function EditBioScreen() {
   const [bio, setBio] = useState(myProfile?.bio || '')
   const [shareToJournal, setShareToJournal] = useState(false)
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     updateBio.mutate(
       bio,
       {
         onSuccess: () => {
           router.back()
+        },
+        onError: (error: Error) => {
+          handleErrorApi({ error })
         }
       }
     )
-  }
+  }, [bio, updateBio, router])
 
   return (
     <View style={{ flex: 1, backgroundColor: isDark ? '#121416' : '#F3F4F6' }}>
@@ -56,8 +60,8 @@ export default function EditBioScreen() {
             {t('profile.editBio.title')}
           </Text>
 
-          <TouchableOpacity 
-            onPress={handleSave} 
+          <TouchableOpacity
+            onPress={handleSave}
             disabled={updateBio.isPending}
             style={{ padding: 4, opacity: updateBio.isPending ? 0.5 : 1 }}
           >

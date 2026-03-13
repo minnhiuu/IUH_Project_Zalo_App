@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import {
   View,
   TouchableOpacity,
@@ -20,7 +20,8 @@ import { useMyProfile } from '@/features/users/queries/use-queries'
 import { useUpdateProfile, useUpdateAvatar } from '@/features/users/queries/use-mutations'
 import { profileEditSchema } from '@/features/users/schemas/user.schema'
 import { Gender } from '@/constants/enum'
-import { format, parseISO } from 'date-fns'
+import { parseISO } from 'date-fns'
+import { handleErrorApi, getDaysInMonth, formatDisplayDate } from '@/utils'
 
 export default function EditProfileScreen() {
   const { t } = useTranslation()
@@ -60,7 +61,7 @@ export default function EditProfileScreen() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync()
 
     if (status !== 'granted') {
-      alert('Sorry, we need camera roll permissions to make this work!')
+      alert(t('profile.errors.permissionDenied'))
       return
     }
 
@@ -90,7 +91,7 @@ export default function EditProfileScreen() {
     setShowDatePicker(false)
   }
 
-  const handleSave = () => {
+  const handleSave = useCallback(() => {
     try {
       // Validate using Zod
       profileEditSchema.parse({
@@ -114,25 +115,31 @@ export default function EditProfileScreen() {
           }
         }
       )
-    } catch (error: any) {
-      if (error.errors) {
+    } catch (error: unknown) {
+      if (
+        typeof error === 'object' &&
+        error !== null &&
+        'errors' in error &&
+        Array.isArray((error as { errors: unknown[] }).errors)
+      ) {
+        const zodError = error as { errors: Array<{ path: string[]; message: string }> }
         const newErrors: Record<string, string> = {}
-        error.errors.forEach((err: any) => {
-          newErrors[err.path[0]] = t(err.message)
+        zodError.errors.forEach((err) => {
+          if (err.path[0]) {
+            newErrors[err.path[0]] = t(err.message)
+          }
         })
         setErrors(newErrors)
+      } else {
+        handleErrorApi({ error })
       }
     }
-  }
+  }, [fullName, dob, gender, updateProfileMutation, router, t])
 
-  const formatDisplayDate = (dateString: string) => {
-    if (!dateString) return ''
-    try {
-      return format(parseISO(dateString), 'dd/MM/yyyy')
-    } catch {
-      return dateString
-    }
-  }
+  const currentYear = new Date().getFullYear()
+  const days = useMemo(() => Array.from({ length: getDaysInMonth(tempDate.month, tempDate.year) }, (_, i) => i + 1), [tempDate.month, tempDate.year])
+  const months = useMemo(() => Array.from({ length: 12 }, (_, i) => i + 1), [])
+  const years = useMemo(() => Array.from({ length: 100 }, (_, i) => currentYear - i), [currentYear])
 
   if (isLoading || !myProfile) {
     return (
@@ -141,15 +148,6 @@ export default function EditProfileScreen() {
       </View>
     )
   }
-
-  const getDaysInMonth = (month: number, year: number) => {
-    return new Date(year, month, 0).getDate()
-  }
-
-  const days = Array.from({ length: getDaysInMonth(tempDate.month, tempDate.year) }, (_, i) => i + 1)
-  const months = Array.from({ length: 12 }, (_, i) => i + 1)
-  const currentYear = new Date().getFullYear()
-  const years = Array.from({ length: 100 }, (_, i) => currentYear - i)
 
   return (
     <View style={{ flex: 1, backgroundColor: isDark ? '#121416' : '#F3F4F6' }}>

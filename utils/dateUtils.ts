@@ -62,3 +62,16 @@ export const formatDate = (dateString: string): string => {
   const date = parseISO(dateString)
   return format(date, 'dd/MM/yyyy')
 }
+
+export const getDaysInMonth = (month: number, year: number): number => {
+  return new Date(year, month, 0).getDate()
+}
+
+export const formatDisplayDate = (dateString: string): string => {
+  if (!dateString) return ''
+  try {
+    return format(parseISO(dateString), 'dd/MM/yyyy')
+  } catch {
+    return dateString
+  }
+}

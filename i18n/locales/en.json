@@ -620,6 +620,10 @@
       "selectDate": "Select date of birth",
       "cancel": "Cancel",
       "confirm": "Confirm"
+    },
+    "errors": {
+      "permissionDenied": "Sorry, we need camera roll permissions to make this work!",
+      "permissionsNotGranted": "Camera or media library permissions not granted"
     }
   },
   "user": {

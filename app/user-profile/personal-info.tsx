@@ -24,10 +24,6 @@ export default function PersonalInfoScreen() {
 
   if (!userProfile) {
     return null
-  } else {
-    console.log();
-    console.log('User profile loaded:', userProfile)
-
   }
   const getGenderLabel = (gender: Gender | null | undefined) => {
     if (!gender) return '---'

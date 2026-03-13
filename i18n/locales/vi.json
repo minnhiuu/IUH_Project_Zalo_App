@@ -648,6 +648,10 @@
       "selectDate": "Chọn ngày sinh",
       "cancel": "Hủy",
       "confirm": "Xác nhận"
+    },
+    "errors": {
+      "permissionDenied": "Xin lỗi, chúng tôi cần quyền truy cập thư viện ảnh để thực hiện thao tác này!",
+      "permissionsNotGranted": "Quyền truy cập máy ảnh hoặc thư viện ảnh chưa được cấp"
     }
   },
   "user": {
