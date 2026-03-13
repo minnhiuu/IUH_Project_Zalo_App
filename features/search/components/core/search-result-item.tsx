@@ -3,6 +3,7 @@ import { UserResponse, UserSummaryResponse } from '@/features/users'
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/context/theme-context'
 
 export interface ContactItemType {
@@ -110,6 +111,8 @@ export function SearchResultItem<T extends SearchResultItemData>({
     </TouchableOpacity>
   )
 
+  const { t } = useTranslation()
+
   return (
     <BaseSearchResultItem
       item={item}
@@ -118,7 +121,14 @@ export function SearchResultItem<T extends SearchResultItemData>({
       avatarName={item.fullName}
       action={action || defaultAction}
     >
-      <HighlightText text={item.fullName || ''} highlight={searchQuery} />
+      <View>
+        <HighlightText text={item.fullName || ''} highlight={searchQuery} />
+        {'phoneNumber' in item && item.phoneNumber && (
+          <Text className='text-xs text-muted-foreground mt-1'>
+            {t('search.phoneNumber')} <Text className='text-primary'>{item.phoneNumber}</Text>
+          </Text>
+        )}
+      </View>
     </BaseSearchResultItem>
   )
 }

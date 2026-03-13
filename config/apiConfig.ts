@@ -60,9 +60,20 @@ export const API_ENDPOINTS = {
   USER: {
     ME: '/users/me', // GET - Get current user profile
     PROFILE: '/users/profile', // Deprecated - use ME
-    UPDATE_PROFILE: '/users/profile',
-    SEARCH: '/users/search',
-    GET_BY_ID: (id: string) => `/users/${id}`
+    UPDATE_PROFILE: '/users/me', // PUT - Update current user profile
+    UPDATE_BIO: '/users/profile/bio', // PATCH - Update bio only
+    UPDATE_AVATAR: '/users/profile/avatar', // PATCH - Update avatar
+    UPDATE_BACKGROUND: '/users/profile/background', // PATCH - Update background
+    UPDATE_BACKGROUND_POSITION: '/users/profile/background/position', // PATCH - Update background position
+    SEARCH: '/search/users',
+    GET_BY_ID: (id: string) => `/users/${id}`,
+    RECENT_SEARCH: {
+      ITEMS: '/search/recent/items',
+      QUERIES: '/search/recent/queries',
+      ADD: '/search/recent',
+      REMOVE: (id: string) => `/search/recent/${id}`,
+      CLEAR_ALL: '/search/recent/clear-all'
+    }
   },
   DEVICE: {
     ACTIVE_SESSIONS: '/auth/devices/active-sessions', // GET - Get all active devices

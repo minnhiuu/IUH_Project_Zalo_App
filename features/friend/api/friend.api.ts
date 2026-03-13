@@ -23,14 +23,14 @@ export const friendApi = {
   cancelFriendRequest: (friendshipId: string) =>
     http.put<ApiResponse<void>>(API_ENDPOINTS.FRIENDSHIP.CANCEL_REQUEST(friendshipId)),
 
-  getReceivedFriendRequests: () =>
-    http.get<ApiResponse<FriendRequestResponse[]>>(API_ENDPOINTS.FRIENDSHIP.RECEIVED_REQUESTS),
+  getReceivedFriendRequests: (page: number = 0, size: number = 10) =>
+    http.get<ApiResponse<any>>(`${API_ENDPOINTS.FRIENDSHIP.RECEIVED_REQUESTS}?page=${page}&size=${size}`),
 
-  getSentFriendRequests: () =>
-    http.get<ApiResponse<FriendRequestResponse[]>>(API_ENDPOINTS.FRIENDSHIP.SENT_REQUESTS),
+  getSentFriendRequests: (page: number = 0, size: number = 10) =>
+    http.get<ApiResponse<any>>(`${API_ENDPOINTS.FRIENDSHIP.SENT_REQUESTS}?page=${page}&size=${size}`),
 
-  getMyFriends: () =>
-    http.get<ApiResponse<FriendResponse[]>>(API_ENDPOINTS.FRIENDSHIP.MY_FRIENDS),
+  getMyFriends: (page: number = 0, size: number = 10) =>
+    http.get<ApiResponse<any>>(`${API_ENDPOINTS.FRIENDSHIP.MY_FRIENDS}?page=${page}&size=${size}`),
 
   unfriend: (friendId: string) =>
     http.delete<ApiResponse<void>>(API_ENDPOINTS.FRIENDSHIP.UNFRIEND(friendId)),

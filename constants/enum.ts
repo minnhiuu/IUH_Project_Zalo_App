@@ -24,14 +24,16 @@ export const DEVICE_TYPE_LABELS: Record<DeviceType, string> = {
 
 export const Gender = {
   Male: 'MALE',
-  Female: 'FEMALE'
+  Female: 'FEMALE',
+  Other: 'OTHER'
 } as const
 
 export type Gender = (typeof Gender)[keyof typeof Gender]
 
 export const GENDER_LABELS: Record<Gender, string> = {
   [Gender.Male]: 'Nam',
-  [Gender.Female]: 'Nữ'
+  [Gender.Female]: 'Nữ',
+  [Gender.Other]: 'Khác'
 }
 
 export const QrSessionStatus = {
@@ -43,3 +45,11 @@ export const QrSessionStatus = {
 } as const
 
 export type QrSessionStatus = (typeof QrSessionStatus)[keyof typeof QrSessionStatus]
+
+export const SearchType = {
+  User: 'USER',
+  Group: 'GROUP',
+  Keyword: 'KEYWORD'
+} as const
+
+export type SearchType = (typeof SearchType)[keyof typeof SearchType]

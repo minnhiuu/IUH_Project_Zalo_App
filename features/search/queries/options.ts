@@ -25,5 +25,23 @@ export const searchOptions = {
       return nextPage < lastPage.totalPages ? nextPage : undefined
     },
     enabled: !!query
+  }),
+
+  recentItems: () => ({
+    queryKey: searchKeys.recentItems(),
+    queryFn: async () => {
+      const response = await searchApi.getRecentItems()
+      return response.data.data
+    },
+    staleTime: 1000 * 30
+  }),
+
+  recentQueries: () => ({
+    queryKey: searchKeys.recentQueries(),
+    queryFn: async () => {
+      const response = await searchApi.getRecentQueries()
+      return response.data.data
+    },
+    staleTime: 1000 * 30
   })
 }

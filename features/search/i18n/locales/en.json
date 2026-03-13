@@ -13,7 +13,8 @@
       "all": "All",
       "contacts": "Contacts",
       "messages": "Messages",
-      "discover": "Discover"
+      "discover": "Discover",
+      "file": "File"
     },
     "sections": {
       "discover": "Discover",
@@ -25,7 +26,7 @@
       "contacts": "Recent contacts",
       "quickAccess": "Quick access",
       "queries": "Recent searches",
-      "editHistory": "Manage history"
+      "editHistory": "Edit search history"
     },
     "action": {
       "add": "Add",
@@ -35,9 +36,15 @@
     "editHistory": {
       "title": "Search History",
       "showQuickAccess": "Show quick access",
-      "searchHistory": "SEARCH HISTORY",
+      "searchHistory": "Search history",
       "saveContacts": "Save recently contacted",
       "saveQueries": "Save recent keyword searches"
-    }
+    },
+    "validation": {
+      "idRequired": "ID is required",
+      "nameRequired": "Name is required"
+    },
+    "findByPhone": "Find friends by phone number:",
+    "phoneNumber": "Phone number:"
   }
 }
