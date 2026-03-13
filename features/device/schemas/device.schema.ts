@@ -23,3 +23,8 @@ export type DeviceResponse = {
   isCurrentDevice: boolean | null
   isActive: boolean | null
 }
+
+export type DeviceListResponse = {
+  activeDevices: DeviceResponse[]
+  otherDevices: DeviceResponse[]
+}

@@ -2,6 +2,7 @@ import axios, { AxiosError, type InternalAxiosRequestConfig, type AxiosResponse 
 import { isTokenExpiringSoon } from '@/utils/jwt'
 import apiConfig, { API_ENDPOINTS } from '@/config/apiConfig'
 import { secureStorage } from '@/utils/storageUtils'
+import i18n from '@/i18n'
 
 export const getAccessToken = async (): Promise<string | null> => {
   try {
@@ -56,13 +57,38 @@ export const clearTokens = async (): Promise<void> => {
   }
 }
 
+type UnauthorizedHandler = () => void | Promise<void>
+
+let unauthorizedHandler: UnauthorizedHandler | null = null
+let isHandlingUnauthorized = false
+
+export const setUnauthorizedHandler = (handler: UnauthorizedHandler | null): void => {
+  unauthorizedHandler = handler
+}
+
+const handleUnauthorizedSession = async (): Promise<void> => {
+  if (isHandlingUnauthorized) return
+
+  isHandlingUnauthorized = true
+  try {
+    await clearTokens()
+    await unauthorizedHandler?.()
+  } catch (error) {
+    console.error('[http] handleUnauthorizedSession error:', error)
+  } finally {
+    setTimeout(() => {
+      isHandlingUnauthorized = false
+    }, 300)
+  }
+}
+
 // Refresh token logic
 let isRefreshing = false
 let refreshPromise: Promise<string | null> | null = null
-let failedQueue: Array<{
+let failedQueue: {
   resolve: (token: string | null) => void
   reject: (error: Error) => void
-}> = []
+}[] = []
 
 const processQueue = (error: Error | null, token: string | null = null): void => {
   failedQueue.forEach((prom) => {
@@ -82,7 +108,7 @@ const performRefresh = async (): Promise<string | null> => {
       throw new Error('No refresh token available')
     }
 
-    const deviceId = await secureStorage.getDeviceId() || 'mobile-device'
+    const deviceId = (await secureStorage.getDeviceId()) || 'mobile-device'
     const response = await axios.post(`${apiConfig.apiUrl}${API_ENDPOINTS.AUTH.REFRESH}`, { deviceId, refreshToken })
 
     // Backend returns camelCase: accessToken, refreshToken
@@ -163,6 +189,16 @@ http.interceptors.request.use(
       config.headers.Authorization = `Bearer ${token}`
     }
 
+    const deviceId = await secureStorage.getDeviceId()
+    if (deviceId && config.headers) {
+      config.headers['X-Device-Id'] = deviceId
+    }
+
+    // Inject Accept-Language from SecureStore (saved from user's general settings),
+    // falling back to the active i18n locale for unauthenticated / first-load requests.
+    const storedLang = await secureStorage.getAcceptLanguage()
+    config.headers['Accept-Language'] = storedLang ?? i18n.language ?? 'vi'
+
     return config
   },
   (error: AxiosError) => {
@@ -178,9 +214,19 @@ http.interceptors.response.use(
       _retry?: boolean
     }
 
+    const isAuthRequest =
+      originalRequest?.url?.includes('/auth/login') ||
+      originalRequest?.url?.includes('/auth/register') ||
+      originalRequest?.url?.includes('/auth/refresh')
+
     // Handle 401 - try to refresh token
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (originalRequest.url?.includes('/auth/refresh')) {
+        await handleUnauthorizedSession()
+        return Promise.reject(error)
+      }
+
+      if (isAuthRequest) {
         return Promise.reject(error)
       }
 
@@ -207,8 +253,13 @@ http.interceptors.response.use(
         }
         return http(originalRequest)
       } catch (refreshError) {
+        await handleUnauthorizedSession()
         return Promise.reject(refreshError)
       }
+    }
+
+    if (error.response?.status === 401 && !isAuthRequest) {
+      await handleUnauthorizedSession()
     }
 
     return Promise.reject(error)

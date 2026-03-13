@@ -1,203 +1,163 @@
-import React from 'react'
-import { View, Alert, ActivityIndicator } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
+import React, { useState } from 'react'
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { Ionicons } from '@expo/vector-icons'
-import { Box, VStack, HStack, Text, Divider, Pressable, Button } from '@/components/ui'
 import { useTranslation } from 'react-i18next'
 import { useMyDevices } from '@/features/device/queries/use-queries'
-import { useDeleteDevice, useLogoutOtherDevices } from '@/features/device/queries/use-mutations'
-import { format } from 'date-fns'
-import { DeviceResponse, DeviceType } from '@/features/device/schemas/device.schema'
+import { useDeleteDevice } from '@/features/device/queries/use-mutations'
+import { SectionLabel } from '@/features/settings'
+import { ConfirmDialog } from '@/components/ui'
+import {
+  DeviceItem,
+  DeviceDetailModal,
+  useLogoutDevice,
+  useLogoutOtherDevices
+} from '@/features/settings/device-management'
+import type { DeviceResponse } from '@/features/device/schemas/device.schema'
 
 export default function DeviceManagementScreen() {
- const { t } = useTranslation()
- const { data: devices, isLoading } = useMyDevices()
- const deleteDeviceMutation = useDeleteDevice()
- const logoutOtherDevicesMutation = useLogoutOtherDevices()
+  const { t } = useTranslation()
+  const { data: devices, isLoading } = useMyDevices()
+  const deleteDeviceMutation = useDeleteDevice()
+  const logoutOtherDevicesMutation = useLogoutOtherDevices()
+  const logoutDeviceMutation = useLogoutDevice()
+  const [selectedDevice, setSelectedDevice] = useState<DeviceResponse | null>(null)
+  const [confirmConfig, setConfirmConfig] = useState<{
+    visible: boolean
+    message: string
+    confirmText?: string
+    onConfirm: () => void
+  }>({ visible: false, message: '', onConfirm: () => {} })
 
- const handleDeleteDevice = (deviceId: string) => {
- Alert.alert(
- t('settings.deviceManagement.deleteConfirm'),
- '',
- [
- {
- text: t('common.cancel'),
- style: 'cancel'
- },
- {
- text: t('common.delete'),
- style: 'destructive',
- onPress: () => deleteDeviceMutation.mutate(deviceId)
- }
- ]
- )
- }
+  const handleDeleteDevice = (deviceId: string) => {
+    setConfirmConfig({
+      visible: true,
+      message: t('settings.deviceManagement.deleteConfirm'),
+      confirmText: t('common.delete'),
+      onConfirm: () => {
+        deleteDeviceMutation.mutate(deviceId)
+        setConfirmConfig((prev) => ({ ...prev, visible: false }))
+      }
+    })
+  }
 
- const handleLogoutOtherDevices = () => {
- Alert.alert(
- t('settings.deviceManagement.logoutOthersConfirm'),
- '',
- [
- {
- text: t('common.cancel'),
- style: 'cancel'
- },
- {
- text: t('common.logout'),
- style: 'destructive',
- onPress: () => logoutOtherDevicesMutation.mutate()
- }
- ]
- )
- }
+  const handleLogoutDevice = (sessionId: string) => {
+    setConfirmConfig({
+      visible: true,
+      message: t('settings.deviceManagement.logoutDeviceConfirm'),
+      confirmText: t('common.logout'),
+      onConfirm: () => {
+        logoutDeviceMutation.mutate(sessionId)
+        setConfirmConfig((prev) => ({ ...prev, visible: false }))
+      }
+    })
+  }
 
- const renderDeviceItem = (device: DeviceResponse) => {
- const isMobile = device.deviceType === DeviceType.MOBILE
- const isActive = device.isActive
- const isCurrent = device.isCurrentDevice
+  const handleLogoutOtherDevices = () => {
+    setConfirmConfig({
+      visible: true,
+      message: t('settings.deviceManagement.logoutOthersConfirm'),
+      confirmText: t('common.logout'),
+      onConfirm: () => {
+        logoutOtherDevicesMutation.mutate()
+        setConfirmConfig((prev) => ({ ...prev, visible: false }))
+      }
+    })
+  }
 
- return (
- <Box
- key={device.id}
- className={isCurrent ? 'bg-blue-50 border-blue-200' : 'bg-background border-gray-200'}
- style={{ borderWidth: 1, borderRadius: 12, padding: 12, marginBottom: 12 }}
->
- <HStack className="items-start justify-between">
- <HStack className="items-center flex-1" space="md">
- <View style={{ 
- width: 40, 
- height: 40, 
- borderRadius: 20, 
- backgroundColor: isMobile ? '#E8F0FE' : '#F3E5F5',
- alignItems: 'center',
- justifyContent: 'center'
- }}>
- <Ionicons
- name={isMobile ? 'phone-portrait-outline' : 'desktop-outline'}
- size={20}
- color={isMobile ? '#0068FF' : '#9C27B0'}
- />
- </View>
+  const activeDevices = devices?.activeDevices || []
+  const inactiveDevices = devices?.otherDevices || []
+  const totalDevicesCount = activeDevices.length + inactiveDevices.length
 
- <VStack className="flex-1">
- <HStack className="flex-wrap items-center" space="xs">
- <Text size="sm" className="text-foreground font-bold">
- {device.deviceName || 'Unknown Device'}
- </Text>
- 
- {isActive && (
- <Box className="bg-green-100" style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
- <HStack className="items-center" space="xs">
- <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#22C55E' }} />
- <Text size="xs" className="text-green-700 font-medium">
- {t('settings.deviceManagement.activeStatus')}
- </Text>
- </HStack>
- </Box>
- )}
- 
- {isCurrent && (
- <Box className="bg-blue-100" style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 12 }}>
- <Text size="xs" className="text-blue-700 font-medium">
- {t('settings.deviceManagement.currentDevice')}
- </Text>
- </Box>
- )}
- </HStack>
+  return (
+    <SettingsDetailScreen title={t('settings.deviceManagement.title')}>
+      <View className='p-4'>
+        <Text className='text-sm text-gray-500 mb-4'>{t('settings.deviceManagement.description')}</Text>
 
- <Text size="xs" className="text-muted-foreground mt-1">
- {device.os || 'Unknown OS'} • {device.browser || 'Unknown Browser'}
- </Text>
- 
- {device.lastActiveTime && (
- <Text size="xs" className="text-gray-400 mt-0.5">
- {format(new Date(device.lastActiveTime), 'Pp')}
- </Text>
- )}
- </VStack>
- </HStack>
+        {isLoading ? (
+          <View className='flex-row justify-center items-center py-8 gap-2'>
+            <ActivityIndicator />
+            <Text className='text-sm text-gray-500'>{t('settings.deviceManagement.loading')}</Text>
+          </View>
+        ) : totalDevicesCount > 0 ? (
+          <View className='gap-6'>
+            {activeDevices.length > 0 && (
+              <View className='gap-2'>
+                <SectionLabel blue title={t('settings.deviceManagement.activeDevices')} />
+                {activeDevices.map((device) => (
+                  <DeviceItem
+                    key={device.id}
+                    device={device}
+                    activeLabel={t('settings.deviceManagement.activeStatus')}
+                    currentLabel={t('settings.deviceManagement.currentDevice')}
+                    onPressMore={() => setSelectedDevice(device)}
+                  />
+                ))}
+              </View>
+            )}
 
- {!isCurrent && (
- <Pressable
- onPress={() => handleDeleteDevice(device.id)}
- disabled={deleteDeviceMutation.isPending}
- style={{ padding: 8 }}
->
- {deleteDeviceMutation.isPending ? (
- <ActivityIndicator size='small' />
- ) : (
- <Ionicons name='trash-outline' size={20} color='#EF4444' />
- )}
- </Pressable>
- )}
- </HStack>
- </Box>
- )
- }
+            {inactiveDevices.length > 0 && (
+              <View className='gap-2'>
+                <SectionLabel blue title={t('settings.deviceManagement.inactiveDevices')} />
+                {inactiveDevices.map((device) => (
+                  <DeviceItem
+                    key={device.id}
+                    device={device}
+                    activeLabel={t('settings.deviceManagement.activeStatus')}
+                    currentLabel={t('settings.deviceManagement.currentDevice')}
+                    onPressMore={() => setSelectedDevice(device)}
+                  />
+                ))}
+              </View>
+            )}
 
- const activeDevices = devices?.filter(d => d.isActive) || []
- const inactiveDevices = devices?.filter(d => !d.isActive) || []
+            <View className='h-px bg-gray-200' />
 
- return (
- <SettingsDetailScreen title={t('settings.deviceManagement.title')}>
- <Box className="p-4">
- <Text size="sm" className="text-muted-foreground mb-4">
- {t('settings.deviceManagement.description')}
- </Text>
+            <TouchableOpacity
+              onPress={handleLogoutOtherDevices}
+              disabled={logoutOtherDevicesMutation.isPending || totalDevicesCount <= 1}
+              className={`flex-row items-center justify-center gap-2 border rounded-lg py-3 px-4 ${
+                logoutOtherDevicesMutation.isPending || totalDevicesCount <= 1
+                  ? 'border-gray-200 opacity-50'
+                  : 'border-red-200 bg-red-50'
+              }`}
+            >
+              {logoutOtherDevicesMutation.isPending && <ActivityIndicator size='small' color='#EF4444' />}
+              <Ionicons name='log-out-outline' size={20} color='#EF4444' />
+              <Text className='text-red-600 font-medium text-sm'>{t('settings.deviceManagement.logoutOthers')}</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <View className='py-8 items-center'>
+            <Ionicons name='phone-portrait-outline' size={40} color='#d1d5db' />
+            <Text className='text-sm text-gray-400 mt-3'>{t('settings.deviceManagement.noDevices')}</Text>
+          </View>
+        )}
+      </View>
 
- {isLoading ? (
- <HStack className="justify-center items-center py-8" space="sm">
- <ActivityIndicator />
- <Text size="sm" className="text-muted-foreground">
- {t('settings.deviceManagement.loading')}
- </Text>
- </HStack>
- ) : devices && devices.length > 0 ? (
- <VStack space="xl">
- {/* Active Devices */}
- {activeDevices.length > 0 && (
- <VStack space="sm">
- <Text size="sm" className="text-gray-400 font-bold uppercase">
- {t('settings.deviceManagement.activeDevices')}
- </Text>
- {activeDevices.map(renderDeviceItem)}
- </VStack>
- )}
+      {selectedDevice && (
+        <DeviceDetailModal
+          device={selectedDevice}
+          visible={!!selectedDevice}
+          onClose={() => setSelectedDevice(null)}
+          deleteLabel={t('common.delete')}
+          isPendingDelete={deleteDeviceMutation.isPending}
+          onDelete={handleDeleteDevice}
+          logoutLabel={t('settings.deviceManagement.logoutDevice')}
+          isPendingLogout={logoutDeviceMutation.isPending}
+          onLogoutDevice={handleLogoutDevice}
+        />
+      )}
 
- {/* Inactive Devices */}
- {inactiveDevices.length > 0 && (
- <VStack space="sm">
- <Text size="sm" className="text-gray-400 font-bold uppercase">
- {t('settings.deviceManagement.inactiveDevices')}
- </Text>
- {inactiveDevices.map(renderDeviceItem)}
- </VStack>
- )}
-
- <Divider className="my-2" />
-
- <Button
- variant='outline'
- onPress={handleLogoutOtherDevices}
- disabled={logoutOtherDevicesMutation.isPending || (devices.length <= 1)}
->
- <HStack className="items-center" space="sm">
- {logoutOtherDevicesMutation.isPending && <ActivityIndicator size="small" />}
- <Ionicons name='log-out-outline' size={20} color='#EF4444' />
- <Text className="text-red-600">
- {t('settings.deviceManagement.logoutOthers')}
- </Text>
- </HStack>
- </Button>
- </VStack>
- ) : (
- <Box className="py-8">
- <Text size="sm" className="text-muted-foreground">
- {t('settings.deviceManagement.noDevices')}
- </Text>
- </Box>
- )}
- </Box>
- </SettingsDetailScreen>
- )
+      <ConfirmDialog
+        visible={confirmConfig.visible}
+        message={confirmConfig.message}
+        onConfirm={confirmConfig.onConfirm}
+        onCancel={() => setConfirmConfig((prev) => ({ ...prev, visible: false }))}
+        destructive
+        confirmText={confirmConfig.confirmText || t('common.confirm') || 'Confirm'}
+        cancelText={t('common.cancel')}
+      />
+    </SettingsDetailScreen>
+  )
 }

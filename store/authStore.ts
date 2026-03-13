@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { UserResponse } from '@/features/users/schemas/user.schema'
+import type { UserProfileResponse } from '@/features/users/schemas/user.schema'
 import { userApi } from '@/features/users/api/user.api'
 import { storage } from '@/utils/storageUtils'
 
@@ -23,14 +23,14 @@ interface AuthState {
   error: string | null
 
   // User data
-  user: UserResponse | null
+  user: UserProfileResponse | null
 
   // Actions
   setAuthenticated: (isAuthenticated: boolean) => void
   setLoading: (isLoading: boolean) => void
   setInitialized: (isInitialized: boolean) => void
   setError: (error: string | null) => void
-  setUser: (user: UserResponse | null) => void
+  setUser: (user: UserProfileResponse | null) => void
 
   // Convenience methods
   loginSuccess: () => Promise<void>
@@ -74,7 +74,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   loginSuccess: async () => {
     console.log('[AuthStore] loginSuccess - fetching user profile')
 
-    let userData: UserResponse | null = null
+    let userData: UserProfileResponse | null = null
 
     try {
       // Fetch fresh user profile
@@ -91,7 +91,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       try {
         const cachedUser = await storage.get('user_data')
         if (cachedUser && typeof cachedUser === 'object' && 'id' in cachedUser) {
-          userData = cachedUser as UserResponse
+          userData = cachedUser as UserProfileResponse
           console.log('[AuthStore] Loaded user from storage:', userData.email)
         }
       } catch (storageError) {
