@@ -61,7 +61,8 @@ export const resetPasswordRequestSchema = z
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
         'Mật khẩu phải bao gồm chữ thường, chữ hoa, số và ký tự đặc biệt'
       ),
-    confirmPassword: z.string().min(1, 'Vui lòng xác nhận lại mật khẩu')
+    confirmPassword: z.string().min(1, 'Vui lòng xác nhận lại mật khẩu'),
+    logoutOtherDevices: z.boolean().optional()
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
     message: 'Mật khẩu xác nhận không khớp',
@@ -72,18 +73,19 @@ export type ResetPasswordRequest = z.infer<typeof resetPasswordRequestSchema>
 
 export const changePasswordRequestSchema = z
   .object({
-    oldPassword: z.string().min(1, 'Mật khẩu hiện tại không được để trống'),
+    oldPassword: z.string().min(1, 'auth.validation.currentPasswordRequired'),
     newPassword: z
       .string()
-      .min(8, 'Mật khẩu mới phải có ít nhất 8 ký tự')
+      .min(8, 'auth.validation.newPasswordMinLength')
       .regex(
         /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-        'Mật khẩu phải bao gồm chữ thường, chữ hoa, số và ký tự đặc biệt'
+        'auth.validation.passwordRegex'
       ),
-    confirmPassword: z.string().min(1, 'Vui lòng xác nhận lại mật khẩu mới')
+    confirmPassword: z.string().min(1, 'auth.validation.confirmNewPasswordRequired'),
+    logoutOtherDevices: z.boolean().optional()
   })
   .refine((data) => data.newPassword === data.confirmPassword, {
-    message: 'Mật khẩu xác nhận không khớp',
+    message: 'auth.validation.passwordMismatch',
     path: ['confirmPassword']
   })
 

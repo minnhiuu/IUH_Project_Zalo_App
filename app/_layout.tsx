@@ -18,8 +18,9 @@ import { View, Text, ActivityIndicator } from 'react-native'
 
 import { GluestackProvider } from '@/components/ui/gluestack-ui-provider'
 import { useAuthStore } from '@/store'
-import { getAccessToken, getRefreshToken } from '@/lib/http'
+import { getAccessToken, getRefreshToken, setUnauthorizedHandler } from '@/lib/http'
 import { ThemeProvider, useTheme } from '@/context'
+import { storage } from '@/utils/storageUtils'
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -183,6 +184,19 @@ export default function RootLayout() {
 
 function ThemeAwareProviders() {
   const { activeTheme, isDark } = useTheme()
+  const logoutSuccess = useAuthStore((state) => state.logoutSuccess)
+
+  useEffect(() => {
+    setUnauthorizedHandler(async () => {
+      await storage.remove('user_data')
+      logoutSuccess()
+      queryClient.clear()
+    })
+
+    return () => {
+      setUnauthorizedHandler(null)
+    }
+  }, [logoutSuccess])
 
   return (
     <GluestackProvider mode={activeTheme}>
