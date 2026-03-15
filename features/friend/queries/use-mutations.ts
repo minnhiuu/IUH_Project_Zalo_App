@@ -35,8 +35,7 @@ export const useAcceptFriendRequest = () => {
   return useMutation({
     mutationFn: (friendshipId: string) => friendApi.acceptFriendRequest(friendshipId),
     onSuccess: () => {
-      // Invalidate both requests and friends list
-      queryClient.invalidateQueries({ queryKey: friendKeys.receivedRequests() })
+      // Invalidate friends list but NOT receivedRequests to keep the item visible with feedback
       queryClient.invalidateQueries({ queryKey: friendKeys.myFriends() })
 
       Toast.show({
@@ -53,12 +52,11 @@ export const useAcceptFriendRequest = () => {
 
 export const useDeclineFriendRequest = () => {
   const { t } = useTranslation()
-  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (friendshipId: string) => friendApi.declineFriendRequest(friendshipId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: friendKeys.receivedRequests() })
+      // Do not invalidate to keep the item visible with "Declined" message
 
       Toast.show({
         type: 'success',
@@ -74,12 +72,11 @@ export const useDeclineFriendRequest = () => {
 
 export const useCancelFriendRequest = () => {
   const { t } = useTranslation()
-  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (friendshipId: string) => friendApi.cancelFriendRequest(friendshipId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: friendKeys.sentRequests() })
+      // Do not invalidate to keep the item visible with "Withdrawn" message
 
       Toast.show({
         type: 'success',

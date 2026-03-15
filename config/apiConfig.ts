@@ -87,8 +87,10 @@ export const API_ENDPOINTS = {
     SEND: '/message/send'
   },
   NOTIFICATION: {
-    LIST: '/notification',
-    MARK_READ: (id: string) => `/notification/${id}/read`
+    LIST: '/notifications',
+    MARK_READ: (id: string) => `/notifications/${id}/read`,
+    REGISTER_DEVICE: '/notifications/devices',
+    UNREGISTER_DEVICE: (token: string) => `/notifications/devices?token=${token}`
   },
   FRIENDSHIP: {
     // Friend requests

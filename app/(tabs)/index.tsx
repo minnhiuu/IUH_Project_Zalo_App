@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
 import { Header } from '@/components/ui'
 import { Text } from '@/components/ui/text'
+import { useState } from 'react'
+import { NotificationPanel, useNotificationStateQuery } from '@/features/notifications'
 
 interface Conversation {
   id: string
@@ -89,6 +91,8 @@ const MOCK_CONVERSATIONS: Conversation[] = [
 export default function MessagesScreen() {
   const { t } = useTranslation()
   const router = useRouter()
+  const [notificationVisible, setNotificationVisible] = useState(false)
+  const { data: notificationState } = useNotificationStateQuery()
 
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
@@ -99,7 +103,12 @@ export default function MessagesScreen() {
         showQRButton
         onQRPress={() => router.push('/qr' as any)}
         showAddButton
+        showBellButton
+        bellUnreadCount={notificationState?.unreadCount ?? 0}
+        onBellPress={() => setNotificationVisible(true)}
       />
+
+      <NotificationPanel visible={notificationVisible} onClose={() => setNotificationVisible(false)} />
 
       {/* Conversations List */}
       <ScrollView style={{ flex: 1 }}>

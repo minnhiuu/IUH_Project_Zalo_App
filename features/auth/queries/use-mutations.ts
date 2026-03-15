@@ -1,16 +1,17 @@
-﻿import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'expo-router'
 import Toast from 'react-native-toast-message'
 import { useTranslation } from 'react-i18next'
 
 import { authApi } from '../api'
 import { authKeys } from './keys'
-import { useAuthStore } from '@/store'
+import { useAuthStore, useNotificationStore } from '@/store'
 import { handleErrorApi } from '@/utils/error-handler'
 import { getRefreshToken, setAccessToken, setRefreshToken, clearTokens } from '@/lib/http'
 import { storage } from '@/utils/storageUtils'
 import { userApi } from '@/features/users/api/user.api'
 import { userKeys } from '@/features/users/queries/keys'
+import { useUnregisterDeviceMutation } from '@/features/notifications/queries/use-mutation'
 
 export const useLoginMutation = () => {
   const { t } = useTranslation()
@@ -29,6 +30,10 @@ export const useLoginMutation = () => {
 
     onSuccess: async (response) => {
       const tokens = response.data.data
+
+      console.log('--- TEST ACCESS TOKEN START ---')
+      console.log(tokens.accessToken)
+      console.log('--- TEST ACCESS TOKEN END ---')
 
       await setAccessToken(tokens.accessToken)
       await setRefreshToken(tokens.refreshToken)
@@ -143,11 +148,22 @@ export const useLogoutMutation = () => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const router = useRouter()
-  const { logoutSuccess, setLoading } = useAuthStore()
+  const { logoutSuccess, setLoading, user } = useAuthStore()
+  const { fcmToken } = useNotificationStore()
+  const unregisterMutation = useUnregisterDeviceMutation()
 
   return useMutation({
     mutationKey: authKeys.logout(),
     mutationFn: async () => {
+      // Unregister token before logout if possible
+      if (user?.id && fcmToken) {
+        try {
+          await unregisterMutation.mutateAsync(fcmToken)
+        } catch (error) {
+          console.warn('Silent failure unregistering device on logout:', error)
+        }
+      }
+
       const refreshToken = await getRefreshToken()
       return authApi.logout(refreshToken ? { refreshToken } : {})
     },
