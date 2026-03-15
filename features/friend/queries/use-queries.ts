@@ -7,7 +7,8 @@ export const useReceivedFriendRequests = (enabled: boolean = true) => {
     queryKey: friendKeys.receivedRequests(),
     queryFn: async () => {
       const response = await friendApi.getReceivedFriendRequests()
-      return response.data.data
+      // Extract data from PageResponse structure
+      return (response.data?.data as any)?.data ?? []
     },
     enabled,
     staleTime: 30 * 1000, // 30 seconds
@@ -19,7 +20,8 @@ export const useSentFriendRequests = (enabled: boolean = true) => {
     queryKey: friendKeys.sentRequests(),
     queryFn: async () => {
       const response = await friendApi.getSentFriendRequests()
-      return response.data.data
+      // Extract data from PageResponse structure
+      return (response.data?.data as any)?.data ?? []
     },
     enabled,
     staleTime: 30 * 1000,
@@ -31,7 +33,8 @@ export const useMyFriends = (enabled: boolean = true) => {
     queryKey: friendKeys.myFriends(),
     queryFn: async () => {
       const response = await friendApi.getMyFriends()
-      return response.data.data
+      // Extract data from PageResponse structure
+      return (response.data?.data as any)?.data ?? []
     },
     enabled,
     staleTime: 2 * 60 * 1000, // 2 minutes

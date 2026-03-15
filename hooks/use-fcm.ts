@@ -22,13 +22,18 @@ Notifications.setNotificationHandler({
 
     // 1. Trường hợp Data-only (Silent/Data-only message từ Server)
     // Chúng ta tự tạo Local Notification để hiện đầy đủ Avatar + Nút bấm
-    if (!title && !body && data?.title) {
+    const customTitle = data?.customTitle || data?.title
+    const customBody = data?.customBody || data?.body
+
+    if (!title && !body && customTitle) {
       await Notifications.scheduleNotificationAsync({
         content: {
-          title: data.title,
-          body: data.body || '',
+          title: customTitle,
+          body: customBody || '',
           data: data as unknown as Record<string, unknown>,
           categoryIdentifier: data.categoryIdentifier || 'friend_request',
+          // @ts-ignore
+          channelId: 'friend_requests',
           sound: 'default',
           // Ảnh đại diện cho iOS/Rich Media
           attachments: data.actorAvatar ? [{ identifier: 'avatar', url: data.actorAvatar, type: 'image' }] : []
@@ -72,12 +77,12 @@ async function registerNotificationCategories() {
     {
       identifier: 'confirm',
       buttonTitle: i18n.t('friendRequests.actions.accept'),
-      options: { opensAppToForeground: false }
+      options: { opensAppToForeground: true }
     },
     {
       identifier: 'decline',
       buttonTitle: i18n.t('friendRequests.actions.decline'),
-      options: { isDestructive: true, opensAppToForeground: false }
+      options: { isDestructive: true, opensAppToForeground: true }
     },
     {
       identifier: 'view_profile',
@@ -129,15 +134,24 @@ export const useFcm = () => {
     responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
       const actionId = response.actionIdentifier
       const data = response.notification.request.content.data as Record<string, string>
+      const requestId = data.requestId || data.referenceId
+      const notificationId = response.notification.request.identifier
 
-      if (actionId === 'confirm' && data.requestId) {
-        friendApi.acceptFriendRequest(data.requestId).catch(() => {})
-      } else if (actionId === 'decline' && data.requestId) {
-        friendApi.declineFriendRequest(data.requestId).catch(() => {})
+      if (actionId === 'confirm' && requestId) {
+        router.push({ pathname: '/friend-requests', params: { autoAction: 'accept', requestId, timestamp: Date.now().toString() } })
+      } else if (actionId === 'decline' && requestId) {
+        router.push({ pathname: '/friend-requests', params: { autoAction: 'decline', requestId, timestamp: Date.now().toString() } })
       } else if (actionId === 'view_profile' && data.actorId) {
         // @ts-ignore - Dynamic path for router.push
         router.push(`/user-profile/${data.actorId}`)
+      } else if (actionId === Notifications.DEFAULT_ACTION_IDENTIFIER) {
+        if (data.type === 'FRIEND_REQUEST') {
+          router.push('/friend-requests')
+        }
       }
+
+      // Xóa thông báo sau khi click
+      Notifications.dismissNotificationAsync(notificationId).catch(() => {})
 
       console.log('Notification Response:', response)
     })
@@ -152,7 +166,7 @@ export const useFcm = () => {
   const doRegister = useCallback(
     async (token: string) => {
       if (!user?.id || !token) return
-      
+
       let deviceId = await secureStorage.getDeviceId()
       if (!deviceId) {
         // Fallback if not found in storage (should not happen if logged in correctly)
@@ -160,7 +174,7 @@ export const useFcm = () => {
       }
 
       console.log('[FCM] registerDevice: userId=', user.id, '| deviceId=', deviceId, '| token=***' + token.slice(-6))
-      
+
       registerDevice(
         {
           token,
@@ -215,6 +229,13 @@ async function registerForPushNotificationsAsync() {
       importance: Notifications.AndroidImportance.MAX,
       vibrationPattern: [0, 250, 250, 250],
       lightColor: '#FF231F7C'
+    })
+    await Notifications.setNotificationChannelAsync('friend_requests', {
+      name: 'Friend Requests',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+      showBadge: true
     })
   }
 

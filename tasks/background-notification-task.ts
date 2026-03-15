@@ -21,8 +21,8 @@ TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, async ({ data, error }: Tas
 
   // 2. Xử lý Data-only (Gửi từ Java cho Android/iOS)
   const remoteData = (payload.data || payload || {}) as Record<string, string>
-  const title = remoteData.title || ''
-  const body = remoteData.body || ''
+  const title = remoteData.customTitle || remoteData.title || ''
+  const body = remoteData.customBody || remoteData.body || ''
 
   if (!title && !body) {
     console.log('[BGNotification] No content in data-only message, skipping.')
@@ -36,6 +36,8 @@ TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, async ({ data, error }: Tas
       body: body,
       data: remoteData as unknown as Record<string, unknown>,
       categoryIdentifier: remoteData.categoryIdentifier || 'friend_request',
+      // @ts-ignore
+      channelId: 'friend_requests',
       sound: 'default',
       // PHỤC HỒI ICON: Đưa avatar vào attachments để hiện thumbnail bên phải
       attachments: remoteData.actorAvatar ? [{ identifier: 'avatar', url: remoteData.actorAvatar, type: 'image' }] : []

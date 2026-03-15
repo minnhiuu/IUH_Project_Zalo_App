@@ -41,13 +41,3 @@ export const UserNotificationStateResponseSchema = z.object({
 })
 
 export type UserNotificationStateResponse = z.infer<typeof UserNotificationStateResponseSchema>
-
-export const CreateFriendRequestNotificationRequestSchema = z.object({
-  receiverId: z.string().min(1),
-  senderId: z.string().min(1),
-  senderName: z.string().min(1),
-  senderAvatar: z.string().optional(),
-  requestId: z.string().min(1)
-})
-
-export type CreateFriendRequestNotificationRequest = z.infer<typeof CreateFriendRequestNotificationRequestSchema>

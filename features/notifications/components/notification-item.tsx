@@ -1,8 +1,10 @@
-import React from 'react'
-import { View, TouchableOpacity, Image } from 'react-native'
+import React, { useState } from 'react'
+import { View, TouchableOpacity, Image, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { useTranslation } from 'react-i18next'
 import { Text } from '@/components/ui/text'
 import type { NotificationGroupResponse } from '../schemas/notification.schema'
+import { friendApi } from '@/features/friend/api/friend.api'
 
 interface NotificationItemProps {
   notification: NotificationGroupResponse
@@ -39,7 +41,7 @@ const getBadgeConfig = (type: string) => {
   }
 }
 
-const getTimeAgo = (dateStr: string): string => {
+const getTimeAgo = (dateStr: string, t: any): string => {
   const date = new Date(dateStr)
   const now = new Date()
   const diffMs = now.getTime() - date.getTime()
@@ -47,10 +49,10 @@ const getTimeAgo = (dateStr: string): string => {
   const diffHr = Math.floor(diffMs / 3600000)
   const diffDay = Math.floor(diffMs / 86400000)
 
-  if (diffMin < 1) return 'Vừa xong'
-  if (diffMin < 60) return `${diffMin} ph trước`
-  if (diffHr < 24) return `${diffHr} giờ trước`
-  if (diffDay < 7) return `${diffDay} ngày trước`
+  if (diffMin < 1) return t('friend.time.minutesAgo', { count: 1 })
+  if (diffMin < 60) return t('friend.time.minutesAgo', { count: diffMin })
+  if (diffHr < 24) return t('friend.time.hoursAgo', { count: diffHr })
+  if (diffDay < 7) return t('friend.time.daysAgo', { count: diffDay })
   return date.toLocaleDateString('vi-VN')
 }
 
@@ -70,6 +72,10 @@ const renderHtmlText = (html: string, baseStyle?: object) => {
 }
 
 export function NotificationItem({ notification, onMarkAsRead }: NotificationItemProps) {
+  const { t } = useTranslation()
+  const [status, setStatus] = useState<'pending' | 'accepted' | 'declined'>('pending')
+  const [loading, setLoading] = useState(false)
+  
   const badge = getBadgeConfig(notification.type)
 
   const avatarUri =
@@ -83,13 +89,45 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
     }
   }
 
+  const handleDecline = async () => {
+    const requestId = notification.payload?.requestId as string
+    if (!requestId) return
+    
+    setLoading(true)
+    try {
+      await friendApi.declineFriendRequest(requestId)
+      setStatus('declined')
+      if (!notification.read) onMarkAsRead(notification.id)
+    } catch (error) {
+      console.error('Error declining friend request:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleAccept = async () => {
+    const requestId = notification.payload?.requestId as string
+    if (!requestId) return
+
+    setLoading(true)
+    try {
+      await friendApi.acceptFriendRequest(requestId)
+      setStatus('accepted')
+      if (!notification.read) onMarkAsRead(notification.id)
+    } catch (error) {
+      console.error('Error accepting friend request:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <TouchableOpacity
       onPress={handlePress}
       activeOpacity={0.7}
-      className={`flex-row items-start px-4 py-3 ${notification.read ? 'bg-white' : 'bg-[#F0F7FF]'}`}
+      style={{ backgroundColor: notification.read ? '#fff' : '#F0F7FF' }}
+      className='flex-row items-start px-4 py-3'
     >
-      {/* Avatar with badge */}
       <View className='mr-3 relative'>
         <Image source={{ uri: avatarUri }} className='w-14 h-14 rounded-full bg-gray-100' />
         <View
@@ -100,27 +138,42 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
         </View>
       </View>
 
-      {/* Content */}
       <View className='flex-1 pr-2'>
         <Text numberOfLines={3} className='text-[15px] leading-[20px] text-gray-700'>
           {renderHtmlText(notification.body, { fontSize: 15 })}
         </Text>
-        <Text className='text-[12px] mt-1 text-gray-400'>{getTimeAgo(notification.lastModifiedAt)}</Text>
+        <Text className='text-[12px] mt-1 text-gray-400'>{getTimeAgo(notification.lastModifiedAt, t)}</Text>
 
-        {/* Action buttons (only for friend requests) */}
-        {notification.type === 'FRIEND_REQUEST' && !notification.read && (
-          <View className='flex-row mt-2.5 gap-2'>
-            <TouchableOpacity className='flex-1 py-2 rounded-full bg-gray-100 items-center border border-gray-200'>
-              <Text className='text-[13px] font-semibold text-gray-600'>Từ chối</Text>
-            </TouchableOpacity>
-            <TouchableOpacity className='flex-1 py-2 rounded-full bg-blue-50 items-center border border-blue-100'>
-              <Text className='text-[13px] font-semibold text-blue-600'>Đồng ý</Text>
-            </TouchableOpacity>
+        {notification.type === 'FRIEND_REQUEST' && (
+          <View className='mt-2.5'>
+            {loading ? (
+              <View className='py-2 items-center'>
+                <ActivityIndicator size='small' color='#0068FF' />
+              </View>
+            ) : status === 'pending' ? (
+              <View className='flex-row gap-2'>
+                <TouchableOpacity 
+                   onPress={handleDecline}
+                   className='flex-1 py-1.5 rounded-full bg-gray-100 items-center border border-gray-200'
+                >
+                  <Text className='text-[13px] font-semibold text-gray-600'>{t('friend.actions.decline')}</Text>
+                </TouchableOpacity>
+                <TouchableOpacity 
+                  onPress={handleAccept}
+                  className='flex-1 py-1.5 rounded-full bg-blue-50 items-center border border-blue-100'
+                >
+                  <Text className='text-[13px] font-semibold text-blue-600'>{t('friend.actions.accept')}</Text>
+                </TouchableOpacity>
+              </View>
+            ) : (
+              <Text className='text-[13px] text-gray-400 mt-1'>
+                {status === 'accepted' ? t('friend.actions.accepted') : t('friend.actions.declined')}
+              </Text>
+            )}
           </View>
         )}
       </View>
 
-      {/* Media Preview or Unread dot or Options */}
       <View className='items-end gap-2'>
         <TouchableOpacity className='p-1'>
           <Ionicons name='ellipsis-horizontal' size={18} color='#9ca3af' />

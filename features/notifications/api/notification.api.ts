@@ -2,7 +2,6 @@ import { API_ENDPOINTS, http } from '@/config'
 import type { DeviceTokenRequest } from '../schemas/user-device.schema'
 import type { ApiResponse } from '@/types'
 import type {
-  CreateFriendRequestNotificationRequest,
   NotificationHistoryResponse,
   NotificationFlatHistoryResponse,
   UserNotificationStateResponse
@@ -14,9 +13,6 @@ export const notificationApi = {
 
   unregisterDevice: (token: string) =>
     http.delete<ApiResponse<string>>(API_ENDPOINTS.NOTIFICATION.UNREGISTER_DEVICE(token)),
-
-  createFriendRequest: (body: CreateFriendRequestNotificationRequest) =>
-    http.post<ApiResponse<{ id: string; status: string }>>('/notifications/friend-request', body),
 
   getNotificationHistory: (params: { cursor?: string | null; limit?: number }) =>
     http.get<ApiResponse<NotificationHistoryResponse>>('/notifications/history', { params }),
