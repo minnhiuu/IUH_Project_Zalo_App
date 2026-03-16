@@ -24,7 +24,6 @@ export const useAuth = () => {
    */
   const initializeAuth = async (): Promise<boolean> => {
     try {
-      const user = await authApi.getStoredUser()
       const accessToken = await getAccessToken()
       const refreshToken = await getRefreshToken()
 
@@ -33,15 +32,15 @@ export const useAuth = () => {
         const isValid = await authApi.validateToken(accessToken)
 
         if (isValid) {
-          store.loginSuccess({ accessToken, refreshToken, tokenType: 'Bearer', expiresIn: 0 }, user)
+          await store.loginSuccess()
           store.setInitialized(true)
           return true
         }
 
         // Token invalid, try refresh
         try {
-          const tokens = await authApi.refreshToken(refreshToken)
-          store.loginSuccess(tokens, user)
+          await authApi.refresh({ deviceId: 'mobile', refreshToken })
+          await store.loginSuccess()
           store.setInitialized(true)
           return true
         } catch {

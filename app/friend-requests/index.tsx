@@ -1,6 +1,6 @@
-﻿import { View, TouchableOpacity, SectionList, ActivityIndicator } from 'react-native'
+import { View, TouchableOpacity, SectionList, ActivityIndicator } from 'react-native'
 import { useState, useMemo } from 'react'
-import { useRouter } from 'expo-router'
+import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { Header } from '@/components/ui'
@@ -33,6 +33,7 @@ function groupByMonth(
 
 export default function FriendRequestsScreen() {
   const router = useRouter()
+  const { autoAction, requestId, timestamp } = useLocalSearchParams<{ autoAction: string; requestId: string; timestamp: string }>()
   const { t } = useTranslation()
   const [activeTab, setActiveTab] = useState<'received' | 'sent'>('received')
   const [showMore, setShowMore] = useState(false)
@@ -178,13 +179,16 @@ export default function FriendRequestsScreen() {
         receivedCount > 0 ? (
           <SectionList
             sections={receivedSections}
-            renderItem={({ item }) => (
+            renderItem={({ item, index, section }) => (
               <FriendRequestItem
                 request={item}
                 type="received"
                 onAccept={handleAccept}
                 onDecline={handleDecline}
                 isLoading={loadingIds.has(item.id)}
+                isNew={index === 0 && receivedSections[0].title === section.title}
+                autoAction={item.id === requestId ? (autoAction as 'accept' | 'decline') : undefined}
+                autoActionTimestamp={item.id === requestId ? timestamp : undefined}
               />
             )}
             renderSectionHeader={renderSectionHeader}

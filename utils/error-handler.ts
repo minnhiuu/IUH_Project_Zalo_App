@@ -1,15 +1,15 @@
 import Toast from 'react-native-toast-message'
-import axios from 'axios'
+import { isAxiosError } from 'axios'
 import { getErrorMessage } from '@/constants/error-messages'
 
 export class EntityError extends Error {
   status: 422
   payload: {
     message: string
-    errors: Array<{ field: string; message: string }>
+    errors: { field: string; message: string }[]
   }
 
-  constructor(payload: { message: string; errors: Array<{ field: string; message: string }> }) {
+  constructor(payload: { message: string; errors: { field: string; message: string }[] }) {
     super('Entity Error')
     this.status = 422
     this.payload = payload
@@ -39,7 +39,11 @@ export const handleErrorApi = ({ error, setError, duration = 4000, showToast = t
   }
 
   // Handle Axios errors
-  if (axios.isAxiosError(error)) {
+  if (isAxiosError(error)) {
+    if (error.response?.status === 401) {
+      return
+    }
+
     const data = error.response?.data
     const message = getErrorMessage(data?.code, data?.message)
 
