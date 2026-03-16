@@ -1,13 +1,14 @@
 import { useQuery } from '@tanstack/react-query'
-import { userKeys } from './keys'
+import { userKeys, blockKeys } from './keys'
 import { userApi } from '../api/user.api'
+import { blockApi } from '../api/block.api'
 
 export const useMyProfile = () => {
   return useQuery({
     queryKey: userKeys.profile(),
     queryFn: async () => {
       const response = await userApi.getMyProfile()
-      return response.data.data
+      return response.data.data ?? null
     },
     staleTime: 5 * 60 * 1000 // 5 minutes
   })
@@ -30,9 +31,36 @@ export const useUserById = (userId: string, enabled: boolean = true) => {
     queryKey: userKeys.byId(userId),
     queryFn: async () => {
       const response = await userApi.getUserById(userId)
-      return response.data.data
+      return response.data.data ?? null
     },
     enabled: enabled && !!userId,
     staleTime: 2 * 60 * 1000
+  })
+}
+
+export const useBlockDetails = (userId: string, enabled: boolean = true) => {
+  return useQuery({
+    queryKey: blockKeys.detail(userId),
+    queryFn: async () => {
+      try {
+        const response = await blockApi.getBlockDetails(userId)
+        return response.data.data ?? null
+      } catch {
+        return null
+      }
+    },
+    enabled: enabled && !!userId,
+    staleTime: 30 * 1000
+  })
+}
+
+export const useMyBlockedUsers = () => {
+  return useQuery({
+    queryKey: blockKeys.myBlocks(),
+    queryFn: async () => {
+      const response = await blockApi.getMyBlockedUsersWithDetails()
+      return response.data.data ?? []
+    },
+    staleTime: 60 * 1000
   })
 }

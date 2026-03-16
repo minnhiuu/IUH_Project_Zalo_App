@@ -117,7 +117,7 @@ export default function PrivacyScreen() {
               <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
             </View>
           }
-          onPress={() => {}}
+          onPress={() => router.push('/settings/privacy/blocked-users' as any)}
         />
       </SettingsCard>
 

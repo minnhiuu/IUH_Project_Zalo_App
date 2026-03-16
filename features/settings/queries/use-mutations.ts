@@ -1,4 +1,4 @@
-﻿export { useUpdateLanguageAndInterfaceMutation } from '../interface-language/queries/use-language-and-interface-settings.query'
+export { useUpdateLanguageAndInterfaceMutation } from '../interface-language/queries/use-language-and-interface-settings.query'
 export { useUpdateNotificationSettingsMutation } from '../notifications/queries/use-notification-settings.query'
 export { useUpdateMessageSettingsMutation } from '../messages/queries/use-message-settings.query'
 export { useUpdateCallSettingsMutation } from '../calls/queries/use-call-settings.query'

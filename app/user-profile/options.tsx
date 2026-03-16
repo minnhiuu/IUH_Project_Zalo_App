@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { View, TouchableOpacity, ScrollView } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
+import { useTranslation } from 'react-i18next'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Text } from '@/components/ui/text'
 import { useTheme } from '@/context/theme-context'
@@ -37,6 +38,7 @@ function MenuItemRow({ icon, label, onPress, destructive, isDark }: MenuItemRowP
         borderBottomColor: isDark ? DIVIDER_COLOR_DARK : DIVIDER_COLOR_LIGHT
       }}
     >
+      <Ionicons name={icon} size={22} color={iconColor} style={{ marginRight: 16 }} />
       <Text style={{ flex: 1, fontSize: 16, color: textColor }}>{label}</Text>
       <Ionicons name='chevron-forward' size={18} color={isDark ? '#3E444A' : '#C7C7CC'} />
     </TouchableOpacity>
@@ -44,6 +46,7 @@ function MenuItemRow({ icon, label, onPress, destructive, isDark }: MenuItemRowP
 }
 
 export default function UserProfileOptionsScreen() {
+  const { t } = useTranslation()
   const router = useRouter()
   const { id, name } = useLocalSearchParams<{ id: string; name: string }>()
   const { isDark } = useTheme()
@@ -95,31 +98,31 @@ export default function UserProfileOptionsScreen() {
         <View style={{ marginTop: 8 }}>
           <MenuItemRow
             icon='person-add-outline'
-            label='Kết bạn'
+            label={t('contacts.addFriend')}
             onPress={() => {}}
             isDark={isDark}
           />
           <MenuItemRow
             icon='information-circle-outline'
-            label='Thông tin'
+            label={t('profile.menu.information')}
             onPress={() => {}}
             isDark={isDark}
           />
           <MenuItemRow
             icon='pencil-outline'
-            label='Đổi tên gợi nhớ'
+            label={t('profile.menu.changeNickname')}
             onPress={() => {}}
             isDark={isDark}
           />
           <MenuItemRow
             icon='flag-outline'
-            label='Báo xấu'
+            label={t('profile.menu.report')}
             onPress={() => {}}
             isDark={isDark}
           />
           <MenuItemRow
             icon='ban-outline'
-            label={blockDetails ? 'Cài đặt chặn' : 'Quản lý chặn'}
+            label={blockDetails ? t('settings.privacy.blockSettings') : t('settings.privacy.manageBlock')}
             onPress={() => setBlockModalVisible(true)}
             destructive
             isDark={isDark}
@@ -129,6 +132,7 @@ export default function UserProfileOptionsScreen() {
 
       {/* Block Modal */}
       <BlockUserModal
+        key={`block-modal-${id}-${!!blockDetails}`}
         userId={id as string}
         userName={name as string}
         visible={blockModalVisible}

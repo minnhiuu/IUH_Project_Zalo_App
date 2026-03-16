@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import {
   Modal,
   View,
@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   Alert
 } from 'react-native'
+import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
 import { SEMANTIC } from '@/constants/theme'
@@ -65,53 +66,79 @@ export function BlockUserModal({
   isBlocked = false,
   currentPreference
 }: BlockUserModalProps) {
-  const [blockMessage, setBlockMessage] = useState(currentPreference?.message ?? true)
-  const [blockCall, setBlockCall] = useState(currentPreference?.call ?? true)
-  const [blockStory, setBlockStory] = useState(currentPreference?.story ?? true)
+  const { t } = useTranslation()
+  const [blockMessage, setBlockMessage] = useState(isBlocked ? (currentPreference?.message ?? false) : false)
+  const [blockCall, setBlockCall] = useState(isBlocked ? (currentPreference?.call ?? false) : false)
+  const [blockStory, setBlockStory] = useState(isBlocked ? (currentPreference?.story ?? false) : false)
 
   const { isDark } = useTheme()
   const blockMutation = useBlockUser()
   const unblockMutation = useUnblockUser()
   const updatePrefMutation = useUpdateBlockPreference()
 
-  useEffect(() => {
+  // Sync state with props when modal opens or when status changes
+  const [prevVisible, setPrevVisible] = useState(visible)
+  const [prevIsBlocked, setPrevIsBlocked] = useState(isBlocked)
+
+  if (visible !== prevVisible || (visible && isBlocked !== prevIsBlocked)) {
+    setPrevVisible(visible)
+    setPrevIsBlocked(isBlocked)
     if (visible) {
-      setBlockMessage(currentPreference?.message ?? true)
-      setBlockCall(currentPreference?.call ?? true)
-      setBlockStory(currentPreference?.story ?? true)
-    }
-  }, [visible, currentPreference])
-
-  const isPending =
-    blockMutation.isPending || unblockMutation.isPending || updatePrefMutation.isPending
-
-  const handleSubmit = () => {
-    if (isBlocked) {
-      updatePrefMutation.mutate(
-        { blockedUserId: userId, body: { blockMessage, blockCall, blockStory } },
-        { onSuccess: onClose }
-      )
-    } else {
-      blockMutation.mutate(
-        { blockedUserId: userId, blockMessage, blockCall, blockStory },
-        { onSuccess: onClose }
-      )
+      setBlockMessage(isBlocked ? (currentPreference?.message ?? false) : false)
+      setBlockCall(isBlocked ? (currentPreference?.call ?? false) : false)
+      setBlockStory(isBlocked ? (currentPreference?.story ?? false) : false)
     }
   }
 
   const handleUnblock = () => {
     Alert.alert(
-      'Bỏ chặn',
-      `Bạn có chắc muốn bỏ chặn ${userName}?`,
+      t('settings.privacy.unblock'),
+      t('settings.privacy.unblockConfirm', { name: userName }),
       [
-        { text: 'Hủy', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Bỏ chặn',
-          onPress: () => unblockMutation.mutate(userId, { onSuccess: onClose })
+          text: t('settings.privacy.unblock'),
+          onPress: () => {
+            setBlockMessage(false)
+            setBlockCall(false)
+            setBlockStory(false)
+
+            unblockMutation.mutate(userId, {
+              onSuccess: () => {
+                onClose()
+              }
+            })
+          }
         }
       ]
     )
   }
+
+  const handleSubmit = () => {
+    const preference = { blockMessage, blockCall, blockStory }
+    if (isBlocked) {
+      updatePrefMutation.mutate(
+        { blockedUserId: userId, body: preference },
+        {
+          onSuccess: () => {
+            onClose()
+          }
+        }
+      )
+    } else {
+      blockMutation.mutate(
+        { blockedUserId: userId, ...preference },
+        {
+          onSuccess: () => {
+            onClose()
+          }
+        }
+      )
+    }
+  }
+
+  const isPending =
+    blockMutation.isPending || unblockMutation.isPending || updatePrefMutation.isPending
 
   return (
     <Modal visible={visible} transparent animationType='slide' onRequestClose={onClose}>
@@ -139,32 +166,32 @@ export function BlockUserModal({
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
             <Ionicons name='ban-outline' size={22} color='#DC2626' />
             <Text style={{ fontSize: 17, fontWeight: '600', color: isDark ? '#DFE2E7' : '#111827' }}>
-              {isBlocked ? 'Cài đặt chặn' : 'Chặn người dùng'}
+              {isBlocked ? t('settings.privacy.blockSettings') : t('settings.privacy.blockUser')}
             </Text>
           </View>
           <Text style={{ fontSize: 13, color: isDark ? '#94A3B8' : '#64748B', marginBottom: 20 }}>
             {isBlocked
-              ? `Tùy chỉnh cách bạn chặn ${userName}`
-              : `Chọn những gì bạn muốn chặn từ ${userName}`}
+              ? t('settings.privacy.blockCustomDescription', { name: userName })
+              : t('settings.privacy.blockDescriptionHeadline', { name: userName })}
           </Text>
 
           {/* Options */}
           <CheckboxRow
-            label='Chặn tin nhắn'
+            label={t('settings.privacy.blockMessage')}
             iconName='chatbubble-outline'
             value={blockMessage}
             onChange={setBlockMessage}
             isDark={isDark}
           />
           <CheckboxRow
-            label='Chặn cuộc gọi'
+            label={t('settings.privacy.blockCall')}
             iconName='call-outline'
             value={blockCall}
             onChange={setBlockCall}
             isDark={isDark}
           />
           <CheckboxRow
-            label='Chặn nhật ký'
+            label={t('settings.privacy.blockStory')}
             iconName='camera-outline'
             value={blockStory}
             onChange={setBlockStory}
@@ -186,7 +213,7 @@ export function BlockUserModal({
                   borderColor: isDark ? '#3E444A' : '#CBD5E1'
                 }}
               >
-                <Text style={{ fontSize: 14, color: isDark ? '#DFE2E7' : '#374151' }}>Bỏ chặn</Text>
+                <Text style={{ fontSize: 14, color: isDark ? '#DFE2E7' : '#374151' }}>{t('settings.privacy.unblock')}</Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity
@@ -196,11 +223,11 @@ export function BlockUserModal({
               style={{
                 paddingVertical: 10,
                 paddingHorizontal: 18,
-                borderRadius: 8,
+                borderRadius: 18,
                 backgroundColor: isDark ? '#2C323A' : '#F1F5F9'
               }}
             >
-              <Text style={{ fontSize: 14, color: isDark ? '#DFE2E7' : '#374151' }}>Hủy</Text>
+              <Text style={{ fontSize: 14, color: isDark ? '#DFE2E7' : '#374151' }}>{t('common.cancel')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleSubmit}
@@ -209,7 +236,7 @@ export function BlockUserModal({
               style={{
                 paddingVertical: 10,
                 paddingHorizontal: 18,
-                borderRadius: 8,
+                borderRadius: 18,
                 backgroundColor: '#DC2626',
                 opacity: isPending ? 0.6 : 1,
                 flexDirection: 'row',
@@ -219,7 +246,7 @@ export function BlockUserModal({
             >
               {isPending && <ActivityIndicator size='small' color='#fff' />}
               <Text style={{ fontSize: 14, color: '#fff', fontWeight: '600' }}>
-                {isBlocked ? 'Cập nhật' : 'Chặn'}
+                {isBlocked ? t('common.save') : t('settings.privacy.blockUser')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -227,4 +254,5 @@ export function BlockUserModal({
       </TouchableOpacity>
     </Modal>
   )
+
 }
