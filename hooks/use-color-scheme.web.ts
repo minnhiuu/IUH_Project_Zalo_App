@@ -7,13 +7,14 @@ import { useTheme } from '@/context'
  */
 export function useColorScheme() {
   const [hasHydrated, setHasHydrated] = useState(false)
+  const theme = useTheme()
 
   useEffect(() => {
     setHasHydrated(true)
   }, [])
 
   try {
-    const { activeTheme } = useTheme()
+    const { activeTheme } = theme
     if (hasHydrated) {
       return activeTheme
     }

@@ -184,7 +184,7 @@ export const useFcm = () => {
         },
         {
           onSuccess: () => console.log('[FCM] registerDevice success'),
-          onError: (e) => console.error('[FCM] registerDevice error:', e)
+          onError: (e) => console.log('[FCM] registerDevice error:', e)
         }
       )
     },

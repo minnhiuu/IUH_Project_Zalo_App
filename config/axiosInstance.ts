@@ -15,10 +15,10 @@ const axiosInstance = axios.create({
 
 let isRefreshing = false
 
-let failedQueue: Array<{
+let failedQueue: {
   resolve: (token: string | null) => void
   reject: (error: AxiosError) => void
-}> = []
+}[] = []
 
 const processQueue = (error: AxiosError | null, token: string | null = null) => {
   failedQueue.forEach((promise) => {

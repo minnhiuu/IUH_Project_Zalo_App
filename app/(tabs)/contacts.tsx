@@ -14,7 +14,8 @@ import { Header } from '@/components'
 function groupByLetter(friends: FriendResponse[]): { title: string; data: FriendResponse[] }[] {
   const groups: Record<string, FriendResponse[]> = {}
   friends.forEach((f) => {
-    const letter = f.userName.charAt(0).toUpperCase()
+    const name = f.userName?.trim() || ''
+    const letter = name.length > 0 ? name.charAt(0).toUpperCase() : '#'
     if (!groups[letter]) groups[letter] = []
     groups[letter].push(f)
   })
@@ -52,11 +53,13 @@ export default function ContactsScreen() {
   ]
 
   const handleFriendPress = (friend: FriendResponse) => {
+    if (!friend.userId) return
+
     router.push({
       pathname: '/chat/[id]' as any,
       params: {
         id: friend.userId,
-        name: friend.userName,
+        name: friend.userName || '',
         avatar: friend.userAvatar || ''
       }
     })

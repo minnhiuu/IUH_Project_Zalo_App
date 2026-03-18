@@ -122,6 +122,15 @@ export const API_ENDPOINTS = {
     ACCOUNT_SECURITY: '/users/settings/me/account-security',
     JOURNAL: '/users/settings/me/journal',
     DATA_ON_DEVICE: '/users/settings/me/data-on-device'
+  },
+  BLOCK: {
+    BLOCK: '/blocks',
+    UNBLOCK: (id: string) => `/blocks/${id}`,
+    UPDATE_PREFERENCE: (id: string) => `/blocks/${id}/preferences`,
+    LIST: '/blocks',
+    LIST_DETAILS: '/blocks/details',
+    CHECK: (id: string) => `/blocks/${id}/check`,
+    DETAILS: (id: string) => `/blocks/${id}`
   }
 } as const
 
@@ -130,7 +139,7 @@ const apiConfig = {
   env: ENV,
   timeout: 30000, // 30 seconds
   retryAttempts: 3,
-  endpoints: API_ENDPOINTS 
+  endpoints: API_ENDPOINTS
 }
 
 // Log config in development for debugging

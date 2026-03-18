@@ -1,5 +1,12 @@
-import React, { useState } from 'react'
-import { View, TouchableOpacity, Image, ScrollView, Dimensions, ActivityIndicator } from 'react-native'
+import React, { useState, useMemo } from 'react'
+import {
+  View,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  Dimensions,
+  ActivityIndicator
+} from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useRouter, useLocalSearchParams } from 'expo-router'
@@ -334,7 +341,7 @@ export default function UserProfileScreen() {
                   <Ionicons name='search' size={20} color='#fff' />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => router.push(`/user-profile/menu?id=${id}` as any)}
+                  onPress={() => router.push({ pathname: '/user-profile/options' as any, params: { id: id as string, name: userProfile?.fullName ?? '' } })}
                   style={{
                     width: 36,
                     height: 36,

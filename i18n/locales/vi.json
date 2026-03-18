@@ -343,7 +343,21 @@
       "utilities": "Tiện ích",
       "friends": "Bạn bè",
       "blockList": "Danh sách chặn",
-      "blockListSubtitle": "Quản lý người dùng bị chặn"
+      "blockListSubtitle": "Quản lý người dùng bị chặn",
+      "unblock": "Bỏ chặn",
+      "blockSettings": "Cài đặt chặn",
+      "manageBlock": "Quản lý chặn",
+      "blockUser": "Chặn người dùng",
+      "blockMessage": "Chặn tin nhắn",
+      "blockCall": "Chặn cuộc gọi",
+      "blockStory": "Chặn nhật ký",
+      "blockDescriptionHeadline": "Chọn những gì bạn muốn chặn từ {{name}}",
+      "blockCustomDescription": "Tùy chỉnh cách bạn chặn {{name}}",
+      "unblockConfirm": "Bạn có chắc muốn bỏ chặn {{name}}?",
+      "blockSuccess": "Đã chặn người dùng",
+      "unblockSuccess": "Đã bỏ chặn người dùng",
+      "updateBlockSuccess": "Đã cập nhật cài đặt chặn",
+      "noBlockedUsers": "Bạn chưa chặn người dùng nào"
     },
     "dataOnDevice": {
       "totalUsed": "Tổng dung lượng đã sử dụng",
@@ -629,7 +643,20 @@
       "qrWalletDesc": "Lưu trữ và xuất trình các mã QR quan trọng",
       "accountSecurity": "Tài khoản và bảo mật",
       "privacy": "Quyền riêng tư",
-      "settings": "Cài đặt"
+      "settings": "Cài đặt",
+      "information": "Thông tin",
+      "personalInfo": "Thông tin",
+      "changeNickname": "Đổi tên gọi nhớ",
+      "markAsBestFriend": "Đánh dấu bạn thân",
+      "introduceToFriends": "Giới thiệu cho bạn bè",
+      "notificationSection": "Thông báo",
+      "notifications": "Nhận thông báo về hoạt động mới của người này",
+      "blockAndHideSection": "Chặn và ẩn khỏi nhật ký",
+      "blockMyActivity": "Chặn xem hoạt động của tôi",
+      "hideTheirActivity": "Ẩn hoạt động của người này",
+      "reportSection": "Báo xấu",
+      "report": "Báo xấu",
+      "unfriend": "Xóa bạn"
     },
     "promo": {
       "title": "Tặng bạn ưu đãi năm mới từ zStyle",
@@ -642,7 +669,7 @@
       "myPhotos": "Ảnh của tôi",
       "storage": "Kho lưu trữ",
       "todayQuestion": "Hôm nay {{name}} có gì vui?",
-      "journalPrompt": "Đây là Nhật ký của bạn - Hãy làm đầy Nhật ký với những dấu ấn cuộc đời và kỷ niệm đáng nhớ nhé!",
+      "journalPrompt": "Đây là Nhật ký của bạn - Hãy làm đầy Nhật ký with những dấu ấn cuộc đời và kỷ niệm đáng nhớ nhé!",
       "postToJournal": "Đăng lên Nhật ký"
     },
     "editBio": {
@@ -671,21 +698,6 @@
       "takePhoto": "Chụp ảnh mới",
       "chooseFromGallery": "Chọn ảnh trên máy",
       "updateSuccess": "Cập nhật ảnh bìa thành công"
-    },
-    "menu": {
-      "information": "Thông tin",
-      "personalInfo": "Thông tin",
-      "changeNickname": "Đổi tên gọi nhớ",
-      "markAsBestFriend": "Đánh dấu bạn thân",
-      "introduceToFriends": "Giới thiệu cho bạn bè",
-      "notificationSection": "Thông báo",
-      "notifications": "Nhận thông báo về hoạt động mới của người này",
-      "blockAndHideSection": "Chặn và ẩn khỏi nhật ký",
-      "blockMyActivity": "Chặn xem hoạt động của tôi",
-      "hideTheirActivity": "Ẩn hoạt động của người này",
-      "reportSection": "Báo xấu",
-      "report": "Báo xấu",
-      "unfriend": "Xóa bạn"
     },
     "personalInfo": {
       "title": "Thông tin cá nhân",

@@ -3,8 +3,8 @@ import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput,
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { Input } from '@/components/ui'
-import { Button } from '@/components/ui'
+import { Input , Button } from '@/components/ui'
+
 import { forgotPasswordRequestSchema, resetPasswordRequestSchema } from '../schemas/auth.schema'
 import { useForgotPasswordMutation, useResetPasswordMutation } from '../queries/use-mutations'
 

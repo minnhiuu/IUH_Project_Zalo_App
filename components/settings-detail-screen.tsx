@@ -19,22 +19,42 @@ export default function SettingsDetailScreen({ title, children }: SettingsDetail
     return (
         <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
             {/* Header */}
-            <View style={{ backgroundColor: headerBg }}>
+            <View 
+                style={{ 
+                    backgroundColor: headerBg,
+                    borderBottomWidth: 0.5,
+                    borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
+                }}
+            >
                 <SafeAreaView edges={['top']} style={{ backgroundColor: headerBg }}>
                     <View
                         style={{
                             flexDirection: 'row',
                             alignItems: 'center',
-                            paddingHorizontal: HEADER.paddingHorizontal,
-                            paddingVertical: HEADER.paddingVertical,
-                            height: HEADER.height,
-                            gap: 12,
+                            paddingHorizontal: 8,
+                            height: 56,
                         }}
                     >
-                        <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 4 }}>
-                            <Ionicons name="chevron-back" size={24} color={HEADER.textColor} />
+                        <TouchableOpacity 
+                            onPress={() => router.back()} 
+                            style={{ 
+                                width: 44, 
+                                height: 44, 
+                                justifyContent: 'center', 
+                                alignItems: 'center' 
+                            }}
+                        >
+                            <Ionicons name="chevron-back" size={26} color={HEADER.textColor} />
                         </TouchableOpacity>
-                        <Text style={{ flex: 1, fontSize: 18, fontWeight: '700', color: HEADER.textColor }}>
+                        <Text 
+                            style={{ 
+                                flex: 1, 
+                                fontSize: 18, 
+                                fontWeight: '600', 
+                                color: HEADER.textColor,
+                                marginLeft: 4
+                            }}
+                        >
                             {title}
                         </Text>
                     </View>
