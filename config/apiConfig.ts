@@ -139,7 +139,7 @@ const apiConfig = {
   env: ENV,
   timeout: 30000, // 30 seconds
   retryAttempts: 3,
-  endpoints: API_ENDPOINTS 
+  endpoints: API_ENDPOINTS
 }
 
 // Log config in development for debugging

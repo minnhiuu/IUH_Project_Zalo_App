@@ -51,7 +51,7 @@ export default function PrivacyScreen() {
               <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
             </View>
           }
-          onPress={() => {}}
+          onPress={() => { }}
         />
       </SettingsCard>
 
@@ -66,7 +66,7 @@ export default function PrivacyScreen() {
               <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
             </View>
           }
-          onPress={() => {}}
+          onPress={() => { }}
         />
         <SettingsDivider inset={56} />
         <ActionRow
@@ -105,7 +105,7 @@ export default function PrivacyScreen() {
               <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
             </View>
           }
-          onPress={() => {}}
+          onPress={() => { }}
         />
         <SettingsDivider inset={56} />
         <ActionRow
@@ -147,7 +147,7 @@ export default function PrivacyScreen() {
               <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
             </View>
           }
-          onPress={() => {}}
+          onPress={() => { }}
         />
       </SettingsCard>
 

@@ -6,6 +6,7 @@ import { useTheme } from '@/context/theme-context'
 import { useMyBlockedUsers } from '../queries/use-queries'
 import { useUnblockUser } from '../queries/use-mutations'
 import { SEMANTIC } from '@/constants/theme'
+import { UserAvatar } from '@/components/common/user-avatar'
 
 export function BlockedUsersList() {
   const { t } = useTranslation()
@@ -67,27 +68,24 @@ export function BlockedUsersList() {
               borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : '#F0F0F0'
             }}
           >
-            <Image
-              source={{ uri: item.avatar }}
-              style={{ width: 48, height: 48, borderRadius: 24 }}
-            />
+            <UserAvatar size='lg' source={item.avatar} name={item.fullName ? item.fullName : 'Unknown User'} />
             <View style={{ flex: 1, marginLeft: 12 }}>
-              <Text 
-                style={{ 
-                  fontSize: 16, 
-                  fontWeight: '500', 
-                  color: isDark ? '#DFE2E7' : '#111827' 
+              <Text
+                style={{
+                  fontSize: 16,
+                  fontWeight: '500',
+                  color: isDark ? '#DFE2E7' : '#111827'
                 }}
               >
                 {item.fullName}
               </Text>
               {item.bio && (
-                <Text 
-                  numberOfLines={1} 
-                  style={{ 
-                    fontSize: 13, 
-                    color: isDark ? '#94A3B8' : '#64748B', 
-                    marginTop: 2 
+                <Text
+                  numberOfLines={1}
+                  style={{
+                    fontSize: 13,
+                    color: isDark ? '#94A3B8' : '#64748B',
+                    marginTop: 2
                   }}
                 >
                   {item.bio}
@@ -98,27 +96,27 @@ export function BlockedUsersList() {
             {/* Blocked feature icons - matching web style (Right aligned before button) */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginRight: 12 }}>
               {item.preference?.message && (
-                <Ionicons 
-                  name='chatbubble-ellipses-outline' 
-                  size={18} 
-                  color={isDark ? '#818C99' : '#94A3B8'} 
-                  style={{ marginLeft: 10 }} 
+                <Ionicons
+                  name='chatbubble-ellipses-outline'
+                  size={18}
+                  color={isDark ? '#818C99' : '#94A3B8'}
+                  style={{ marginLeft: 10 }}
                 />
               )}
               {item.preference?.call && (
-                <Ionicons 
-                  name='call-outline' 
-                  size={18} 
-                  color={isDark ? '#818C99' : '#94A3B8'} 
-                  style={{ marginLeft: 10 }} 
+                <Ionicons
+                  name='call-outline'
+                  size={18}
+                  color={isDark ? '#818C99' : '#94A3B8'}
+                  style={{ marginLeft: 10 }}
                 />
               )}
               {item.preference?.story && (
-                <Ionicons 
-                  name='camera-outline' 
-                  size={18} 
-                  color={isDark ? '#818C99' : '#94A3B8'} 
-                  style={{ marginLeft: 10 }} 
+                <Ionicons
+                  name='camera-outline'
+                  size={18}
+                  color={isDark ? '#818C99' : '#94A3B8'}
+                  style={{ marginLeft: 10 }}
                 />
               )}
             </View>
@@ -135,11 +133,11 @@ export function BlockedUsersList() {
                 backgroundColor: isDark ? 'transparent' : '#fff'
               }}
             >
-              <Text 
-                style={{ 
-                  fontSize: 13, 
-                  fontWeight: '600', 
-                  color: isDark ? '#DFE2E7' : '#374151' 
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: '600',
+                  color: isDark ? '#DFE2E7' : '#374151'
                 }}
               >
                 {t('settings.privacy.unblock')}

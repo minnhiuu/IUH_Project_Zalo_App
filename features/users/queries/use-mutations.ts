@@ -32,7 +32,7 @@ export const useUpdateProfile = () => {
     onError: (error: Error) => {
       handleErrorApi({ error })
       console.log(error);
-      
+
     }
   })
 }
@@ -91,7 +91,7 @@ export const useUpdateBackground = () => {
   const { t } = useTranslation()
 
   return useMutation({
-    mutationFn: ({ formData, y }: { formData: FormData; y?: number }) => 
+    mutationFn: ({ formData, y }: { formData: FormData; y?: number }) =>
       userApi.updateBackground(formData, y),
     onSuccess: () => {
       // Invalidate all user queries to refetch updated data
@@ -142,11 +142,11 @@ export const useUnblockUser = () => {
     onSuccess: (_, userId) => {
       // Update cache immediately to reflect unblocked state
       queryClient.setQueryData(blockKeys.detail(userId), null)
-      
+
       queryClient.invalidateQueries({ queryKey: blockKeys.all })
       queryClient.invalidateQueries({ queryKey: blockKeys.myBlocks() })
       queryClient.invalidateQueries({ queryKey: settingsKeys.all() })
-      
+
       Toast.show({
         type: 'success',
         text1: t('common.success'),
