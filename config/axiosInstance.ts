@@ -2,6 +2,7 @@ import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'ax
 import * as SecureStore from 'expo-secure-store'
 import i18n from '@/i18n'
 import apiConfig, { API_ENDPOINTS } from './apiConfig'
+import { secureStorage } from '@/utils/storageUtils'
 
 const axiosInstance = axios.create({
   baseURL: apiConfig.apiUrl,
@@ -14,10 +15,10 @@ const axiosInstance = axios.create({
 
 let isRefreshing = false
 
-let failedQueue: Array<{
+let failedQueue: {
   resolve: (token: string | null) => void
   reject: (error: AxiosError) => void
-}> = []
+}[] = []
 
 const processQueue = (error: AxiosError | null, token: string | null = null) => {
   failedQueue.forEach((promise) => {
@@ -40,6 +41,21 @@ axiosInstance.interceptors.request.use(
     } catch (error) {
       console.error('Error getting token:', error)
     }
+
+    // Inject Accept-Language from SecureStore (synced from user's general settings),
+    // falling back to the active i18n locale for unauthenticated / first-load requests.
+    try {
+      const storedLang = await secureStorage.getAcceptLanguage()
+      config.headers['Accept-Language'] = storedLang ?? i18n.language ?? 'vi'
+      
+      const deviceId = await secureStorage.getDeviceId()
+      if (deviceId) {
+        config.headers['X-Device-Id'] = deviceId
+      }
+    } catch {
+      config.headers['Accept-Language'] = i18n.language ?? 'vi'
+    }
+
     return config
   },
   (error: AxiosError) => {

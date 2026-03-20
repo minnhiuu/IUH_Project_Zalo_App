@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import {
   View,
   TouchableOpacity,
-  Image,
   TextInput,
   Switch,
   KeyboardAvoidingView,
@@ -14,8 +13,9 @@ import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Text } from '@/components/ui/text'
-import { SEMANTIC } from '@/constants/theme'
+import { Text, Header } from '@/components/ui'
+import { UserAvatar } from '@/components'
+import { useTheme } from '@/context/theme-context'
 import { useSendFriendRequest } from '@/features/friend/queries/use-mutations'
 import { useAuthStore } from '@/store'
 
@@ -32,6 +32,7 @@ export default function AddFriendConfirmScreen() {
 
   const currentUser = useAuthStore((s) => s.user)
   const sendRequest = useSendFriendRequest()
+  const { colors } = useTheme()
 
   const defaultMessage = t('friend.addFriend.defaultMessage', {
     name: currentUser?.fullName || '',
@@ -57,31 +58,13 @@ export default function AddFriendConfirmScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#fff' }}>
-      {/* Header with SafeArea */}
-      <View style={{ backgroundColor: SEMANTIC.primary }}>
-        <SafeAreaView edges={['top']} style={{ backgroundColor: SEMANTIC.primary }}>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingHorizontal: 16,
-              paddingVertical: 12,
-              height: 52,
-            }}
-          >
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={{ marginRight: 16 }}
-            >
-              <Ionicons name="close" size={26} color="#fff" />
-            </TouchableOpacity>
-            <Text style={{ fontSize: 18, fontWeight: '600', color: '#fff' }}>
-              {t('friend.addFriend.title')}
-            </Text>
-          </View>
-        </SafeAreaView>
-      </View>
+    <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
+      <Header
+        title={t('friend.addFriend.title')}
+        showBackButton
+        onBackPress={() => router.back()}
+        showSearch={false}
+      />
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -96,25 +79,22 @@ export default function AddFriendConfirmScreen() {
               paddingHorizontal: 16,
               paddingVertical: 16,
               borderBottomWidth: 1,
-              borderBottomColor: '#E5E7EB',
+              borderBottomColor: colors.border,
+              backgroundColor: colors.background,
             }}
           >
-            <Image
-              source={{ uri: avatar || 'https://i.pravatar.cc/150' }}
-              style={{
-                width: 64,
-                height: 64,
-                borderRadius: 32,
-                backgroundColor: '#E5E7EB',
-                marginRight: 16,
-              }}
+            <UserAvatar
+              source={avatar}
+              name={fullName}
+              size="xl"
+              className="mr-4"
             />
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: '#111827' }}>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text }}>
                 {fullName}
               </Text>
               <TouchableOpacity style={{ marginLeft: 8, padding: 4 }}>
-                <Ionicons name="pencil" size={16} color="#6b7280" />
+                <Ionicons name="pencil" size={16} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
           </View>
@@ -125,7 +105,8 @@ export default function AddFriendConfirmScreen() {
               paddingHorizontal: 16,
               paddingVertical: 16,
               borderBottomWidth: 8,
-              borderBottomColor: '#F3F4F6',
+              borderBottomColor: colors.backgroundSecondary,
+              backgroundColor: colors.background,
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
@@ -137,12 +118,12 @@ export default function AddFriendConfirmScreen() {
                   }
                 }}
                 placeholder={t('friend.addFriend.messagePlaceholder')}
-                placeholderTextColor="#9ca3af"
+                placeholderTextColor={colors.textSecondary}
                 multiline
                 style={{
                   flex: 1,
                   fontSize: 16,
-                  color: '#111827',
+                  color: colors.text,
                   minHeight: 60,
                   lineHeight: 24,
                   textAlignVertical: 'top',
@@ -153,14 +134,14 @@ export default function AddFriendConfirmScreen() {
                   onPress={handleClearMessage}
                   style={{ padding: 4, marginLeft: 8 }}
                 >
-                  <Ionicons name="close" size={20} color="#9ca3af" />
+                  <Ionicons name="close" size={20} color={colors.textSecondary} />
                 </TouchableOpacity>
               )}
             </View>
             <Text
               style={{
                 fontSize: 13,
-                color: '#9ca3af',
+                color: colors.textSecondary,
                 textAlign: 'right',
                 marginTop: 8,
               }}
@@ -178,36 +159,31 @@ export default function AddFriendConfirmScreen() {
               paddingHorizontal: 16,
               paddingVertical: 16,
               borderBottomWidth: 8,
-              borderBottomColor: '#F3F4F6',
+              borderBottomColor: colors.backgroundSecondary,
+              backgroundColor: colors.background,
             }}
           >
-            <Text style={{ fontSize: 15, color: '#111827', flex: 1, marginRight: 12 }}>
+            <Text style={{ fontSize: 15, color: colors.text, flex: 1, marginRight: 12 }}>
               {t('friend.addFriend.blockActivityLabel')}
             </Text>
             <Switch
               value={blockActivity}
               onValueChange={setBlockActivity}
-              trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
-              thumbColor={blockActivity ? SEMANTIC.primary : '#f4f3f4'}
+              trackColor={{ false: colors.border, true: colors.tint }}
+              thumbColor={blockActivity ? colors.tint : colors.backgroundSecondary}
             />
           </View>
         </ScrollView>
 
         {/* Submit Button */}
-        <SafeAreaView edges={['bottom']} style={{ backgroundColor: '#fff' }}>
-          <View
-            style={{
-              paddingHorizontal: 16,
-              paddingTop: 16,
-              paddingBottom: 8,
-            }}
-          >
+        <SafeAreaView edges={['bottom']} style={{ backgroundColor: colors.background }}>
+          <View style={{ paddingHorizontal: 16, paddingVertical: 16 }}>
             <TouchableOpacity
               onPress={handleSendRequest}
               disabled={sendRequest.isPending}
               activeOpacity={0.8}
               style={{
-                backgroundColor: SEMANTIC.primary,
+                backgroundColor: colors.tint,
                 paddingVertical: 14,
                 borderRadius: 24,
                 alignItems: 'center',

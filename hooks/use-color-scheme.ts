@@ -3,8 +3,9 @@
 import { useTheme } from '@/context'
 
 export function useColorScheme() {
+  const theme = useTheme()
   try {
-    const { activeTheme } = useTheme()
+    const { activeTheme } = theme
     return activeTheme
   } catch {
     // Fallback when outside ThemeProvider (e.g. during splash)

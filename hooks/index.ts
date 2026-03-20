@@ -3,6 +3,7 @@ export { useThemeColor } from './use-theme-color'
 export { useDebounce, useDebouncedCallback } from './useDebounce'
 export { useKeyboard } from './useKeyboard'
 export { useLoading } from './useLoading'
+export { useFcm } from './use-fcm'
 
 // Auth - re-export from features (following web structure)
 export {

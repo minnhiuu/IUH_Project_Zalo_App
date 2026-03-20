@@ -1,10 +1,12 @@
 import React from 'react'
-import { View, TouchableOpacity, Image, ActivityIndicator } from 'react-native'
+import { View, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
 import { Text } from '@/components/ui/text'
-import { SEMANTIC, BRAND } from '@/constants/theme'
+import { UserAvatar } from '@/components'
+import { BRAND } from '@/constants/theme'
+import { useSemanticColors } from '@/context/theme-context'
 import { useFriendshipStatus } from '@/features/friend/queries'
 import { useCancelFriendRequest } from '@/features/friend/queries'
 import { FriendStatus } from '@/features/friend/schemas'
@@ -23,6 +25,7 @@ interface SearchResultItemProps {
 export function SearchResultItem({ user: resultUser, onPress }: SearchResultItemProps) {
   const { t } = useTranslation()
   const router = useRouter()
+  const semanticColors = useSemanticColors()
   const currentUser = useAuthStore((s) => s.user)
   const { data: status, isLoading: statusLoading } = useFriendshipStatus(resultUser.id)
   const cancelRequest = useCancelFriendRequest()
@@ -52,7 +55,7 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
   const renderActionButton = () => {
     if (isMe) return null
     if (statusLoading) {
-      return <ActivityIndicator size="small" color="#0068FF" />
+      return <ActivityIndicator size="small" color={BRAND.blue} />
     }
 
     if (status?.areFriends) {
@@ -75,16 +78,16 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
             paddingVertical: 8,
             paddingHorizontal: 14,
             borderRadius: 18,
-            backgroundColor: '#E5E7EB',
+            backgroundColor: semanticColors.secondary,
             gap: 4,
           }}
         >
           {isMutating ? (
-            <ActivityIndicator size="small" color="#374151" />
+            <ActivityIndicator size="small" color={semanticColors.textPrimary} />
           ) : (
             <>
-              <Ionicons name="close-circle-outline" size={16} color="#374151" />
-              <Text style={{ fontSize: 13, fontWeight: '600', color: '#374151' }}>
+              <Ionicons name="close-circle-outline" size={16} color={semanticColors.textPrimary} />
+              <Text style={{ fontSize: 13, fontWeight: '600', color: semanticColors.textPrimary }}>
                 {t('friend.actions.withdraw')}
               </Text>
             </>
@@ -113,8 +116,8 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
           gap: 4,
         }}
       >
-        <Ionicons name="person-add-outline" size={16} color={SEMANTIC.primary} />
-        <Text style={{ fontSize: 13, fontWeight: '600', color: SEMANTIC.primary }}>
+        <Ionicons name="person-add-outline" size={16} color={BRAND.blue} />
+        <Text style={{ fontSize: 13, fontWeight: '600', color: BRAND.blue }}>
           {t('friend.actions.addFriend')}
         </Text>
       </TouchableOpacity>
@@ -131,25 +134,21 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
         paddingHorizontal: 16,
         paddingVertical: 12,
         borderBottomWidth: 0.5,
-        borderBottomColor: '#f0f0f0',
+        borderBottomColor: semanticColors.border,
       }}
     >
-      <Image
-        source={{ uri: resultUser.avatar || 'https://i.pravatar.cc/150' }}
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: 24,
-          backgroundColor: '#E5E7EB',
-          marginRight: 12,
-        }}
+      <UserAvatar
+        source={resultUser.avatar}
+        name={resultUser.fullName}
+        size="lg"
+        className="mr-3"
       />
       <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 16, fontWeight: '500', color: '#111827' }}>
+        <Text style={{ fontSize: 16, fontWeight: '500', color: semanticColors.textPrimary }}>
           {resultUser.fullName}
         </Text>
         {resultUser.phoneNumber && (
-          <Text style={{ fontSize: 13, color: '#6b7280', marginTop: 2 }}>
+          <Text style={{ fontSize: 13, color: semanticColors.textSecondary, marginTop: 2 }}>
             {resultUser.phoneNumber}
           </Text>
         )}

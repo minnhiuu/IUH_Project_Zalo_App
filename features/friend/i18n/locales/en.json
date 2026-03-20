@@ -8,6 +8,10 @@
     "actions": {
       "accept": "Accept",
       "decline": "Decline",
+      "accepted": "Accepted friend invitation",
+      "declined": "Declined friend invitation",
+      "withdrawn": "Withdrawn friend invitation",
+      "viewProfile": "View Profile",
       "withdraw": "Withdraw",
       "addFriend": "Add Friend",
       "unfriend": "Unfriend",
@@ -54,6 +58,7 @@
       "notFriend": "Not friends"
     },
     "mutualFriends": "{{count}} mutual friends",
+    "wantsToBeFriends": "Wants to be friends",
     "viewMore": "VIEW MORE",
     "loading": "Loading...",
     "error": "Something went wrong, please try again",
@@ -76,6 +81,10 @@
       "unfriendConfirm": "Are you sure you want to unfriend {{name}}?",
       "friendSuggestion": "New semester, new friends",
       "seeMore": "See more"
+    },
+    "notification": {
+      "accepted": "Friend request accepted",
+      "declined": "Friend request declined"
     }
   }
 }

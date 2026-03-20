@@ -1,5 +1,12 @@
-import React, { useState } from 'react'
-import { View, TouchableOpacity, Image, ScrollView, Dimensions, ActivityIndicator } from 'react-native'
+import React, { useState, useMemo } from 'react'
+import {
+  View,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  Dimensions,
+  ActivityIndicator
+} from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useRouter, useLocalSearchParams } from 'expo-router'
@@ -7,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import * as ImagePicker from 'expo-image-picker'
 import { Text } from '@/components/ui/text'
 import { ActionSheet, type ActionSheetOption } from '@/components/ui'
+import { UserAvatar } from '@/components'
 import { SEMANTIC, BRAND } from '@/constants/theme'
 import { useFriendshipStatus } from '@/features/friend/queries/use-queries'
 import {
@@ -371,12 +379,7 @@ export default function UserProfileScreen() {
                   <Ionicons name='search' size={20} color='#fff' />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() =>
-                    router.push({
-                      pathname: `/user-profile/menu`,
-                      params: { id, isFriend: isFriend.toString() }
-                    })
-                  }
+                  onPress={() => router.push({ pathname: '/user-profile/options' as any, params: { id: id as string, name: userProfile?.fullName ?? '', isFriend: isFriend.toString() } })}
                   style={{
                     width: 36,
                     height: 36,
@@ -405,17 +408,16 @@ export default function UserProfileScreen() {
               activeOpacity={isOwner ? 0.8 : 1}
               disabled={!isOwner}
               onPress={() => isOwner && setShowAvatarSheet(true)}
+              style={{
+                borderWidth: 3,
+                borderColor: isDark ? '#22262B' : '#fff',
+                borderRadius: AVATAR_SIZE / 2
+              }}
             >
-              <Image
-                source={{ uri: userProfile.avatar || 'https://i.pravatar.cc/300' }}
-                style={{
-                  width: AVATAR_SIZE,
-                  height: AVATAR_SIZE,
-                  borderRadius: AVATAR_SIZE / 2,
-                  borderWidth: 3,
-                  borderColor: isDark ? '#22262B' : '#fff',
-                  backgroundColor: isDark ? '#2C323A' : '#E5E7EB'
-                }}
+              <UserAvatar
+                source={userProfile?.avatar}
+                name={userProfile?.fullName || 'User'}
+                size="4xl"
               />
             </TouchableOpacity>
           </View>
