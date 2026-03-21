@@ -627,7 +627,13 @@
         "hideTheirActivity": "Hide this person's activity",
         "reportSection": "Report",
         "report": "Report",
-        "unfriend": "Unfriend"
+        "unfriend": "Unfriend",
+        "unfriendConfirm": {
+          "title": "Unfriend",
+          "message": "Are you sure you want to unfriend {{name}}?",
+          "cancel": "Cancel",
+          "confirm": "Unfriend"
+        }
       },
     "promo": {
       "title": "New year special offer from zStyle",

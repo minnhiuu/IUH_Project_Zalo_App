@@ -2,7 +2,8 @@ import React, { useState } from 'react'
 import { View, TouchableOpacity, Image, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
-import { Text } from '@/components/ui/text'
+import { Text, UserAvatar } from '@/components'
+import { useTheme } from '@/context/theme-context'
 import type { NotificationGroupResponse } from '../schemas/notification.schema'
 import { friendApi } from '@/features/friend/api/friend.api'
 
@@ -62,26 +63,26 @@ const renderHtmlText = (html: string, baseStyle?: object) => {
   return parts.map((part, index) => {
     if (part.startsWith('<b>') && part.endsWith('</b>')) {
       return (
-        <Text key={index} style={[baseStyle, { fontWeight: 'bold', color: '#111827' }]}>
+        <Text key={index} style={[baseStyle, { fontWeight: 'bold' }]}>
           {part.replace(/<\/?b>/g, '')}
         </Text>
       )
     }
-    return <Text key={index}>{part}</Text>
+    return (
+      <Text key={index} style={baseStyle}>
+        {part}
+      </Text>
+    )
   })
 }
 
 export function NotificationItem({ notification, onMarkAsRead }: NotificationItemProps) {
   const { t } = useTranslation()
+  const { colors, isDark } = useTheme()
   const [status, setStatus] = useState<'pending' | 'accepted' | 'declined'>('pending')
   const [loading, setLoading] = useState(false)
   
   const badge = getBadgeConfig(notification.type)
-
-  const avatarUri =
-    (notification.payload?.actorAvatar as string) ||
-    `https://i.pravatar.cc/150?u=${notification.actorIds[0] ?? 'unknown'}`
-  const mediaUrl = notification.payload?.mediaUrl as string | undefined
 
   const handlePress = () => {
     if (!notification.read) {
@@ -125,11 +126,15 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
     <TouchableOpacity
       onPress={handlePress}
       activeOpacity={0.7}
-      style={{ backgroundColor: notification.read ? '#fff' : '#F0F7FF' }}
+      style={{ backgroundColor: notification.read ? colors.background : colors.backgroundSecondary }}
       className='flex-row items-start px-4 py-3'
     >
       <View className='mr-3 relative'>
-        <Image source={{ uri: avatarUri }} className='w-14 h-14 rounded-full bg-gray-100' />
+        <UserAvatar
+          source={notification.payload?.actorAvatar as string || undefined}
+          name={notification.payload?.actorName as string || 'Unknown'}
+          size='lg'
+        />
         <View
           style={{ backgroundColor: badge.color }}
           className='absolute -bottom-0.5 -right-0.5 rounded-full w-[22px] h-[22px] items-center justify-center border-2 border-white'
@@ -139,49 +144,51 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
       </View>
 
       <View className='flex-1 pr-2'>
-        <Text numberOfLines={3} className='text-[15px] leading-[20px] text-gray-700'>
-          {renderHtmlText(notification.body, { fontSize: 15 })}
+        <Text numberOfLines={3} className='text-[15px] leading-[20px]' style={{ color: colors.text }}>
+          {renderHtmlText(notification.body, { fontSize: 15, color: colors.text })}
         </Text>
-        <Text className='text-[12px] mt-1 text-gray-400'>{getTimeAgo(notification.lastModifiedAt, t)}</Text>
+        <Text className='text-[12px] mt-1' style={{ color: colors.textSecondary }}>
+          {getTimeAgo(notification.lastModifiedAt, t)}
+        </Text>
 
-        {notification.type === 'FRIEND_REQUEST' && (
+
+
+        {(notification.type === 'FRIEND_REQUEST') && (
           <View className='mt-2.5'>
             {loading ? (
               <View className='py-2 items-center'>
-                <ActivityIndicator size='small' color='#0068FF' />
+                <ActivityIndicator size='small' color={colors.tint} />
               </View>
             ) : status === 'pending' ? (
               <View className='flex-row gap-2'>
                 <TouchableOpacity 
                    onPress={handleDecline}
-                   className='flex-1 py-1.5 rounded-full bg-gray-100 items-center border border-gray-200'
+                   className='flex-1 py-1.5 rounded-full items-center border'
+                   style={{ backgroundColor: colors.background, borderColor: colors.border }}
                 >
-                  <Text className='text-[13px] font-semibold text-gray-600'>{t('friend.actions.decline')}</Text>
+                  <Text className='text-[13px] font-semibold' style={{ color: colors.textSecondary }}>
+                    {t('friend.actions.decline')}
+                  </Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   onPress={handleAccept}
-                  className='flex-1 py-1.5 rounded-full bg-blue-50 items-center border border-blue-100'
+                  className='flex-1 py-1.5 rounded-full items-center'
+                  style={{ backgroundColor: colors.tint }}
                 >
-                  <Text className='text-[13px] font-semibold text-blue-600'>{t('friend.actions.accept')}</Text>
+                  <Text className='text-[13px] font-semibold' style={{ color: '#fff' }}>
+                    {t('friend.actions.accept')}
+                  </Text>
                 </TouchableOpacity>
               </View>
             ) : (
-              <Text className='text-[13px] text-gray-400 mt-1'>
-                {status === 'accepted' ? t('friend.actions.accepted') : t('friend.actions.declined')}
-              </Text>
+              <View className='py-2 px-3 rounded-lg items-center' style={{ backgroundColor: colors.backgroundSecondary }}>
+                <Text className='text-[13px] font-medium' style={{ color: colors.textSecondary }}>
+                  {status === 'accepted' ? t('friend.notification.accepted') : t('friend.notification.declined')}
+                </Text>
+              </View>
             )}
           </View>
         )}
-      </View>
-
-      <View className='items-end gap-2'>
-        <TouchableOpacity className='p-1'>
-          <Ionicons name='ellipsis-horizontal' size={18} color='#9ca3af' />
-        </TouchableOpacity>
-
-        {mediaUrl && <Image source={{ uri: mediaUrl }} className='w-11 h-11 rounded bg-gray-100' />}
-
-        {!notification.read && !mediaUrl && <View className='w-2 h-2 rounded-full bg-blue-500 mt-1' />}
       </View>
     </TouchableOpacity>
   )

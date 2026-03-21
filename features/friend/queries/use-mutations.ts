@@ -13,8 +13,10 @@ export const useSendFriendRequest = () => {
 
   return useMutation({
     mutationFn: (request: FriendRequestSendRequest) => friendApi.sendFriendRequest(request),
-    onSuccess: () => {
+    onSuccess: (_data, variables) => {
+      // Invalidate and immediately refetch status for the receiver
       queryClient.invalidateQueries({ queryKey: friendKeys.sentRequests() })
+      queryClient.refetchQueries({ queryKey: friendKeys.status(variables.receiverId) })
 
       Toast.show({
         type: 'success',
@@ -35,8 +37,10 @@ export const useAcceptFriendRequest = () => {
   return useMutation({
     mutationFn: (friendshipId: string) => friendApi.acceptFriendRequest(friendshipId),
     onSuccess: () => {
-      // Invalidate friends list but NOT receivedRequests to keep the item visible with feedback
+      // Invalidate requests, friends list, and all status caches
+      queryClient.invalidateQueries({ queryKey: friendKeys.receivedRequests() })
       queryClient.invalidateQueries({ queryKey: friendKeys.myFriends() })
+      queryClient.invalidateQueries({ queryKey: friendKeys.all })
 
       Toast.show({
         type: 'success',
@@ -52,11 +56,13 @@ export const useAcceptFriendRequest = () => {
 
 export const useDeclineFriendRequest = () => {
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: (friendshipId: string) => friendApi.declineFriendRequest(friendshipId),
     onSuccess: () => {
-      // Do not invalidate to keep the item visible with "Declined" message
+      queryClient.invalidateQueries({ queryKey: friendKeys.receivedRequests() })
+      queryClient.invalidateQueries({ queryKey: friendKeys.all })
 
       Toast.show({
         type: 'success',
@@ -72,11 +78,18 @@ export const useDeclineFriendRequest = () => {
 
 export const useCancelFriendRequest = () => {
   const { t } = useTranslation()
+  const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (friendshipId: string) => friendApi.cancelFriendRequest(friendshipId),
-    onSuccess: () => {
-      // Do not invalidate to keep the item visible with "Withdrawn" message
+    mutationFn: ({ friendshipId }: { friendshipId: string; userId?: string }) =>
+      friendApi.cancelFriendRequest(friendshipId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: friendKeys.sentRequests() })
+      queryClient.invalidateQueries({ queryKey: friendKeys.all })
+      // Refetch status for the specific user if provided
+      if (variables.userId) {
+        queryClient.refetchQueries({ queryKey: friendKeys.status(variables.userId) })
+      }
 
       Toast.show({
         type: 'success',

@@ -2,39 +2,39 @@ import { useQuery } from '@tanstack/react-query'
 import { friendKeys } from './keys'
 import { friendApi } from '../api/friend.api'
 
-export const useReceivedFriendRequests = (enabled: boolean = true) => {
+export const useReceivedFriendRequests = (page: number = 0, size: number = 10, enabled: boolean = true) => {
   return useQuery({
-    queryKey: friendKeys.receivedRequests(),
+    queryKey: friendKeys.receivedRequests(page, size),
     queryFn: async () => {
-      const response = await friendApi.getReceivedFriendRequests()
-      // Extract data from PageResponse structure
-      return (response.data?.data as any)?.data ?? []
+      const response = await friendApi.getReceivedFriendRequests(page, size)
+      const pageResponse = response.data.data
+      return Array.isArray(pageResponse) ? pageResponse : (pageResponse?.data || [])
     },
     enabled,
     staleTime: 30 * 1000, // 30 seconds
   })
 }
 
-export const useSentFriendRequests = (enabled: boolean = true) => {
+export const useSentFriendRequests = (page: number = 0, size: number = 10, enabled: boolean = true) => {
   return useQuery({
-    queryKey: friendKeys.sentRequests(),
+    queryKey: friendKeys.sentRequests(page, size),
     queryFn: async () => {
-      const response = await friendApi.getSentFriendRequests()
-      // Extract data from PageResponse structure
-      return (response.data?.data as any)?.data ?? []
+      const response = await friendApi.getSentFriendRequests(page, size)
+      const pageResponse = response.data.data
+      return Array.isArray(pageResponse) ? pageResponse : (pageResponse?.data || [])
     },
     enabled,
     staleTime: 30 * 1000,
   })
 }
 
-export const useMyFriends = (enabled: boolean = true) => {
+export const useMyFriends = (page: number = 0, size: number = 10, enabled: boolean = true) => {
   return useQuery({
-    queryKey: friendKeys.myFriends(),
+    queryKey: friendKeys.myFriends(page, size),
     queryFn: async () => {
-      const response = await friendApi.getMyFriends()
-      // Extract data from PageResponse structure
-      return (response.data?.data as any)?.data ?? []
+      const response = await friendApi.getMyFriends(page, size)
+      const pageResponse = response.data.data
+      return Array.isArray(pageResponse) ? pageResponse : (pageResponse?.data || [])
     },
     enabled,
     staleTime: 2 * 60 * 1000, // 2 minutes
@@ -49,7 +49,8 @@ export const useFriendshipStatus = (userId: string, enabled: boolean = true) => 
       return response.data.data
     },
     enabled: enabled && !!userId,
-    staleTime: 60 * 1000, // 1 minute
+    staleTime: 0, // Always refetch to get fresh status
+    refetchOnMount: true,
   })
 }
 

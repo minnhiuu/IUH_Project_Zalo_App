@@ -1,18 +1,3 @@
-/**
- * ZALO THEME — Single Source of Truth
- *
- * Architecture:
- *  • Color tokens defined ONCE here as CSS-variable maps (light + dark).
- *  • GluestackProvider imports these maps → NativeWind vars() on native.
- *  • global.css mirrors the same values for TailwindCSS on web.
- *  • tailwind.config.js references var(--color-*) so Tailwind classes
- *    like `bg-background`, `text-foreground` auto-switch with theme.
- *  • RN StyleSheet consumers use the compat helpers (SEMANTIC / DARK_MODE).
- *
- * 👉 When adding a new color: add it to lightTokens + darkTokens here,
- *    then add the matching CSS var in global.css and tailwind.config.js.
- */
-
 // ────────────────────────────────────────────────────────────
 // 1. BRAND — Static palette (never changes between themes)
 // ────────────────────────────────────────────────────────────
@@ -139,38 +124,38 @@ export const darkTokens = {
   '--color-primary-foreground': '#FFFFFF',
   '--color-primary-hover': '#005AE0',
 
-  // Background
-  '--color-background': '#22262B',
-  '--color-background-secondary': '#2C323A',
+  // Background - Much darker to match Zalo's dark theme
+  '--color-background': '#15181D',
+  '--color-background-secondary': '#1C2630',
 
   // Foreground
-  '--color-foreground': '#DFE2E7',
+  '--color-foreground': '#E8EAED',
 
   // Secondary
-  '--color-secondary': '#2C323A',
-  '--color-secondary-foreground': '#DFE2E7',
-  '--color-secondary-hover': '#38404A',
+  '--color-secondary': '#1C2630',
+  '--color-secondary-foreground': '#E8EAED',
+  '--color-secondary-hover': '#26313D',
 
   // Muted
-  '--color-muted': '#3E444A',
-  '--color-muted-foreground': '#B6C1CF',
+  '--color-muted': '#26313D',
+  '--color-muted-foreground': '#9BA3AF',
 
   // Accent
-  '--color-accent': '#3E444A',
+  '--color-accent': '#26313D',
   '--color-accent-foreground': '#FFFFFF',
-  '--color-accent-hover': '#3E444A',
+  '--color-accent-hover': '#2F3A49',
 
   // Border / Input / Ring
-  '--color-border': 'rgba(255,255,255,0.1)',
-  '--color-input': '#1A1D21',
+  '--color-border': 'rgba(255,255,255,0.08)',
+  '--color-input': '#0D1117',
   '--color-ring': '#0068FF',
 
   // Card
-  '--color-card': '#22262B',
+  '--color-card': '#15181D',
   '--color-card-foreground': '#FFFFFF',
 
   // Popover
-  '--color-popover': '#22262B',
+  '--color-popover': '#15181D',
   '--color-popover-foreground': '#FFFFFF',
 
   // Destructive
@@ -178,20 +163,20 @@ export const darkTokens = {
   '--color-destructive-foreground': '#FFFFFF',
 
   // Divider / Disabled
-  '--color-divider': '#121416',
-  '--color-disabled': '#8B96A7',
+  '--color-divider': '#0D1117',
+  '--color-disabled': '#7A8795',
 
   // Icons
-  '--color-icon-muted': '#9FACBC',
+  '--color-icon-muted': '#7A8795',
   '--color-icon-hover': '#66A6FF',
-  '--color-icon-secondary': '#5A6981',
+  '--color-icon-secondary': '#9BA3AF',
 
   // Sidebar
-  '--color-sidebar': '#121416',
+  '--color-sidebar': '#0D1117',
   '--color-sidebar-foreground': '#FFFFFF',
   '--color-sidebar-primary': '#FFFFFF',
-  '--color-sidebar-primary-foreground': '#121416',
-  '--color-sidebar-accent': 'rgba(255,255,255,0.1)',
+  '--color-sidebar-primary-foreground': '#0D1117',
+  '--color-sidebar-accent': 'rgba(255,255,255,0.08)',
   '--color-sidebar-accent-foreground': '#FFFFFF',
   '--color-sidebar-border': 'rgba(255,255,255,0.05)',
   '--color-sidebar-ring': '#0068FF',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { View, TouchableOpacity, ScrollView } from 'react-native'
+import { View, TouchableOpacity, ScrollView, Alert } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useTranslation } from 'react-i18next'
@@ -8,6 +8,7 @@ import { Text } from '@/components/ui/text'
 import { useTheme } from '@/context/theme-context'
 import { useBlockDetails } from '@/features/users/queries/use-queries'
 import { BlockUserModal } from '@/features/users/components/block-user-modal'
+import { useUnfriend } from '@/features/friend/queries/use-mutations'
 
 const DIVIDER_COLOR_LIGHT = '#F0F0F0'
 const DIVIDER_COLOR_DARK = 'rgba(255,255,255,0.07)'
@@ -48,11 +49,38 @@ function MenuItemRow({ icon, label, onPress, destructive, isDark }: MenuItemRowP
 export default function UserProfileOptionsScreen() {
   const { t } = useTranslation()
   const router = useRouter()
-  const { id, name } = useLocalSearchParams<{ id: string; name: string }>()
+  const { id, name, isFriend: isFriendString } = useLocalSearchParams<{ id: string; name: string; isFriend: string }>()
   const { isDark } = useTheme()
   const [blockModalVisible, setBlockModalVisible] = useState(false)
+  const isFriend = isFriendString === 'true'
+  const unfriend = useUnfriend()
 
   const { data: blockDetails } = useBlockDetails(id as string, !!id)
+
+  const handleUnfriend = () => {
+    Alert.alert(
+      t('profile.menu.unfriendConfirm.title'),
+      t('profile.menu.unfriendConfirm.message', { name }),
+      [
+        {
+          text: t('profile.menu.unfriendConfirm.cancel'),
+          style: 'cancel'
+        },
+        {
+          text: t('profile.menu.unfriendConfirm.confirm'),
+          onPress: () => {
+            if (!id) return
+            unfriend.mutate(id, {
+              onSuccess: () => {
+                router.push('/(tabs)')
+              }
+            })
+          },
+          style: 'destructive'
+        }
+      ]
+    )
+  }
 
   const bg = isDark ? '#121416' : '#F3F4F6'
   const headerBg = isDark ? '#1C1F24' : '#fff'
@@ -96,12 +124,14 @@ export default function UserProfileOptionsScreen() {
       {/* Menu Items */}
       <ScrollView style={{ flex: 1 }}>
         <View style={{ marginTop: 8 }}>
-          <MenuItemRow
-            icon='person-add-outline'
-            label={t('contacts.addFriend')}
-            onPress={() => {}}
-            isDark={isDark}
-          />
+          {!isFriend && (
+            <MenuItemRow
+              icon='person-add-outline'
+              label={t('contacts.addFriend')}
+              onPress={() => {}}
+              isDark={isDark}
+            />
+          )}
           <MenuItemRow
             icon='information-circle-outline'
             label={t('profile.menu.information')}
@@ -127,6 +157,15 @@ export default function UserProfileOptionsScreen() {
             destructive
             isDark={isDark}
           />
+          {isFriend && (
+            <MenuItemRow
+              icon='person-remove-outline'
+              label={t('profile.menu.unfriend')}
+              onPress={handleUnfriend}
+              destructive
+              isDark={isDark}
+            />
+          )}
         </View>
       </ScrollView>
 

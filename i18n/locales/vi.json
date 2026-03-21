@@ -656,7 +656,13 @@
       "hideTheirActivity": "Ẩn hoạt động của người này",
       "reportSection": "Báo xấu",
       "report": "Báo xấu",
-      "unfriend": "Xóa bạn"
+      "unfriend": "Xóa bạn",
+      "unfriendConfirm": {
+        "title": "Xóa bạn",
+        "message": "Bạn chắc chắn muốn xóa {{name}} khỏi danh sách bạn?",
+        "cancel": "Hủy",
+        "confirm": "Xóa bạn"
+      }
     },
     "promo": {
       "title": "Tặng bạn ưu đãi năm mới từ zStyle",

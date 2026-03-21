@@ -68,10 +68,9 @@ export function NotificationList({ filter }: NotificationListProps) {
   const allItems = useMemo(
     () =>
       sections.flatMap((s) => [
-        { type: 'header' as const, title: s.title },
+        { itemType: 'header' as const, title: s.title },
         ...s.data.map((d) => {
-          const { type, ...rest } = d
-          return { type: 'item' as const, ...rest }
+          return { itemType: 'item' as const, ...d }
         })
       ]),
     [sections]
@@ -83,7 +82,7 @@ export function NotificationList({ filter }: NotificationListProps) {
     <FlatList
       data={allItems}
       keyExtractor={(item, index) =>
-        item.type === 'header' ? `header-${item.title}` : `item-${(item as any).id ?? index}`
+        item.itemType === 'header' ? `header-${item.title}` : `item-${(item as any).id ?? index}`
       }
       contentContainerStyle={{ paddingBottom: 20 }}
       ListEmptyComponent={
@@ -96,17 +95,17 @@ export function NotificationList({ filter }: NotificationListProps) {
         </View>
       }
       renderItem={({ item }) => {
-        if (item.type === 'header') {
+        if (item.itemType === 'header') {
           return (
             <View className='px-4 pt-4 pb-1.5'>
               <Text className='text-base font-bold text-gray-900'>{item.title}</Text>
             </View>
           )
         }
-        const notification = item as NotificationGroupResponse & { type: 'item' }
+        const notification = item as NotificationGroupResponse
         return (
           <NotificationItem
-            notification={{ ...notification, type: notification.type }}
+            notification={notification}
             onMarkAsRead={(id) => markAsRead(id)}
           />
         )
