@@ -53,3 +53,9 @@ export const SearchType = {
 } as const
 
 export type SearchType = (typeof SearchType)[keyof typeof SearchType]
+
+export const Platform = {
+  Android: 'ANDROID',
+  iOS: 'IOS',
+  Web: 'WEB'
+} as const

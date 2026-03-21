@@ -1,6 +1,6 @@
 import '../global.css'
+import '@/tasks/background-notification-task'
 import i18n from '@/i18n'
-// Load feature-level i18n bundles (side-effect: registers translations)
 import '@/features/friend/i18n'
 import '@/features/search/i18n'
 import { SEMANTIC } from '@/constants/theme'
@@ -15,11 +15,13 @@ import Toast from 'react-native-toast-message'
 import { I18nextProvider } from 'react-i18next'
 import { useEffect } from 'react'
 import { View, Text, ActivityIndicator } from 'react-native'
+import { useFcm } from '@/hooks'
 
 import { GluestackProvider } from '@/components/ui/gluestack-ui-provider'
 import { useAuthStore } from '@/store'
-import { getAccessToken, getRefreshToken } from '@/lib/http'
+import { getAccessToken, getRefreshToken, setUnauthorizedHandler } from '@/lib/http'
 import { ThemeProvider, useTheme } from '@/context'
+import { storage } from '@/utils/storageUtils'
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -62,6 +64,9 @@ function SimpleLoadingScreen() {
  */
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isInitialized, setInitialized, loginSuccess, logoutSuccess } = useAuthStore()
+
+  // Khởi động FCM: xin quyền, lấy token, register device lên server
+  useFcm()
   const segments = useSegments()
   const router = useRouter()
 
@@ -183,6 +188,19 @@ export default function RootLayout() {
 
 function ThemeAwareProviders() {
   const { activeTheme, isDark } = useTheme()
+  const logoutSuccess = useAuthStore((state) => state.logoutSuccess)
+
+  useEffect(() => {
+    setUnauthorizedHandler(async () => {
+      await storage.remove('user_data')
+      logoutSuccess()
+      queryClient.clear()
+    })
+
+    return () => {
+      setUnauthorizedHandler(null)
+    }
+  }, [logoutSuccess])
 
   return (
     <GluestackProvider mode={activeTheme}>

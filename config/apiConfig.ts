@@ -76,8 +76,10 @@ export const API_ENDPOINTS = {
     }
   },
   DEVICE: {
-    ACTIVE_SESSIONS: '/auth/devices/active-sessions', // GET - Get all active devices
-    DELETE: (id: string) => `/auth/devices/${id}` // DELETE - Delete a device
+    SESSIONS: '/auth/devices/sessions', // GET - Get grouped active devices with sessions
+    DELETE: (id: string) => `/auth/devices/${id}`, // DELETE - Delete a device
+    LOGOUT_DEVICE: '/auth/logout-device', // POST - Logout a specific device by sessionId
+    LOGOUT_OTHERS: '/auth/logout-others' // POST - Logout all other devices
   },
   MESSAGE: {
     CONVERSATIONS: '/message/conversations',
@@ -85,8 +87,10 @@ export const API_ENDPOINTS = {
     SEND: '/message/send'
   },
   NOTIFICATION: {
-    LIST: '/notification',
-    MARK_READ: (id: string) => `/notification/${id}/read`
+    LIST: '/notifications',
+    MARK_READ: (id: string) => `/notifications/${id}/read`,
+    REGISTER_DEVICE: '/notifications/devices',
+    UNREGISTER_DEVICE: (token: string) => `/notifications/devices?token=${token}`
   },
   FRIENDSHIP: {
     // Friend requests
@@ -103,6 +107,30 @@ export const API_ENDPOINTS = {
     CHECK_STATUS: (userId: string) => `/friendships/status/${userId}`, // GET
     MUTUAL_FRIENDS: (userId: string) => `/friendships/mutual/${userId}`, // GET
     MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count` // GET
+  },
+  SETTINGS: {
+    ME: '/users/settings/me', // GET - UserSettingResponse (all sections)
+    BY_USER: (userId: string) => `/users/settings/${userId}`,
+    ME_SECTION: (section: string) => `/users/settings/me/${section}`,
+    LANGUAGE_AND_INTERFACE: '/users/settings/me/language-and-interface',
+    NOTIFICATION: '/users/settings/me/notification',
+    MESSAGE: '/users/settings/me/message',
+    CALL: '/users/settings/me/call',
+    PRIVACY: '/users/settings/me/privacy',
+    CONTACT: '/users/settings/me/contact',
+    BACKUP_RESTORE: '/users/settings/me/backup-restore',
+    ACCOUNT_SECURITY: '/users/settings/me/account-security',
+    JOURNAL: '/users/settings/me/journal',
+    DATA_ON_DEVICE: '/users/settings/me/data-on-device'
+  },
+  BLOCK: {
+    BLOCK: '/blocks',
+    UNBLOCK: (id: string) => `/blocks/${id}`,
+    UPDATE_PREFERENCE: (id: string) => `/blocks/${id}/preferences`,
+    LIST: '/blocks',
+    LIST_DETAILS: '/blocks/details',
+    CHECK: (id: string) => `/blocks/${id}/check`,
+    DETAILS: (id: string) => `/blocks/${id}`
   }
 } as const
 

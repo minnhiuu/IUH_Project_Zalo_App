@@ -22,7 +22,8 @@
     "warning": "Cảnh báo",
     "networkError": "Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối internet.",
     "unknownError": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.",
-    "or": "HOẶC"
+    "or": "HOặC",
+    "logout": "Đăng xuất"
   },
   "auth": {
     "welcome": {
@@ -125,7 +126,11 @@
       "otpRequired": "Vui lòng nhập mã OTP",
       "otpInvalid": "Mã OTP không hợp lệ",
       "captchaRequired": "Vui lòng nhập mã kiểm tra",
-      "captchaInvalid": "Mã kiểm tra không đúng"
+      "captchaInvalid": "Mã kiểm tra không đúng",
+      "currentPasswordRequired": "Mật khẩu hiện tại không được để trống",
+      "newPasswordMinLength": "Mật khẩu mới phải có ít nhất 8 ký tự",
+      "passwordRegex": "Mật khẩu phải bao gồm chữ thường, chữ hoa, số và ký tự đặc biệt",
+      "confirmNewPasswordRequired": "Vui lòng xác nhận lại mật khẩu mới"
     },
     "errors": {
       "invalidCredentials": "Số điện thoại hoặc mật khẩu không đúng",
@@ -191,7 +196,12 @@
       "recentActivity": "HOẠT ĐỘNG GẦN ĐÂY",
       "filter": "BỘ LỌC",
       "sync": "ĐỒNG BỘ",
-      "language": "NGÔN NGỮ"
+      "language": "NGÔN NGỮ",
+      "storage": "DUNG LƯỢNG",
+      "doNotDisturb": "KHÔNG LÀM PHIỀN",
+      "management": "QUẢN LÝ",
+      "actions": "HÀNH ĐỘNG",
+      "other": "KHÁC"
     },
     "menu": {
       "accountSecurity": {
@@ -267,7 +277,8 @@
       "biometrics": "Sinh trắc học",
       "biometricsSubtitle": "Vân tay, Face ID",
       "deviceManagement": "Quản lý thiết bị",
-      "deviceManagementSubtitle": "Xem các thiết bị đã đăng nhập"
+      "deviceManagementSubtitle": "Xem các thiết bị đã đăng nhập",
+      "updateFailed": "Không thể cập nhật cài đặt bảo mật"
     },
     "deviceManagement": {
       "title": "Quản lý thiết bị",
@@ -283,9 +294,28 @@
       "logoutOthersConfirm": "Bạn có chắc muốn đăng xuất tất cả thiết bị khác?",
       "logoutOthersSuccess": "Đã đăng xuất khỏi tất cả thiết bị khác",
       "logoutOthersError": "Không thể đăng xuất khỏi thiết bị khác",
+      "logoutDevice": "Đăng xuất thiết bị này",
+      "logoutDeviceConfirm": "Bạn có chắc muốn đăng xuất thiết bị này?",
+      "logoutDeviceSuccess": "Đã đăng xuất thiết bị thành công",
+      "logoutDeviceError": "Không thể đăng xuất thiết bị",
       "deleteConfirm": "Bạn có chắc muốn xóa thiết bị này?",
       "deleteSuccess": "Đã xóa thiết bị thành công",
-      "deleteError": "Không thể xóa thiết bị"
+      "deleteError": "Không thể xóa thiết bị",
+      "detail": {
+        "deviceId": "ID thiết bị",
+        "sessionId": "ID phiên",
+        "os": "Hệ điều hành",
+        "browser": "Trình duyệt",
+        "ipAddress": "Địa chỉ IP",
+        "accountId": "ID tài khoản",
+        "lastActiveTime": "Hoạt động lần cuối",
+        "issuedAt": "Cấp phiên lúc",
+        "expiresAt": "Phiên hết hạn lúc",
+        "createdAt": "Ngày tạo",
+        "lastModifiedAt": "Sửa đổi lần cuối",
+        "createdBy": "Tạo bởi",
+        "lastModifiedBy": "Sửa bởi"
+      }
     },
     "privacy": {
       "sections": {
@@ -304,13 +334,30 @@
       "everyone": "Mọi người",
       "allowCalls": "Cho phép gọi điện",
       "friendsAndContacted": "Bạn bè và người lạ từng liên hệ",
+      "onlyMe": "Chỉ mình tôi",
       "allowViewAndComment": "Cho phép xem và bình luận",
       "blockAndHide": "Chặn và ẩn",
       "manageFriendSources": "Quản lý nguồn tìm kiếm và kết bạn",
+      "friendSourceByPhone": "Số điện thoại",
+      "friendSourceByQr": "Mã QR",
       "utilities": "Tiện ích",
       "friends": "Bạn bè",
       "blockList": "Danh sách chặn",
-      "blockListSubtitle": "Quản lý người dùng bị chặn"
+      "blockListSubtitle": "Quản lý người dùng bị chặn",
+      "unblock": "Bỏ chặn",
+      "blockSettings": "Cài đặt chặn",
+      "manageBlock": "Quản lý chặn",
+      "blockUser": "Chặn người dùng",
+      "blockMessage": "Chặn tin nhắn",
+      "blockCall": "Chặn cuộc gọi",
+      "blockStory": "Chặn nhật ký",
+      "blockDescriptionHeadline": "Chọn những gì bạn muốn chặn từ {{name}}",
+      "blockCustomDescription": "Tùy chỉnh cách bạn chặn {{name}}",
+      "unblockConfirm": "Bạn có chắc muốn bỏ chặn {{name}}?",
+      "blockSuccess": "Đã chặn người dùng",
+      "unblockSuccess": "Đã bỏ chặn người dùng",
+      "updateBlockSuccess": "Đã cập nhật cài đặt chặn",
+      "noBlockedUsers": "Bạn chưa chặn người dùng nào"
     },
     "dataOnDevice": {
       "totalUsed": "Tổng dung lượng đã sử dụng",
@@ -333,6 +380,7 @@
     "backupRestore": {
       "lastBackup": "Sao lưu gần nhất",
       "today": "Hôm nay",
+      "never": "Chưa từng",
       "autoBackup": "Tự động sao lưu",
       "autoBackupSubtitle": "Sao lưu dữ liệu hàng ngày",
       "backupOverWifi": "Sao lưu qua Wi-Fi",
@@ -356,13 +404,22 @@
       "friendRequests": "Kết bạn",
       "friendRequestsSubtitle": "Yêu cầu kết bạn mới",
       "doNotDisturb": "Chế độ không làm phiền",
-      "doNotDisturbSubtitle": "Tắt thông báo theo lịch"
+      "doNotDisturbSubtitle": "Tắt thông báo theo lịch",
+      "dndEnabled": "Bật chế độ không làm phiền",
+      "dndStartTime": "Thời gian bắt đầu",
+      "dndEndTime": "Thời gian kết thúc",
+      "timePickerHour": "Giờ",
+      "timePickerMinute": "Phút",
+      "timeInputPlaceholder": "HH:mm",
+      "invalidTimeFormat": "Định dạng giờ không hợp lệ. Dùng HH:mm"
     },
     "messages": {
       "messagePreview": "Xem trước tin nhắn",
       "messagePreviewSubtitle": "Hiển thị nội dung trong thông báo",
       "fontSize": "Cỡ chữ",
+      "fontSizeSmall": "Nhỏ",
       "fontSizeMedium": "Vừa",
+      "fontSizeLarge": "Lớn",
       "chatTheme": "Giao diện chat",
       "chatThemeSubtitle": "Hình nền và màu sắc",
       "autoDownload": "Tự động tải xuống",
@@ -372,7 +429,10 @@
       "endToEndEncryption": "Mã hóa đầu cuối",
       "endToEndEncryptionSubtitle": "Bảo mật tin nhắn",
       "archivedMessages": "Tin nhắn đã lưu trữ",
-      "archivedMessagesSubtitle": "Xem các cuộc trò chuyện đã lưu trữ"
+      "archivedMessagesSubtitle": "Xem các cuộc trò chuyện đã lưu trữ",
+      "archivedMessagesPlaceholder": "Màn hình tin nhắn đã lưu trữ sẽ sớm ra mắt.",
+      "on": "Bật",
+      "off": "Tắt"
     },
     "calls": {
       "allowCalls": "Cho phép cuộc gọi",
@@ -380,9 +440,14 @@
       "allowVideoCalls": "Cho phép cuộc gọi video",
       "allowVideoCallsSubtitle": "Nhận cuộc gọi video",
       "audioQuality": "Chất lượng âm thanh",
+      "low": "Thấp",
+      "medium": "Trung bình",
+      "high": "Cao",
       "automatic": "Tự động",
       "videoQuality": "Chất lượng video",
+      "sd": "SD",
       "hd": "HD",
+      "fullHd": "Full HD",
       "ringtone": "Nhạc chờ cuộc gọi",
       "ringtoneSubtitle": "Tùy chỉnh nhạc chờ",
       "callHistory": "Lịch sử cuộc gọi",
@@ -395,13 +460,17 @@
       "activityType": "Loại hoạt động",
       "all": "Tất cả",
       "timeRange": "Khoảng thời gian",
+      "allTime": "Toàn bộ thời gian",
       "last7Days": "7 ngày qua",
+      "last30Days": "30 ngày qua",
       "exportLog": "Xuất nhật ký",
       "clearLog": "Xóa nhật ký"
     },
     "contacts": {
       "syncContacts": "Đồng bộ danh bạ",
       "syncContactsSubtitle": "Đồng bộ với danh bạ thiết bị",
+      "autoAddFromPhoneContacts": "Tự động thêm từ danh bạ điện thoại",
+      "autoAddFromPhoneContactsSubtitle": "Tự động thêm liên hệ mới từ điện thoại",
       "allContacts": "Tất cả danh bạ",
       "contactsCount": "{{count}} liên hệ",
       "favorites": "Yêu thích",
@@ -415,11 +484,18 @@
       "blue": "Xanh dương",
       "appLanguage": "Ngôn ngữ ứng dụng",
       "vietnamese": "Tiếng Việt",
+      "english": "English",
       "light": "Sáng",
       "dark": "Tối",
       "system": "Hệ thống",
       "changeFontSize": "Đổi cỡ chữ",
+      "fontSizeSmall": "Nhỏ",
+      "fontSizeMedium": "Vừa",
+      "fontSizeLarge": "Lớn",
       "changeLanguage": "Thay đổi ngôn ngữ",
+      "selectLanguage": "Chọn ngôn ngữ",
+      "languageChangedSuccess": "Đã đổi ngôn ngữ thành công",
+      "saving": "Đang lưu...",
       "appearance": "Giao diện",
       "languageSection": "Ngôn ngữ"
     },
@@ -497,6 +573,7 @@
     "actions": {
       "accept": "Đồng ý",
       "decline": "Từ chối",
+      "viewProfile": "Xem trang cá nhân",
       "withdraw": "Thu hồi"
     },
     "source": {
@@ -566,7 +643,26 @@
       "qrWalletDesc": "Lưu trữ và xuất trình các mã QR quan trọng",
       "accountSecurity": "Tài khoản và bảo mật",
       "privacy": "Quyền riêng tư",
-      "settings": "Cài đặt"
+      "settings": "Cài đặt",
+      "information": "Thông tin",
+      "personalInfo": "Thông tin",
+      "changeNickname": "Đổi tên gọi nhớ",
+      "markAsBestFriend": "Đánh dấu bạn thân",
+      "introduceToFriends": "Giới thiệu cho bạn bè",
+      "notificationSection": "Thông báo",
+      "notifications": "Nhận thông báo về hoạt động mới của người này",
+      "blockAndHideSection": "Chặn và ẩn khỏi nhật ký",
+      "blockMyActivity": "Chặn xem hoạt động của tôi",
+      "hideTheirActivity": "Ẩn hoạt động của người này",
+      "reportSection": "Báo xấu",
+      "report": "Báo xấu",
+      "unfriend": "Xóa bạn",
+      "unfriendConfirm": {
+        "title": "Xóa bạn",
+        "message": "Bạn chắc chắn muốn xóa {{name}} khỏi danh sách bạn?",
+        "cancel": "Hủy",
+        "confirm": "Xóa bạn"
+      }
     },
     "promo": {
       "title": "Tặng bạn ưu đãi năm mới từ zStyle",
@@ -579,7 +675,7 @@
       "myPhotos": "Ảnh của tôi",
       "storage": "Kho lưu trữ",
       "todayQuestion": "Hôm nay {{name}} có gì vui?",
-      "journalPrompt": "Đây là Nhật ký của bạn - Hãy làm đầy Nhật ký với những dấu ấn cuộc đời và kỷ niệm đáng nhớ nhé!",
+      "journalPrompt": "Đây là Nhật ký của bạn - Hãy làm đầy Nhật ký with những dấu ấn cuộc đời và kỷ niệm đáng nhớ nhé!",
       "postToJournal": "Đăng lên Nhật ký"
     },
     "editBio": {
@@ -608,21 +704,6 @@
       "takePhoto": "Chụp ảnh mới",
       "chooseFromGallery": "Chọn ảnh trên máy",
       "updateSuccess": "Cập nhật ảnh bìa thành công"
-    },
-    "menu": {
-      "information": "Thông tin",
-      "personalInfo": "Thông tin",
-      "changeNickname": "Đổi tên gọi nhớ",
-      "markAsBestFriend": "Đánh dấu bạn thân",
-      "introduceToFriends": "Giới thiệu cho bạn bè",
-      "notificationSection": "Thông báo",
-      "notifications": "Nhận thông báo về hoạt động mới của người này",
-      "blockAndHideSection": "Chặn và ẩn khỏi nhật ký",
-      "blockMyActivity": "Chặn xem hoạt động của tôi",
-      "hideTheirActivity": "Ẩn hoạt động của người này",
-      "reportSection": "Báo xấu",
-      "report": "Báo xấu",
-      "unfriend": "Xóa bạn"
     },
     "personalInfo": {
       "title": "Thông tin cá nhân",

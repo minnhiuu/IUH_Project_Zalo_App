@@ -8,6 +8,10 @@
     "actions": {
       "accept": "Đồng ý",
       "decline": "Từ chối",
+      "accepted": "Đã chấp nhận lời mời kết bạn",
+      "declined": "Đã gỡ lời mời kết bạn",
+      "withdrawn": "Đã thu hồi lời mời kết bạn",
+      "viewProfile": "Xem trang cá nhân",
       "withdraw": "Thu hồi",
       "addFriend": "Kết bạn",
       "unfriend": "Hủy kết bạn",
@@ -54,6 +58,7 @@
       "notFriend": "Chưa kết bạn"
     },
     "mutualFriends": "{{count}} bạn chung",
+    "wantsToBeFriends": "Muốn kết bạn",
     "viewMore": "XEM THÊM",
     "loading": "Đang tải...",
     "error": "Có lỗi xảy ra, vui lòng thử lại",
@@ -76,6 +81,10 @@
       "unfriendConfirm": "Bạn có chắc muốn hủy kết bạn với {{name}}?",
       "friendSuggestion": "Năm học tới, kết bạn mới",
       "seeMore": "Xem thêm"
+    },
+    "notification": {
+      "accepted": "Đã chấp nhận lời mời kết bạn",
+      "declined": "Đã từ chối lời mời"
     }
   }
 }

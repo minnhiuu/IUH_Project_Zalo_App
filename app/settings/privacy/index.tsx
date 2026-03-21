@@ -1,141 +1,157 @@
 import React from 'react'
-import { View } from 'react-native'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
-import { Ionicons } from '@expo/vector-icons'
-import { Box, VStack, HStack, Text, MenuItem } from '@/components/ui'
+import { View, Text } from 'react-native'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { useTranslation } from 'react-i18next'
-
-// Section header - blue text like Zalo
-const SectionHeader = ({ title }: { title: string }) => (
-  <Box style={{ paddingHorizontal: 16, paddingTop: 24, paddingBottom: 8, backgroundColor: '#f5f5f5' }}>
-    <Text style={{ fontSize: 14, fontWeight: '600', color: '#0068FF' }}>
-      {title}
-    </Text>
-  </Box>
-)
+import { useRouter } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
+import {
+  SectionLabel,
+  SettingsDivider,
+  SettingsCard,
+  ActionRow,
+  usePrivacySettingsQuery,
+  mapPrivacySettingsToScreenValueKeys,
+  mapBlockedAndHideCount,
+  mapFriendSourcesEnabledCount,
+  mapUtilityPermissionsCount
+} from '@/features/settings'
 
 export default function PrivacyScreen() {
   const { t } = useTranslation()
+  const router = useRouter()
+  const { data: privacySettings } = usePrivacySettingsQuery()
+  const valueKeys = mapPrivacySettingsToScreenValueKeys(privacySettings)
+
+  const blockedCount = mapBlockedAndHideCount(privacySettings)
+  const friendSourcesCount = mapFriendSourcesEnabledCount(privacySettings)
+  const utilityPermissionsCount = mapUtilityPermissionsCount(privacySettings)
 
   return (
     <SettingsDetailScreen title={t('settings.menu.privacy.title')}>
-      {/* Cá nhân */}
-      <SectionHeader title={t('settings.privacy.sections.personal')} />
-
-      <VStack style={{ backgroundColor: '#ffffff' }}>
-        <MenuItem
-          icon="calendar-outline"
-          iconColor="#555"
+      <SectionLabel blue title={t('settings.privacy.sections.personal')} />
+      <SettingsCard marginTop={0}>
+        <ActionRow
+          icon='calendar-outline'
           title={t('settings.privacy.birthday')}
-          onPress={() => {}}
+          rightComponent={
+            <View className='flex-row items-center gap-1'>
+              <Text className='text-sm text-muted-foreground'>{t(valueKeys.birthday)}</Text>
+              <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+            </View>
+          }
+          onPress={() => router.push('/settings/privacy/birthday' as any)}
         />
-        <MenuItem
-          icon="person-outline"
-          iconColor="#555"
+        <SettingsDivider inset={56} />
+        <ActionRow
+          icon='person-outline'
           title={t('settings.privacy.showAccessStatus')}
           rightComponent={
-            <HStack style={{ alignItems: 'center', gap: 4 }}>
-              <Text style={{ fontSize: 14, color: '#6b7280' }}>
-                {t('settings.privacy.on')}
-              </Text>
-              <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-            </HStack>
+            <View className='flex-row items-center gap-1'>
+              <Text className='text-sm text-muted-foreground'>{t(valueKeys.showAccessStatus)}</Text>
+              <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+            </View>
           }
-          onPress={() => {}}
+          onPress={() => { }}
         />
-      </VStack>
+      </SettingsCard>
 
-      {/* Tin nhắn và cuộc gọi */}
-      <SectionHeader title={t('settings.privacy.sections.messagesAndCalls')} />
-
-      <VStack style={{ backgroundColor: '#ffffff' }}>
-        <MenuItem
-          icon="checkmark-done-outline"
-          iconColor="#555"
+      <SectionLabel blue title={t('settings.privacy.sections.messagesAndCalls')} />
+      <SettingsCard marginTop={0}>
+        <ActionRow
+          icon='checkmark-done-outline'
           title={t('settings.privacy.showSeenStatus')}
           rightComponent={
-            <HStack style={{ alignItems: 'center', gap: 4 }}>
-              <Text style={{ fontSize: 14, color: '#6b7280' }}>
-                {t('settings.privacy.off')}
-              </Text>
-              <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-            </HStack>
+            <View className='flex-row items-center gap-1'>
+              <Text className='text-sm text-muted-foreground'>{t(valueKeys.showSeenStatus)}</Text>
+              <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+            </View>
           }
-          onPress={() => {}}
+          onPress={() => { }}
         />
-        <MenuItem
-          icon="chatbubble-outline"
-          iconColor="#555"
+        <SettingsDivider inset={56} />
+        <ActionRow
+          icon='chatbubble-outline'
           title={t('settings.privacy.allowMessaging')}
           rightComponent={
-            <HStack style={{ alignItems: 'center', gap: 4 }}>
-              <Text style={{ fontSize: 14, color: '#6b7280' }}>
-                {t('settings.privacy.everyone')}
-              </Text>
-              <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-            </HStack>
+            <View className='flex-row items-center gap-1'>
+              <Text className='text-sm text-muted-foreground'>{t(valueKeys.allowMessaging)}</Text>
+              <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+            </View>
           }
-          onPress={() => {}}
+          onPress={() => router.push('/settings/privacy/allow-messaging' as any)}
         />
-        <MenuItem
-          icon="call-outline"
-          iconColor="#555"
+        <SettingsDivider inset={56} />
+        <ActionRow
+          icon='call-outline'
           title={t('settings.privacy.allowCalls')}
           rightComponent={
-            <HStack style={{ alignItems: 'center', gap: 4 }}>
-              <Text style={{ fontSize: 14, color: '#6b7280', maxWidth: 150, textAlign: 'right' }}>
-                {t('settings.privacy.friendsAndContacted')}
-              </Text>
-              <Ionicons name="chevron-forward" size={20} color="#C7C7CC" />
-            </HStack>
+            <View className='flex-row items-center gap-1'>
+              <Text className='text-sm text-muted-foreground'>{t(valueKeys.allowCalls)}</Text>
+              <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+            </View>
           }
-          onPress={() => {}}
+          onPress={() => router.push('/settings/privacy/allow-calls' as any)}
         />
-      </VStack>
+      </SettingsCard>
 
-      {/* Nhật ký */}
-      <SectionHeader title={t('settings.privacy.sections.journal')} />
-
-      <VStack style={{ backgroundColor: '#ffffff' }}>
-        <MenuItem
-          icon="create-outline"
-          iconColor="#555"
+      <SectionLabel blue title={t('settings.privacy.sections.journal')} />
+      <SettingsCard marginTop={0}>
+        <ActionRow
+          icon='create-outline'
           title={t('settings.privacy.allowViewAndComment')}
-          onPress={() => {}}
+          rightComponent={
+            <View className='flex-row items-center gap-1'>
+              <Text className='text-sm text-muted-foreground'>{t(valueKeys.allowViewAndComment)}</Text>
+              <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+            </View>
+          }
+          onPress={() => { }}
         />
-        <MenuItem
-          icon="ban-outline"
-          iconColor="#555"
+        <SettingsDivider inset={56} />
+        <ActionRow
+          icon='ban-outline'
           title={t('settings.privacy.blockAndHide')}
-          onPress={() => {}}
+          rightComponent={
+            <View className='flex-row items-center gap-1'>
+              <Text className='text-sm text-muted-foreground'>{blockedCount}</Text>
+              <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+            </View>
+          }
+          onPress={() => router.push('/settings/privacy/blocked-users' as any)}
         />
-      </VStack>
+      </SettingsCard>
 
-      {/* Nguồn tìm kiếm và kết bạn */}
-      <SectionHeader title={t('settings.privacy.sections.searchAndFriend')} />
-
-      <VStack style={{ backgroundColor: '#ffffff' }}>
-        <MenuItem
-          icon="people-outline"
-          iconColor="#555"
+      <SectionLabel blue title={t('settings.privacy.sections.searchAndFriend')} />
+      <SettingsCard marginTop={0}>
+        <ActionRow
+          icon='people-outline'
           title={t('settings.privacy.manageFriendSources')}
-          onPress={() => {}}
+          rightComponent={
+            <View className='flex-row items-center gap-1'>
+              <Text className='text-sm text-muted-foreground'>{friendSourcesCount}</Text>
+              <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+            </View>
+          }
+          onPress={() => router.push('/settings/privacy/friend-sources' as any)}
         />
-      </VStack>
+      </SettingsCard>
 
-      {/* Quyền của tiện ích */}
-      <SectionHeader title={t('settings.privacy.sections.utilities')} />
-
-      <VStack style={{ backgroundColor: '#ffffff' }}>
-        <MenuItem
-          icon="apps-outline"
-          iconColor="#555"
+      <SectionLabel blue title={t('settings.privacy.sections.utilities')} />
+      <SettingsCard marginTop={0}>
+        <ActionRow
+          icon='apps-outline'
           title={t('settings.privacy.utilities')}
-          onPress={() => {}}
+          rightComponent={
+            <View className='flex-row items-center gap-1'>
+              <Text className='text-sm text-muted-foreground'>{utilityPermissionsCount}</Text>
+              <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+            </View>
+          }
+          onPress={() => { }}
         />
-      </VStack>
+      </SettingsCard>
 
-      <Box style={{ height: 32 }} />
+      <View className='h-8' />
     </SettingsDetailScreen>
   )
 }

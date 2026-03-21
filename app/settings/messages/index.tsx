@@ -1,137 +1,114 @@
 import React from 'react'
-import { Box, VStack, HStack, Text, Divider, Switch, MenuItem } from '@/components/ui'
-import SettingsDetailScreen from '@/components/SettingsDetailScreen'
-import { Ionicons } from '@expo/vector-icons'
 import { View } from 'react-native'
+import SettingsDetailScreen from '@/components/settings-detail-screen'
 import { useTranslation } from 'react-i18next'
+import { useRouter } from 'expo-router'
+import {
+  SectionLabel,
+  ActionRow,
+  ToggleRow,
+  SettingsDivider,
+  SettingsCard,
+  type MessageSettings,
+  useMessageSettingsQuery,
+  useUpdateMessageSettingsMutation
+} from '@/features/settings'
 
 export default function MessagesScreen() {
- const { t } = useTranslation()
- const [messagePreview, setMessagePreview] = React.useState(true)
- const [autoDownload, setAutoDownload] = React.useState(true)
- const [saveToLibrary, setSaveToLibrary] = React.useState(false)
+  const { t } = useTranslation()
+  const router = useRouter()
+  const { data: messageSettings, isLoading } = useMessageSettingsQuery()
+  const updateMessage = useUpdateMessageSettingsMutation()
 
- return (
- <SettingsDetailScreen title={t('settings.menu.messages.title')}>
- {/* Display Settings */}
- <Box className="bg-background mt-2">
- <Box className="px-4 py-2 bg-background-secondary">
- <Text size="sm" className="text-muted-foreground font-medium">
- {t('settings.sections.display')}
- </Text>
- </Box>
+  const messagePreview = messageSettings?.messagePreview ?? true
+  const autoDownload = messageSettings?.autoDownload ?? true
+  const saveToLibrary = messageSettings?.saveToLibrary ?? false
+  const fontSize = messageSettings?.fontSize ?? 'MEDIUM'
+  const chatTheme = messageSettings?.chatTheme
+  const endToEndEncryption = messageSettings?.endToEndEncryption ?? true
 
- <HStack className="px-4 py-3 items-center" space="md">
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E8F0FE', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='eye-outline' size={22} color='#0068FF' />
- </View>
- <VStack className="flex-1">
- <Text size="md" className="text-foreground">
- {t('settings.messages.messagePreview')}
- </Text>
- <Text size="sm" className="text-muted-foreground mt-0.5">
- {t('settings.messages.messagePreviewSubtitle')}
- </Text>
- </VStack>
- <Switch value={messagePreview} onValueChange={setMessagePreview} />
- </HStack>
- <Divider className="ml-16" />
+  const toggle = (
+    field: 'messagePreview' | 'autoDownload' | 'saveToLibrary' | 'endToEndEncryption' | 'showArchivedMessages',
+    value: boolean
+  ) => {
+    updateMessage.mutate({ [field]: value })
+  }
 
- <MenuItem
- title={t('settings.messages.fontSize')}
- subtitle={t('settings.messages.fontSizeMedium')}
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E3F2FD', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='text-outline' size={22} color='#2196F3' />
- </View>
- }
- onPress={() => {}}
- />
- <Divider className="ml-16" />
+  const fontSizeSubtitle =
+    {
+      SMALL: t('settings.messages.fontSizeSmall'),
+      MEDIUM: t('settings.messages.fontSizeMedium'),
+      LARGE: t('settings.messages.fontSizeLarge')
+    }[fontSize as MessageSettings['fontSize']] ?? t('settings.messages.fontSizeMedium')
 
- <MenuItem
- title={t('settings.messages.chatTheme')}
- subtitle={t('settings.messages.chatThemeSubtitle')}
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#F3E5F5', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='color-palette-outline' size={22} color='#9C27B0' />
- </View>
- }
- onPress={() => {}}
- />
- </Box>
+  return (
+    <SettingsDetailScreen title={t('settings.menu.messages.title')}>
+      <SectionLabel blue title={t('settings.sections.display')} />
+      <SettingsCard>
+        <ToggleRow
+          icon='eye-outline'
+          title={t('settings.messages.messagePreview')}
+          subtitle={t('settings.messages.messagePreviewSubtitle')}
+          value={messagePreview}
+          onValueChange={(v) => toggle('messagePreview', v)}
+          disabled={isLoading || updateMessage.isPending}
+        />
+        <SettingsDivider />
+        <ActionRow
+          icon='text-outline'
+          title={t('settings.messages.fontSize')}
+          subtitle={fontSizeSubtitle}
+          onPress={() => router.push('/settings/messages/font-size' as any)}
+        />
+        <SettingsDivider />
+        <ActionRow
+          icon='color-palette-outline'
+          title={t('settings.messages.chatTheme')}
+          subtitle={chatTheme || t('settings.messages.chatThemeSubtitle')}
+          onPress={() => {}}
+        />
+      </SettingsCard>
 
- {/* Media Settings */}
- <Box className="bg-background mt-4">
- <Box className="px-4 py-2 bg-background-secondary">
- <Text size="sm" className="text-muted-foreground font-medium">
- {t('settings.sections.media')}
- </Text>
- </Box>
+      <SectionLabel blue title={t('settings.sections.media')} />
+      <SettingsCard>
+        <ToggleRow
+          icon='download-outline'
+          title={t('settings.messages.autoDownload')}
+          subtitle={t('settings.messages.autoDownloadSubtitle')}
+          value={autoDownload}
+          onValueChange={(v) => toggle('autoDownload', v)}
+          disabled={isLoading || updateMessage.isPending}
+        />
+        <SettingsDivider />
+        <ToggleRow
+          icon='save-outline'
+          title={t('settings.messages.saveToLibrary')}
+          subtitle={t('settings.messages.saveToLibrarySubtitle')}
+          value={saveToLibrary}
+          onValueChange={(v) => toggle('saveToLibrary', v)}
+          disabled={isLoading || updateMessage.isPending}
+        />
+      </SettingsCard>
 
- <HStack className="px-4 py-3 items-center" space="md">
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E8F5E9', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='download-outline' size={22} color='#4CAF50' />
- </View>
- <VStack className="flex-1">
- <Text size="md" className="text-foreground">
- {t('settings.messages.autoDownload')}
- </Text>
- <Text size="sm" className="text-muted-foreground mt-0.5">
- {t('settings.messages.autoDownloadSubtitle')}
- </Text>
- </VStack>
- <Switch value={autoDownload} onValueChange={setAutoDownload} />
- </HStack>
- <Divider className="ml-16" />
+      <SectionLabel blue title={t('settings.sections.advanced')} />
+      <SettingsCard>
+        <ToggleRow
+          icon='lock-closed-outline'
+          title={t('settings.messages.endToEndEncryption')}
+          subtitle={t('settings.messages.endToEndEncryptionSubtitle')}
+          value={endToEndEncryption}
+          onValueChange={(v) => toggle('endToEndEncryption', v)}
+          disabled={isLoading || updateMessage.isPending}
+        />
+        <SettingsDivider />
+        <ActionRow
+          icon='archive-outline'
+          title={t('settings.messages.archivedMessages')}
+          onPress={() => router.push('/settings/messages/archived-messages' as any)}
+        />
+      </SettingsCard>
 
- <HStack className="px-4 py-3 items-center" space="md">
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#FFF3E0', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='save-outline' size={22} color='#FF9800' />
- </View>
- <VStack className="flex-1">
- <Text size="md" className="text-foreground">
- {t('settings.messages.saveToLibrary')}
- </Text>
- <Text size="sm" className="text-muted-foreground mt-0.5">
- {t('settings.messages.saveToLibrarySubtitle')}
- </Text>
- </VStack>
- <Switch value={saveToLibrary} onValueChange={setSaveToLibrary} />
- </HStack>
- </Box>
-
- {/* Advanced */}
- <Box className="bg-background mt-4 mb-8">
- <Box className="px-4 py-2 bg-background-secondary">
- <Text size="sm" className="text-muted-foreground font-medium">
- {t('settings.sections.advanced')}
- </Text>
- </Box>
-
- <MenuItem
- title={t('settings.messages.endToEndEncryption')}
- subtitle={t('settings.messages.endToEndEncryptionSubtitle')}
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#E8F0FE', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='lock-closed-outline' size={22} color='#0068FF' />
- </View>
- }
- onPress={() => {}}
- />
- <Divider className="ml-16" />
-
- <MenuItem
- title={t('settings.messages.archivedMessages')}
- subtitle={t('settings.messages.archivedMessagesSubtitle')}
- leftComponent={
- <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: '#ECEFF1', alignItems: 'center', justifyContent: 'center' }}>
- <Ionicons name='archive-outline' size={22} color='#607D8B' />
- </View>
- }
- onPress={() => {}}
- />
- </Box>
- </SettingsDetailScreen>
- )
+      <View className='h-8' />
+    </SettingsDetailScreen>
+  )
 }

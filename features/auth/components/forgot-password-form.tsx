@@ -1,10 +1,10 @@
 import { useState, useRef } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, Switch } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { Input } from '@/components/ui'
-import { Button } from '@/components/ui'
+import { Input , Button } from '@/components/ui'
+
 import { forgotPasswordRequestSchema, resetPasswordRequestSchema } from '../schemas/auth.schema'
 import { useForgotPasswordMutation, useResetPasswordMutation } from '../queries/use-mutations'
 
@@ -24,6 +24,7 @@ export function ForgotPasswordForm() {
   const [otp, setOtp] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [logoutOtherDevices, setLogoutOtherDevices] = useState(true)
   const [otpError, setOtpError] = useState('')
   const [newPasswordError, setNewPasswordError] = useState('')
   const [confirmPasswordError, setConfirmPasswordError] = useState('')
@@ -51,7 +52,8 @@ export function ForgotPasswordForm() {
         email,
         otp,
         newPassword,
-        confirmPassword
+        confirmPassword,
+        logoutOtherDevices
       })
       setOtpError('')
       setNewPasswordError('')
@@ -89,7 +91,8 @@ export function ForgotPasswordForm() {
         email,
         otp,
         newPassword,
-        confirmPassword
+        confirmPassword,
+        logoutOtherDevices
       })
       // Navigation handled by mutation
     } catch (error) {
@@ -216,6 +219,16 @@ export function ForgotPasswordForm() {
                 </TouchableOpacity>
               }
             />
+
+            <View style={styles.switchContainer}>
+              <Text style={styles.switchLabel}>Đăng xuất khỏi thiết bị khác</Text>
+              <Switch
+                value={logoutOtherDevices}
+                onValueChange={setLogoutOtherDevices}
+                trackColor={{ false: '#e0e0e0', true: '#0068FF' }}
+                thumbColor='#fff'
+              />
+            </View>
 
             <Button
               onPress={handleReset}
@@ -356,6 +369,18 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     color: '#1a1a1a'
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    marginTop: 8
+  },
+  switchLabel: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#666'
   },
   hiddenInput: {
     position: 'absolute',

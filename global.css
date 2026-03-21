@@ -2,14 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/*
- * ZALO THEME — CSS Variables (web-only mirror)
- *
- * ⚠️  Source of truth is constants/theme.ts (lightTokens / darkTokens).
- *     Keep this file in sync when adding/changing tokens.
- *     On native, GluestackProvider supplies these via NativeWind vars().
- */
-
 :root {
   --color-primary: #0068FF;
   --color-primary-foreground: #FFFFFF;
