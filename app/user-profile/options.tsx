@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Text } from '@/components/ui/text'
 import { useTheme } from '@/context/theme-context'
-import { useBlockDetails } from '@/features/users/queries/use-queries'
+import { useBlockDetails, useMyProfile } from '@/features/users/queries/use-queries'
 import { BlockUserModal } from '@/features/users/components/block-user-modal'
 import { useUnfriend } from '@/features/friend/queries/use-mutations'
 
@@ -55,6 +55,8 @@ export default function UserProfileOptionsScreen() {
   const isFriend = isFriendString === 'true'
   const unfriend = useUnfriend()
 
+  const { data: myProfile } = useMyProfile()
+  const isOwner = myProfile?.id === id
   const { data: blockDetails } = useBlockDetails(id as string, !!id)
 
   const handleUnfriend = () => {
@@ -124,7 +126,7 @@ export default function UserProfileOptionsScreen() {
       {/* Menu Items */}
       <ScrollView style={{ flex: 1 }}>
         <View style={{ marginTop: 8 }}>
-          {!isFriend && (
+          {!isFriend && !isOwner && (
             <MenuItemRow
               icon='person-add-outline'
               label={t('contacts.addFriend')}
@@ -135,7 +137,7 @@ export default function UserProfileOptionsScreen() {
           <MenuItemRow
             icon='information-circle-outline'
             label={t('profile.menu.information')}
-            onPress={() => {}}
+            onPress={() => router.push(`/user-profile/personal-info?id=${id}` as any)}
             isDark={isDark}
           />
           <MenuItemRow
@@ -150,14 +152,16 @@ export default function UserProfileOptionsScreen() {
             onPress={() => {}}
             isDark={isDark}
           />
-          <MenuItemRow
-            icon='ban-outline'
-            label={blockDetails ? t('settings.privacy.blockSettings') : t('settings.privacy.manageBlock')}
-            onPress={() => setBlockModalVisible(true)}
-            destructive
-            isDark={isDark}
-          />
-          {isFriend && (
+          {!isOwner && (
+            <MenuItemRow
+              icon='ban-outline'
+              label={blockDetails ? t('settings.privacy.blockSettings') : t('settings.privacy.manageBlock')}
+              onPress={() => setBlockModalVisible(true)}
+              destructive
+              isDark={isDark}
+            />
+          )}
+          {isFriend && !isOwner && (
             <MenuItemRow
               icon='person-remove-outline'
               label={t('profile.menu.unfriend')}
