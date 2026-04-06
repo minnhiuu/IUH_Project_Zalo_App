@@ -298,14 +298,15 @@ export default function QrConfirmScreen() {
           paddingHorizontal: 24,
           paddingBottom: 24,
           backgroundColor: 'white',
-          paddingTop: 8,
+          paddingTop: 12,
           borderTopWidth: 1,
-          borderTopColor: SEMANTIC.border
+          borderTopColor: SEMANTIC.border,
+          gap: 16
         }}
       >
         <Pressable
           onPress={() => setIsChecked(!isChecked)}
-          style={{ flexDirection: 'row', marginBottom: 24, marginTop: 8 }}
+          style={{ flexDirection: 'row' }}
         >
           <View
             style={{
@@ -315,9 +316,11 @@ export default function QrConfirmScreen() {
               borderColor: isChecked ? '#0068FF' : '#D1D5DB',
               borderRadius: 4,
               marginRight: 12,
+              marginTop: 2,
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: isChecked ? '#0068FF' : 'transparent'
+              backgroundColor: isChecked ? '#0068FF' : 'transparent',
+              flexShrink: 0
             }}
           >
             {isChecked && <Ionicons name='checkmark' size={12} color='white' />}
@@ -327,25 +330,53 @@ export default function QrConfirmScreen() {
           </Text>
         </Pressable>
 
-        {/* Action Buttons */}
-        <View style={{ gap: 8 }}>
-          <Button
-            onPress={handleStartLoginFlow}
-            disabled={!isChecked}
-            variant={isChecked ? 'primary' : 'secondary'}
-            className="h-14 rounded-full"
-          >
-            <Text bold={true} className={isChecked ? 'text-white' : 'text-muted'}>
-              Đăng nhập
-            </Text>
-          </Button>
+  <View style={{ gap: 12 }}>
+    <TouchableOpacity
+      onPress={handleStartLoginFlow}
+      disabled={!isChecked}
+      style={{
+        width: '100%',
+        height: 56,
+        borderRadius: 100,
+        backgroundColor: isChecked ? '#0068FF' : '#E2E8F0', 
+        justifyContent: 'center',
+        alignItems: 'center',
+        opacity: isChecked ? 1 : 0.7 
+      }}
+    >
+      <Text 
+        style={{ 
+          color: isChecked ? '#ffffff' : '#94A3B8', 
+          fontSize: 16,
+          fontWeight: '700' 
+        }}
+      >
+        Đăng nhập
+      </Text>
+    </TouchableOpacity>
 
-          <Button onPress={handleReject} variant="secondary" className="h-14 rounded-full">
-            <Text bold={true} className="text-foreground">
-              Từ chối
-            </Text>
-          </Button>
-        </View>
+    <TouchableOpacity 
+      onPress={handleReject} 
+      style={{
+        width: '100%',
+        height: 56,
+        borderRadius: 100,
+        backgroundColor: '#F1F5F9', 
+        justifyContent: 'center',
+        alignItems: 'center'
+      }}
+    >
+      <Text 
+        style={{ 
+          color: '#0F172A', 
+          fontSize: 16,
+          fontWeight: '700' 
+        }}
+      >
+        Từ chối
+      </Text>
+    </TouchableOpacity>
+  </View>
       </View>
 
       {/* Confirmation Modal */}
@@ -430,8 +461,18 @@ export default function QrConfirmScreen() {
             >
               Mã QR đã hết hạn, vui lòng tải lại mã mới trên thiết bị của bạn.
             </Text>
-            <Button onPress={() => router.back()} variant="primary" className="w-full h-12 rounded-xl">
-              <Text bold={true} className="text-white">
+            <Button 
+              onPress={() => router.back()} 
+              variant="primary" 
+              className="w-full h-12 rounded-xl"
+              style={{
+                width: '100%',
+                height: 48,
+                borderRadius: 12,
+                backgroundColor: '#0068FF'
+              }}
+            >
+              <Text bold={true} style={{ color: '#ffffff', fontSize: 16 }}>
                 Quay lại
               </Text>
             </Button>

@@ -1,7 +1,7 @@
 'use client';
 import React from 'react';
 import { ActivityIndicator, Pressable, PressableProps, Text, TextProps, View, ViewProps, ActivityIndicatorProps } from 'react-native';
-type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link';
+type ButtonVariant = 'default' | 'destructive' | 'outline' | 'secondary' | 'ghost' | 'link' | 'primary';
 type ButtonSize = 'default' | 'sm' | 'lg' | 'icon';
 
 type IButtonProps = PressableProps & {
@@ -27,6 +27,8 @@ const Button = React.forwardRef<View, IButtonProps>(
           return { backgroundColor: 'transparent' };
         case 'link':
           return { backgroundColor: 'transparent' };
+        case 'primary':
+          return { backgroundColor: '#0068FF' };
         default:
           return { backgroundColor: '#3b82f6' };
       }
@@ -45,23 +47,55 @@ const Button = React.forwardRef<View, IButtonProps>(
       }
     };
 
+    // Parse className for h-* and rounded-* utilities
+    const getClassNameStyle = () => {
+      const classStyles: any = {};
+      if (!className) return classStyles;
+      
+      const classes = className.split(' ');
+      classes.forEach(cls => {
+        if (cls.startsWith('h-')) {
+          const heightValue = cls.replace('h-', '');
+          if (heightValue === '14') classStyles.height = 56;
+          else if (heightValue === '12') classStyles.height = 48;
+          else if (heightValue === '10') classStyles.height = 40;
+          else if (heightValue === '8') classStyles.height = 32;
+        }
+        if (cls.startsWith('rounded-')) {
+          const roundedValue = cls.replace('rounded-', '');
+          if (roundedValue === 'full') classStyles.borderRadius = 100;
+          else if (roundedValue === 'xl') classStyles.borderRadius = 12;
+          else if (roundedValue === 'lg') classStyles.borderRadius = 8;
+        }
+        if (cls.startsWith('w-')) {
+          const widthValue = cls.replace('w-', '');
+          if (widthValue === 'full') classStyles.width = '100%';
+        }
+      });
+      return classStyles;
+    };
+
     return (
       <Pressable
         ref={ref as any}
         disabled={isButtonDisabled}
-        style={(state) => [
-          {
-            borderRadius: 6,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-          },
-          getVariantStyle(),
-          getSizeStyle(),
-          isButtonDisabled && { opacity: 0.4 },
-          typeof style === 'function' ? style(state) : style,
-        ]}
+        style={(state) => {
+          const classNameStyles = getClassNameStyle();
+          return [
+            {
+              borderRadius: 6,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+            },
+            getVariantStyle(),
+            getSizeStyle(),
+            classNameStyles,
+            isButtonDisabled && { opacity: 0.4 },
+            typeof style === 'function' ? style(state) : style,
+          ];
+        }}
         {...props}
       >
         {children}
