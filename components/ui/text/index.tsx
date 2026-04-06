@@ -49,6 +49,30 @@ const Text = React.forwardRef<RNText, ITextProps>(function Text(
     return sizeMap[size]
   }
 
+  // Parse className for color utilities
+  const getClassNameStyle = () => {
+    const classStyles: any = {};
+    if (!className) return classStyles;
+    
+    const colorMap: Record<string, string> = {
+      'text-white': '#ffffff',
+      'text-black': '#000000',
+      'text-foreground': '#0F172A',
+      'text-muted': '#94A3B8',
+      'text-muted-foreground': '#64748B',
+      'text-destructive': '#ef4444',
+      'text-primary': '#0068FF'
+    };
+
+    const classes = className.split(' ');
+    classes.forEach(cls => {
+      if (colorMap[cls]) {
+        classStyles.color = colorMap[cls];
+      }
+    });
+    return classStyles;
+  };
+
   const textStyle: TextStyle = {
     fontSize: sub ? getFontSize() * 0.75 : getFontSize(),
     ...(bold && { fontWeight: '700' }),
@@ -62,8 +86,7 @@ const Text = React.forwardRef<RNText, ITextProps>(function Text(
   return (
     <RNText
       ref={ref}
-      className={className}
-      style={[textStyle, style]}
+      style={[textStyle, getClassNameStyle(), style]}
       numberOfLines={isTruncated ? 1 : numberOfLines}
       ellipsizeMode={isTruncated ? 'tail' : undefined}
       {...props}
