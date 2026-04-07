@@ -630,6 +630,19 @@
     "title": "Cá nhân",
     "search": "Tìm kiếm",
     "online": "Đang hoạt động",
+    "chatOptions": {
+      "title": "Tùy chọn",
+      "searchMessages": "Tìm tin nhắn",
+      "profile": "Trang cá nhân",
+      "changeWallpaper": "Đổi hình nền",
+      "muteNotification": "Tắt thông báo",
+      "sharedJournal": "Nhật ký chung",
+      "mediaFilesLinks": "Ảnh, file, link",
+      "createGroupWithUser": "Tạo nhóm với {{name}}",
+      "addUserToGroup": "Thêm {{name}} vào nhóm",
+      "viewCommonGroups": "Xem nhóm chung",
+      "pinConversation": "Ghim trò chuyện"
+    },
     "menu": {
       "zCloud": "zCloud",
       "zCloudDesc": "Không gian lưu trữ dữ liệu trên đám mây",

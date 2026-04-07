@@ -14,7 +14,7 @@ export default function AddFriendScreen() {
   const { t } = useTranslation()
   const router = useRouter()
   const user = useAuthStore((s) => s.user)
-  const { colors } = useTheme()
+  const { colors, isDark } = useTheme()
   const [phoneNumber, setPhoneNumber] = useState('')
 
   const debouncedPhone = useDebounce(phoneNumber, 500)
@@ -33,6 +33,10 @@ export default function AddFriendScreen() {
     [router]
   )
 
+  const qrCardBg = isDark ? '#1E2530' : '#4A6B8A'
+  const qrInnerBg = isDark ? '#101722' : '#1A1F2E'
+  const qrHintColor = isDark ? 'rgba(237,239,243,0.82)' : 'rgba(255,255,255,0.8)'
+
   return (
     <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
       <Header
@@ -48,7 +52,7 @@ export default function AddFriendScreen() {
           <View
             style={{
               width: 280,
-              backgroundColor: '#4A6B8A',
+              backgroundColor: qrCardBg,
               borderRadius: 16,
               paddingVertical: 24,
               paddingHorizontal: 20,
@@ -65,7 +69,7 @@ export default function AddFriendScreen() {
               style={{
                 width: 180,
                 height: 180,
-                backgroundColor: '#1A1F2E',
+                backgroundColor: qrInnerBg,
                 borderRadius: 12,
                 alignItems: 'center',
                 justifyContent: 'center'
@@ -78,7 +82,7 @@ export default function AddFriendScreen() {
             <Text
               style={{
                 fontSize: 13,
-                color: 'rgba(255,255,255,0.8)',
+                color: qrHintColor,
                 textAlign: 'center',
                 marginTop: 16,
                 lineHeight: 18

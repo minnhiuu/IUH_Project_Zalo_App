@@ -82,9 +82,13 @@ export const API_ENDPOINTS = {
     LOGOUT_OTHERS: '/auth/logout-others' // POST - Logout all other devices
   },
   MESSAGE: {
-    CONVERSATIONS: '/message/conversations',
-    MESSAGES: (conversationId: string) => `/message/conversations/${conversationId}/messages`,
-    SEND: '/message/send'
+    CONVERSATIONS: '/messages/conversations',
+    MESSAGES: (conversationId: string) => `/messages/conversations/${conversationId}/messages`,
+    SEND: '/messages/send',
+    PARTNER_CONVERSATION: (partnerId: string) => `/messages/conversations/partner/${partnerId}`,
+    MARK_READ: (conversationId: string) => `/messages/conversations/${conversationId}/read`,
+    REVOKE: (messageId: string) => `/messages/${messageId}/revoke`,
+    DELETE_FOR_ME: (messageId: string) => `/messages/me/${messageId}`,
   },
   NOTIFICATION: {
     LIST: '/notifications',

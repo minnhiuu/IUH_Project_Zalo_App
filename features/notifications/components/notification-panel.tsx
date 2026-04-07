@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Modal, View, TouchableOpacity, TouchableWithoutFeedback } from 'react-native'
-import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { Modal, View, TouchableOpacity, TouchableWithoutFeedback, SafeAreaView as NativeSafeAreaView } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { Text } from '@/components/ui/text'
 import { LinearGradient } from 'expo-linear-gradient'
 import { useTheme, useSemanticColors } from '@/context/theme-context'
+import { HEADER } from '@/constants/theme'
 import { NotificationList, type NotificationFilter } from './notification-list'
 import { useMarkHistoryAsCheckedMutation, useMarkAllAsReadMutation } from '../queries/use-mutation'
 import { BottomSheet } from './bottom-sheet'
@@ -17,7 +18,6 @@ interface NotificationPanelProps {
 
 export function NotificationPanel({ visible, onClose }: NotificationPanelProps) {
   const { t } = useTranslation()
-  const insets = useSafeAreaInsets()
   const [filter] = useState<NotificationFilter>('all')
   const [settingsVisible, setSettingsVisible] = useState(false)
   const semantic = useSemanticColors()
@@ -31,7 +31,7 @@ export function NotificationPanel({ visible, onClose }: NotificationPanelProps) 
     }
   }, [visible, markAsChecked])
 
-  const gradientColors = isDark ? ([semantic.input, semantic.divider] as const) : (['#0068FF', '#0055DD'] as const)
+  const gradientColors = isDark ? HEADER.gradientColorsDark : HEADER.gradientColors
 
   const handleMarkAllRead = () => {
     markAllAsRead()
@@ -48,28 +48,34 @@ export function NotificationPanel({ visible, onClose }: NotificationPanelProps) 
         {/* Zalo-style Header */}
         <LinearGradient
           colors={gradientColors}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={{ paddingTop: insets.top }}
         >
-          <View className='flex-row items-center h-[56px] px-1'>
-            <TouchableOpacity onPress={onClose} className='p-3'>
-              <Ionicons name='arrow-back' size={24} color='white' />
-            </TouchableOpacity>
+          <NativeSafeAreaView style={{ backgroundColor: 'transparent' }}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: HEADER.paddingHorizontal,
+                height: HEADER.height,
+              }}
+            >
+              <TouchableOpacity onPress={onClose} style={{ paddingRight: 10 }}>
+                <Ionicons name='chevron-back' size={24} color='white' />
+              </TouchableOpacity>
 
-            <Text className='flex-1 text-[18px] font-semibold text-white ml-1 leading-[24px]'>
-              {t('notification.title')}
-            </Text>
+              <Text style={{ flex: 1, fontSize: 19, fontWeight: '600', color: '#fff' }} numberOfLines={1}>
+                {t('notification.title')}
+              </Text>
 
-            <TouchableOpacity className='p-3' onPress={() => setSettingsVisible(true)} activeOpacity={0.7}>
-              <Ionicons name='settings-outline' size={22} color='white' />
-            </TouchableOpacity>
-          </View>
+              <TouchableOpacity style={{ padding: 8 }} onPress={() => setSettingsVisible(true)} activeOpacity={0.7}>
+                <Ionicons name='settings-outline' size={24} color='white' />
+              </TouchableOpacity>
+            </View>
+          </NativeSafeAreaView>
         </LinearGradient>
 
-        <View className='flex-1'>
+        <SafeAreaView edges={['bottom']} style={{ flex: 1, backgroundColor: semantic.background }}>
           <NotificationList key={filter} filter={filter} />
-        </View>
+        </SafeAreaView>
       </View>
 
       {/* Settings Bottom Sheet */}

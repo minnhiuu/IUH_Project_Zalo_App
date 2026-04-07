@@ -42,6 +42,13 @@ export const useAcceptFriendRequest = () => {
       queryClient.invalidateQueries({ queryKey: friendKeys.myFriends() })
       queryClient.invalidateQueries({ queryKey: friendKeys.all })
 
+      // Backend automatically creates 1:1 conversation on ADDED event
+      // and pushes ConversationResponse to both users via /queue/conversations WebSocket.
+      // Invalidate conversations cache as fallback in case WS event is missed.
+      import('@/features/message/queries/keys').then(({ messageKeys }) => {
+        queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+      })
+
       Toast.show({
         type: 'success',
         text1: t('friend.toast.acceptSuccess'),

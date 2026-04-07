@@ -601,6 +601,19 @@
     "title": "Profile",
     "search": "Search",
     "online": "Active now",
+    "chatOptions": {
+      "title": "Options",
+      "searchMessages": "Search messages",
+      "profile": "Profile",
+      "changeWallpaper": "Change wallpaper",
+      "muteNotification": "Mute notifications",
+      "sharedJournal": "Shared journal",
+      "mediaFilesLinks": "Photos, files, links",
+      "createGroupWithUser": "Create group with {{name}}",
+      "addUserToGroup": "Add {{name}} to group",
+      "viewCommonGroups": "View common groups",
+      "pinConversation": "Pin conversation"
+    },
       "menu": {
         "zCloud": "zCloud",
         "zCloudDesc": "Cloud storage for your data",
