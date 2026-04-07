@@ -3,7 +3,6 @@ import {
   View,
   TouchableOpacity,
   ScrollView,
-  Image,
   TextInput,
   Modal,
   Platform,
@@ -15,6 +14,7 @@ import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import * as ImagePicker from 'expo-image-picker'
 import { Text } from '@/components/ui/text'
+import { UserAvatar } from '@/components/common/user-avatar'
 import { useTheme } from '@/context/theme-context'
 import { useMyProfile } from '@/features/users/queries/use-queries'
 import { useUpdateProfile, useUpdateAvatar } from '@/features/users/queries/use-mutations'
@@ -177,26 +177,11 @@ export default function EditProfileScreen() {
           <View style={{ flexDirection: 'row' }}>
             <View style={{ width: 100, alignItems: 'flex-start', paddingTop: 8 }}>
               <TouchableOpacity onPress={pickImage} style={{ position: 'relative' }}>
-                <View
-                  style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 40,
-                    backgroundColor: isDark ? '#2C323A' : '#E5E7EB',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    overflow: 'hidden'
-                  }}
-                >
-                  {myProfile.avatar ? (
-                    <Image
-                      source={{ uri: myProfile.avatar }}
-                      style={{ width: 80, height: 80, borderRadius: 40 }}
-                    />
-                  ) : (
-                    <Ionicons name='person' size={50} color={isDark ? '#6B7280' : '#9CA3AF'} />
-                  )}
-                </View>
+                <UserAvatar
+                  source={myProfile.avatar}
+                  name={myProfile.fullName}
+                  size='xl'
+                />
                 <View
                   style={{
                     position: 'absolute',
