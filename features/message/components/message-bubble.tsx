@@ -123,7 +123,9 @@ export function MessageBubble({
       Animated.timing(sheetTranslateY, { toValue: 400, duration: 200, useNativeDriver: true }),
     ]).start(() => {
       setShowActions(false)
-      afterClose?.()
+      if (typeof afterClose === 'function') {
+        afterClose()
+      }
     })
   }, [overlayOpacity, sheetTranslateY])
 

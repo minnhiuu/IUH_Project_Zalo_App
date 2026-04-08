@@ -214,6 +214,13 @@ function ThemeAwareProviders() {
             <Stack.Screen name='search' />
             <Stack.Screen name='friend-requests' />
             <Stack.Screen name='add-friend' />
+            <Stack.Screen
+              name='add-friend/scan'
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom'
+              }}
+            />
             <Stack.Screen name='user-profile/[id]' />
             <Stack.Screen name='message-options' />
             <Stack.Screen
