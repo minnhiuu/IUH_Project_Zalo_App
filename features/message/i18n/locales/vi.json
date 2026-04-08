@@ -80,6 +80,19 @@
       "gif": "@GIF",
       "draw": "Vẽ hình",
       "font": "Kiểu chữ"
+    },
+    "forward": {
+      "title": "Chia sẻ",
+      "selectedCount": "Đã chọn: {{count}}",
+      "search": "Tìm kiếm",
+      "sendTo": "Gửi tới",
+      "newGroup": "Nhóm mới",
+      "journal": "Nhật ký",
+      "otherApps": "App khác",
+      "recentChats": "Trò chuyện gần đây",
+      "groups": "Nhóm",
+      "showMore": "XEM THÊM",
+      "notePlaceholder": "Nhập tin nhắn"
     }
   }
 }

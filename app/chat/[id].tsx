@@ -11,14 +11,16 @@ import {
   ChatInputBar,
   DateSeparator,
   MessageListSkeleton,
+  ForwardMessageModal,
 } from '@/features/message/components'
 import {
   useInfiniteMessages,
   usePartnerConversation,
   useMarkAsRead,
+  useConversations,
 } from '@/features/message/queries'
 import { useChatWebSocket } from '@/features/message/hooks'
-import { MessageStatus, type MessageResponse } from '@/features/message/schemas'
+import { MessageStatus, MessageType, type MessageResponse } from '@/features/message/schemas'
 import { normalizeDateTime } from '@/features/message/utils'
 
 export default function ChatScreen() {
@@ -66,9 +68,11 @@ export default function ChatScreen() {
   // Mutations
   const { sendMessage: wsSendMessage, revokeMessage: wsRevokeMessage, deleteMessageForMe: wsDeleteForMe } = useChatWebSocket()
   const markAsReadMutation = useMarkAsRead()
+  const { data: conversations = [] } = useConversations(0, 100, true)
 
   const [inputText, setInputText] = useState('')
   const [replyTo, setReplyTo] = useState<MessageResponse | null>(null)
+  const [forwardMessage, setForwardMessage] = useState<MessageResponse | null>(null)
   const flatListRef = useRef<FlatList>(null)
 
   // Flatten pages into message list (reversed for inverted FlatList)
@@ -130,8 +134,31 @@ export default function ChatScreen() {
   }, [])
 
   const handleForward = useCallback((message: MessageResponse) => {
-    // TODO: open forward modal / conversation picker
+    setForwardMessage(message)
   }, [])
+
+  const handleSubmitForward = useCallback(
+    (conversationIds: string[], note: string) => {
+      if (!forwardMessage) return
+      const forwardedPayload =
+        forwardMessage.content?.trim() ||
+        (forwardMessage.type === MessageType.IMAGE
+          ? '[IMAGE]'
+          : forwardMessage.type === MessageType.FILE
+            ? '[FILE]'
+            : '[FORWARDED]')
+      const notePayload = note.trim()
+
+      conversationIds.forEach((targetConversationId) => {
+        wsSendMessage(targetConversationId, forwardedPayload, null, true)
+        if (notePayload) {
+          wsSendMessage(targetConversationId, notePayload, null, false)
+        }
+      })
+      setForwardMessage(null)
+    },
+    [forwardMessage, wsSendMessage]
+  )
 
   // Date separator logic
   const getDateLabel = (dateStr: string | null): string => {
@@ -278,6 +305,14 @@ export default function ChatScreen() {
           onCancelReply={() => setReplyTo(null)}
         />
       </KeyboardAvoidingView>
+
+      <ForwardMessageModal
+        visible={!!forwardMessage}
+        sourceMessage={forwardMessage}
+        conversations={conversations}
+        onClose={() => setForwardMessage(null)}
+        onSubmit={handleSubmitForward}
+      />
     </View>
   )
 }

@@ -37,9 +37,12 @@ export default function UserProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { isDark } = useTheme()
 
-  const { data: myProfile } = useMyProfile()
+  const { data: myProfile, isLoading: myProfileLoading } = useMyProfile()
   const { data: userProfile, isLoading: profileLoading } = useUserById(id as string)
-  const { data: friendshipStatus, isLoading: statusLoading } = useFriendshipStatus(id as string, id !== myProfile?.id)
+  const targetUserId = String(id ?? '').trim()
+  const myUserId = String(myProfile?.id ?? '').trim()
+  const isOwner = !!myUserId && myUserId === targetUserId
+  const { data: friendshipStatus, isLoading: statusLoading } = useFriendshipStatus(targetUserId, !!targetUserId && !isOwner)
   const sendFriendRequest = useSendFriendRequest()
   const acceptFriendRequest = useAcceptFriendRequest()
   const cancelFriendRequest = useCancelFriendRequest()
@@ -48,11 +51,9 @@ export default function UserProfileScreen() {
   const updateBackgroundMutation = useUpdateBackground()
 
   const isLoading = profileLoading || statusLoading
-  //TODO: retrieve owner's information from cache or context to avoid loading state on own profile
-  const isOwner = myProfile?.id === id
   const isFriend = friendshipStatus?.areFriends === true
   const isPending = friendshipStatus?.status === 'PENDING'
-  const isReceiver = isPending && friendshipStatus?.requestedBy !== myProfile?.id
+  const isReceiver = isPending && String(friendshipStatus?.requestedBy ?? '') !== myUserId
 
   const [showAvatarSheet, setShowAvatarSheet] = useState(false)
   const [showCoverSheet, setShowCoverSheet] = useState(false)
@@ -471,7 +472,7 @@ export default function UserProfileScreen() {
           )}
 
           {/* Friend Profile: No Activity Message */}
-          {!isOwner && isFriend && (
+          {!myProfileLoading && !isOwner && isFriend && (
             <Text
               style={{
                 fontSize: 14,
@@ -487,7 +488,7 @@ export default function UserProfileScreen() {
           )}
 
           {/* Stranger Profile: Not Friend Message */}
-          {!isOwner && !isFriend && (
+          {!myProfileLoading && !isOwner && !isFriend && (
             <Text
               style={{
                 fontSize: 14,
@@ -503,7 +504,7 @@ export default function UserProfileScreen() {
           )}
 
           {/* Action Buttons - Only for non-owner */}
-          {!isOwner && (
+          {!myProfileLoading && !isOwner && (
             <View
               style={{
                 flexDirection: 'row',

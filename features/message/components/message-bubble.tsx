@@ -117,11 +117,14 @@ export function MessageBubble({
     setShowActions(true)
   }, [isRevoked])
 
-  const closeSheet = useCallback(() => {
+  const closeSheet = useCallback((afterClose?: () => void) => {
     Animated.parallel([
       Animated.timing(overlayOpacity, { toValue: 0, duration: 180, useNativeDriver: true }),
       Animated.timing(sheetTranslateY, { toValue: 400, duration: 200, useNativeDriver: true }),
-    ]).start(() => setShowActions(false))
+    ]).start(() => {
+      setShowActions(false)
+      afterClose?.()
+    })
   }, [overlayOpacity, sheetTranslateY])
 
   useEffect(() => {
@@ -142,46 +145,53 @@ export function MessageBubble({
   }, [showActions])
 
   const handleAction = useCallback((action: string) => {
-    closeSheet()
     switch (action) {
       case 'reply':
-        onReply?.(message)
+        closeSheet(() => onReply?.(message))
         break
       case 'forward':
-        onForward?.(message)
+        closeSheet(() => onForward?.(message))
         break
       case 'revoke':
-        Alert.alert(
-          t('message.actions.revoke', { defaultValue: 'Thu hoi' }),
-          t('message.actions.revokeConfirm', { defaultValue: 'Thu hoi tin nhan nay?' }),
-          [
-            { text: t('message.actions.cancel', { defaultValue: 'Huy' }), style: 'cancel' },
-            { text: 'OK', onPress: () => onRevoke?.(message.id), style: 'destructive' },
-          ]
-        )
+        closeSheet(() => {
+          Alert.alert(
+            t('message.actions.revoke', { defaultValue: 'Thu hoi' }),
+            t('message.actions.revokeConfirm', { defaultValue: 'Thu hoi tin nhan nay?' }),
+            [
+              { text: t('message.actions.cancel', { defaultValue: 'Huy' }), style: 'cancel' },
+              { text: 'OK', onPress: () => onRevoke?.(message.id), style: 'destructive' },
+            ]
+          )
+        })
         break
       case 'delete':
-        Alert.alert(
-          t('message.actions.delete', { defaultValue: 'Xoa o phia toi' }),
-          t('message.actions.deleteConfirm', { defaultValue: 'Xoa tin nhan phia ban?' }),
-          [
-            { text: t('message.actions.cancel', { defaultValue: 'Huy' }), style: 'cancel' },
-            { text: 'OK', onPress: () => onDeleteForMe?.(message.id), style: 'destructive' },
-          ]
-        )
+        closeSheet(() => {
+          Alert.alert(
+            t('message.actions.delete', { defaultValue: 'Xoa o phia toi' }),
+            t('message.actions.deleteConfirm', { defaultValue: 'Xoa tin nhan phia ban?' }),
+            [
+              { text: t('message.actions.cancel', { defaultValue: 'Huy' }), style: 'cancel' },
+              { text: 'OK', onPress: () => onDeleteForMe?.(message.id), style: 'destructive' },
+            ]
+          )
+        })
         break
       case 'copy':
-        if (message.content) Clipboard.setString(message.content)
+        closeSheet(() => {
+          if (message.content) Clipboard.setString(message.content)
+        })
         break
       case 'info':
         if (onOpenMessageOptions) {
-          onOpenMessageOptions()
+          closeSheet(() => onOpenMessageOptions())
           break
         }
-        Alert.alert(
-          t('message.actions.comingSoonTitle', { defaultValue: 'Thong bao' }),
-          t('message.actions.comingSoon', { defaultValue: 'Chuc nang dang duoc phat trien.' })
-        )
+        closeSheet(() => {
+          Alert.alert(
+            t('message.actions.comingSoonTitle', { defaultValue: 'Thong bao' }),
+            t('message.actions.comingSoon', { defaultValue: 'Chuc nang dang duoc phat trien.' })
+          )
+        })
         break
       case 'pin':
       case 'reminder':
@@ -190,16 +200,19 @@ export function MessageBubble({
       case 'translate':
       case 'readText':
       case 'save':
-        Alert.alert(
-          t('message.actions.comingSoonTitle', { defaultValue: 'Thong bao' }),
-          t('message.actions.comingSoon', { defaultValue: 'Chuc nang dang duoc phat trien.' })
-        )
+        closeSheet(() => {
+          Alert.alert(
+            t('message.actions.comingSoonTitle', { defaultValue: 'Thong bao' }),
+            t('message.actions.comingSoon', { defaultValue: 'Chuc nang dang duoc phat trien.' })
+          )
+        })
         break
     }
   }, [closeSheet, message, onReply, onForward, onRevoke, onDeleteForMe, onOpenMessageOptions, t])
 
   const actionRows = buildActionRows(isOwn, isDark, t)
   const deliveryStatusLabel = getDeliveryStatusLabel()
+  const incomingLeftSlotWidth = 44
 
   return (
     <View
@@ -211,16 +224,25 @@ export function MessageBubble({
         alignItems: 'flex-end',
       }}
     >
-      {!isOwn && showAvatar && (
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={() => message.senderId && onAvatarPress?.(message.senderId)}
-          style={{ marginRight: 8 }}
+      {!isOwn && (
+        <View
+          style={{
+            width: incomingLeftSlotWidth,
+            alignItems: 'flex-start',
+            justifyContent: 'flex-end',
+          }}
         >
-          <UserAvatar source={message.senderAvatar} name={message.senderName || ''} size="sm" />
-        </TouchableOpacity>
+          {showAvatar && (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => message.senderId && onAvatarPress?.(message.senderId)}
+              style={{ marginRight: 8 }}
+            >
+              <UserAvatar source={message.senderAvatar} name={message.senderName || ''} size="sm" />
+            </TouchableOpacity>
+          )}
+        </View>
       )}
-      {!isOwn && !showAvatar && <View style={{ width: 40 }} />}
 
       <View style={{ maxWidth: '70%' }}>
         {showSenderName && message.senderName && !isOwn && (

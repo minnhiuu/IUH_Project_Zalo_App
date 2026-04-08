@@ -80,6 +80,19 @@
       "gif": "@GIF",
       "draw": "Draw",
       "font": "Font"
+    },
+    "forward": {
+      "title": "Share",
+      "selectedCount": "Selected: {{count}}",
+      "search": "Search",
+      "sendTo": "Send to",
+      "newGroup": "New group",
+      "journal": "Journal",
+      "otherApps": "Other apps",
+      "recentChats": "Recent chats",
+      "groups": "Groups",
+      "showMore": "SHOW MORE",
+      "notePlaceholder": "Enter message"
     }
   }
 }

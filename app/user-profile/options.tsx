@@ -8,6 +8,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { Text } from '@/components/ui/text'
 import { useTheme } from '@/context/theme-context'
 import { useBlockDetails } from '@/features/users/queries/use-queries'
+import { useMyProfile } from '@/features/users/queries/use-queries'
 import { BlockUserModal } from '@/features/users/components/block-user-modal'
 import { useUnfriend } from '@/features/friend/queries/use-mutations'
 import { HEADER } from '@/constants/theme'
@@ -53,8 +54,10 @@ export default function UserProfileOptionsScreen() {
   const router = useRouter()
   const { id, name, isFriend: isFriendString } = useLocalSearchParams<{ id: string; name: string; isFriend: string }>()
   const { isDark } = useTheme()
+  const { data: myProfile } = useMyProfile()
   const [blockModalVisible, setBlockModalVisible] = useState(false)
   const isFriend = isFriendString === 'true'
+  const isOwner = String(id ?? '').trim() === String(myProfile?.id ?? '').trim()
   const unfriend = useUnfriend()
 
   const { data: blockDetails } = useBlockDetails(id as string, !!id)
@@ -123,7 +126,7 @@ export default function UserProfileOptionsScreen() {
 
       <ScrollView style={{ flex: 1 }}>
         <View style={{ marginTop: 8 }}>
-          {!isFriend && (
+          {!isOwner && !isFriend && (
             <MenuItemRow
               icon='person-add-outline'
               label={t('contacts.addFriend')}
