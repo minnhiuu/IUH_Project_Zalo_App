@@ -213,8 +213,8 @@ export default function FriendRequestsScreen() {
           />
         ) : (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name="person-outline" size={48} color="#D1D5DB" />
-            <Text style={{ color: '#9ca3af', marginTop: 12 }}>
+            <Ionicons name="person-outline" size={48} color={semanticColors.iconMuted} />
+            <Text style={{ color: semanticColors.textSecondary, marginTop: 12 }}>
               {t('friend.empty.received')}
             </Text>
           </View>
@@ -237,8 +237,8 @@ export default function FriendRequestsScreen() {
         />
       ) : (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          <Ionicons name="paper-plane-outline" size={48} color="#D1D5DB" />
-          <Text style={{ color: '#9ca3af', marginTop: 12 }}>
+          <Ionicons name="paper-plane-outline" size={48} color={semanticColors.iconMuted} />
+          <Text style={{ color: semanticColors.textSecondary, marginTop: 12 }}>
             {t('friend.empty.sent')}
           </Text>
         </View>

@@ -4,11 +4,14 @@ import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { LinearGradient } from 'expo-linear-gradient'
 import { Text } from '@/components/ui/text'
 import { useTheme } from '@/context/theme-context'
-import { useBlockDetails, useMyProfile } from '@/features/users/queries/use-queries'
+import { useBlockDetails } from '@/features/users/queries/use-queries'
+import { useMyProfile } from '@/features/users/queries/use-queries'
 import { BlockUserModal } from '@/features/users/components/block-user-modal'
 import { useUnfriend } from '@/features/friend/queries/use-mutations'
+import { HEADER } from '@/constants/theme'
 
 const DIVIDER_COLOR_LIGHT = '#F0F0F0'
 const DIVIDER_COLOR_DARK = 'rgba(255,255,255,0.07)'
@@ -51,12 +54,12 @@ export default function UserProfileOptionsScreen() {
   const router = useRouter()
   const { id, name, isFriend: isFriendString } = useLocalSearchParams<{ id: string; name: string; isFriend: string }>()
   const { isDark } = useTheme()
+  const { data: myProfile } = useMyProfile()
   const [blockModalVisible, setBlockModalVisible] = useState(false)
   const isFriend = isFriendString === 'true'
+  const isOwner = String(id ?? '').trim() === String(myProfile?.id ?? '').trim()
   const unfriend = useUnfriend()
 
-  const { data: myProfile } = useMyProfile()
-  const isOwner = myProfile?.id === id
   const { data: blockDetails } = useBlockDetails(id as string, !!id)
 
   const handleUnfriend = () => {
@@ -85,48 +88,45 @@ export default function UserProfileOptionsScreen() {
   }
 
   const bg = isDark ? '#121416' : '#F3F4F6'
-  const headerBg = isDark ? '#1C1F24' : '#fff'
-  const headerBorder = isDark ? DIVIDER_COLOR_DARK : DIVIDER_COLOR_LIGHT
+  const headerGradient = isDark ? HEADER.gradientColorsDark : HEADER.gradientColors
 
   return (
     <View style={{ flex: 1, backgroundColor: bg }}>
-      <SafeAreaView edges={['top']} style={{ backgroundColor: headerBg }}>
-        {/* Header */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: 4,
-            paddingVertical: 10,
-            borderBottomWidth: 1,
-            borderBottomColor: headerBorder
-          }}
-        >
-          <TouchableOpacity
-            onPress={() => router.back()}
-            activeOpacity={0.7}
-            style={{ padding: 12 }}
-          >
-            <Ionicons name='chevron-back' size={24} color={isDark ? '#DFE2E7' : '#111827'} />
-          </TouchableOpacity>
-          <Text
+      <LinearGradient colors={headerGradient}>
+        <SafeAreaView edges={['top']} style={{ backgroundColor: 'transparent' }}>
+          <View
             style={{
-              flex: 1,
-              fontSize: 18,
-              fontWeight: '600',
-              color: isDark ? '#DFE2E7' : '#111827'
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: HEADER.paddingHorizontal,
+              height: HEADER.height,
             }}
-            numberOfLines={1}
           >
-            {name}
-          </Text>
-        </View>
-      </SafeAreaView>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+              style={{ paddingRight: 10 }}
+            >
+              <Ionicons name='chevron-back' size={24} color='#fff' />
+            </TouchableOpacity>
+            <Text
+              style={{
+                flex: 1,
+                fontSize: 19,
+                fontWeight: '600',
+                color: '#fff'
+              }}
+              numberOfLines={1}
+            >
+              {name}
+            </Text>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
 
-      {/* Menu Items */}
       <ScrollView style={{ flex: 1 }}>
         <View style={{ marginTop: 8 }}>
-          {!isFriend && !isOwner && (
+          {!isOwner && !isFriend && (
             <MenuItemRow
               icon='person-add-outline'
               label={t('contacts.addFriend')}
@@ -152,16 +152,14 @@ export default function UserProfileOptionsScreen() {
             onPress={() => {}}
             isDark={isDark}
           />
-          {!isOwner && (
-            <MenuItemRow
-              icon='ban-outline'
-              label={blockDetails ? t('settings.privacy.blockSettings') : t('settings.privacy.manageBlock')}
-              onPress={() => setBlockModalVisible(true)}
-              destructive
-              isDark={isDark}
-            />
-          )}
-          {isFriend && !isOwner && (
+          <MenuItemRow
+            icon='ban-outline'
+            label={blockDetails ? t('settings.privacy.blockSettings') : t('settings.privacy.manageBlock')}
+            onPress={() => setBlockModalVisible(true)}
+            destructive
+            isDark={isDark}
+          />
+          {isFriend && (
             <MenuItemRow
               icon='person-remove-outline'
               label={t('profile.menu.unfriend')}
@@ -173,7 +171,6 @@ export default function UserProfileOptionsScreen() {
         </View>
       </ScrollView>
 
-      {/* Block Modal */}
       <BlockUserModal
         key={`block-modal-${id}-${!!blockDetails}`}
         userId={id as string}

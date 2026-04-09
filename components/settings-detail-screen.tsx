@@ -3,6 +3,7 @@ import { View, ScrollView, Text, TouchableOpacity } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
+import { LinearGradient } from 'expo-linear-gradient'
 import { useTheme } from '@/context'
 import { HEADER } from '@/constants/theme'
 
@@ -13,26 +14,20 @@ interface SettingsDetailScreenProps {
 
 export default function SettingsDetailScreen({ title, children }: SettingsDetailScreenProps) {
     const router = useRouter()
-    const { isDark, colors } = useTheme()
-    const headerBg = isDark ? colors.background : HEADER.backgroundColor
+    const { colors, isDark } = useTheme()
+    const headerGradient = isDark ? HEADER.gradientColorsDark : HEADER.gradientColors
 
     return (
         <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
             {/* Header */}
-            <View 
-                style={{ 
-                    backgroundColor: headerBg,
-                    borderBottomWidth: 0.5,
-                    borderBottomColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)'
-                }}
-            >
-                <SafeAreaView edges={['top']} style={{ backgroundColor: headerBg }}>
+            <LinearGradient colors={headerGradient}>
+                <SafeAreaView edges={['top']} style={{ backgroundColor: 'transparent' }}>
                     <View
                         style={{
                             flexDirection: 'row',
                             alignItems: 'center',
-                            paddingHorizontal: 8,
-                            height: 56,
+                            paddingHorizontal: HEADER.paddingHorizontal,
+                            height: HEADER.height,
                         }}
                     >
                         <TouchableOpacity 
@@ -59,7 +54,7 @@ export default function SettingsDetailScreen({ title, children }: SettingsDetail
                         </Text>
                     </View>
                 </SafeAreaView>
-            </View>
+            </LinearGradient>
 
             {/* Scrollable content */}
             <ScrollView

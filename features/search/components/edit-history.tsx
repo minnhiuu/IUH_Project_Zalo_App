@@ -3,6 +3,8 @@ import { RecentSearchResponse } from '@/features/search/schemas/search-schema'
 import { useRecentSearchItems, useRecentSearchQueries, useRemoveRecentSearch } from '@/features/search/queries'
 import { storage, STORAGE_KEYS } from '@/utils/storageUtils'
 import { useTheme } from '@/context/theme-context'
+import { HEADER } from '@/constants/theme'
+import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 import { Stack, useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
@@ -81,6 +83,7 @@ export function EditHistory() {
   }
 
   const bg = isDark ? '#1a1d21' : '#ffffff'
+  const headerGradient = isDark ? HEADER.gradientColorsDark : HEADER.gradientColors
   const dividerColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
   const textMain = isDark ? '#e8eaed' : '#081B3A'
   const textMuted = isDark ? '#8a9bb0' : '#5A6981'
@@ -91,12 +94,16 @@ export function EditHistory() {
     <SafeAreaView style={[styles.safeArea, { backgroundColor: bg }]}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View style={[styles.header, { backgroundColor: bg }]}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
-          <Ionicons name='arrow-back' size={22} color={textMain} />
-        </TouchableOpacity>
-        <Text style={[styles.headerTitle, { color: textMain }]}>{t('search.editHistory.title')}</Text>
-      </View>
+      <LinearGradient colors={headerGradient}>
+        <SafeAreaView edges={['top']} style={{ backgroundColor: 'transparent' }}>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+              <Ionicons name='chevron-back' size={24} color='#fff' />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>{t('search.editHistory.title')}</Text>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
 
       <ScrollView style={{ flex: 1, backgroundColor: bg }} showsVerticalScrollIndicator={false}>
         <View style={[styles.row, { backgroundColor: bg }]}>
@@ -179,16 +186,16 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12
+    paddingHorizontal: HEADER.paddingHorizontal,
+    height: HEADER.height,
   },
   backBtn: {
-    marginRight: 12,
-    padding: 2
+    paddingRight: 10,
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: '500'
+    fontSize: 19,
+    fontWeight: '600',
+    color: '#fff'
   },
   row: {
     flexDirection: 'row',

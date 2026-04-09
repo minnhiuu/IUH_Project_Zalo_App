@@ -27,8 +27,10 @@ export const STATUS = {
 export const HEADER = {
   height: 56,
   paddingHorizontal: 16,
-  paddingVertical: 12,
+  paddingVertical: 0,
   backgroundColor: BRAND.blueDark,
+  gradientColors: ['#0077FF', '#19B8FF'] as const,
+  gradientColorsDark: ['#1B1C20', '#1B1C20'] as const,
   textColor: BRAND.white,
   searchPlaceholderColor: 'rgba(255, 255, 255, 0.8)',
   iconSize: { search: 22, qr: 24, add: 30, settings: 26, back: 28 },
@@ -120,66 +122,66 @@ export const lightTokens = {
 
 export const darkTokens = {
   // Primary
-  '--color-primary': '#0068FF',
+  '--color-primary': '#2A7FFF',
   '--color-primary-foreground': '#FFFFFF',
-  '--color-primary-hover': '#005AE0',
+  '--color-primary-hover': '#1F6FE6',
 
-  // Background - Much darker to match Zalo's dark theme
-  '--color-background': '#15181D',
-  '--color-background-secondary': '#1C2630',
+  // Background - tuned to Zalo-like dark UI
+  '--color-background': '#111318',
+  '--color-background-secondary': '#1A1D24',
 
   // Foreground
-  '--color-foreground': '#E8EAED',
+  '--color-foreground': '#EDEFF3',
 
   // Secondary
-  '--color-secondary': '#1C2630',
-  '--color-secondary-foreground': '#E8EAED',
-  '--color-secondary-hover': '#26313D',
+  '--color-secondary': '#20242C',
+  '--color-secondary-foreground': '#EDEFF3',
+  '--color-secondary-hover': '#2A2F38',
 
   // Muted
-  '--color-muted': '#26313D',
-  '--color-muted-foreground': '#9BA3AF',
+  '--color-muted': '#2A2F38',
+  '--color-muted-foreground': '#9AA3B2',
 
   // Accent
-  '--color-accent': '#26313D',
+  '--color-accent': '#2A2F38',
   '--color-accent-foreground': '#FFFFFF',
-  '--color-accent-hover': '#2F3A49',
+  '--color-accent-hover': '#343A45',
 
   // Border / Input / Ring
-  '--color-border': 'rgba(255,255,255,0.08)',
-  '--color-input': '#0D1117',
-  '--color-ring': '#0068FF',
+  '--color-border': 'rgba(255,255,255,0.07)',
+  '--color-input': '#1B2028',
+  '--color-ring': '#2A7FFF',
 
   // Card
-  '--color-card': '#15181D',
-  '--color-card-foreground': '#FFFFFF',
+  '--color-card': '#161A21',
+  '--color-card-foreground': '#F2F4F7',
 
   // Popover
-  '--color-popover': '#15181D',
-  '--color-popover-foreground': '#FFFFFF',
+  '--color-popover': '#161A21',
+  '--color-popover-foreground': '#F2F4F7',
 
   // Destructive
   '--color-destructive': '#E53838',
   '--color-destructive-foreground': '#FFFFFF',
 
   // Divider / Disabled
-  '--color-divider': '#0D1117',
-  '--color-disabled': '#7A8795',
+  '--color-divider': '#232833',
+  '--color-disabled': '#7F8898',
 
   // Icons
-  '--color-icon-muted': '#7A8795',
-  '--color-icon-hover': '#66A6FF',
-  '--color-icon-secondary': '#9BA3AF',
+  '--color-icon-muted': '#7F8898',
+  '--color-icon-hover': '#7EB1FF',
+  '--color-icon-secondary': '#A7B0BF',
 
   // Sidebar
-  '--color-sidebar': '#0D1117',
+  '--color-sidebar': '#12161E',
   '--color-sidebar-foreground': '#FFFFFF',
   '--color-sidebar-primary': '#FFFFFF',
-  '--color-sidebar-primary-foreground': '#0D1117',
-  '--color-sidebar-accent': 'rgba(255,255,255,0.08)',
+  '--color-sidebar-primary-foreground': '#12161E',
+  '--color-sidebar-accent': 'rgba(255,255,255,0.1)',
   '--color-sidebar-accent-foreground': '#FFFFFF',
-  '--color-sidebar-border': 'rgba(255,255,255,0.05)',
-  '--color-sidebar-ring': '#0068FF',
+  '--color-sidebar-border': 'rgba(255,255,255,0.07)',
+  '--color-sidebar-ring': '#2A7FFF',
 
   // Typography scale (inverted for dark mode)
   '--color-typography-0': '#000000',
