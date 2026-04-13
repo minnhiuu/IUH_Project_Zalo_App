@@ -29,14 +29,10 @@ export function GluestackProvider({ children, mode = 'light', style }: Gluestack
   const themeVars = mode === 'dark' ? darkVars : lightVars
 
   return (
-    <View
-      style={[{ flex: 1 }, themeVars, style]}
-      className={mode === 'dark' ? 'dark' : ''}
-    >
+    <View style={[{ flex: 1 }, themeVars, style]} className={mode === 'dark' ? 'dark' : ''}>
       {children}
     </View>
   )
 }
 
 export default GluestackProvider
-

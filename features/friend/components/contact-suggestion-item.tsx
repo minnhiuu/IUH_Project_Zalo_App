@@ -7,62 +7,63 @@ import { Text } from '@/components/ui/text'
 import { UserAvatar } from '@/components'
 import { BRAND } from '@/constants/theme'
 import { useSemanticColors } from '@/context/theme-context'
-import { useFriendshipStatus } from '@/features/friend/queries'
-import { useCancelFriendRequest } from '@/features/friend/queries'
+import { useFriendshipStatus, useCancelFriendRequest } from '@/features/friend/queries'
 import { FriendStatus } from '@/features/friend/schemas'
+import type { FriendSuggestionResponse } from '@/features/friend/schemas'
 import { useAuthStore } from '@/store'
 
-interface SearchResultItemProps {
-  user: {
-    id: string
-    fullName: string
-    avatar: string | null
-    phoneNumber?: string | null
-  }
+interface ContactSuggestionItemProps {
+  suggestion: FriendSuggestionResponse
   onPress?: (userId: string) => void
 }
 
-export function SearchResultItem({ user: resultUser, onPress }: SearchResultItemProps) {
+export function ContactSuggestionItem({ suggestion, onPress }: ContactSuggestionItemProps) {
   const { t } = useTranslation()
   const router = useRouter()
   const semanticColors = useSemanticColors()
   const currentUser = useAuthStore((s) => s.user)
-  const { data: status, isLoading: statusLoading } = useFriendshipStatus(resultUser.id)
+  const { data: status, isLoading: statusLoading } = useFriendshipStatus(suggestion.userId)
   const cancelRequest = useCancelFriendRequest()
 
-  const isMe = currentUser?.id === resultUser.id
-
-  // Navigate to Add Friend Confirmation screen instead of direct API call
   const handleAddFriend = () => {
     router.push({
       pathname: '/add-friend-confirm/[id]' as any,
       params: {
-        id: resultUser.id,
-        fullName: resultUser.fullName,
-        avatar: resultUser.avatar || ''
+        id: suggestion.userId,
+        fullName: suggestion.fullName,
+        avatar: suggestion.avatar || ''
       }
     })
   }
 
   const handleCancel = () => {
     if (status?.friendshipId) {
-      cancelRequest.mutate({ friendshipId: status.friendshipId, userId: resultUser.id })
+      cancelRequest.mutate({ friendshipId: status.friendshipId, userId: suggestion.userId })
     }
   }
 
-  const isMutating = cancelRequest.isPending
-
   const renderActionButton = () => {
-    if (isMe) return null
     if (statusLoading) {
       return <ActivityIndicator size='small' color={BRAND.blue} />
     }
 
     if (status?.areFriends) {
-      return null
+      return (
+        <View
+          style={{
+            paddingVertical: 6,
+            paddingHorizontal: 12,
+            borderRadius: 16,
+            backgroundColor: semanticColors.secondary
+          }}
+        >
+          <Text style={{ fontSize: 12, color: semanticColors.textSecondary }}>
+            {t('friend.status.accepted')}
+          </Text>
+        </View>
+      )
     }
 
-    // Check if I sent a pending request
     const isPending = status?.status === FriendStatus.PENDING
     const iSentRequest = status?.requestedBy === currentUser?.id
 
@@ -70,38 +71,28 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
       return (
         <TouchableOpacity
           onPress={handleCancel}
-          disabled={isMutating}
+          disabled={cancelRequest.isPending}
           activeOpacity={0.7}
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
             paddingVertical: 8,
             paddingHorizontal: 14,
             borderRadius: 18,
-            backgroundColor: semanticColors.secondary,
-            gap: 4
+            backgroundColor: semanticColors.secondary
           }}
         >
-          {isMutating ? (
+          {cancelRequest.isPending ? (
             <ActivityIndicator size='small' color={semanticColors.textPrimary} />
           ) : (
-            <>
-              <Ionicons name='close-circle-outline' size={16} color={semanticColors.textPrimary} />
-              <Text style={{ fontSize: 13, fontWeight: '600', color: semanticColors.textPrimary }}>
-                {t('friend.actions.withdraw')}
-              </Text>
-            </>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: semanticColors.textPrimary }}>
+              {t('friend.actions.withdraw')}
+            </Text>
           )}
         </TouchableOpacity>
       )
     }
 
-    // They sent me a request - don't show button
-    if (isPending) {
-      return null
-    }
+    if (isPending) return null
 
-    // Not friends - show "Kết bạn" button (navigates to confirmation screen)
     return (
       <TouchableOpacity
         onPress={handleAddFriend}
@@ -117,14 +108,16 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
         }}
       >
         <Ionicons name='person-add-outline' size={16} color={BRAND.blue} />
-        <Text style={{ fontSize: 13, fontWeight: '600', color: BRAND.blue }}>{t('friend.actions.addFriend')}</Text>
+        <Text style={{ fontSize: 13, fontWeight: '600', color: BRAND.blue }}>
+          {t('friend.actions.addFriend')}
+        </Text>
       </TouchableOpacity>
     )
   }
 
   return (
     <TouchableOpacity
-      onPress={() => onPress?.(resultUser.id)}
+      onPress={() => onPress?.(suggestion.userId)}
       activeOpacity={0.7}
       style={{
         flexDirection: 'row',
@@ -135,14 +128,20 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
         borderBottomColor: semanticColors.border
       }}
     >
-      <UserAvatar source={resultUser.avatar} name={resultUser.fullName} size='lg' className='mr-3' />
+      <UserAvatar source={suggestion.avatar} name={suggestion.fullName} size='lg' className='mr-3' />
       <View style={{ flex: 1 }}>
         <Text style={{ fontSize: 16, fontWeight: '500', color: semanticColors.textPrimary }}>
-          {resultUser.fullName}
+          {suggestion.fullName}
         </Text>
-        {resultUser.phoneNumber && (
-          <Text style={{ fontSize: 13, color: semanticColors.textSecondary, marginTop: 2 }}>
-            {resultUser.phoneNumber}
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 4 }}>
+          <Ionicons name='call-outline' size={12} color={semanticColors.textSecondary} />
+          <Text style={{ fontSize: 13, color: semanticColors.textSecondary }}>
+            {t('friend.contact.fromContacts')}
+          </Text>
+        </View>
+        {(suggestion.mutualFriendsCount ?? 0) > 0 && (
+          <Text style={{ fontSize: 12, color: semanticColors.textSecondary, marginTop: 1 }}>
+            {t('friend.mutualFriends', { count: suggestion.mutualFriendsCount ?? 0 })}
           </Text>
         )}
       </View>

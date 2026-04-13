@@ -31,8 +31,7 @@ export const useUpdateProfile = () => {
     },
     onError: (error: Error) => {
       handleErrorApi({ error })
-      console.log(error);
-
+      console.log(error)
     }
   })
 }
@@ -91,8 +90,7 @@ export const useUpdateBackground = () => {
   const { t } = useTranslation()
 
   return useMutation({
-    mutationFn: ({ formData, y }: { formData: FormData; y?: number }) =>
-      userApi.updateBackground(formData, y),
+    mutationFn: ({ formData, y }: { formData: FormData; y?: number }) => userApi.updateBackground(formData, y),
     onSuccess: () => {
       // Invalidate all user queries to refetch updated data
       queryClient.invalidateQueries({ queryKey: userKeys.all })

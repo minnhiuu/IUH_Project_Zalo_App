@@ -47,7 +47,7 @@ axiosInstance.interceptors.request.use(
     try {
       const storedLang = await secureStorage.getAcceptLanguage()
       config.headers['Accept-Language'] = storedLang ?? i18n.language ?? 'vi'
-      
+
       const deviceId = await secureStorage.getDeviceId()
       if (deviceId) {
         config.headers['X-Device-Id'] = deviceId

@@ -304,10 +304,7 @@ export default function QrConfirmScreen() {
           gap: 16
         }}
       >
-        <Pressable
-          onPress={() => setIsChecked(!isChecked)}
-          style={{ flexDirection: 'row' }}
-        >
+        <Pressable onPress={() => setIsChecked(!isChecked)} style={{ flexDirection: 'row' }}>
           <View
             style={{
               width: 20,
@@ -330,57 +327,57 @@ export default function QrConfirmScreen() {
           </Text>
         </Pressable>
 
-  <View style={{ gap: 12 }}>
-    <TouchableOpacity
-      onPress={handleStartLoginFlow}
-      disabled={!isChecked}
-      style={{
-        width: '100%',
-        height: 56,
-        borderRadius: 100,
-        backgroundColor: isChecked ? '#0068FF' : '#E2E8F0', 
-        justifyContent: 'center',
-        alignItems: 'center',
-        opacity: isChecked ? 1 : 0.7 
-      }}
-    >
-      <Text 
-        style={{ 
-          color: isChecked ? '#ffffff' : '#94A3B8', 
-          fontSize: 16,
-          fontWeight: '700' 
-        }}
-      >
-        Đăng nhập
-      </Text>
-    </TouchableOpacity>
+        <View style={{ gap: 12 }}>
+          <TouchableOpacity
+            onPress={handleStartLoginFlow}
+            disabled={!isChecked}
+            style={{
+              width: '100%',
+              height: 56,
+              borderRadius: 100,
+              backgroundColor: isChecked ? '#0068FF' : '#E2E8F0',
+              justifyContent: 'center',
+              alignItems: 'center',
+              opacity: isChecked ? 1 : 0.7
+            }}
+          >
+            <Text
+              style={{
+                color: isChecked ? '#ffffff' : '#94A3B8',
+                fontSize: 16,
+                fontWeight: '700'
+              }}
+            >
+              Đăng nhập
+            </Text>
+          </TouchableOpacity>
 
-    <TouchableOpacity 
-      onPress={handleReject} 
-      style={{
-        width: '100%',
-        height: 56,
-        borderRadius: 100,
-        backgroundColor: '#F1F5F9', 
-        justifyContent: 'center',
-        alignItems: 'center'
-      }}
-    >
-      <Text 
-        style={{ 
-          color: '#0F172A', 
-          fontSize: 16,
-          fontWeight: '700' 
-        }}
-      >
-        Từ chối
-      </Text>
-    </TouchableOpacity>
-  </View>
+          <TouchableOpacity
+            onPress={handleReject}
+            style={{
+              width: '100%',
+              height: 56,
+              borderRadius: 100,
+              backgroundColor: '#F1F5F9',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          >
+            <Text
+              style={{
+                color: '#0F172A',
+                fontSize: 16,
+                fontWeight: '700'
+              }}
+            >
+              Từ chối
+            </Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Confirmation Modal */}
-      <RNModal visible={showCountdown} transparent animationType="fade">
+      <RNModal visible={showCountdown} transparent animationType='fade'>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
           <View
             style={{
@@ -417,7 +414,7 @@ export default function QrConfirmScreen() {
       </RNModal>
 
       {/* Expiration Modal */}
-      <RNModal visible={isExpired} transparent animationType="fade">
+      <RNModal visible={isExpired} transparent animationType='fade'>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' }}>
           <View
             style={{
@@ -461,10 +458,10 @@ export default function QrConfirmScreen() {
             >
               Mã QR đã hết hạn, vui lòng tải lại mã mới trên thiết bị của bạn.
             </Text>
-            <Button 
-              onPress={() => router.back()} 
-              variant="primary" 
-              className="w-full h-12 rounded-xl"
+            <Button
+              onPress={() => router.back()}
+              variant='primary'
+              className='w-full h-12 rounded-xl'
               style={{
                 width: '100%',
                 height: 48,

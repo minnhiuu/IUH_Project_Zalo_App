@@ -51,9 +51,9 @@ const Text = React.forwardRef<RNText, ITextProps>(function Text(
 
   // Parse className for color utilities
   const getClassNameStyle = () => {
-    const classStyles: any = {};
-    if (!className) return classStyles;
-    
+    const classStyles: any = {}
+    if (!className) return classStyles
+
     const colorMap: Record<string, string> = {
       'text-white': '#ffffff',
       'text-black': '#000000',
@@ -62,16 +62,16 @@ const Text = React.forwardRef<RNText, ITextProps>(function Text(
       'text-muted-foreground': '#64748B',
       'text-destructive': '#ef4444',
       'text-primary': '#0068FF'
-    };
+    }
 
-    const classes = className.split(' ');
-    classes.forEach(cls => {
+    const classes = className.split(' ')
+    classes.forEach((cls) => {
       if (colorMap[cls]) {
-        classStyles.color = colorMap[cls];
+        classStyles.color = colorMap[cls]
       }
-    });
-    return classStyles;
-  };
+    })
+    return classStyles
+  }
 
   const textStyle: TextStyle = {
     fontSize: sub ? getFontSize() * 0.75 : getFontSize(),

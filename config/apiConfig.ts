@@ -84,11 +84,11 @@ export const API_ENDPOINTS = {
   MESSAGE: {
     CONVERSATIONS: '/messages/conversations',
     MESSAGES: (conversationId: string) => `/messages/conversations/${conversationId}/messages`,
-    SEND: '/messages/send',
+    SEND: (conversationId: string) => `/messages/conversations/${conversationId}/messages`,
     PARTNER_CONVERSATION: (partnerId: string) => `/messages/conversations/partner/${partnerId}`,
     MARK_READ: (conversationId: string) => `/messages/conversations/${conversationId}/read`,
     REVOKE: (messageId: string) => `/messages/${messageId}/revoke`,
-    DELETE_FOR_ME: (messageId: string) => `/messages/me/${messageId}`,
+    DELETE_FOR_ME: (messageId: string) => `/messages/me/${messageId}`
   },
   NOTIFICATION: {
     LIST: '/notifications',
@@ -109,8 +109,14 @@ export const API_ENDPOINTS = {
     UNFRIEND: (friendId: string) => `/friendships/friends/${friendId}`, // DELETE
     // Status & mutual
     CHECK_STATUS: (userId: string) => `/friendships/status/${userId}`, // GET
+    BATCH_STATUS: '/friendships/batch-status', // POST
     MUTUAL_FRIENDS: (userId: string) => `/friendships/mutual/${userId}`, // GET
-    MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count` // GET
+    MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count`, // GET
+    SUGGESTIONS: '/friendships/suggestions', // GET
+    GRAPH_SUGGESTIONS: '/friendships/suggestions/graph', // GET
+    CONTACT_SUGGESTIONS: '/friendships/suggestions/contacts', // GET
+    // Contact import
+    IMPORT_CONTACTS: '/contacts/import' // POST
   },
   SETTINGS: {
     ME: '/users/settings/me', // GET - UserSettingResponse (all sections)

@@ -1,12 +1,5 @@
 import React from 'react'
-import {
-  View,
-  FlatList,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert,
-  Image
-} from 'react-native'
+import { View, FlatList, TouchableOpacity, ActivityIndicator, Alert, Image } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
 import { SEMANTIC } from '@/constants/theme'
@@ -82,10 +75,7 @@ function BlockedUserItem({ user, onUnblock, isPending }: BlockedUserItemProps) {
     >
       {/* Avatar */}
       {user.avatar ? (
-        <Image
-          source={{ uri: user.avatar }}
-          style={{ width: 48, height: 48, borderRadius: 24 }}
-        />
+        <Image source={{ uri: user.avatar }} style={{ width: 48, height: 48, borderRadius: 24 }} />
       ) : (
         <View
           style={{
@@ -103,16 +93,11 @@ function BlockedUserItem({ user, onUnblock, isPending }: BlockedUserItemProps) {
 
       {/* Info */}
       <View style={{ flex: 1, minWidth: 0 }}>
-        <Text
-          numberOfLines={1}
-          style={{ fontWeight: '600', fontSize: 15 }}
-        >
+        <Text numberOfLines={1} style={{ fontWeight: '600', fontSize: 15 }}>
           {user.fullName}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
-          <Text style={{ fontSize: 12, color: '#64748B' }}>
-            Đã chặn: {formatDate(user.blockedAt)}
-          </Text>
+          <Text style={{ fontSize: 12, color: '#64748B' }}>Đã chặn: {formatDate(user.blockedAt)}</Text>
           {icons.length > 0 && (
             <>
               <Text style={{ color: '#CBD5E1', fontSize: 12 }}>•</Text>
@@ -153,23 +138,21 @@ export function BlockedUsersSection() {
   const unblockMutation = useUnblockUser()
 
   const handleUnblock = (user: BlockedUserDetailResponse) => {
-    Alert.alert(
-      'Bỏ chặn',
-      `Bạn có chắc muốn bỏ chặn ${user.fullName}?`,
-      [
-        { text: 'Hủy', style: 'cancel' },
-        {
-          text: 'Bỏ chặn',
-          onPress: () => unblockMutation.mutate(user.blockedUserId)
-        }
-      ]
-    )
+    Alert.alert('Bỏ chặn', `Bạn có chắc muốn bỏ chặn ${user.fullName}?`, [
+      { text: 'Hủy', style: 'cancel' },
+      {
+        text: 'Bỏ chặn',
+        onPress: () => unblockMutation.mutate(user.blockedUserId)
+      }
+    ])
   }
 
   if (isLoading) {
     return (
       <View style={{ padding: 16 }}>
-        {[1, 2, 3].map((i) => <SkeletonItem key={i} />)}
+        {[1, 2, 3].map((i) => (
+          <SkeletonItem key={i} />
+        ))}
       </View>
     )
   }
@@ -181,7 +164,14 @@ export function BlockedUsersSection() {
         <Text style={{ color: '#64748B', marginTop: 12, fontSize: 15 }}>Không thể tải danh sách</Text>
         <TouchableOpacity
           onPress={() => refetch()}
-          style={{ marginTop: 12, paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8, borderWidth: 1, borderColor: '#CBD5E1' }}
+          style={{
+            marginTop: 12,
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: '#CBD5E1'
+          }}
         >
           <Text style={{ fontSize: 13, color: '#374151' }}>Thử lại</Text>
         </TouchableOpacity>
@@ -194,7 +184,6 @@ export function BlockedUsersSection() {
       <View style={{ alignItems: 'center', paddingVertical: 48 }}>
         <Ionicons name='ban-outline' size={48} color='#CBD5E1' />
         <Text style={{ color: '#64748B', marginTop: 12, fontSize: 15 }}>Bạn chưa chặn ai</Text>
-
       </View>
     )
   }
@@ -208,11 +197,7 @@ export function BlockedUsersSection() {
       onRefresh={() => refetch()}
       refreshing={isLoading}
       renderItem={({ item }) => (
-        <BlockedUserItem
-          user={item}
-          onUnblock={handleUnblock}
-          isPending={unblockMutation.isPending}
-        />
+        <BlockedUserItem user={item} onUnblock={handleUnblock} isPending={unblockMutation.isPending} />
       )}
     />
   )

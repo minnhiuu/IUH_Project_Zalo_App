@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
 
 import { Text } from '@/components/ui/text'
-import { useMyFriends, useReceivedFriendRequests } from '@/features/friend/queries'
+import { useMyFriends, useReceivedFriendRequests, useContactSuggestions } from '@/features/friend/queries'
 import { FriendListItem } from '@/features/friend/components'
 import type { FriendResponse } from '@/features/friend/schemas'
 import { SEMANTIC, BRAND } from '@/constants/theme'
@@ -37,6 +37,7 @@ export default function ContactsScreen() {
   // Fetch real data from API
   const { data: friends = [], isLoading: friendsLoading } = useMyFriends()
   const { data: receivedRequests = [] } = useReceivedFriendRequests()
+  const { data: contactSuggestions = [] } = useContactSuggestions(0, 5, true)
 
   const sectionListRef = useRef<SectionList>(null)
   const sections = useMemo(() => groupByLetter(friends), [friends])
@@ -51,7 +52,7 @@ export default function ContactsScreen() {
           sectionIndex,
           itemIndex: 0,
           animated: true,
-          viewOffset: 0,
+          viewOffset: 0
         })
       }
     },
@@ -190,6 +191,55 @@ export default function ContactsScreen() {
             <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>{t('contacts.birthday')}</Text>
           </View>
         </TouchableOpacity>
+
+        {/* Find friends from contacts */}
+        <TouchableOpacity
+          onPress={() => router.push('/find-friends-contacts' as any)}
+          activeOpacity={0.7}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 16,
+            paddingVertical: 14,
+            borderBottomWidth: 6,
+            borderBottomColor: colors.divider
+          }}
+        >
+          <View
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: 24,
+              backgroundColor: '#E8F5E9',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: 12
+            }}
+          >
+            <Ionicons name='phone-portrait-outline' size={22} color='#4CAF50' />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>
+              {t('friend.contact.findFromContacts')}
+            </Text>
+
+          </View>
+          {contactSuggestions.length > 0 && (
+            <View
+              style={{
+                backgroundColor: '#FF3B30',
+                borderRadius: 10,
+                minWidth: 20,
+                height: 20,
+                alignItems: 'center',
+                justifyContent: 'center',
+                paddingHorizontal: 6
+              }}
+            >
+              <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>{contactSuggestions.length}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
       </View>
 
       {/* Filters */}
@@ -280,7 +330,7 @@ export default function ContactsScreen() {
                       fontSize: 10,
                       fontWeight: hasSection ? '700' : '500',
                       color: hasSection ? colors.tint : colors.textSecondary,
-                      textAlign: 'center',
+                      textAlign: 'center'
                     }}
                   >
                     {letter}

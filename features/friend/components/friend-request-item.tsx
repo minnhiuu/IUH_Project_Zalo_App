@@ -79,12 +79,7 @@ export function FriendRequestItem({
 
   // Auto-action effect: only trigger once when request is PENDING and autoAction is set
   useEffect(() => {
-    if (
-      request.status === FriendStatus.PENDING &&
-      !isLoading &&
-      autoAction &&
-      !hasProcessedAutoAction.current
-    ) {
+    if (request.status === FriendStatus.PENDING && !isLoading && autoAction && !hasProcessedAutoAction.current) {
       hasProcessedAutoAction.current = true
       if (autoAction === 'accept') {
         handleAccept()
@@ -98,7 +93,7 @@ export function FriendRequestItem({
     if (isLoading) {
       return (
         <View style={{ marginTop: 12, alignItems: 'center', paddingVertical: 10 }}>
-          <ActivityIndicator size="small" color={BRAND.blue} />
+          <ActivityIndicator size='small' color={BRAND.blue} />
         </View>
       )
     }
@@ -115,7 +110,7 @@ export function FriendRequestItem({
               paddingVertical: 10,
               borderRadius: 20,
               backgroundColor: semanticColors.secondary,
-              alignItems: 'center',
+              alignItems: 'center'
             }}
           >
             <Text style={{ fontSize: 14, fontWeight: '600', color: semanticColors.secondaryForeground }}>
@@ -131,12 +126,10 @@ export function FriendRequestItem({
               paddingVertical: 10,
               borderRadius: 20,
               backgroundColor: BRAND.blueLight,
-              alignItems: 'center',
+              alignItems: 'center'
             }}
           >
-            <Text style={{ fontSize: 14, fontWeight: '600', color: BRAND.blue }}>
-              {t('friend.actions.accept')}
-            </Text>
+            <Text style={{ fontSize: 14, fontWeight: '600', color: BRAND.blue }}>{t('friend.actions.accept')}</Text>
           </TouchableOpacity>
         </View>
       )
@@ -159,10 +152,10 @@ export function FriendRequestItem({
               borderRadius: 20,
               backgroundColor: semanticColors.secondary,
               alignSelf: 'flex-start',
-              gap: 6,
+              gap: 6
             }}
           >
-            <Ionicons name="eye-off-outline" size={16} color={textSecondary} />
+            <Ionicons name='eye-off-outline' size={16} color={textSecondary} />
             <Text style={{ fontSize: 13, fontWeight: '500', color: textSecondary }}>
               {t('friend.actions.blockActivity')}
             </Text>
@@ -188,10 +181,10 @@ export function FriendRequestItem({
               borderRadius: 20,
               backgroundColor: semanticColors.secondary,
               alignSelf: 'flex-start',
-              gap: 6,
+              gap: 6
             }}
           >
-            <Ionicons name="time-outline" size={16} color={semanticColors.error} />
+            <Ionicons name='time-outline' size={16} color={semanticColors.error} />
             <Text style={{ fontSize: 13, fontWeight: '500', color: semanticColors.error }}>
               {t('friend.actions.block24h')}
             </Text>
@@ -204,9 +197,7 @@ export function FriendRequestItem({
     if (request.status === FriendStatus.CANCELLED) {
       return (
         <View style={{ marginTop: 12 }}>
-          <Text style={{ fontSize: 14, color: textSecondary, fontWeight: '500' }}>
-            {t('friend.actions.cancelled')}
-          </Text>
+          <Text style={{ fontSize: 14, color: textSecondary, fontWeight: '500' }}>{t('friend.actions.cancelled')}</Text>
         </View>
       )
     }
@@ -220,17 +211,12 @@ export function FriendRequestItem({
         paddingHorizontal: 16,
         paddingVertical: 12,
         backgroundColor: backgroundColor,
-        flexDirection: type === 'sent' ? 'row' : 'column',
+        flexDirection: type === 'sent' ? 'row' : 'column'
       }}
     >
       <View style={{ flexDirection: 'row', alignItems: 'flex-start', flex: 1 }}>
         {/* Avatar */}
-        <UserAvatar
-          source={displayAvatar}
-          name={displayName}
-          size="lg"
-          className="mr-3"
-        />
+        <UserAvatar source={displayAvatar} name={displayName} size='lg' className='mr-3' />
 
         {/* Content */}
         <View style={{ flex: 1 }}>
@@ -252,7 +238,7 @@ export function FriendRequestItem({
                 borderColor: borderColor,
                 paddingHorizontal: 16,
                 paddingVertical: 10,
-                marginTop: 10,
+                marginTop: 10
               }}
             >
               <Text style={{ fontSize: 15, color: textColor, lineHeight: 22 }}>{request.message}</Text>
@@ -275,7 +261,7 @@ export function FriendRequestItem({
             borderRadius: 16,
             backgroundColor: semanticColors.secondary,
             alignSelf: 'center',
-            marginLeft: 8,
+            marginLeft: 8
           }}
         >
           <Text style={{ fontSize: 13, fontWeight: '600', color: semanticColors.secondaryForeground }}>

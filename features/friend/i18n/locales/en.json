@@ -98,6 +98,20 @@
     "notification": {
       "accepted": "Friend request accepted",
       "declined": "Friend request declined"
+    },
+    "contact": {
+      "title": "Find friends from contacts",
+      "findFromContacts": "Friends from contacts",
+      "fromContacts": "From your contacts",
+      "syncing": "Syncing contacts...",
+      "syncNow": "Sync contacts",
+      "syncResult": "Found {{matched}} users from {{total}} contacts",
+      "permissionTitle": "Contact access required",
+      "permissionDenied": "Allow access to your contacts to find friends who are already on BondHub",
+      "grantPermission": "Allow access",
+      "emptyTitle": "No contacts found",
+      "noSuggestions": "No friends found from your contacts yet. Sync your contacts to find people you know.",
+      "listHeader": "{{count}} people from your contacts"
     }
   }
 }

@@ -59,19 +59,15 @@ export default function AddFriendScanScreen() {
     if (!userId) {
       scanningLockedRef.current = true
       setScanned(true)
-      Alert.alert(
-        t('common.error'),
-        t('friend.addFriend.invalidQr'),
-        [
-          {
-            text: 'OK',
-            onPress: () => {
-              scanningLockedRef.current = false
-              setScanned(false)
-            },
-          },
-        ]
-      )
+      Alert.alert(t('common.error'), t('friend.addFriend.invalidQr'), [
+        {
+          text: 'OK',
+          onPress: () => {
+            scanningLockedRef.current = false
+            setScanned(false)
+          }
+        }
+      ])
       return
     }
 
@@ -92,7 +88,7 @@ export default function AddFriendScanScreen() {
           backgroundColor: '#000',
           justifyContent: 'center',
           alignItems: 'center',
-          paddingHorizontal: 24,
+          paddingHorizontal: 24
         }}
       >
         <Text style={{ color: '#fff', fontSize: 16, textAlign: 'center', lineHeight: 24, marginBottom: 24 }}>
@@ -104,12 +100,10 @@ export default function AddFriendScanScreen() {
             backgroundColor: '#0068FF',
             borderRadius: 999,
             paddingHorizontal: 24,
-            paddingVertical: 12,
+            paddingVertical: 12
           }}
         >
-          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>
-            {t('friend.addFriend.grantCamera')}
-          </Text>
+          <Text style={{ color: '#fff', fontWeight: '700', fontSize: 15 }}>{t('friend.addFriend.grantCamera')}</Text>
         </TouchableOpacity>
       </View>
     )
@@ -129,9 +123,7 @@ export default function AddFriendScanScreen() {
           <TouchableOpacity onPress={() => router.back()} style={{ padding: 8, marginRight: 8 }}>
             <Ionicons name='close' size={30} color='#fff' />
           </TouchableOpacity>
-          <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>
-            {t('friend.addFriend.scanQR')}
-          </Text>
+          <Text style={{ color: '#fff', fontSize: 18, fontWeight: '700' }}>{t('friend.addFriend.scanQR')}</Text>
         </View>
 
         <View style={{ alignItems: 'center' }}>
@@ -150,7 +142,7 @@ export default function AddFriendScanScreen() {
               backgroundColor: 'rgba(0,0,0,0.45)',
               paddingHorizontal: 16,
               paddingVertical: 10,
-              borderRadius: 999,
+              borderRadius: 999
             }}
           >
             {t('friend.addFriend.scanHint')}
@@ -166,10 +158,14 @@ export default function AddFriendScanScreen() {
               borderRadius: 28,
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: torchEnabled ? '#FACC15' : 'rgba(255,255,255,0.14)',
+              backgroundColor: torchEnabled ? '#FACC15' : 'rgba(255,255,255,0.14)'
             }}
           >
-            <Ionicons name={torchEnabled ? 'flashlight' : 'flashlight-outline'} size={24} color={torchEnabled ? '#111' : '#fff'} />
+            <Ionicons
+              name={torchEnabled ? 'flashlight' : 'flashlight-outline'}
+              size={24}
+              color={torchEnabled ? '#111' : '#fff'}
+            />
           </TouchableOpacity>
           <Text style={{ color: '#fff', marginTop: 8, fontSize: 12 }}>
             {torchEnabled ? t('friend.addFriend.flashOff') : t('friend.addFriend.flashOn')}
@@ -190,7 +186,7 @@ const cornerStyles = StyleSheet.create({
     borderTopWidth: 4,
     borderLeftWidth: 4,
     borderColor: '#0068FF',
-    borderTopLeftRadius: 14,
+    borderTopLeftRadius: 14
   },
   topRight: {
     position: 'absolute',
@@ -201,7 +197,7 @@ const cornerStyles = StyleSheet.create({
     borderTopWidth: 4,
     borderRightWidth: 4,
     borderColor: '#0068FF',
-    borderTopRightRadius: 14,
+    borderTopRightRadius: 14
   },
   bottomLeft: {
     position: 'absolute',
@@ -212,7 +208,7 @@ const cornerStyles = StyleSheet.create({
     borderBottomWidth: 4,
     borderLeftWidth: 4,
     borderColor: '#0068FF',
-    borderBottomLeftRadius: 14,
+    borderBottomLeftRadius: 14
   },
   bottomRight: {
     position: 'absolute',
@@ -223,6 +219,6 @@ const cornerStyles = StyleSheet.create({
     borderBottomWidth: 4,
     borderRightWidth: 4,
     borderColor: '#0068FF',
-    borderBottomRightRadius: 14,
-  },
+    borderBottomRightRadius: 14
+  }
 })

@@ -46,7 +46,7 @@ export default function MessagesScreen() {
         <ConversationListSkeleton />
       ) : conversations.length === 0 ? (
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32 }}>
-          <Ionicons name="chatbubbles-outline" size={64} color={colors.iconMuted} />
+          <Ionicons name='chatbubbles-outline' size={64} color={colors.iconMuted} />
           <Text style={{ fontSize: 16, color: colors.textSecondary, marginTop: 16, textAlign: 'center' }}>
             {t('message.empty.conversations')}
           </Text>
@@ -67,8 +67,8 @@ export default function MessagesScreen() {
                     conversationId: item.id,
                     userId: partnerMember?.userId || '',
                     name: item.name || '',
-                    avatar: item.avatar || '',
-                  },
+                    avatar: item.avatar || ''
+                  }
                 })
               }}
             />

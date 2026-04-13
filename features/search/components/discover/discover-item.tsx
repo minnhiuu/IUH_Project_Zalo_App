@@ -6,10 +6,7 @@ import { useRouter } from 'expo-router'
 import { SearchResultItem } from '@/features/search/components/core/search-result-item'
 import { useTheme } from '@/context/theme-context'
 import { useFriendshipStatus } from '@/features/friend/queries'
-import {
-  useCancelFriendRequest,
-  useAcceptFriendRequest,
-} from '@/features/friend/queries/use-mutations'
+import { useCancelFriendRequest, useAcceptFriendRequest } from '@/features/friend/queries/use-mutations'
 import { FriendStatus } from '@/features/friend/schemas'
 import { useAuthStore } from '@/store'
 
@@ -39,8 +36,8 @@ export function DiscoverItem({ item, searchQuery, onPress }: DiscoverItemProps) 
       params: {
         id: item.id,
         fullName: item.fullName,
-        avatar: item.avatar || '',
-      },
+        avatar: item.avatar || ''
+      }
     })
   }
 
@@ -64,10 +61,10 @@ export function DiscoverItem({ item, searchQuery, onPress }: DiscoverItemProps) 
     if (statusLoading) {
       return (
         <TouchableOpacity
-          className="bg-gray-200 px-4 py-1.5 rounded-full items-center justify-center min-w-[80px]"
+          className='bg-gray-200 px-4 py-1.5 rounded-full items-center justify-center min-w-[80px]'
           disabled
         >
-          <ActivityIndicator size="small" color="#0068FF" />
+          <ActivityIndicator size='small' color='#0068FF' />
         </TouchableOpacity>
       )
     }
@@ -89,7 +86,7 @@ export function DiscoverItem({ item, searchQuery, onPress }: DiscoverItemProps) 
           disabled={isMutating}
         >
           {isMutating ? (
-            <ActivityIndicator size="small" color="#374151" />
+            <ActivityIndicator size='small' color='#374151' />
           ) : (
             <Text className={`${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium text-xs`}>
               {t('friend.actions.withdraw')}
@@ -103,16 +100,14 @@ export function DiscoverItem({ item, searchQuery, onPress }: DiscoverItemProps) 
     if (isPending) {
       return (
         <TouchableOpacity
-          className="bg-primary px-4 py-1.5 rounded-full items-center justify-center min-w-[80px]"
+          className='bg-primary px-4 py-1.5 rounded-full items-center justify-center min-w-[80px]'
           onPress={handleAccept}
           disabled={isMutating}
         >
           {isMutating ? (
-            <ActivityIndicator size="small" color="#fff" />
+            <ActivityIndicator size='small' color='#fff' />
           ) : (
-            <Text className="text-white font-medium text-xs">
-              {t('friend.actions.accept')}
-            </Text>
+            <Text className='text-white font-medium text-xs'>{t('friend.actions.accept')}</Text>
           )}
         </TouchableOpacity>
       )
@@ -124,19 +119,10 @@ export function DiscoverItem({ item, searchQuery, onPress }: DiscoverItemProps) 
         className={`${isDark ? 'bg-primary/20' : 'bg-primary-50'} px-4 py-1.5 rounded-full items-center justify-center min-w-[80px]`}
         onPress={handleAddFriend}
       >
-        <Text className="text-primary font-medium text-xs">
-          {t('friend.actions.addFriend')}
-        </Text>
+        <Text className='text-primary font-medium text-xs'>{t('friend.actions.addFriend')}</Text>
       </TouchableOpacity>
     )
   }
 
-  return (
-    <SearchResultItem
-      item={item}
-      searchQuery={searchQuery}
-      onPress={onPress}
-      action={renderActionButton()}
-    />
-  )
+  return <SearchResultItem item={item} searchQuery={searchQuery} onPress={onPress} action={renderActionButton()} />
 }

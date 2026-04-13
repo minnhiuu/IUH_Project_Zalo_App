@@ -205,14 +205,14 @@ zalo-app-mobile/
 
 ### 🔥 Files quan trọng cần hiểu
 
-| File | Mô tả | Điểm chính |
-|------|-------|------------|
-| **`lib/http.ts`** | Axios instance & interceptors | Request/response interceptor, auto refresh token |
-| **`store/authStore.ts`** | Zustand auth state | User info, tokens, persist config |
-| **`config/apiConfig.ts`** | API endpoints | BASE_URL theo môi trường |
-| **`app/_layout.tsx`** | Root layout | Setup providers (QueryClient, i18n, auth) |
-| **`features/auth/hooks/use-auth.ts`** | Auth hook | Login/logout logic, token management |
-| **`.env`** | Environment variables | API URL, Socket URL |
+| File                                  | Mô tả                         | Điểm chính                                       |
+| ------------------------------------- | ----------------------------- | ------------------------------------------------ |
+| **`lib/http.ts`**                     | Axios instance & interceptors | Request/response interceptor, auto refresh token |
+| **`store/authStore.ts`**              | Zustand auth state            | User info, tokens, persist config                |
+| **`config/apiConfig.ts`**             | API endpoints                 | BASE_URL theo môi trường                         |
+| **`app/_layout.tsx`**                 | Root layout                   | Setup providers (QueryClient, i18n, auth)        |
+| **`features/auth/hooks/use-auth.ts`** | Auth hook                     | Login/logout logic, token management             |
+| **`.env`**                            | Environment variables         | API URL, Socket URL                              |
 
 ---
 
@@ -228,6 +228,7 @@ EXPO_PUBLIC_ENV=development
 ```
 
 **Lưu ý:**
+
 - Thay `192.168.1.19` bằng IP máy tính của bạn
 - Android Emulator: dùng `http://10.0.2.2:8080`
 - iOS Simulator: dùng `http://localhost:8080`
@@ -253,18 +254,18 @@ const API_CONFIG: Record<Environment, ApiConfigType> = {
   development: {
     apiUrl: process.env.EXPO_PUBLIC_API_URL || 'http://10.0.2.2:8080/api',
     socketUrl: process.env.EXPO_PUBLIC_SOCKET_URL || 'http://10.0.2.2:8080',
-    timeout: 30000, // 30s
+    timeout: 30000 // 30s
   },
   staging: {
     apiUrl: 'https://staging-api.bondhub.com/api',
     socketUrl: 'https://staging-api.bondhub.com',
-    timeout: 30000,
+    timeout: 30000
   },
   production: {
     apiUrl: 'https://api.bondhub.com/api',
     socketUrl: 'https://api.bondhub.com',
-    timeout: 30000,
-  },
+    timeout: 30000
+  }
 }
 
 export const currentConfig = API_CONFIG[ENV]
@@ -279,32 +280,32 @@ export const API_ENDPOINTS = {
     LOGOUT: '/auth/logout',
     FORGOT_PASSWORD: '/auth/forgot-password',
     RESET_PASSWORD: '/auth/reset-password',
-    VERIFY_OTP: '/auth/verify-otp',
+    VERIFY_OTP: '/auth/verify-otp'
   },
   USER: {
     PROFILE: '/user/profile',
     UPDATE_PROFILE: '/user/profile',
     SEARCH: '/user/search',
     UPDATE_AVATAR: '/user/avatar',
-    CHANGE_PASSWORD: '/user/change-password',
+    CHANGE_PASSWORD: '/user/change-password'
   },
   MESSAGE: {
     CONVERSATIONS: '/message/conversations',
     SEND: '/message/send',
-    MESSAGES: '/message/:conversationId',
+    MESSAGES: '/message/:conversationId'
   },
   FRIEND: {
     LIST: '/friend/list',
     REQUESTS: '/friend/requests',
     SEND_REQUEST: '/friend/request',
     ACCEPT_REQUEST: '/friend/accept',
-    REJECT_REQUEST: '/friend/reject',
+    REJECT_REQUEST: '/friend/reject'
   },
   NOTIFICATION: {
     LIST: '/notification/list',
     READ: '/notification/:id/read',
-    READ_ALL: '/notification/read-all',
-  },
+    READ_ALL: '/notification/read-all'
+  }
 }
 ```
 
@@ -321,19 +322,19 @@ export const http = axios.create({
   baseURL: currentConfig.apiUrl,
   timeout: currentConfig.timeout,
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 })
 
 // 🔥 Request Interceptor - Attach token
 http.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     const { accessToken } = useAuthStore.getState()
-    
+
     if (accessToken && config.headers) {
       config.headers.Authorization = `Bearer ${accessToken}`
     }
-    
+
     return config
   },
   (error) => Promise.reject(error)
@@ -427,7 +428,7 @@ interface AuthState {
   accessToken: string | null
   refreshToken: string | null
   isAuthenticated: boolean
-  
+
   // Actions
   setUser: (user: User) => void
   setTokens: (accessToken: string, refreshToken: string) => void
@@ -469,7 +470,7 @@ export const useAuthStore = create<AuthState>()(
           user: null,
           accessToken: null,
           refreshToken: null,
-          isAuthenticated: false,
+          isAuthenticated: false
         })
       },
 
@@ -478,7 +479,7 @@ export const useAuthStore = create<AuthState>()(
         if (currentUser) {
           set({ user: { ...currentUser, ...updates } })
         }
-      },
+      }
     }),
     {
       name: 'auth-storage',
@@ -486,8 +487,8 @@ export const useAuthStore = create<AuthState>()(
       // ⚠️ Không lưu tokens vào AsyncStorage (dùng SecureStore)
       partialize: (state) => ({
         user: state.user,
-        isAuthenticated: state.isAuthenticated,
-      }),
+        isAuthenticated: state.isAuthenticated
+      })
     }
   )
 )
@@ -504,12 +505,12 @@ export const queryClient = new QueryClient({
       retry: 2,
       refetchOnWindowFocus: false,
       staleTime: 5 * 60 * 1000, // 5 minutes
-      gcTime: 10 * 60 * 1000,    // 10 minutes
+      gcTime: 10 * 60 * 1000 // 10 minutes
     },
     mutations: {
-      retry: 1,
-    },
-  },
+      retry: 1
+    }
+  }
 })
 ```
 
@@ -1004,6 +1005,7 @@ src/
 ```
 
 **Ưu điểm:**
+
 - Dễ scale khi thêm tính năng mới
 - Code liên quan gom lại 1 chỗ
 - Dễ refactor/xóa feature
@@ -1028,6 +1030,7 @@ src/
 ```
 
 **Nguyên tắc:**
+
 - **Local State**: UI state (modal open/close, form inputs)
 - **Zustand**: Global app state (auth, theme, settings)
 - **React Query**: Server data (API responses, caching)
@@ -1079,7 +1082,7 @@ import { z } from 'zod'
 
 export const loginSchema = z.object({
   phoneNumber: z.string().min(10).max(11),
-  password: z.string().min(6),
+  password: z.string().min(6)
 })
 
 // Component sử dụng

@@ -68,9 +68,7 @@ export default function ProfileScreen() {
               <ActivityIndicator size='large' color='#0068FF' />
             </Box>
           ) : (
-            <Pressable 
-              onPress={() => user?.id && router.push(`/user-profile/${user.id}` as any)}
-            >
+            <Pressable onPress={() => user?.id && router.push(`/user-profile/${user.id}` as any)}>
               <HStack style={{ alignItems: 'center' }} space='md'>
                 <Box style={{ position: 'relative' }}>
                   <Avatar size='xl'>

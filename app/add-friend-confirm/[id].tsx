@@ -7,7 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator,
+  ActivityIndicator
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
@@ -35,7 +35,7 @@ export default function AddFriendConfirmScreen() {
   const { colors } = useTheme()
 
   const defaultMessage = t('friend.addFriend.defaultMessage', {
-    name: currentUser?.fullName || '',
+    name: currentUser?.fullName || ''
   })
 
   const [message, setMessage] = useState(defaultMessage)
@@ -48,7 +48,7 @@ export default function AddFriendConfirmScreen() {
       {
         onSuccess: () => {
           router.back()
-        },
+        }
       }
     )
   }
@@ -59,18 +59,10 @@ export default function AddFriendConfirmScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
-      <Header
-        title={t('friend.addFriend.title')}
-        showBackButton
-        onBackPress={() => router.back()}
-        showSearch={false}
-      />
+      <Header title={t('friend.addFriend.title')} showBackButton onBackPress={() => router.back()} showSearch={false} />
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="handled">
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps='handled'>
           {/* User Info */}
           <View
             style={{
@@ -80,21 +72,14 @@ export default function AddFriendConfirmScreen() {
               paddingVertical: 16,
               borderBottomWidth: 1,
               borderBottomColor: colors.border,
-              backgroundColor: colors.background,
+              backgroundColor: colors.background
             }}
           >
-            <UserAvatar
-              source={avatar}
-              name={fullName}
-              size="xl"
-              className="mr-4"
-            />
+            <UserAvatar source={avatar} name={fullName} size='xl' className='mr-4' />
             <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
-              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text }}>
-                {fullName}
-              </Text>
+              <Text style={{ fontSize: 18, fontWeight: '700', color: colors.text }}>{fullName}</Text>
               <TouchableOpacity style={{ marginLeft: 8, padding: 4 }}>
-                <Ionicons name="pencil" size={16} color={colors.textSecondary} />
+                <Ionicons name='pencil' size={16} color={colors.textSecondary} />
               </TouchableOpacity>
             </View>
           </View>
@@ -106,7 +91,7 @@ export default function AddFriendConfirmScreen() {
               paddingVertical: 16,
               borderBottomWidth: 8,
               borderBottomColor: colors.backgroundSecondary,
-              backgroundColor: colors.background,
+              backgroundColor: colors.background
             }}
           >
             <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
@@ -126,15 +111,12 @@ export default function AddFriendConfirmScreen() {
                   color: colors.text,
                   minHeight: 60,
                   lineHeight: 24,
-                  textAlignVertical: 'top',
+                  textAlignVertical: 'top'
                 }}
               />
               {message.length > 0 && (
-                <TouchableOpacity
-                  onPress={handleClearMessage}
-                  style={{ padding: 4, marginLeft: 8 }}
-                >
-                  <Ionicons name="close" size={20} color={colors.textSecondary} />
+                <TouchableOpacity onPress={handleClearMessage} style={{ padding: 4, marginLeft: 8 }}>
+                  <Ionicons name='close' size={20} color={colors.textSecondary} />
                 </TouchableOpacity>
               )}
             </View>
@@ -143,7 +125,7 @@ export default function AddFriendConfirmScreen() {
                 fontSize: 13,
                 color: colors.textSecondary,
                 textAlign: 'right',
-                marginTop: 8,
+                marginTop: 8
               }}
             >
               {message.length}/{MAX_MESSAGE_LENGTH}
@@ -160,7 +142,7 @@ export default function AddFriendConfirmScreen() {
               paddingVertical: 16,
               borderBottomWidth: 8,
               borderBottomColor: colors.backgroundSecondary,
-              backgroundColor: colors.background,
+              backgroundColor: colors.background
             }}
           >
             <Text style={{ fontSize: 15, color: colors.text, flex: 1, marginRight: 12 }}>
@@ -187,11 +169,11 @@ export default function AddFriendConfirmScreen() {
                 paddingVertical: 14,
                 borderRadius: 24,
                 alignItems: 'center',
-                justifyContent: 'center',
+                justifyContent: 'center'
               }}
             >
               {sendRequest.isPending ? (
-                <ActivityIndicator size="small" color="#fff" />
+                <ActivityIndicator size='small' color='#fff' />
               ) : (
                 <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>
                   {t('friend.addFriend.sendRequest')}

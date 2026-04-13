@@ -10,6 +10,7 @@ import { useMyProfile } from '@/features/users/queries/use-queries'
 import { useDebounce } from '@/hooks/useDebounce'
 import { useTheme } from '@/context/theme-context'
 import { SearchResultItem } from '@/features/friend/components/search-result-item'
+import { useUnifiedSuggestions } from '@/features/friend/queries'
 import { ForwardMessageModal } from '@/features/message/components'
 import { useConversations } from '@/features/message/queries'
 import { useChatWebSocket } from '@/features/message/hooks'
@@ -37,6 +38,7 @@ export default function AddFriendScreen() {
   const debouncedPhone = useDebounce(phoneNumber, 500)
   const shouldSearch = debouncedPhone.length >= 2
   const { data: searchResults, isLoading: searching } = useSearchUsers(debouncedPhone, shouldSearch)
+  const { data: suggestionResults = [], isLoading: suggestionsLoading } = useUnifiedSuggestions(0, 15, !shouldSearch)
 
   const handleSearch = useCallback(() => {
     if (!phoneNumber.trim()) return
@@ -72,7 +74,7 @@ export default function AddFriendScreen() {
       lastModifiedAt: null,
       replyTo: null,
       isForwarded: true,
-      status: MessageStatus.NORMAL,
+      status: MessageStatus.NORMAL
     }
   }, [currentUserId, qrForwardContent, user?.avatar, user?.fullName])
 
@@ -110,7 +112,7 @@ export default function AddFriendScreen() {
         quality: 1,
         result: 'tmpfile',
         width: 1080,
-        height: 1500,
+        height: 1500
       })
       await MediaLibrary.createAssetAsync(imageUri)
       Alert.alert(t('common.success'), t('friend.addFriend.saveSuccess'))
@@ -126,12 +128,7 @@ export default function AddFriendScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
-      <Header
-        title={t('friend.addFriend.title')}
-        showBackButton
-        onBackPress={() => router.back()}
-        showSearch={false}
-      />
+      <Header title={t('friend.addFriend.title')} showBackButton onBackPress={() => router.back()} showSearch={false} />
 
       <ScrollView
         style={{ flex: 1, backgroundColor: qrScreenBg }}
@@ -150,7 +147,7 @@ export default function AddFriendScreen() {
               paddingBottom: 20,
               paddingHorizontal: 18,
               alignItems: 'center',
-              position: 'relative',
+              position: 'relative'
             }}
           >
             <View style={{ position: 'absolute', top: -22, alignItems: 'center' }}>
@@ -162,7 +159,7 @@ export default function AddFriendScreen() {
                   borderWidth: 3,
                   borderColor: '#fff',
                   overflow: 'hidden',
-                  backgroundColor: '#fff',
+                  backgroundColor: '#fff'
                 }}
               >
                 <UserAvatar source={myProfile?.avatar ?? user?.avatar} name={currentUserName || 'User'} size='4xl' />
@@ -184,7 +181,7 @@ export default function AddFriendScreen() {
                 borderRadius: 14,
                 alignItems: 'center',
                 justifyContent: 'center',
-                backgroundColor: '#FFFFFF',
+                backgroundColor: '#FFFFFF'
               }}
             >
               <View
@@ -192,16 +189,10 @@ export default function AddFriendScreen() {
                   backgroundColor: '#fff',
                   padding: 8,
                   borderRadius: 8,
-                  position: 'relative',
+                  position: 'relative'
                 }}
               >
-                <QRCode
-                  value={qrValue}
-                  size={190}
-                  color='#000000'
-                  backgroundColor='#FFFFFF'
-                  ecl='H'
-                />
+                <QRCode value={qrValue} size={190} color='#000000' backgroundColor='#FFFFFF' ecl='H' />
 
                 <View
                   pointerEvents='none'
@@ -217,7 +208,7 @@ export default function AddFriendScreen() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     borderWidth: 2,
-                    borderColor: '#fff',
+                    borderColor: '#fff'
                   }}
                 >
                   <Text style={{ color: '#fff', fontSize: 8.2, fontWeight: '700' }}>BondHub</Text>
@@ -250,7 +241,7 @@ export default function AddFriendScreen() {
                   paddingHorizontal: 12,
                   paddingVertical: 8,
                   borderRadius: 10,
-                  opacity: currentUserId ? 1 : 0.6,
+                  opacity: currentUserId ? 1 : 0.6
                 }}
               >
                 <Ionicons name='share-social-outline' size={16} color='#1F2937' style={{ marginRight: 6 }} />
@@ -270,7 +261,7 @@ export default function AddFriendScreen() {
                   paddingHorizontal: 12,
                   paddingVertical: 8,
                   borderRadius: 10,
-                  opacity: savingQr || !currentUserId ? 0.7 : 1,
+                  opacity: savingQr || !currentUserId ? 0.7 : 1
                 }}
               >
                 {savingQr ? (
@@ -293,164 +284,188 @@ export default function AddFriendScreen() {
             borderTopLeftRadius: 16,
             borderTopRightRadius: 16,
             paddingTop: 4,
-            paddingBottom: 16,
+            paddingBottom: 16
           }}
         >
-
-        {/* Phone Input */}
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginHorizontal: 16,
-            marginVertical: 16,
-            borderWidth: 1,
-            borderColor: colors.border,
-            borderRadius: 8,
-            backgroundColor: colors.background,
-            paddingHorizontal: 12
-          }}
-        >
-          {/* Country Code */}
+          {/* Phone Input */}
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
-              paddingHorizontal: 8,
-              paddingVertical: 10,
-              borderRightWidth: 1,
-              borderRightColor: colors.border,
-              marginRight: 8
+              marginHorizontal: 16,
+              marginVertical: 16,
+              borderWidth: 1,
+              borderColor: colors.border,
+              borderRadius: 8,
+              backgroundColor: colors.background,
+              paddingHorizontal: 12
             }}
           >
-            <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>+84</Text>
-            <Ionicons name='chevron-down' size={16} color={colors.textSecondary} style={{ marginLeft: 4 }} />
-          </View>
-
-          {/* Phone Input */}
-          <TextInput
-            value={phoneNumber}
-            onChangeText={setPhoneNumber}
-            placeholder={t('friend.addFriend.phoneInput')}
-            placeholderTextColor={colors.textSecondary}
-            keyboardType='phone-pad'
-            style={{
-              flex: 1,
-              fontSize: 16,
-              color: colors.text,
-              paddingVertical: 12
-            }}
-          />
-
-          {/* Search Button */}
-          <TouchableOpacity
-            onPress={handleSearch}
-            disabled={!phoneNumber.trim()}
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 22,
-              backgroundColor: phoneNumber.trim() ? colors.tint : colors.backgroundSecondary,
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginLeft: 8
-            }}
-          >
-            <Ionicons name='arrow-forward' size={20} color={phoneNumber.trim() ? '#fff' : colors.textSecondary} />
-          </TouchableOpacity>
-        </View>
-
-        {/* Search Results */}
-        {shouldSearch && (
-          <View style={{ marginTop: 8 }}>
-            {searching ? (
-              <View style={{ padding: 20, alignItems: 'center' }}>
-                <ActivityIndicator size='small' color={colors.tint} />
-                <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 8 }}>{t('friend.addFriend.searching')}</Text>
-              </View>
-            ) : searchResults && searchResults.length > 0 ? (
-              searchResults.map((result) => (
-                <SearchResultItem
-                  key={result.id}
-                  user={result}
-                  onPress={handleUserPress}
-                />
-              ))
-            ) : debouncedPhone.length >= 2 ? (
-              <View style={{ padding: 20, alignItems: 'center' }}>
-                <Text style={{ fontSize: 14, color: colors.textSecondary }}>{t('friend.addFriend.noResult')}</Text>
-              </View>
-            ) : null}
-          </View>
-        )}
-
-        {/* Scan QR Option */}
-        {!shouldSearch && (
-          <>
-            <TouchableOpacity
-              onPress={() => router.push('/add-friend/scan' as any)}
-              activeOpacity={0.7}
+            {/* Country Code */}
+            <View
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                paddingHorizontal: 16,
-                paddingVertical: 16,
-                borderBottomWidth: 0.5,
-                borderBottomColor: colors.border,
-                backgroundColor: colors.background
+                paddingHorizontal: 8,
+                paddingVertical: 10,
+                borderRightWidth: 1,
+                borderRightColor: colors.border,
+                marginRight: 8
               }}
             >
-              <View
-                style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 8,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: 14
-                }}
-              >
-                <Ionicons name='scan-outline' size={28} color={colors.tint} />
-              </View>
-              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>{t('friend.addFriend.scanQR')}</Text>
+              <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>+84</Text>
+              <Ionicons name='chevron-down' size={16} color={colors.textSecondary} style={{ marginLeft: 4 }} />
+            </View>
+
+            {/* Phone Input */}
+            <TextInput
+              value={phoneNumber}
+              onChangeText={setPhoneNumber}
+              placeholder={t('friend.addFriend.phoneInput')}
+              placeholderTextColor={colors.textSecondary}
+              keyboardType='phone-pad'
+              style={{
+                flex: 1,
+                fontSize: 16,
+                color: colors.text,
+                paddingVertical: 12
+              }}
+            />
+
+            {/* Search Button */}
+            <TouchableOpacity
+              onPress={handleSearch}
+              disabled={!phoneNumber.trim()}
+              style={{
+                width: 44,
+                height: 44,
+                borderRadius: 22,
+                backgroundColor: phoneNumber.trim() ? colors.tint : colors.backgroundSecondary,
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginLeft: 8
+              }}
+            >
+              <Ionicons name='arrow-forward' size={20} color={phoneNumber.trim() ? '#fff' : colors.textSecondary} />
             </TouchableOpacity>
+          </View>
 
-            {/* People You May Know */}
-            <TouchableOpacity
-              activeOpacity={0.7}
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                paddingHorizontal: 16,
-                paddingVertical: 16,
-                borderBottomWidth: 0.5,
-                borderBottomColor: colors.border,
-                backgroundColor: colors.background
-              }}
-            >
-              <View
+          {/* Search Results */}
+          {shouldSearch && (
+            <View style={{ marginTop: 8 }}>
+              {searching ? (
+                <View style={{ padding: 20, alignItems: 'center' }}>
+                  <ActivityIndicator size='small' color={colors.tint} />
+                  <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 8 }}>
+                    {t('friend.addFriend.searching')}
+                  </Text>
+                </View>
+              ) : searchResults && searchResults.length > 0 ? (
+                searchResults.map((result) => (
+                  <SearchResultItem key={result.id} user={result} onPress={handleUserPress} />
+                ))
+              ) : debouncedPhone.length >= 2 ? (
+                <View style={{ padding: 20, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 14, color: colors.textSecondary }}>{t('friend.addFriend.noResult')}</Text>
+                </View>
+              ) : null}
+            </View>
+          )}
+
+          {/* Scan QR Option */}
+          {!shouldSearch && (
+            <>
+              <TouchableOpacity
+                onPress={() => router.push('/add-friend/scan' as any)}
+                activeOpacity={0.7}
                 style={{
-                  width: 40,
-                  height: 40,
-                  borderRadius: 8,
+                  flexDirection: 'row',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  marginRight: 14
+                  paddingHorizontal: 16,
+                  paddingVertical: 16,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: colors.border,
+                  backgroundColor: colors.background
                 }}
               >
-                <Ionicons name='people-outline' size={28} color={colors.tint} />
-              </View>
-              <View style={{ flex: 1 }}>
+                <View
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 14
+                  }}
+                >
+                  <Ionicons name='scan-outline' size={28} color={colors.tint} />
+                </View>
                 <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>
-                  {t('friend.addFriend.mayKnow')}
+                  {t('friend.addFriend.scanQR')}
                 </Text>
-                <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 2 }}>
-                  {t('friend.addFriend.mayKnowHint')}
-                </Text>
-              </View>
-            </TouchableOpacity>
-          </>
-        )}
+              </TouchableOpacity>
+                onPress={() => router.push('/friend-requests' as any)}
+                activeOpacity={0.7}
+              {/* People You May Know */}
+              <TouchableOpacity
+                activeOpacity={0.7}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingHorizontal: 16,
+                  paddingVertical: 16,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: colors.border,
+                  backgroundColor: colors.background
+                }}
+              >
+                <View
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 14
+                  }}
+                >
+                  <Ionicons name='people-outline' size={28} color={colors.tint} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>
+                    {t('friend.addFriend.mayKnow')}
+                  </Text>
+                  <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 2 }}>
+                    {t('friend.addFriend.mayKnowHint')}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+
+              {suggestionsLoading ? (
+                <View style={{ paddingVertical: 20, alignItems: 'center' }}>
+                  <ActivityIndicator size='small' color={colors.tint} />
+                  <Text style={{ fontSize: 13, color: colors.textSecondary, marginTop: 8 }}>{t('friend.loading')}</Text>
+                </View>
+              ) : suggestionResults.length > 0 ? (
+                suggestionResults.map((suggestion) => (
+                  <SearchResultItem
+                    key={suggestion.userId}
+                    user={{
+                      id: suggestion.userId,
+                      fullName: suggestion.fullName,
+                      avatar: suggestion.avatar,
+                      phoneNumber: suggestion.phoneNumber
+                    }}
+                    onPress={handleUserPress}
+                  />
+                ))
+              ) : (
+                <View style={{ paddingHorizontal: 16, paddingVertical: 14 }}>
+                  <Text style={{ fontSize: 13, color: colors.textSecondary }}>{t('friend.empty.friends')}</Text>
+                </View>
+              )}
+            </>
+          )}
         </View>
       </ScrollView>
 
@@ -475,7 +490,7 @@ export default function AddFriendScreen() {
           backgroundColor: isDark ? '#233347' : '#4A678A',
           alignItems: 'center',
           justifyContent: 'center',
-          paddingTop: 80,
+          paddingTop: 80
         }}
       >
         <View
@@ -487,7 +502,7 @@ export default function AddFriendScreen() {
             paddingBottom: 52,
             paddingHorizontal: 54,
             alignItems: 'center',
-            position: 'relative',
+            position: 'relative'
           }}
         >
           <View style={{ position: 'absolute', top: -62, alignItems: 'center' }}>
@@ -499,7 +514,7 @@ export default function AddFriendScreen() {
                 borderWidth: 4,
                 borderColor: '#fff',
                 overflow: 'hidden',
-                backgroundColor: '#fff',
+                backgroundColor: '#fff'
               }}
             >
               <UserAvatar source={myProfile?.avatar ?? user?.avatar} name={currentUserName || 'User'} size='4xl' />
@@ -520,7 +535,7 @@ export default function AddFriendScreen() {
               borderRadius: 20,
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: '#FFFFFF',
+              backgroundColor: '#FFFFFF'
             }}
           >
             <View
@@ -528,16 +543,10 @@ export default function AddFriendScreen() {
                 backgroundColor: '#fff',
                 padding: 12,
                 borderRadius: 12,
-                position: 'relative',
+                position: 'relative'
               }}
             >
-              <QRCode
-                value={qrValue}
-                size={520}
-                color='#000000'
-                backgroundColor='#FFFFFF'
-                ecl='H'
-              />
+              <QRCode value={qrValue} size={520} color='#000000' backgroundColor='#FFFFFF' ecl='H' />
 
               <View
                 pointerEvents='none'
@@ -553,7 +562,7 @@ export default function AddFriendScreen() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   borderWidth: 4,
-                  borderColor: '#fff',
+                  borderColor: '#fff'
                 }}
               >
                 <Text style={{ color: '#fff', fontSize: 22, fontWeight: '700' }}>BondHub</Text>
@@ -567,7 +576,7 @@ export default function AddFriendScreen() {
               color: '#6B7280',
               textAlign: 'center',
               marginTop: 34,
-              lineHeight: 42,
+              lineHeight: 42
             }}
           >
             {t('friend.addFriend.qrHint')}

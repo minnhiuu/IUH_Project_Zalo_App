@@ -4,18 +4,18 @@ export enum FriendStatus {
   ACCEPTED = 'ACCEPTED',
   DECLINED = 'DECLINED',
   PENDING = 'PENDING',
-  CANCELLED = 'CANCELLED',
+  CANCELLED = 'CANCELLED'
 }
 
 export const friendRequestSendRequestSchema = z.object({
   receiverId: z.string().min(1, 'Receiver ID không được để trống'),
-  message: z.string().optional(),
+  message: z.string().optional()
 })
 
 export type FriendRequestSendRequest = z.infer<typeof friendRequestSendRequestSchema>
 
 export const friendRequestActionRequestSchema = z.object({
-  friendshipId: z.string().min(1, 'Friendship ID không được để trống'),
+  friendshipId: z.string().min(1, 'Friendship ID không được để trống')
 })
 
 export type FriendRequestActionRequest = z.infer<typeof friendRequestActionRequestSchema>
@@ -47,10 +47,19 @@ export type FriendResponse = {
   userId: string
   userName: string
   userAvatar: string
-  userEmail: string
   userPhone: string
-  friendsSince: string // ISO datetime
   mutualFriendsCount: number
+}
+
+export type FriendSuggestionResponse = {
+  userId: string
+  fullName: string
+  avatar: string
+  phoneNumber: string
+  mutualFriendsCount: number | null
+  sharedGroupsCount: number | null
+  contactScore: number | null
+  totalScore: number | null
 }
 
 export type FriendshipStatusResponse = {

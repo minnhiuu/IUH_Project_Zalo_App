@@ -81,7 +81,7 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
   const { colors, isDark } = useTheme()
   const [status, setStatus] = useState<'pending' | 'accepted' | 'declined'>('pending')
   const [loading, setLoading] = useState(false)
-  
+
   const badge = getBadgeConfig(notification.type)
 
   const handlePress = () => {
@@ -93,7 +93,7 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
   const handleDecline = async () => {
     const requestId = notification.payload?.requestId as string
     if (!requestId) return
-    
+
     setLoading(true)
     try {
       await friendApi.declineFriendRequest(requestId)
@@ -131,8 +131,8 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
     >
       <View className='mr-3 relative'>
         <UserAvatar
-          source={notification.payload?.actorAvatar as string || undefined}
-          name={notification.payload?.actorName as string || 'Unknown'}
+          source={(notification.payload?.actorAvatar as string) || undefined}
+          name={(notification.payload?.actorName as string) || 'Unknown'}
           size='lg'
         />
         <View
@@ -151,9 +151,7 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
           {getTimeAgo(notification.lastModifiedAt, t)}
         </Text>
 
-
-
-        {(notification.type === 'FRIEND_REQUEST') && (
+        {notification.type === 'FRIEND_REQUEST' && (
           <View className='mt-2.5'>
             {loading ? (
               <View className='py-2 items-center'>
@@ -161,16 +159,16 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
               </View>
             ) : status === 'pending' ? (
               <View className='flex-row gap-2'>
-                <TouchableOpacity 
-                   onPress={handleDecline}
-                   className='flex-1 py-1.5 rounded-full items-center border'
-                   style={{ backgroundColor: colors.background, borderColor: colors.border }}
+                <TouchableOpacity
+                  onPress={handleDecline}
+                  className='flex-1 py-1.5 rounded-full items-center border'
+                  style={{ backgroundColor: colors.background, borderColor: colors.border }}
                 >
                   <Text className='text-[13px] font-semibold' style={{ color: colors.textSecondary }}>
                     {t('friend.actions.decline')}
                   </Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={handleAccept}
                   className='flex-1 py-1.5 rounded-full items-center'
                   style={{ backgroundColor: colors.tint }}
@@ -181,7 +179,10 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
                 </TouchableOpacity>
               </View>
             ) : (
-              <View className='py-2 px-3 rounded-lg items-center' style={{ backgroundColor: colors.backgroundSecondary }}>
+              <View
+                className='py-2 px-3 rounded-lg items-center'
+                style={{ backgroundColor: colors.backgroundSecondary }}
+              >
                 <Text className='text-[13px] font-medium' style={{ color: colors.textSecondary }}>
                   {status === 'accepted' ? t('friend.notification.accepted') : t('friend.notification.declined')}
                 </Text>

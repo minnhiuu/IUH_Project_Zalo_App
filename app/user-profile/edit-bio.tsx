@@ -1,5 +1,14 @@
 import React, { useState } from 'react'
-import { View, TextInput, TouchableOpacity, Switch, ScrollView, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native'
+import {
+  View,
+  TextInput,
+  TouchableOpacity,
+  Switch,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator
+} from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
@@ -22,14 +31,11 @@ export default function EditBioScreen() {
   const [shareToJournal, setShareToJournal] = useState(false)
 
   const handleSave = () => {
-    updateBio.mutate(
-      bio,
-      {
-        onSuccess: () => {
-          router.back()
-        }
+    updateBio.mutate(bio, {
+      onSuccess: () => {
+        router.back()
       }
-    )
+    })
   }
 
   return (
@@ -56,8 +62,8 @@ export default function EditBioScreen() {
             {t('profile.editBio.title')}
           </Text>
 
-          <TouchableOpacity 
-            onPress={handleSave} 
+          <TouchableOpacity
+            onPress={handleSave}
             disabled={updateBio.isPending}
             style={{ padding: 4, opacity: updateBio.isPending ? 0.5 : 1 }}
           >
@@ -78,7 +84,14 @@ export default function EditBioScreen() {
         >
           <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
             {/* Bio Input Section */}
-            <View style={{ backgroundColor: isDark ? '#22262B' : '#fff', paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12 }}>
+            <View
+              style={{
+                backgroundColor: isDark ? '#22262B' : '#fff',
+                paddingHorizontal: 16,
+                paddingTop: 16,
+                paddingBottom: 12
+              }}
+            >
               <TextInput
                 value={bio}
                 onChangeText={(text) => {

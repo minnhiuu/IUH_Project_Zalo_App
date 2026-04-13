@@ -10,7 +10,7 @@ export const useConversations = (page: number = 0, size: number = 20, enabled: b
       return response.data.data?.data ?? []
     },
     enabled,
-    staleTime: 30 * 1000,
+    staleTime: 30 * 1000
   })
 }
 
@@ -22,7 +22,7 @@ export const useMessages = (conversationId: string, page: number = 0, size: numb
       return response.data.data
     },
     enabled: enabled && !!conversationId,
-    staleTime: 0,
+    staleTime: 0
   })
 }
 
@@ -41,7 +41,7 @@ export const useInfiniteMessages = (conversationId: string, size: number = 20, e
       return undefined
     },
     enabled: enabled && !!conversationId,
-    staleTime: 0,
+    staleTime: 0
   })
 }
 
@@ -53,6 +53,6 @@ export const usePartnerConversation = (partnerId: string, enabled: boolean = tru
       return response.data.data
     },
     enabled: enabled && !!partnerId,
-    staleTime: 5 * 60 * 1000,
+    staleTime: 5 * 60 * 1000
   })
 }

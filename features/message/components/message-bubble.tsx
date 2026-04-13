@@ -1,14 +1,5 @@
 ﻿import React, { useState, useRef, useEffect, useCallback } from 'react'
-import {
-  View,
-  TouchableOpacity,
-  Alert,
-  Clipboard,
-  Modal,
-  Pressable,
-  Animated,
-  ScrollView,
-} from 'react-native'
+import { View, TouchableOpacity, Alert, Clipboard, Modal, Pressable, Animated, ScrollView } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
 import { UserAvatar } from '@/components/common/user-avatar'
@@ -46,7 +37,7 @@ export function MessageBubble({
   onRevoke,
   onDeleteForMe,
   onForward,
-  onOpenMessageOptions,
+  onOpenMessageOptions
 }: MessageBubbleProps) {
   const { t } = useTranslation()
   const colorScheme = useColorScheme() ?? 'light'
@@ -61,14 +52,18 @@ export function MessageBubble({
   const isRevoked = message.status === MessageStatus.REVOKED
 
   const bubbleBg = isRevoked
-    ? isDark ? '#2a2a2a' : '#F3F4F6'
+    ? isDark
+      ? '#2a2a2a'
+      : '#F3F4F6'
     : isOwn
-      ? isDark ? '#004BA0' : '#D5E9FF'
-      : isDark ? '#2A2F36' : '#FFFFFF'
+      ? isDark
+        ? '#004BA0'
+        : '#D5E9FF'
+      : isDark
+        ? '#2A2F36'
+        : '#FFFFFF'
 
-  const textColor = isRevoked
-    ? isDark ? '#888' : '#9ca3af'
-    : isDark ? '#E8EAED' : '#111827'
+  const textColor = isRevoked ? (isDark ? '#888' : '#9ca3af') : isDark ? '#E8EAED' : '#111827'
 
   const timeColor = isDark ? '#777' : '#9ca3af'
 
@@ -117,17 +112,20 @@ export function MessageBubble({
     setShowActions(true)
   }, [isRevoked])
 
-  const closeSheet = useCallback((afterClose?: () => void) => {
-    Animated.parallel([
-      Animated.timing(overlayOpacity, { toValue: 0, duration: 180, useNativeDriver: true }),
-      Animated.timing(sheetTranslateY, { toValue: 400, duration: 200, useNativeDriver: true }),
-    ]).start(() => {
-      setShowActions(false)
-      if (typeof afterClose === 'function') {
-        afterClose()
-      }
-    })
-  }, [overlayOpacity, sheetTranslateY])
+  const closeSheet = useCallback(
+    (afterClose?: () => void) => {
+      Animated.parallel([
+        Animated.timing(overlayOpacity, { toValue: 0, duration: 180, useNativeDriver: true }),
+        Animated.timing(sheetTranslateY, { toValue: 400, duration: 200, useNativeDriver: true })
+      ]).start(() => {
+        setShowActions(false)
+        if (typeof afterClose === 'function') {
+          afterClose()
+        }
+      })
+    },
+    [overlayOpacity, sheetTranslateY]
+  )
 
   useEffect(() => {
     if (showActions) {
@@ -137,80 +135,91 @@ export function MessageBubble({
       Animated.parallel([
         Animated.timing(overlayOpacity, { toValue: 1, duration: 180, useNativeDriver: true }),
         Animated.spring(sheetTranslateY, {
-          toValue: 0, damping: 22, stiffness: 280, mass: 0.7, useNativeDriver: true,
+          toValue: 0,
+          damping: 22,
+          stiffness: 280,
+          mass: 0.7,
+          useNativeDriver: true
         }),
         Animated.spring(emojiScale, {
-          toValue: 1, damping: 14, stiffness: 300, mass: 0.5, useNativeDriver: true,
-        }),
+          toValue: 1,
+          damping: 14,
+          stiffness: 300,
+          mass: 0.5,
+          useNativeDriver: true
+        })
       ]).start()
     }
   }, [showActions])
 
-  const handleAction = useCallback((action: string) => {
-    switch (action) {
-      case 'reply':
-        closeSheet(() => onReply?.(message))
-        break
-      case 'forward':
-        closeSheet(() => onForward?.(message))
-        break
-      case 'revoke':
-        closeSheet(() => {
-          Alert.alert(
-            t('message.actions.revoke', { defaultValue: 'Thu hoi' }),
-            t('message.actions.revokeConfirm', { defaultValue: 'Thu hoi tin nhan nay?' }),
-            [
-              { text: t('message.actions.cancel', { defaultValue: 'Huy' }), style: 'cancel' },
-              { text: 'OK', onPress: () => onRevoke?.(message.id), style: 'destructive' },
-            ]
-          )
-        })
-        break
-      case 'delete':
-        closeSheet(() => {
-          Alert.alert(
-            t('message.actions.delete', { defaultValue: 'Xoa o phia toi' }),
-            t('message.actions.deleteConfirm', { defaultValue: 'Xoa tin nhan phia ban?' }),
-            [
-              { text: t('message.actions.cancel', { defaultValue: 'Huy' }), style: 'cancel' },
-              { text: 'OK', onPress: () => onDeleteForMe?.(message.id), style: 'destructive' },
-            ]
-          )
-        })
-        break
-      case 'copy':
-        closeSheet(() => {
-          if (message.content) Clipboard.setString(message.content)
-        })
-        break
-      case 'info':
-        if (onOpenMessageOptions) {
-          closeSheet(() => onOpenMessageOptions())
+  const handleAction = useCallback(
+    (action: string) => {
+      switch (action) {
+        case 'reply':
+          closeSheet(() => onReply?.(message))
           break
-        }
-        closeSheet(() => {
-          Alert.alert(
-            t('message.actions.comingSoonTitle', { defaultValue: 'Thong bao' }),
-            t('message.actions.comingSoon', { defaultValue: 'Chuc nang dang duoc phat trien.' })
-          )
-        })
-        break
-      case 'pin':
-      case 'reminder':
-      case 'select':
-      case 'quickMessage':
-      case 'translate':
-      case 'readText':
-      case 'save':
-        closeSheet(() => {
-          Alert.alert(
-            t('message.actions.comingSoonTitle', { defaultValue: 'Thong bao' }),
-            t('message.actions.comingSoon', { defaultValue: 'Chuc nang dang duoc phat trien.' })
-          )
-        })
-        break
-    }
-  }, [closeSheet, message, onReply, onForward, onRevoke, onDeleteForMe, onOpenMessageOptions, t])
+        case 'forward':
+          closeSheet(() => onForward?.(message))
+          break
+        case 'revoke':
+          closeSheet(() => {
+            Alert.alert(
+              t('message.actions.revoke', { defaultValue: 'Thu hoi' }),
+              t('message.actions.revokeConfirm', { defaultValue: 'Thu hoi tin nhan nay?' }),
+              [
+                { text: t('message.actions.cancel', { defaultValue: 'Huy' }), style: 'cancel' },
+                { text: 'OK', onPress: () => onRevoke?.(message.id), style: 'destructive' }
+              ]
+            )
+          })
+          break
+        case 'delete':
+          closeSheet(() => {
+            Alert.alert(
+              t('message.actions.delete', { defaultValue: 'Xoa o phia toi' }),
+              t('message.actions.deleteConfirm', { defaultValue: 'Xoa tin nhan phia ban?' }),
+              [
+                { text: t('message.actions.cancel', { defaultValue: 'Huy' }), style: 'cancel' },
+                { text: 'OK', onPress: () => onDeleteForMe?.(message.id), style: 'destructive' }
+              ]
+            )
+          })
+          break
+        case 'copy':
+          closeSheet(() => {
+            if (message.content) Clipboard.setString(message.content)
+          })
+          break
+        case 'info':
+          if (onOpenMessageOptions) {
+            closeSheet(() => onOpenMessageOptions())
+            break
+          }
+          closeSheet(() => {
+            Alert.alert(
+              t('message.actions.comingSoonTitle', { defaultValue: 'Thong bao' }),
+              t('message.actions.comingSoon', { defaultValue: 'Chuc nang dang duoc phat trien.' })
+            )
+          })
+          break
+        case 'pin':
+        case 'reminder':
+        case 'select':
+        case 'quickMessage':
+        case 'translate':
+        case 'readText':
+        case 'save':
+          closeSheet(() => {
+            Alert.alert(
+              t('message.actions.comingSoonTitle', { defaultValue: 'Thong bao' }),
+              t('message.actions.comingSoon', { defaultValue: 'Chuc nang dang duoc phat trien.' })
+            )
+          })
+          break
+      }
+    },
+    [closeSheet, message, onReply, onForward, onRevoke, onDeleteForMe, onOpenMessageOptions, t]
+  )
 
   const actionRows = buildActionRows(isOwn, isDark, t)
   const deliveryStatusLabel = getDeliveryStatusLabel()
@@ -223,7 +232,7 @@ export function MessageBubble({
         justifyContent: isOwn ? 'flex-end' : 'flex-start',
         paddingHorizontal: 12,
         marginBottom: 4,
-        alignItems: 'flex-end',
+        alignItems: 'flex-end'
       }}
     >
       {!isOwn && (
@@ -231,7 +240,7 @@ export function MessageBubble({
           style={{
             width: incomingLeftSlotWidth,
             alignItems: 'flex-start',
-            justifyContent: 'flex-end',
+            justifyContent: 'flex-end'
           }}
         >
           {showAvatar && (
@@ -240,7 +249,7 @@ export function MessageBubble({
               onPress={() => message.senderId && onAvatarPress?.(message.senderId)}
               style={{ marginRight: 8 }}
             >
-              <UserAvatar source={message.senderAvatar} name={message.senderName || ''} size="sm" />
+              <UserAvatar source={message.senderAvatar} name={message.senderName || ''} size='sm' />
             </TouchableOpacity>
           )}
         </View>
@@ -263,7 +272,7 @@ export function MessageBubble({
               paddingHorizontal: 12,
               paddingVertical: 8,
               borderWidth: !isOwn && !isDark && !isRevoked ? 0.5 : 0,
-              borderColor: '#E5E7EB',
+              borderColor: '#E5E7EB'
             }}
           >
             {message.replyTo && !isRevoked && (
@@ -272,12 +281,16 @@ export function MessageBubble({
                   borderLeftWidth: 3,
                   borderLeftColor: '#0068FF',
                   backgroundColor: isOwn
-                    ? isDark ? 'rgba(0,0,0,0.15)' : 'rgba(0,80,200,0.1)'
-                    : isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.04)',
+                    ? isDark
+                      ? 'rgba(0,0,0,0.15)'
+                      : 'rgba(0,80,200,0.1)'
+                    : isDark
+                      ? 'rgba(255,255,255,0.08)'
+                      : 'rgba(0,0,0,0.04)',
                   borderRadius: 6,
                   paddingHorizontal: 10,
                   paddingVertical: 6,
-                  marginBottom: 6,
+                  marginBottom: 6
                 }}
               >
                 <Text style={{ fontSize: 13, fontWeight: '600', color: '#0068FF' }} numberOfLines={1}>
@@ -289,13 +302,9 @@ export function MessageBubble({
               </View>
             )}
             {isRevoked ? (
-              <Text style={{ fontSize: 14, color: textColor, fontStyle: 'italic' }}>
-                {t('message.messageRevoked')}
-              </Text>
+              <Text style={{ fontSize: 14, color: textColor, fontStyle: 'italic' }}>{t('message.messageRevoked')}</Text>
             ) : (
-              <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>
-                {message.content}
-              </Text>
+              <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>{message.content}</Text>
             )}
           </View>
         </TouchableOpacity>
@@ -307,29 +316,28 @@ export function MessageBubble({
               alignSelf: isOwn ? 'flex-end' : 'flex-start',
               marginTop: 2,
               marginHorizontal: 4,
-              gap: 6,
+              gap: 6
             }}
           >
-            {showTime && (
-              <Text style={{ fontSize: 11, color: timeColor }}>
-                {formatTime(message.createdAt)}
-              </Text>
-            )}
+            {showTime && <Text style={{ fontSize: 11, color: timeColor }}>{formatTime(message.createdAt)}</Text>}
             {!!deliveryStatusLabel && (
-              <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>
-                {deliveryStatusLabel}
-              </Text>
+              <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>{deliveryStatusLabel}</Text>
             )}
           </View>
         )}
       </View>
 
       {/* Zalo-style action modal */}
-      <Modal visible={showActions} transparent statusBarTranslucent animationType="none" onRequestClose={closeSheet}>
+      <Modal visible={showActions} transparent statusBarTranslucent animationType='none' onRequestClose={closeSheet}>
         <Animated.View
           style={{
-            position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.4)', opacity: overlayOpacity,
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            opacity: overlayOpacity
           }}
         />
 
@@ -341,14 +349,12 @@ export function MessageBubble({
                 alignSelf: 'flex-end',
                 maxWidth: '75%',
                 marginHorizontal: 16,
-                marginBottom: 8,
+                marginBottom: 8
               }}
             >
               <View
                 style={{
-                  backgroundColor: isOwn
-                    ? isDark ? '#004BA0' : '#D5E9FF'
-                    : isDark ? '#2A2F36' : '#FFFFFF',
+                  backgroundColor: isOwn ? (isDark ? '#004BA0' : '#D5E9FF') : isDark ? '#2A2F36' : '#FFFFFF',
                   borderRadius: 16,
                   borderTopRightRadius: isOwn ? 4 : 16,
                   borderTopLeftRadius: isOwn ? 16 : 4,
@@ -358,7 +364,7 @@ export function MessageBubble({
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 2 },
                   shadowOpacity: 0.15,
-                  shadowRadius: 4,
+                  shadowRadius: 4
                 }}
               >
                 <Text style={{ fontSize: 15, color: isDark ? '#E8EAED' : '#111827', lineHeight: 21 }}>
@@ -366,13 +372,9 @@ export function MessageBubble({
                 </Text>
               </View>
               <View style={{ flexDirection: 'row', alignSelf: 'flex-end', marginTop: 2, marginHorizontal: 4, gap: 6 }}>
-                <Text style={{ fontSize: 11, color: timeColor }}>
-                  {formatTime(message.createdAt)}
-                </Text>
+                <Text style={{ fontSize: 11, color: timeColor }}>{formatTime(message.createdAt)}</Text>
                 {!!getDeliveryStatusLabel() && (
-                  <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>
-                    {getDeliveryStatusLabel()}
-                  </Text>
+                  <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>{getDeliveryStatusLabel()}</Text>
                 )}
               </View>
             </View>
@@ -394,7 +396,7 @@ export function MessageBubble({
                 shadowOffset: { width: 0, height: 4 },
                 shadowOpacity: 0.2,
                 shadowRadius: 8,
-                transform: [{ scale: emojiScale }],
+                transform: [{ scale: emojiScale }]
               }}
             >
               {EMOJIS.map((emoji, i) => (
@@ -418,7 +420,7 @@ export function MessageBubble({
             borderTopLeftRadius: 16,
             borderTopRightRadius: 16,
             paddingBottom: 36,
-            transform: [{ translateY: sheetTranslateY }],
+            transform: [{ translateY: sheetTranslateY }]
           }}
         >
           <View style={{ alignItems: 'center', paddingTop: 10, paddingBottom: 4 }}>
@@ -437,17 +439,23 @@ export function MessageBubble({
                   >
                     <View
                       style={{
-                        width: 50, height: 50, borderRadius: 25,
+                        width: 50,
+                        height: 50,
+                        borderRadius: 25,
                         backgroundColor: item.bgColor || (isDark ? '#2A3340' : '#F0F2F5'),
-                        alignItems: 'center', justifyContent: 'center', marginBottom: 6,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: 6
                       }}
                     >
                       <Ionicons name={item.icon as any} size={23} color={item.iconColor} />
                     </View>
                     <Text
                       style={{
-                        fontSize: 12, color: item.textColor || (isDark ? '#B0B8C1' : '#4A4A4A'),
-                        textAlign: 'center', lineHeight: 16,
+                        fontSize: 12,
+                        color: item.textColor || (isDark ? '#B0B8C1' : '#4A4A4A'),
+                        textAlign: 'center',
+                        lineHeight: 16
                       }}
                       numberOfLines={2}
                     >
@@ -465,8 +473,12 @@ export function MessageBubble({
 }
 
 type ActionItem = {
-  key: string; icon: string; label: string; iconColor: string
-  bgColor?: string; textColor?: string
+  key: string
+  icon: string
+  label: string
+  iconColor: string
+  bgColor?: string
+  textColor?: string
 }
 
 function buildActionRows(isOwn: boolean, isDark: boolean, t: (k: string, o?: any) => string): ActionItem[][] {
@@ -477,35 +489,93 @@ function buildActionRows(isOwn: boolean, isDark: boolean, t: (k: string, o?: any
 
   // Row 1
   const row1: ActionItem[] = [
-    { key: 'reply', icon: 'arrow-undo-outline', label: t('message.actions.reply', { defaultValue: 'Tr\u1EA3 l\u1EDDi' }), iconColor: blue },
-    { key: 'forward', icon: 'arrow-redo-outline', label: t('message.actions.forward', { defaultValue: 'Chuy\u1EC3n ti\u1EBFp' }), iconColor: blue },
-    { key: 'save', icon: 'folder-open-outline', label: t('message.actions.save', { defaultValue: 'L\u01b0u My Documents' }), iconColor: '#1EA7D8' },
-    { key: 'revoke', icon: 'refresh-outline', label: t('message.actions.revoke', { defaultValue: 'Thu h\u1ED3i' }), iconColor: orange },
+    {
+      key: 'reply',
+      icon: 'arrow-undo-outline',
+      label: t('message.actions.reply', { defaultValue: 'Tr\u1EA3 l\u1EDDi' }),
+      iconColor: blue
+    },
+    {
+      key: 'forward',
+      icon: 'arrow-redo-outline',
+      label: t('message.actions.forward', { defaultValue: 'Chuy\u1EC3n ti\u1EBFp' }),
+      iconColor: blue
+    },
+    {
+      key: 'save',
+      icon: 'folder-open-outline',
+      label: t('message.actions.save', { defaultValue: 'L\u01b0u My Documents' }),
+      iconColor: '#1EA7D8'
+    },
+    {
+      key: 'revoke',
+      icon: 'refresh-outline',
+      label: t('message.actions.revoke', { defaultValue: 'Thu h\u1ED3i' }),
+      iconColor: orange
+    }
   ]
 
   // Row 2
   const row2: ActionItem[] = [
-    { key: 'copy', icon: 'copy-outline', label: t('message.actions.copy', { defaultValue: 'Sao ch\u00E9p' }), iconColor: blue },
+    {
+      key: 'copy',
+      icon: 'copy-outline',
+      label: t('message.actions.copy', { defaultValue: 'Sao ch\u00E9p' }),
+      iconColor: blue
+    },
     { key: 'pin', icon: 'pin-outline', label: t('message.actions.pin', { defaultValue: 'Ghim' }), iconColor: orange },
-    { key: 'reminder', icon: 'time-outline', label: t('message.actions.reminder', { defaultValue: 'Nh\u1EAFc h\u1EB9n' }), iconColor: '#BE123C' },
-    { key: 'select', icon: 'checkbox-outline', label: t('message.actions.selectMultiple', { defaultValue: 'Ch\u1ECDn nhi\u1EC1u' }), iconColor: blue },
+    {
+      key: 'reminder',
+      icon: 'time-outline',
+      label: t('message.actions.reminder', { defaultValue: 'Nh\u1EAFc h\u1EB9n' }),
+      iconColor: '#BE123C'
+    },
+    {
+      key: 'select',
+      icon: 'checkbox-outline',
+      label: t('message.actions.selectMultiple', { defaultValue: 'Ch\u1ECDn nhi\u1EC1u' }),
+      iconColor: blue
+    }
   ]
 
   // Row 3
   const row3: ActionItem[] = [
-    { key: 'quickMessage', icon: 'flash-outline', label: t('message.actions.quickMessage', { defaultValue: 'T\u1EA1o tin nh\u1EAFn nhanh' }), iconColor: '#06B6D4' },
-    { key: 'translate', icon: 'language-outline', label: t('message.actions.translate', { defaultValue: 'D\u1ECBch' }), iconColor: '#16A34A' },
-    { key: 'readText', icon: 'volume-high-outline', label: t('message.actions.readText', { defaultValue: '\u0110\u1ECDc v\u0103n b\u1EA3n' }), iconColor: '#7C3AED' },
-    { key: 'info', icon: 'information-circle-outline', label: t('message.actions.detail', { defaultValue: 'Chi ti\u1EBFt' }), iconColor: gray },
+    {
+      key: 'quickMessage',
+      icon: 'flash-outline',
+      label: t('message.actions.quickMessage', { defaultValue: 'T\u1EA1o tin nh\u1EAFn nhanh' }),
+      iconColor: '#06B6D4'
+    },
+    {
+      key: 'translate',
+      icon: 'language-outline',
+      label: t('message.actions.translate', { defaultValue: 'D\u1ECBch' }),
+      iconColor: '#16A34A'
+    },
+    {
+      key: 'readText',
+      icon: 'volume-high-outline',
+      label: t('message.actions.readText', { defaultValue: '\u0110\u1ECDc v\u0103n b\u1EA3n' }),
+      iconColor: '#7C3AED'
+    },
+    {
+      key: 'info',
+      icon: 'information-circle-outline',
+      label: t('message.actions.detail', { defaultValue: 'Chi ti\u1EBFt' }),
+      iconColor: gray
+    }
   ]
 
   // Row 4
   const row4: ActionItem[] = [
     {
-      key: 'delete', icon: 'trash-outline',
+      key: 'delete',
+      icon: 'trash-outline',
       label: t('message.actions.delete', { defaultValue: 'X\u00F3a \u1EDF ph\u00EDa t\u00F4i' }),
-      iconColor: red, bgColor: isDark ? '#3B1C1C' : '#FFE4E6', textColor: red,
-    },
+      iconColor: red,
+      bgColor: isDark ? '#3B1C1C' : '#FFE4E6',
+      textColor: red
+    }
   ]
 
   const safeRow1 = isOwn ? row1 : row1.filter((item) => item.key !== 'revoke')

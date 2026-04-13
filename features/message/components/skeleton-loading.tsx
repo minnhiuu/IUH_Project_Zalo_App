@@ -11,7 +11,7 @@ function SkeletonPulse({ style }: { style?: object }) {
     const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(opacity, { toValue: 1, duration: 800, useNativeDriver: true }),
-        Animated.timing(opacity, { toValue: 0.3, duration: 800, useNativeDriver: true }),
+        Animated.timing(opacity, { toValue: 0.3, duration: 800, useNativeDriver: true })
       ])
     )
     animation.start()
@@ -24,9 +24,9 @@ function SkeletonPulse({ style }: { style?: object }) {
         {
           backgroundColor: isDark ? '#2A2F36' : '#E5E7EB',
           borderRadius: 4,
-          opacity,
+          opacity
         },
-        style,
+        style
       ]}
     />
   )
@@ -45,7 +45,7 @@ export function ConversationListSkeleton({ count = 6 }: { count?: number }) {
             flexDirection: 'row',
             alignItems: 'center',
             paddingHorizontal: 16,
-            paddingVertical: 14,
+            paddingVertical: 14
           }}
         >
           <SkeletonPulse style={{ width: 56, height: 56, borderRadius: 28, marginRight: 12 }} />
@@ -73,12 +73,10 @@ export function MessageListSkeleton({ count = 14 }: { count?: number }) {
               flexDirection: 'row',
               justifyContent: isOwn ? 'flex-end' : 'flex-start',
               marginBottom: 12,
-              alignItems: 'flex-end',
+              alignItems: 'flex-end'
             }}
           >
-            {!isOwn && (
-              <SkeletonPulse style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8 }} />
-            )}
+            {!isOwn && <SkeletonPulse style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8 }} />}
             <SkeletonPulse style={{ width, height: 40, borderRadius: 16 }} />
           </View>
         )
