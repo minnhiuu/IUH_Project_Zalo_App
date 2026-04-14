@@ -60,7 +60,7 @@ export function Search() {
   const { data: recentItems = [], refetch: refetchItems } = useRecentSearchItems()
   const { data: recentQueriesData = [], refetch: refetchQueries } = useRecentSearchQueries()
   const { data: myProfile } = useMyProfile()
- 
+
   const addRecentSearch = useAddRecentSearch()
   const removeRecentSearch = useRemoveRecentSearch()
   const clearAllRecentSearch = useClearAllRecentSearch()
@@ -94,10 +94,10 @@ export function Search() {
 
   const handleSearchSubmit = () => {
     if (!searchQuery.trim()) return
- 
+
     const trimmedQuery = searchQuery.trim()
     const isSelfPhone = myProfile?.phoneNumber === trimmedQuery
- 
+
     addRecentSearch.mutate({
       id: isSelfPhone ? myProfile.id : `k-${Date.now()}`,
       name: trimmedQuery,
@@ -162,7 +162,7 @@ export function Search() {
         router.push(`/user-profile/${item.id}` as any)
         return
       }
- 
+
       addRecentSearch.mutate({
         id: item.id,
         name: item.fullName || item.senderName,

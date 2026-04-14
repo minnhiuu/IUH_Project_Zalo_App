@@ -74,34 +74,30 @@ export default function MessageOptionsScreen() {
       { key: 'search', icon: 'search-outline' as const, label: t('profile.chatOptions.searchMessages') },
       { key: 'profile', icon: 'person-outline' as const, label: t('profile.chatOptions.profile') },
       { key: 'wallpaper', icon: 'brush-outline' as const, label: t('profile.chatOptions.changeWallpaper') },
-      { key: 'mute', icon: 'notifications-outline' as const, label: t('profile.chatOptions.muteNotification') },
+      { key: 'mute', icon: 'notifications-outline' as const, label: t('profile.chatOptions.muteNotification') }
     ],
     [t]
   )
 
   const handleUnfriend = () => {
-    Alert.alert(
-      t('profile.menu.unfriendConfirm.title'),
-      t('profile.menu.unfriendConfirm.message', { name }),
-      [
-        {
-          text: t('profile.menu.unfriendConfirm.cancel'),
-          style: 'cancel'
+    Alert.alert(t('profile.menu.unfriendConfirm.title'), t('profile.menu.unfriendConfirm.message', { name }), [
+      {
+        text: t('profile.menu.unfriendConfirm.cancel'),
+        style: 'cancel'
+      },
+      {
+        text: t('profile.menu.unfriendConfirm.confirm'),
+        onPress: () => {
+          if (!id) return
+          unfriend.mutate(id, {
+            onSuccess: () => {
+              router.push('/(tabs)')
+            }
+          })
         },
-        {
-          text: t('profile.menu.unfriendConfirm.confirm'),
-          onPress: () => {
-            if (!id) return
-            unfriend.mutate(id, {
-              onSuccess: () => {
-                router.push('/(tabs)')
-              }
-            })
-          },
-          style: 'destructive'
-        }
-      ]
-    )
+        style: 'destructive'
+      }
+    ])
   }
 
   const bg = isDark ? '#121416' : '#F3F4F6'
@@ -117,7 +113,7 @@ export default function MessageOptionsScreen() {
               flexDirection: 'row',
               alignItems: 'center',
               paddingHorizontal: HEADER.paddingHorizontal,
-              height: HEADER.height,
+              height: HEADER.height
             }}
           >
             <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ paddingRight: 10 }}>
@@ -141,7 +137,7 @@ export default function MessageOptionsScreen() {
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.2,
               shadowRadius: 8,
-              elevation: 6,
+              elevation: 6
             }}
           >
             <UserAvatar
@@ -172,12 +168,14 @@ export default function MessageOptionsScreen() {
                     backgroundColor: isDark ? '#2A2F36' : '#F3F4F6',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginBottom: 8,
+                    marginBottom: 8
                   }}
                 >
                   <Ionicons name={action.icon} size={27} color={isDark ? '#D0D6DD' : '#111827'} />
                 </View>
-                <Text style={{ fontSize: 14, textAlign: 'center', color: isDark ? '#D0D6DD' : '#1F2937', lineHeight: 18 }}>
+                <Text
+                  style={{ fontSize: 14, textAlign: 'center', color: isDark ? '#D0D6DD' : '#1F2937', lineHeight: 18 }}
+                >
                   {action.label}
                 </Text>
               </TouchableOpacity>
@@ -215,9 +213,19 @@ export default function MessageOptionsScreen() {
           />
         </View>
 
-        <View style={{ marginTop: 10, backgroundColor: cardBg, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 14 }}>
-          <TouchableOpacity activeOpacity={0.7} style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}>
-            <Ionicons name='images-outline' size={22} color={isDark ? '#D0D6DD' : '#6B7280'} style={{ marginRight: 14 }} />
+        <View
+          style={{ marginTop: 10, backgroundColor: cardBg, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 14 }}
+        >
+          <TouchableOpacity
+            activeOpacity={0.7}
+            style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}
+          >
+            <Ionicons
+              name='images-outline'
+              size={22}
+              color={isDark ? '#D0D6DD' : '#6B7280'}
+              style={{ marginRight: 14 }}
+            />
             <Text style={{ flex: 1, fontSize: 18, color: isDark ? '#F1F5F9' : '#1F2937' }}>
               {t('profile.chatOptions.mediaFilesLinks')}
             </Text>
@@ -226,7 +234,10 @@ export default function MessageOptionsScreen() {
 
           <View style={{ flexDirection: 'row', gap: 8 }}>
             {Array.from({ length: 5 }).map((_, idx) => (
-              <View key={idx} style={{ flex: 1, aspectRatio: 1, borderRadius: 8, backgroundColor: isDark ? '#2A2F36' : '#ECEFF3' }} />
+              <View
+                key={idx}
+                style={{ flex: 1, aspectRatio: 1, borderRadius: 8, backgroundColor: isDark ? '#2A2F36' : '#ECEFF3' }}
+              />
             ))}
           </View>
         </View>

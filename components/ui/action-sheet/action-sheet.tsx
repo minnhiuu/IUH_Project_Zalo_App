@@ -89,7 +89,7 @@ export function ActionSheet({ visible, onClose, options, title, isDark = false }
   if (!visible) return null
 
   return (
-    <Modal transparent visible={visible} onRequestClose={onClose} animationType="none" statusBarTranslucent>
+    <Modal transparent visible={visible} onRequestClose={onClose} animationType='none' statusBarTranslucent>
       <View style={styles.container}>
         {/* Backdrop */}
         <TouchableWithoutFeedback onPress={onClose}>
@@ -147,18 +147,9 @@ export function ActionSheet({ visible, onClose, options, title, isDark = false }
                     { backgroundColor: option.iconColor ? `${option.iconColor}15` : isDark ? '#2C323A' : '#F3F4F6' }
                   ]}
                 >
-                  <Ionicons
-                    name={option.icon}
-                    size={22}
-                    color={option.iconColor || (isDark ? '#B6C1CF' : '#6B7280')}
-                  />
+                  <Ionicons name={option.icon} size={22} color={option.iconColor || (isDark ? '#B6C1CF' : '#6B7280')} />
                 </View>
-                <Text
-                  style={[
-                    styles.optionText,
-                    { color: option.color || (isDark ? '#DFE2E7' : '#111827') }
-                  ]}
-                >
+                <Text style={[styles.optionText, { color: option.color || (isDark ? '#DFE2E7' : '#111827') }]}>
                   {option.label}
                 </Text>
               </TouchableOpacity>

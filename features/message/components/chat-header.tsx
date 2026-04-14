@@ -52,9 +52,13 @@ export function ChatHeader({
         const now = new Date()
         const diffMin = Math.floor((now.getTime() - d.getTime()) / 60000)
         if (diffMin < 1) return t('message.status.justNow', { defaultValue: 'Just now' })
-        if (diffMin < 60) return t('message.lastSeen', { time: `${diffMin} ${t('message.status.minutesUnit', { defaultValue: 'min' })}` })
+        if (diffMin < 60)
+          return t('message.lastSeen', {
+            time: `${diffMin} ${t('message.status.minutesUnit', { defaultValue: 'min' })}`
+          })
         const diffHour = Math.floor(diffMin / 60)
-        if (diffHour < 24) return t('message.lastSeen', { time: `${diffHour} ${t('message.status.hoursUnit', { defaultValue: 'hr' })}` })
+        if (diffHour < 24)
+          return t('message.lastSeen', { time: `${diffHour} ${t('message.status.hoursUnit', { defaultValue: 'hr' })}` })
         return t('message.lastSeen', { time: d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' }) })
       } catch {
         return ''
@@ -73,7 +77,7 @@ export function ChatHeader({
             flexDirection: 'row',
             alignItems: 'center',
             paddingHorizontal: HEADER.paddingHorizontal,
-            height: HEADER.height,
+            height: HEADER.height
           }}
         >
           {/* Back */}
@@ -90,13 +94,7 @@ export function ChatHeader({
               else if (userId) router.push(`/other-profile/${userId}` as any)
             }}
           >
-            <UserAvatar
-              source={avatar}
-              name={name}
-              size="sm"
-              showOnline={isOnline !== undefined}
-              isOnline={isOnline}
-            />
+            <UserAvatar source={avatar} name={name} size='sm' showOnline={isOnline !== undefined} isOnline={isOnline} />
             <View style={{ marginLeft: 10, flex: 1 }}>
               <Text style={{ fontSize: 17, fontWeight: '600', color: '#fff' }} numberOfLines={1}>
                 {name}

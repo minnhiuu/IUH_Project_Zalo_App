@@ -44,17 +44,14 @@ export const SearchHeader = React.forwardRef<TextInput, SearchHeaderProps>(
     const gradientColors = isDark ? HEADER.gradientColorsDark : HEADER.gradientColors
 
     return (
-      <LinearGradient
-        colors={gradientColors}
-        style={containerStyle}
-      >
+      <LinearGradient colors={gradientColors} style={containerStyle}>
         <SafeAreaView edges={['top']} style={{ backgroundColor: 'transparent' }}>
           <View
             style={{
               flexDirection: 'row',
               alignItems: 'center',
               paddingHorizontal: HEADER.paddingHorizontal,
-              height: HEADER.height,
+              height: HEADER.height
             }}
           >
             {onBack && (

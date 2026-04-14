@@ -187,10 +187,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: HEADER.paddingHorizontal,
-    height: HEADER.height,
+    height: HEADER.height
   },
   backBtn: {
-    paddingRight: 10,
+    paddingRight: 10
   },
   headerTitle: {
     fontSize: 19,

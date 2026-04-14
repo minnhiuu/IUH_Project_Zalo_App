@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Modal, View, TouchableOpacity, TouchableWithoutFeedback, SafeAreaView as NativeSafeAreaView } from 'react-native'
+import {
+  Modal,
+  View,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  SafeAreaView as NativeSafeAreaView
+} from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
@@ -46,16 +52,14 @@ export function NotificationPanel({ visible, onClose }: NotificationPanelProps) 
 
       <View style={{ backgroundColor: semantic.background }} className='absolute inset-0'>
         {/* Zalo-style Header */}
-        <LinearGradient
-          colors={gradientColors}
-        >
+        <LinearGradient colors={gradientColors}>
           <NativeSafeAreaView style={{ backgroundColor: 'transparent' }}>
             <View
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
                 paddingHorizontal: HEADER.paddingHorizontal,
-                height: HEADER.height,
+                height: HEADER.height
               }}
             >
               <TouchableOpacity onPress={onClose} style={{ paddingRight: 10 }}>

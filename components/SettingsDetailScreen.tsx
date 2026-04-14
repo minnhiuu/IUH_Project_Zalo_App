@@ -28,24 +28,19 @@ export default function SettingsDetailScreen({ title, children }: SettingsDetail
               paddingHorizontal: HEADER.paddingHorizontal,
               paddingVertical: HEADER.paddingVertical,
               height: HEADER.height,
-              gap: 12,
+              gap: 12
             }}
           >
             <TouchableOpacity onPress={() => router.back()} style={{ marginRight: 4 }}>
-              <Ionicons name="chevron-back" size={24} color={HEADER.textColor} />
+              <Ionicons name='chevron-back' size={24} color={HEADER.textColor} />
             </TouchableOpacity>
-            <Text style={{ flex: 1, fontSize: 18, fontWeight: '700', color: HEADER.textColor }}>
-              {title}
-            </Text>
+            <Text style={{ flex: 1, fontSize: 18, fontWeight: '700', color: HEADER.textColor }}>{title}</Text>
           </View>
         </SafeAreaView>
       </View>
 
       {/* Scrollable content */}
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
+      <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps='handled'>
         {children}
       </ScrollView>
     </View>

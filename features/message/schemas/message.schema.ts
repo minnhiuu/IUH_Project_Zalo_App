@@ -5,19 +5,19 @@ export enum MessageType {
   JOIN = 'JOIN',
   LEAVE = 'LEAVE',
   IMAGE = 'IMAGE',
-  FILE = 'FILE',
+  FILE = 'FILE'
 }
 
 export enum MessageStatus {
   NORMAL = 'NORMAL',
   REVOKED = 'REVOKED',
-  DELETED_BY_ADMIN = 'DELETED_BY_ADMIN',
+  DELETED_BY_ADMIN = 'DELETED_BY_ADMIN'
 }
 
 export enum MemberRole {
   OWNER = 'OWNER',
   ADMIN = 'ADMIN',
-  MEMBER = 'MEMBER',
+  MEMBER = 'MEMBER'
 }
 
 export const messageSendRequestSchema = z.object({
@@ -29,10 +29,10 @@ export const messageSendRequestSchema = z.object({
       messageId: z.string(),
       senderId: z.string(),
       content: z.string(),
-      type: z.nativeEnum(MessageType),
+      type: z.nativeEnum(MessageType)
     })
     .optional(),
-  isForwarded: z.boolean().optional().default(false),
+  isForwarded: z.boolean().optional().default(false)
 })
 
 export type MessageSendRequest = z.infer<typeof messageSendRequestSchema>

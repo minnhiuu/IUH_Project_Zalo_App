@@ -48,7 +48,11 @@ export default function TabLayout() {
 
   return (
     <>
-      <StatusBar barStyle='light-content' backgroundColor={isDark ? colors.background : colors.tint} translucent={Platform.OS === 'android'} />
+      <StatusBar
+        barStyle='light-content'
+        backgroundColor={isDark ? colors.background : colors.tint}
+        translucent={Platform.OS === 'android'}
+      />
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: colors.tint,

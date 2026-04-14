@@ -63,28 +63,24 @@ export default function UserProfileOptionsScreen() {
   const { data: blockDetails } = useBlockDetails(id as string, !!id)
 
   const handleUnfriend = () => {
-    Alert.alert(
-      t('profile.menu.unfriendConfirm.title'),
-      t('profile.menu.unfriendConfirm.message', { name }),
-      [
-        {
-          text: t('profile.menu.unfriendConfirm.cancel'),
-          style: 'cancel'
+    Alert.alert(t('profile.menu.unfriendConfirm.title'), t('profile.menu.unfriendConfirm.message', { name }), [
+      {
+        text: t('profile.menu.unfriendConfirm.cancel'),
+        style: 'cancel'
+      },
+      {
+        text: t('profile.menu.unfriendConfirm.confirm'),
+        onPress: () => {
+          if (!id) return
+          unfriend.mutate(id, {
+            onSuccess: () => {
+              router.push('/(tabs)')
+            }
+          })
         },
-        {
-          text: t('profile.menu.unfriendConfirm.confirm'),
-          onPress: () => {
-            if (!id) return
-            unfriend.mutate(id, {
-              onSuccess: () => {
-                router.push('/(tabs)')
-              }
-            })
-          },
-          style: 'destructive'
-        }
-      ]
-    )
+        style: 'destructive'
+      }
+    ])
   }
 
   const bg = isDark ? '#121416' : '#F3F4F6'
@@ -99,14 +95,10 @@ export default function UserProfileOptionsScreen() {
               flexDirection: 'row',
               alignItems: 'center',
               paddingHorizontal: HEADER.paddingHorizontal,
-              height: HEADER.height,
+              height: HEADER.height
             }}
           >
-            <TouchableOpacity
-              onPress={() => router.back()}
-              activeOpacity={0.7}
-              style={{ paddingRight: 10 }}
-            >
+            <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ paddingRight: 10 }}>
               <Ionicons name='chevron-back' size={24} color='#fff' />
             </TouchableOpacity>
             <Text
@@ -127,12 +119,7 @@ export default function UserProfileOptionsScreen() {
       <ScrollView style={{ flex: 1 }}>
         <View style={{ marginTop: 8 }}>
           {!isOwner && !isFriend && (
-            <MenuItemRow
-              icon='person-add-outline'
-              label={t('contacts.addFriend')}
-              onPress={() => {}}
-              isDark={isDark}
-            />
+            <MenuItemRow icon='person-add-outline' label={t('contacts.addFriend')} onPress={() => {}} isDark={isDark} />
           )}
           <MenuItemRow
             icon='information-circle-outline'
@@ -146,12 +133,7 @@ export default function UserProfileOptionsScreen() {
             onPress={() => {}}
             isDark={isDark}
           />
-          <MenuItemRow
-            icon='flag-outline'
-            label={t('profile.menu.report')}
-            onPress={() => {}}
-            isDark={isDark}
-          />
+          <MenuItemRow icon='flag-outline' label={t('profile.menu.report')} onPress={() => {}} isDark={isDark} />
           <MenuItemRow
             icon='ban-outline'
             label={blockDetails ? t('settings.privacy.blockSettings') : t('settings.privacy.manageBlock')}

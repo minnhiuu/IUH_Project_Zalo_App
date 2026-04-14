@@ -25,9 +25,8 @@ export default function PersonalInfoScreen() {
   if (!userProfile) {
     return null
   } else {
-    console.log();
+    console.log()
     console.log('User profile loaded:', userProfile)
-
   }
   const getGenderLabel = (gender: Gender | null | undefined) => {
     if (!gender) return '---'
@@ -166,9 +165,7 @@ export default function PersonalInfoScreen() {
             </Text>
             <View style={{ flex: 1 }}>
               <Text style={{ fontSize: 15, color: isDark ? '#DFE2E7' : '#111827', marginBottom: 4 }}>
-                {userProfile.accountInfo?.phoneNumber
-                  ? formatPhoneNumber(userProfile.accountInfo.phoneNumber)
-                  : '---'}
+                {userProfile.accountInfo?.phoneNumber ? formatPhoneNumber(userProfile.accountInfo.phoneNumber) : '---'}
               </Text>
               {userProfile.accountInfo?.phoneNumber && (
                 <Text style={{ fontSize: 13, color: isDark ? '#6B7280' : '#9CA3AF' }}>
@@ -195,11 +192,7 @@ export default function PersonalInfoScreen() {
                 gap: 8
               }}
             >
-              <Ionicons
-                name='pencil-outline'
-                size={18}
-                color={isDark ? '#DFE2E7' : '#111827'}
-              />
+              <Ionicons name='pencil-outline' size={18} color={isDark ? '#DFE2E7' : '#111827'} />
               <Text style={{ fontSize: 15, fontWeight: '500', color: isDark ? '#DFE2E7' : '#111827' }}>
                 {t('profile.personalInfo.edit')}
               </Text>

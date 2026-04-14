@@ -23,7 +23,7 @@ export function ChatInputBar({
   onSend,
   placeholder = 'Tin nhắn',
   replyTo,
-  onCancelReply,
+  onCancelReply
 }: ChatInputBarProps) {
   const { t } = useTranslation()
   const hasText = value.trim().length > 0
@@ -34,17 +34,72 @@ export function ChatInputBar({
 
   const quickActions = useMemo(
     () => [
-      { key: 'location', icon: 'location-outline', label: t('message.quickActions.location', { defaultValue: 'Vị trí' }), color: '#F97373' },
-      { key: 'file', icon: 'document-attach-outline', label: t('message.quickActions.file', { defaultValue: 'Tài liệu' }), color: '#2563EB' },
-      { key: 'reminder', icon: 'alarm-outline', label: t('message.quickActions.reminder', { defaultValue: 'Nhắc hẹn' }), color: '#E11D48' },
-      { key: 'quick-message', icon: 'flash-outline', label: t('message.quickActions.quickMessage', { defaultValue: 'Tin nhắn nhanh' }), color: '#2563EB' },
-      { key: 'transfer', icon: 'cash-outline', label: t('message.quickActions.transfer', { defaultValue: 'Chuyển khoản' }), color: '#22C55E' },
-      { key: 'card', icon: 'card-outline', label: t('message.quickActions.businessCard', { defaultValue: 'Danh thiếp' }), color: '#0EA5E9' },
-      { key: 'docs', icon: 'folder-open-outline', label: t('message.quickActions.myDocuments', { defaultValue: 'My Documents' }), color: '#3B82F6' },
-      { key: 'account', icon: 'card-outline', label: t('message.quickActions.sendAccount', { defaultValue: 'Gửi số tài khoản' }), color: '#7C3AED' },
-      { key: 'gif', icon: 'images-outline', label: t('message.quickActions.gif', { defaultValue: '@GIF' }), color: '#22C55E' },
-      { key: 'draw', icon: 'brush-outline', label: t('message.quickActions.draw', { defaultValue: 'Vẽ hình' }), color: '#D946EF' },
-      { key: 'font', icon: 'text-outline', label: t('message.quickActions.font', { defaultValue: 'Kiểu chữ' }), color: '#EAB308' },
+      {
+        key: 'location',
+        icon: 'location-outline',
+        label: t('message.quickActions.location', { defaultValue: 'Vị trí' }),
+        color: '#F97373'
+      },
+      {
+        key: 'file',
+        icon: 'document-attach-outline',
+        label: t('message.quickActions.file', { defaultValue: 'Tài liệu' }),
+        color: '#2563EB'
+      },
+      {
+        key: 'reminder',
+        icon: 'alarm-outline',
+        label: t('message.quickActions.reminder', { defaultValue: 'Nhắc hẹn' }),
+        color: '#E11D48'
+      },
+      {
+        key: 'quick-message',
+        icon: 'flash-outline',
+        label: t('message.quickActions.quickMessage', { defaultValue: 'Tin nhắn nhanh' }),
+        color: '#2563EB'
+      },
+      {
+        key: 'transfer',
+        icon: 'cash-outline',
+        label: t('message.quickActions.transfer', { defaultValue: 'Chuyển khoản' }),
+        color: '#22C55E'
+      },
+      {
+        key: 'card',
+        icon: 'card-outline',
+        label: t('message.quickActions.businessCard', { defaultValue: 'Danh thiếp' }),
+        color: '#0EA5E9'
+      },
+      {
+        key: 'docs',
+        icon: 'folder-open-outline',
+        label: t('message.quickActions.myDocuments', { defaultValue: 'My Documents' }),
+        color: '#3B82F6'
+      },
+      {
+        key: 'account',
+        icon: 'card-outline',
+        label: t('message.quickActions.sendAccount', { defaultValue: 'Gửi số tài khoản' }),
+        color: '#7C3AED'
+      },
+      {
+        key: 'gif',
+        icon: 'images-outline',
+        label: t('message.quickActions.gif', { defaultValue: '@GIF' }),
+        color: '#22C55E'
+      },
+      {
+        key: 'draw',
+        icon: 'brush-outline',
+        label: t('message.quickActions.draw', { defaultValue: 'Vẽ hình' }),
+        color: '#D946EF'
+      },
+      {
+        key: 'font',
+        icon: 'text-outline',
+        label: t('message.quickActions.font', { defaultValue: 'Kiểu chữ' }),
+        color: '#EAB308'
+      }
     ],
     [t]
   )
@@ -61,7 +116,7 @@ export function ChatInputBar({
             paddingHorizontal: 12,
             paddingVertical: 8,
             borderTopWidth: 0.5,
-            borderTopColor: colors.border,
+            borderTopColor: colors.border
           }}
         >
           <View
@@ -69,7 +124,7 @@ export function ChatInputBar({
               flex: 1,
               borderLeftWidth: 3,
               borderLeftColor: BRAND.blue,
-              paddingLeft: 8,
+              paddingLeft: 8
             }}
           >
             <Text style={{ fontSize: 13, fontWeight: '600', color: BRAND.blue }} numberOfLines={1}>
@@ -80,7 +135,7 @@ export function ChatInputBar({
             </Text>
           </View>
           <TouchableOpacity onPress={onCancelReply} style={{ padding: 6 }}>
-            <Ionicons name="close" size={18} color={colors.textSecondary} />
+            <Ionicons name='close' size={18} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
       )}
@@ -94,12 +149,12 @@ export function ChatInputBar({
           paddingBottom: 4,
           backgroundColor: isDark ? '#15181D' : '#fff',
           borderTopWidth: replyTo ? 0 : 0.5,
-          borderTopColor: colors.border,
+          borderTopColor: colors.border
         }}
       >
         {/* Sticker button */}
         <TouchableOpacity style={{ padding: 6, marginBottom: 2 }}>
-          <Ionicons name="happy-outline" size={26} color={colors.icon} />
+          <Ionicons name='happy-outline' size={26} color={colors.icon} />
         </TouchableOpacity>
 
         {/* Text Input */}
@@ -118,31 +173,24 @@ export function ChatInputBar({
             paddingVertical: 6,
             backgroundColor: isDark ? '#2A2F36' : '#F3F4F6',
             borderRadius: 20,
-            marginHorizontal: 4,
+            marginHorizontal: 4
           }}
         />
 
         {hasText ? (
           <TouchableOpacity onPress={onSend} style={{ padding: 6, marginBottom: 2 }}>
-            <Ionicons name="send" size={24} color={BRAND.blue} />
+            <Ionicons name='send' size={24} color={BRAND.blue} />
           </TouchableOpacity>
         ) : (
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity
-              style={{ padding: 6, marginBottom: 2 }}
-              onPress={() => setShowMoreActions((v) => !v)}
-            >
-              <Ionicons
-                name="ellipsis-horizontal"
-                size={22}
-                color={showMoreActions ? BRAND.blue : colors.icon}
-              />
+            <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={() => setShowMoreActions((v) => !v)}>
+              <Ionicons name='ellipsis-horizontal' size={22} color={showMoreActions ? BRAND.blue : colors.icon} />
             </TouchableOpacity>
             <TouchableOpacity style={{ padding: 6, marginBottom: 2 }}>
-              <Ionicons name="mic-outline" size={24} color={colors.icon} />
+              <Ionicons name='mic-outline' size={24} color={colors.icon} />
             </TouchableOpacity>
             <TouchableOpacity style={{ padding: 6, marginBottom: 2 }}>
-              <Ionicons name="image-outline" size={24} color={colors.icon} />
+              <Ionicons name='image-outline' size={24} color={colors.icon} />
             </TouchableOpacity>
           </View>
         )}
@@ -156,7 +204,7 @@ export function ChatInputBar({
             borderTopColor: colors.border,
             paddingTop: 10,
             paddingBottom: 10,
-            paddingHorizontal: 10,
+            paddingHorizontal: 10
           }}
         >
           <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
@@ -167,7 +215,7 @@ export function ChatInputBar({
                 style={{
                   width: '25%',
                   alignItems: 'center',
-                  paddingVertical: 10,
+                  paddingVertical: 10
                 }}
               >
                 <View
@@ -178,7 +226,7 @@ export function ChatInputBar({
                     backgroundColor: isDark ? '#232833' : '#F3F4F6',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginBottom: 8,
+                    marginBottom: 8
                   }}
                 >
                   <Ionicons name={action.icon as any} size={28} color={action.color} />
@@ -187,7 +235,7 @@ export function ChatInputBar({
                   style={{
                     fontSize: 12,
                     color: colors.text,
-                    textAlign: 'center',
+                    textAlign: 'center'
                   }}
                   numberOfLines={2}
                 >

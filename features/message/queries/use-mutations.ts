@@ -14,7 +14,7 @@ export const useSendMessage = () => {
     // to avoid duplicate messages from both WS event + refetch
     onError: (error: Error) => {
       handleErrorApi({ error })
-    },
+    }
   })
 }
 
@@ -28,20 +28,17 @@ export const useMarkAsRead = () => {
       const previousData = queryClient.getQueriesData({ queryKey: messageKeys.conversations() })
 
       // Optimistic update: set unreadCount to 0
-      queryClient.setQueriesData(
-        { queryKey: messageKeys.conversations() },
-        (oldData: any) => {
-          if (!oldData?.data) return oldData
-          return {
-            ...oldData,
-            data: Array.isArray(oldData.data)
-              ? oldData.data.map((conv: ConversationResponse) =>
-                  conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
-                )
-              : oldData.data,
-          }
+      queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
+        if (!oldData?.data) return oldData
+        return {
+          ...oldData,
+          data: Array.isArray(oldData.data)
+            ? oldData.data.map((conv: ConversationResponse) =>
+                conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
+              )
+            : oldData.data
         }
-      )
+      })
 
       return { previousData }
     },
@@ -56,7 +53,7 @@ export const useMarkAsRead = () => {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
-    },
+    }
   })
 }
 
@@ -74,12 +71,12 @@ export const useRevokeMessage = () => {
       Toast.show({
         type: 'success',
         text1: t('message.toast.revokeSuccess'),
-        visibilityTime: 2000,
+        visibilityTime: 2000
       })
     },
     onError: (error: Error) => {
       handleErrorApi({ error })
-    },
+    }
   })
 }
 
@@ -96,11 +93,11 @@ export const useDeleteMessageForMe = () => {
       Toast.show({
         type: 'success',
         text1: t('message.toast.deleteSuccess'),
-        visibilityTime: 2000,
+        visibilityTime: 2000
       })
     },
     onError: (error: Error) => {
       handleErrorApi({ error })
-    },
+    }
   })
 }

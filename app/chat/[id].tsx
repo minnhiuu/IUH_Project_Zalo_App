@@ -11,13 +11,13 @@ import {
   ChatInputBar,
   DateSeparator,
   MessageListSkeleton,
-  ForwardMessageModal,
+  ForwardMessageModal
 } from '@/features/message/components'
 import {
   useInfiniteMessages,
   usePartnerConversation,
   useMarkAsRead,
-  useConversations,
+  useConversations
 } from '@/features/message/queries'
 import { useChatWebSocket } from '@/features/message/hooks'
 import { MessageStatus, MessageType, type MessageResponse } from '@/features/message/schemas'
@@ -62,11 +62,15 @@ export default function ChatScreen() {
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    isLoading,
+    isLoading
   } = useInfiniteMessages(conversationId, 20, !!conversationId)
 
   // Mutations
-  const { sendMessage: wsSendMessage, revokeMessage: wsRevokeMessage, deleteMessageForMe: wsDeleteForMe } = useChatWebSocket()
+  const {
+    sendMessage: wsSendMessage,
+    revokeMessage: wsRevokeMessage,
+    deleteMessageForMe: wsDeleteForMe
+  } = useChatWebSocket()
   const markAsReadMutation = useMarkAsRead()
   const { data: conversations = [] } = useConversations(0, 100, true)
 
@@ -80,9 +84,7 @@ export default function ChatScreen() {
   const latestOwnMessage = messages.find(
     (msg) => msg.senderId === currentUserId && msg.status !== MessageStatus.REVOKED
   )
-  const latestOwnMessageKey = latestOwnMessage
-    ? latestOwnMessage.id || latestOwnMessage.clientMessageId || null
-    : null
+  const latestOwnMessageKey = latestOwnMessage ? latestOwnMessage.id || latestOwnMessage.clientMessageId || null : null
 
   // Mark as read when entering chat
   useEffect(() => {
@@ -103,7 +105,7 @@ export default function ChatScreen() {
             senderId: replyTo.senderId,
             senderName: replyTo.senderName ?? null,
             content: replyTo.content || '',
-            type: replyTo.type,
+            type: replyTo.type
           }
         : null,
       false
@@ -217,8 +219,8 @@ export default function ChatScreen() {
             params: {
               id: partnerId,
               name: conversationName,
-              isFriend: 'true',
-            },
+              isFriend: 'true'
+            }
           })
         }}
       />
@@ -245,7 +247,7 @@ export default function ChatScreen() {
             ListFooterComponent={
               isFetchingNextPage ? (
                 <View style={{ padding: 16, alignItems: 'center' }}>
-                  <ActivityIndicator size="small" color="#0068FF" />
+                  <ActivityIndicator size='small' color='#0068FF' />
                 </View>
               ) : null
             }
@@ -254,16 +256,15 @@ export default function ChatScreen() {
               const prevMsg = index > 0 ? messages[index - 1] : null
               const nextMsg = index < messages.length - 1 ? messages[index + 1] : null
               // In inverted list, index 0 = newest. prevMsg = next newer message
-              const showAvatar = !isOwn && (!prevMsg || prevMsg.senderId !== item.senderId || prevMsg.senderId === currentUserId)
+              const showAvatar =
+                !isOwn && (!prevMsg || prevMsg.senderId !== item.senderId || prevMsg.senderId === currentUserId)
               // Show time only for the newest message in a consecutive sender streak
               const showTime = !prevMsg || prevMsg.senderId !== item.senderId
               const showDateSep = shouldShowDateSeparator(index)
 
               return (
                 <View>
-                  {showDateSep && (
-                    <DateSeparator label={getDateLabel(item.createdAt)} />
-                  )}
+                  {showDateSep && <DateSeparator label={getDateLabel(item.createdAt)} />}
                   <MessageBubble
                     message={item}
                     isOwn={isOwn}
@@ -285,8 +286,8 @@ export default function ChatScreen() {
                         params: {
                           id: partnerId,
                           name: conversationName,
-                          isFriend: 'true',
-                        },
+                          isFriend: 'true'
+                        }
                       })
                     }}
                   />

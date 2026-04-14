@@ -8,7 +8,7 @@ export const BRAND = {
   blueHover: '#C7E0FF',
   blueText: '#0045AD',
   white: '#FFFFFF',
-  black: '#000000',
+  black: '#000000'
 } as const
 
 // ────────────────────────────────────────────────────────────
@@ -18,7 +18,7 @@ export const STATUS = {
   success: '#00C853',
   warning: '#FFB300',
   error: '#E53838',
-  info: '#0068FF',
+  info: '#0068FF'
 } as const
 
 // ────────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ export const HEADER = {
   gradientColorsDark: ['#1B1C20', '#1B1C20'] as const,
   textColor: BRAND.white,
   searchPlaceholderColor: 'rgba(255, 255, 255, 0.8)',
-  iconSize: { search: 22, qr: 24, add: 30, settings: 26, back: 28 },
+  iconSize: { search: 22, qr: 24, add: 30, settings: 26, back: 28 }
 } as const
 
 // ────────────────────────────────────────────────────────────
@@ -117,7 +117,7 @@ export const lightTokens = {
   '--color-typography-700': '#4D4D4D',
   '--color-typography-800': '#333333',
   '--color-typography-900': '#171717',
-  '--color-typography-950': '#000000',
+  '--color-typography-950': '#000000'
 } as const
 
 export const darkTokens = {
@@ -195,7 +195,7 @@ export const darkTokens = {
   '--color-typography-700': '#CCCCCC',
   '--color-typography-800': '#E5E5E5',
   '--color-typography-900': '#F2F2F2',
-  '--color-typography-950': '#FFFFFF',
+  '--color-typography-950': '#FFFFFF'
 } as const
 
 // Token map type — uses shared key set with string values (not literal types)
@@ -265,7 +265,7 @@ export const SEMANTIC = {
   success: STATUS.success,
   warning: STATUS.warning,
   error: STATUS.error,
-  info: STATUS.info,
+  info: STATUS.info
 } as const
 
 export const DARK_MODE = {
@@ -316,7 +316,7 @@ export const DARK_MODE = {
   success: STATUS.success,
   warning: STATUS.warning,
   error: STATUS.error,
-  info: STATUS.info,
+  info: STATUS.info
 } as const
 
 // ────────────────────────────────────────────────────────────
@@ -335,7 +335,7 @@ export const Colors = {
     icon: SEMANTIC.iconSecondary,
     iconMuted: SEMANTIC.iconMuted,
     tabIconDefault: SEMANTIC.mutedForeground,
-    tabIconSelected: SEMANTIC.primary,
+    tabIconSelected: SEMANTIC.primary
   },
   dark: {
     text: DARK_MODE.textPrimary,
@@ -348,8 +348,8 @@ export const Colors = {
     icon: DARK_MODE.iconSecondary,
     iconMuted: DARK_MODE.iconMuted,
     tabIconDefault: DARK_MODE.mutedForeground,
-    tabIconSelected: DARK_MODE.primary,
-  },
+    tabIconSelected: DARK_MODE.primary
+  }
 } as const
 
 // ────────────────────────────────────────────────────────────
@@ -362,7 +362,7 @@ export const Spacing = {
   md: 16,
   lg: 24,
   xl: 32,
-  xxl: 48,
+  xxl: 48
 } as const
 
 export const BorderRadius = {
@@ -371,13 +371,19 @@ export const BorderRadius = {
   lg: 12,
   xl: 16,
   xxl: 24,
-  full: 9999,
+  full: 9999
 } as const
 
 export const Shadows = {
   sm: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
-  md: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 4 },
-  lg: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 8 },
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4
+  },
+  lg: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 8 }
 } as const
 
 // ────────────────────────────────────────────────────────────
@@ -389,10 +395,9 @@ export const ZaloTheme = {
   header: HEADER,
   spacing: Spacing,
   borderRadius: BorderRadius,
-  shadows: Shadows,
+  shadows: Shadows
 } as const
 
 export type Theme = typeof ZaloTheme
 
 export default ZaloTheme
-

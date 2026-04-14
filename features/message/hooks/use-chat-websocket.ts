@@ -9,12 +9,7 @@ import { getAccessToken } from '@/lib/http'
 import apiConfig from '@/config/apiConfig'
 import { normalizeDateTime } from '../utils/date-utils'
 import { MessageStatus, MessageType } from '../schemas'
-import type {
-  MessageResponse,
-  ConversationResponse,
-  MessageSendRequest,
-  ReplyMetadataResponse,
-} from '../schemas'
+import type { MessageResponse, ConversationResponse, MessageSendRequest, ReplyMetadataResponse } from '../schemas'
 
 // ────────── Singleton state ──────────
 let singletonClient: Client | null = null
@@ -26,7 +21,9 @@ const notifyListeners = () => listeners.forEach((l) => l())
 const getConnected = () => singletonConnected
 const subscribe = (l: () => void) => {
   listeners.add(l)
-  return () => { listeners.delete(l) }
+  return () => {
+    listeners.delete(l)
+  }
 }
 
 const getWsUrl = () => {
@@ -49,211 +46,200 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
   singletonUserId = user.id
 
   const client = new Client({
-      brokerURL: getWsUrl(),
-      reconnectDelay: 5000,
-      connectHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-      forceBinaryWSFrames: true,
-      appendMissingNULLonIncoming: true,
-      onConnect: () => {
-        singletonConnected = true
-        notifyListeners()
+    brokerURL: getWsUrl(),
+    reconnectDelay: 5000,
+    connectHeaders: {
+      Authorization: `Bearer ${token}`
+    },
+    forceBinaryWSFrames: true,
+    appendMissingNULLonIncoming: true,
+    onConnect: () => {
+      singletonConnected = true
+      notifyListeners()
 
-        // ────────── /queue/messages ──────────
-        client.subscribe('/user/queue/messages', (payload) => {
-          const rawMsg = JSON.parse(payload.body)
-          const msg: MessageResponse = {
-            ...rawMsg,
-            createdAt: normalizeDateTime(rawMsg.createdAt || rawMsg.timestamp),
-            lastModifiedAt: normalizeDateTime(rawMsg.lastModifiedAt),
-          }
+      // ────────── /queue/messages ──────────
+      client.subscribe('/user/queue/messages', (payload) => {
+        const rawMsg = JSON.parse(payload.body)
+        const msg: MessageResponse = {
+          ...rawMsg,
+          createdAt: normalizeDateTime(rawMsg.createdAt || rawMsg.timestamp),
+          lastModifiedAt: normalizeDateTime(rawMsg.lastModifiedAt)
+        }
 
-          const conversationId = msg.conversationId
-          if (!conversationId) return
+        const conversationId = msg.conversationId
+        if (!conversationId) return
 
-          const isOwnMessage = msg.isFromMe === true || msg.senderId === user.id
+        const isOwnMessage = msg.isFromMe === true || msg.senderId === user.id
 
-          // Update messages cache
-          if (isOwnMessage) {
-            queryClient.setQueryData(
-              messageKeys.messages(conversationId),
-              (oldData: InfiniteData<any> | undefined) => {
-                if (!oldData) return oldData
-                const firstPage = oldData.pages[0]
-                const hasOptimistic = firstPage.data.some(
-                  (m: MessageResponse) => m.clientMessageId === msg.clientMessageId
-                )
-                if (hasOptimistic) {
-                  return {
-                    ...oldData,
-                    pages: [
-                      {
-                        ...firstPage,
-                        data: firstPage.data.map((m: MessageResponse) =>
-                          m.clientMessageId && m.clientMessageId === msg.clientMessageId
-                            ? { ...msg, status: MessageStatus.NORMAL }
-                            : m
-                        ),
-                      },
-                      ...oldData.pages.slice(1),
-                    ],
-                  }
-                }
-                return {
-                  ...oldData,
-                  pages: [
-                    { ...firstPage, data: [{ ...msg, status: MessageStatus.NORMAL }, ...firstPage.data] },
-                    ...oldData.pages.slice(1),
-                  ],
-                }
+        // Update messages cache
+        if (isOwnMessage) {
+          queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
+            if (!oldData) return oldData
+            const firstPage = oldData.pages[0]
+            const hasOptimistic = firstPage.data.some((m: MessageResponse) => m.clientMessageId === msg.clientMessageId)
+            if (hasOptimistic) {
+              return {
+                ...oldData,
+                pages: [
+                  {
+                    ...firstPage,
+                    data: firstPage.data.map((m: MessageResponse) =>
+                      m.clientMessageId && m.clientMessageId === msg.clientMessageId
+                        ? { ...msg, status: MessageStatus.NORMAL }
+                        : m
+                    )
+                  },
+                  ...oldData.pages.slice(1)
+                ]
               }
+            }
+            return {
+              ...oldData,
+              pages: [
+                { ...firstPage, data: [{ ...msg, status: MessageStatus.NORMAL }, ...firstPage.data] },
+                ...oldData.pages.slice(1)
+              ]
+            }
+          })
+        } else {
+          queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
+            if (!oldData) return oldData
+            const firstPage = oldData.pages[0]
+            const alreadyExists = firstPage.data.some(
+              (m: MessageResponse) =>
+                m.id === msg.id || (m.clientMessageId && m.clientMessageId === msg.clientMessageId)
             )
+            if (alreadyExists) return oldData
+            return {
+              ...oldData,
+              pages: [{ ...firstPage, data: [msg, ...firstPage.data] }, ...oldData.pages.slice(1)]
+            }
+          })
+        }
+
+        // Update conversations cache (move to top)
+        queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
+          if (!oldData) return oldData
+          const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
+          const idx = conversations.findIndex((c) => c.id === conversationId)
+
+          if (idx >= 0) {
+            const updated: ConversationResponse = {
+              ...conversations[idx],
+              lastMessage: msg.content,
+              lastMessageTime: msg.createdAt || new Date().toISOString(),
+              isLastMessageFromMe: isOwnMessage,
+              lastMessageType: msg.type,
+              unreadCount:
+                msg.unreadCount !== undefined
+                  ? msg.unreadCount
+                  : (conversations[idx].unreadCount || 0) + (isOwnMessage ? 0 : 1),
+              lastMessageStatus: msg.status
+            }
+            const newList = [updated, ...conversations.filter((_, i) => i !== idx)]
+            return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
           } else {
-            queryClient.setQueryData(
-              messageKeys.messages(conversationId),
-              (oldData: InfiniteData<any> | undefined) => {
-                if (!oldData) return oldData
-                const firstPage = oldData.pages[0]
-                const alreadyExists = firstPage.data.some(
-                  (m: MessageResponse) => m.id === msg.id || (m.clientMessageId && m.clientMessageId === msg.clientMessageId)
-                )
-                if (alreadyExists) return oldData
-                return {
-                  ...oldData,
-                  pages: [{ ...firstPage, data: [msg, ...firstPage.data] }, ...oldData.pages.slice(1)],
-                }
-              }
-            )
+            queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+            return oldData
           }
+        })
+      })
 
-          // Update conversations cache (move to top)
+      // ────────── /queue/presence ──────────
+      client.subscribe('/user/queue/presence', (payload) => {
+        const presence = JSON.parse(payload.body)
+        queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
+          if (!oldData) return oldData
+          const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
+          const newList = conversations.map((conv: ConversationResponse) => {
+            if (conv.isGroup) return conv
+            const hasMember = conv.members?.some((m) => m.userId === presence.userId)
+            if (hasMember) {
+              return { ...conv, status: presence.status, lastSeenAt: presence.timestamp }
+            }
+            return conv
+          })
+          return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
+        })
+      })
+
+      // ────────── /queue/read-receipts ──────────
+      client.subscribe('/user/queue/read-receipts', (payload) => {
+        const receipt = JSON.parse(payload.body)
+        queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
+          if (!oldData) return oldData
+          const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
+          const newList = conversations.map((conv: ConversationResponse) => {
+            if (conv.id !== receipt.conversationId) return conv
+            const updatedMembers = conv.members?.map((m: any) =>
+              m.userId === receipt.userId ? { ...m, lastReadMessageId: receipt.lastReadMessageId } : m
+            )
+            return { ...conv, members: updatedMembers }
+          })
+          return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
+        })
+      })
+
+      // ────────── /queue/status-updates ──────────
+      client.subscribe('/user/queue/status-updates', (payload) => {
+        const update = JSON.parse(payload.body)
+        if (update.type === 'MESSAGE_STATUS_UPDATE') {
           queryClient.setQueryData(
-            messageKeys.conversationList(),
-            (oldData: any) => {
+            messageKeys.messages(update.conversationId),
+            (oldData: InfiniteData<any> | undefined) => {
               if (!oldData) return oldData
-              const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : oldData?.data ?? []
-              const idx = conversations.findIndex((c) => c.id === conversationId)
-
-              if (idx >= 0) {
-                const updated: ConversationResponse = {
-                  ...conversations[idx],
-                  lastMessage: msg.content,
-                  lastMessageTime: msg.createdAt || new Date().toISOString(),
-                  isLastMessageFromMe: isOwnMessage,
-                  lastMessageType: msg.type,
-                  unreadCount:
-                    msg.unreadCount !== undefined
-                      ? msg.unreadCount
-                      : (conversations[idx].unreadCount || 0) + (isOwnMessage ? 0 : 1),
-                  lastMessageStatus: msg.status,
-                }
-                const newList = [updated, ...conversations.filter((_, i) => i !== idx)]
-                return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
-              } else {
-                queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
-                return oldData
+              return {
+                ...oldData,
+                pages: oldData.pages.map((page: any) => ({
+                  ...page,
+                  data: page.data.map((m: MessageResponse) =>
+                    m.id === update.messageId ? { ...m, status: update.newStatus, content: null } : m
+                  )
+                }))
               }
             }
           )
-        })
+          queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+        }
+      })
 
-        // ────────── /queue/presence ──────────
-        client.subscribe('/user/queue/presence', (payload) => {
-          const presence = JSON.parse(payload.body)
-          queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
-            if (!oldData) return oldData
-            const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : oldData?.data ?? []
-            const newList = conversations.map((conv: ConversationResponse) => {
-              if (conv.isGroup) return conv
-              const hasMember = conv.members?.some((m) => m.userId === presence.userId)
-              if (hasMember) {
-                return { ...conv, status: presence.status, lastSeenAt: presence.timestamp }
-              }
-              return conv
-            })
-            return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
-          })
-        })
-
-        // ────────── /queue/read-receipts ──────────
-        client.subscribe('/user/queue/read-receipts', (payload) => {
-          const receipt = JSON.parse(payload.body)
-          queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
-            if (!oldData) return oldData
-            const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : oldData?.data ?? []
-            const newList = conversations.map((conv: ConversationResponse) => {
-              if (conv.id !== receipt.conversationId) return conv
-              const updatedMembers = conv.members?.map((m: any) =>
-                m.userId === receipt.userId ? { ...m, lastReadMessageId: receipt.lastReadMessageId } : m
+      // ────────── /queue/conversations ──────────
+      client.subscribe('/user/queue/conversations', (payload) => {
+        try {
+          const newConv = JSON.parse(payload.body)
+          if (newConv.id) {
+            queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
+              if (!oldData) return oldData
+              const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
+              if (conversations.find((c: ConversationResponse) => c.id === newConv.id)) return oldData
+              const newList = [newConv, ...conversations].sort(
+                (a: any, b: any) => new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
               )
-              return { ...conv, members: updatedMembers }
+              return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
             })
-            return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
-          })
-        })
-
-        // ────────── /queue/status-updates ──────────
-        client.subscribe('/user/queue/status-updates', (payload) => {
-          const update = JSON.parse(payload.body)
-          if (update.type === 'MESSAGE_STATUS_UPDATE') {
-            queryClient.setQueryData(
-              messageKeys.messages(update.conversationId),
-              (oldData: InfiniteData<any> | undefined) => {
-                if (!oldData) return oldData
-                return {
-                  ...oldData,
-                  pages: oldData.pages.map((page: any) => ({
-                    ...page,
-                    data: page.data.map((m: MessageResponse) =>
-                      m.id === update.messageId ? { ...m, status: update.newStatus, content: null } : m
-                    ),
-                  })),
-                }
-              }
-            )
+          } else if (newConv.type === 'REFRESH') {
             queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
           }
-        })
+        } catch {
+          queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+        }
+      })
 
-        // ────────── /queue/conversations ──────────
-        client.subscribe('/user/queue/conversations', (payload) => {
-          try {
-            const newConv = JSON.parse(payload.body)
-            if (newConv.id) {
-              queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
-                if (!oldData) return oldData
-                const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : oldData?.data ?? []
-                if (conversations.find((c: ConversationResponse) => c.id === newConv.id)) return oldData
-                const newList = [newConv, ...conversations].sort(
-                  (a: any, b: any) =>
-                    new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
-                )
-                return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
-              })
-            } else if (newConv.type === 'REFRESH') {
-              queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
-            }
-          } catch {
-            queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
-          }
-        })
+      // Announce presence
+      client.publish({
+        destination: '/app/user.addUser',
+        body: JSON.stringify(user)
+      })
+    },
+    onDisconnect: () => {
+      singletonConnected = false
+      notifyListeners()
+    },
+    debug: __DEV__ ? (msg) => console.log('[STOMP]', msg) : undefined
+  })
 
-        // Announce presence
-        client.publish({
-          destination: '/app/user.addUser',
-          body: JSON.stringify(user),
-        })
-      },
-      onDisconnect: () => {
-        singletonConnected = false
-        notifyListeners()
-      },
-      debug: __DEV__ ? (msg) => console.log('[STOMP]', msg) : undefined,
-    })
-
-    client.activate()
-    singletonClient = client
+  client.activate()
+  singletonClient = client
 }
 
 const disconnectSingleton = (user: any) => {
@@ -261,7 +247,7 @@ const disconnectSingleton = (user: any) => {
     if (singletonClient.connected && user) {
       singletonClient.publish({
         destination: '/app/user.disconnectUser',
-        body: JSON.stringify(user),
+        body: JSON.stringify(user)
       })
     }
     singletonClient.deactivate()
@@ -303,7 +289,7 @@ export const useChatWebSocket = () => {
         replyTo: replyTo
           ? { messageId: replyTo.messageId, senderId: replyTo.senderId, content: replyTo.content, type: replyTo.type }
           : undefined,
-        isForwarded,
+        isForwarded
       }
 
       sendMsgMutation.mutate(request)
@@ -323,25 +309,22 @@ export const useChatWebSocket = () => {
         senderName: user?.fullName ?? null,
         senderAvatar: null,
         replyTo: replyTo ?? null,
-        isForwarded,
+        isForwarded
       }
 
-      queryClient.setQueryData(
-        messageKeys.messages(conversationId),
-        (oldData: InfiniteData<any> | undefined) => {
-          if (!oldData) return oldData
-          const firstPage = oldData.pages[0]
-          return {
-            ...oldData,
-            pages: [{ ...firstPage, data: [optimisticMsg, ...firstPage.data] }, ...oldData.pages.slice(1)],
-          }
+      queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
+        if (!oldData) return oldData
+        const firstPage = oldData.pages[0]
+        return {
+          ...oldData,
+          pages: [{ ...firstPage, data: [optimisticMsg, ...firstPage.data] }, ...oldData.pages.slice(1)]
         }
-      )
+      })
 
       // Move conversation to top
       queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
         if (!oldData) return oldData
-        const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : oldData?.data ?? []
+        const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
         const idx = conversations.findIndex((c) => c.id === conversationId)
         if (idx >= 0) {
           const updated: ConversationResponse = {
@@ -350,7 +333,7 @@ export const useChatWebSocket = () => {
             lastMessageTime: now,
             isLastMessageFromMe: true,
             lastMessageType: MessageType.CHAT,
-            lastMessageStatus: MessageStatus.NORMAL,
+            lastMessageStatus: MessageStatus.NORMAL
           }
           const newList = [updated, ...conversations.filter((_, i) => i !== idx)]
           return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
@@ -366,21 +349,18 @@ export const useChatWebSocket = () => {
     (messageId: string, conversationId: string) => {
       revokeMsgMutation.mutate({ messageId, conversationId })
 
-      queryClient.setQueryData(
-        messageKeys.messages(conversationId),
-        (oldData: InfiniteData<any> | undefined) => {
-          if (!oldData) return oldData
-          return {
-            ...oldData,
-            pages: oldData.pages.map((page: any) => ({
-              ...page,
-              data: page.data.map((m: MessageResponse) =>
-                m.id === messageId ? { ...m, status: MessageStatus.REVOKED, content: null } : m
-              ),
-            })),
-          }
+      queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
+        if (!oldData) return oldData
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any) => ({
+            ...page,
+            data: page.data.map((m: MessageResponse) =>
+              m.id === messageId ? { ...m, status: MessageStatus.REVOKED, content: null } : m
+            )
+          }))
         }
-      )
+      })
     },
     [queryClient, revokeMsgMutation]
   )
@@ -390,19 +370,16 @@ export const useChatWebSocket = () => {
     (messageId: string, conversationId: string) => {
       deleteMsgMutation.mutate({ messageId, conversationId })
 
-      queryClient.setQueryData(
-        messageKeys.messages(conversationId),
-        (oldData: InfiniteData<any> | undefined) => {
-          if (!oldData) return oldData
-          return {
-            ...oldData,
-            pages: oldData.pages.map((page: any) => ({
-              ...page,
-              data: page.data.filter((m: MessageResponse) => m.id !== messageId),
-            })),
-          }
+      queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
+        if (!oldData) return oldData
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page: any) => ({
+            ...page,
+            data: page.data.filter((m: MessageResponse) => m.id !== messageId)
+          }))
         }
-      )
+      })
     },
     [queryClient, deleteMsgMutation]
   )

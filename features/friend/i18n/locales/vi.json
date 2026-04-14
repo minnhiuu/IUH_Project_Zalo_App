@@ -98,6 +98,20 @@
     "notification": {
       "accepted": "Đã chấp nhận lời mời kết bạn",
       "declined": "Đã từ chối lời mời"
+    },
+    "contact": {
+      "title": "Tìm bạn từ danh bạ",
+      "findFromContacts": "Bạn bè từ danh bạ",
+      "fromContacts": "Từ danh bạ của bạn",
+      "syncing": "Đang đồng bộ danh bạ...",
+      "syncNow": "Đồng bộ danh bạ",
+      "syncResult": "Tìm thấy {{matched}} người dùng từ {{total}} liên hệ",
+      "permissionTitle": "Cần quyền truy cập danh bạ",
+      "permissionDenied": "Cho phép truy cập danh bạ để tìm bạn bè đang sử dụng BondHub",
+      "grantPermission": "Cho phép truy cập",
+      "emptyTitle": "Không tìm thấy liên hệ",
+      "noSuggestions": "Chưa tìm thấy bạn bè từ danh bạ. Đồng bộ danh bạ để tìm người quen.",
+      "listHeader": "{{count}} người từ danh bạ của bạn"
     }
   }
 }

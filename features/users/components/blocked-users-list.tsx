@@ -50,7 +50,8 @@ export function BlockedUsersList() {
       {/* Description like web/ios */}
       <View style={{ paddingHorizontal: 16, paddingVertical: 12 }}>
         <Text style={{ fontSize: 13, color: isDark ? '#818C99' : '#64748B', lineHeight: 18 }}>
-          {t('settings.privacy.blockListSubtitle') || 'Những người này sẽ không thể nhắn tin, gọi điện hoặc xem nhật ký của bạn tùy theo cài đặt chặn.'}
+          {t('settings.privacy.blockListSubtitle') ||
+            'Những người này sẽ không thể nhắn tin, gọi điện hoặc xem nhật ký của bạn tùy theo cài đặt chặn.'}
         </Text>
       </View>
 

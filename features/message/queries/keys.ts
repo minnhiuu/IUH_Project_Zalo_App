@@ -9,6 +9,5 @@ export const messageKeys = {
   messageList: (conversationId: string, page: number = 0, size: number = 20) =>
     [...messageKeys.messages(conversationId), page, size] as const,
 
-  partnerConversation: (partnerId: string) =>
-    [...messageKeys.conversations(), 'partner', partnerId] as const,
+  partnerConversation: (partnerId: string) => [...messageKeys.conversations(), 'partner', partnerId] as const
 }

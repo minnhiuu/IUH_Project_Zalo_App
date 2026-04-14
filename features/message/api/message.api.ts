@@ -14,18 +14,18 @@ export const messageApi = {
       `${API_ENDPOINTS.MESSAGE.MESSAGES(conversationId)}?page=${page}&size=${size}`
     ),
 
-  sendMessage: (request: MessageSendRequest) =>
-    http.post<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.SEND, request),
+  sendMessage: (request: MessageSendRequest) => {
+    const { conversationId, ...body } = request
+    return http.post<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.SEND(conversationId), body)
+  },
 
   getOrCreateConversation: (partnerId: string) =>
     http.get<ApiResponse<ConversationResponse>>(API_ENDPOINTS.MESSAGE.PARTNER_CONVERSATION(partnerId)),
 
-  markAsRead: (conversationId: string) =>
-    http.put<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.MARK_READ(conversationId)),
+  markAsRead: (conversationId: string) => http.put<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.MARK_READ(conversationId)),
 
-  revokeMessage: (messageId: string) =>
-    http.patch<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.REVOKE(messageId)),
+  revokeMessage: (messageId: string) => http.patch<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.REVOKE(messageId)),
 
   deleteMessageForMe: (messageId: string) =>
-    http.delete<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.DELETE_FOR_ME(messageId)),
+    http.delete<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.DELETE_FOR_ME(messageId))
 }

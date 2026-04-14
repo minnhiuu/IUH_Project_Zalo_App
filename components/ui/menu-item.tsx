@@ -38,43 +38,39 @@ export function MenuItem({
         backgroundColor: colors.background
       })}
     >
-      <HStack style={{ 
-        alignItems: 'center', 
-        paddingHorizontal: 16, 
-        paddingVertical: 12,
-        borderBottomWidth: 0.5,
-        borderBottomColor: colors.divider
-      }} space="md">
+      <HStack
+        style={{
+          alignItems: 'center',
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+          borderBottomWidth: 0.5,
+          borderBottomColor: colors.divider
+        }}
+        space='md'
+      >
         {/* Left Icon/Component */}
-        {leftComponent || (icon && (
-          <View
-            style={{
-              width: 32,
-              height: 32,
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <Ionicons name={icon} size={24} color={iconColor} />
-          </View>
-        ))}
+        {leftComponent ||
+          (icon && (
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Ionicons name={icon} size={24} color={iconColor} />
+            </View>
+          ))}
 
         {/* Title & Subtitle */}
         <VStack style={{ flex: 1 }}>
-          <Text style={{ fontSize: 16, color: colors.text, fontWeight: '400' }}>
-            {title}
-          </Text>
-          {subtitle && (
-            <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 2 }}>
-              {subtitle}
-            </Text>
-          )}
+          <Text style={{ fontSize: 16, color: colors.text, fontWeight: '400' }}>{title}</Text>
+          {subtitle && <Text style={{ fontSize: 14, color: colors.textSecondary, marginTop: 2 }}>{subtitle}</Text>}
         </VStack>
 
         {/* Right Component or Chevron */}
-        {rightComponent || (onPress && (
-          <Ionicons name="chevron-forward" size={20} color={colors.iconMuted} />
-        ))}
+        {rightComponent || (onPress && <Ionicons name='chevron-forward' size={20} color={colors.iconMuted} />)}
       </HStack>
     </Pressable>
   )

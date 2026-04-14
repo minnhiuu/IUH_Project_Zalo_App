@@ -26,15 +26,15 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
       content: conversation.lastMessage,
       isFromMe: conversation.isLastMessageFromMe,
       type: conversation.lastMessageType,
-      status: conversation.lastMessageStatus,
+      status: conversation.lastMessageStatus
     },
     {
       you: t('message.you'),
       user: t('message.user', { defaultValue: 'User' }),
       type: {
         image: t('message.messageType.image', { defaultValue: '[Image]' }),
-        file: t('message.messageType.file', { defaultValue: '[File]' }),
-      },
+        file: t('message.messageType.file', { defaultValue: '[File]' })
+      }
     }
   )
 
@@ -68,16 +68,12 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
         alignItems: 'flex-start',
         paddingHorizontal: 16,
         paddingVertical: 13,
-        backgroundColor: colors.background,
+        backgroundColor: colors.background
       }}
     >
       {/* Avatar */}
       <View style={{ marginRight: 12, paddingTop: 2 }}>
-        <UserAvatar
-          source={conversation.avatar}
-          name={conversation.name || ''}
-          size="xl"
-        />
+        <UserAvatar source={conversation.avatar} name={conversation.name || ''} size='xl' />
       </View>
 
       {/* Content */}
@@ -88,16 +84,18 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
           paddingBottom: 14,
           marginTop: 2,
           borderBottomWidth: 0.5,
-          borderBottomColor: '#E5E7EB',
+          borderBottomColor: '#E5E7EB'
         }}
       >
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}>
+        <View
+          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}
+        >
           <Text
             style={{
               fontSize: 18,
               fontWeight: hasUnread ? '700' : '500',
               color: colors.text,
-              flex: 1,
+              flex: 1
             }}
             numberOfLines={1}
           >
@@ -116,7 +114,7 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
               fontSize: 16,
               color: '#6B7280',
               fontStyle: isRevoked ? 'italic' : 'normal',
-              fontWeight: hasUnread ? '500' : '400',
+              fontWeight: hasUnread ? '500' : '400'
             }}
           >
             {isRevoked ? t('message.messageRevoked') : preview}
@@ -131,7 +129,7 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
                 height: 22,
                 paddingHorizontal: 7,
                 alignItems: 'center',
-                justifyContent: 'center',
+                justifyContent: 'center'
               }}
             >
               <Text style={{ fontSize: 11, fontWeight: '700', color: '#fff' }}>

@@ -1,11 +1,5 @@
 import React, { useState } from 'react'
-import {
-  Modal,
-  View,
-  TouchableOpacity,
-  ActivityIndicator,
-  Alert
-} from 'react-native'
+import { Modal, View, TouchableOpacity, ActivityIndicator, Alert } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
@@ -44,7 +38,7 @@ function CheckboxRow({ label, iconName, value, onChange, isDark }: CheckboxRowPr
           height: 22,
           borderRadius: 4,
           borderWidth: 2,
-          borderColor: value ? SEMANTIC.primary : (isDark ? '#475569' : '#CBD5E1'),
+          borderColor: value ? SEMANTIC.primary : isDark ? '#475569' : '#CBD5E1',
           backgroundColor: value ? SEMANTIC.primary : 'transparent',
           alignItems: 'center',
           justifyContent: 'center'
@@ -91,27 +85,23 @@ export function BlockUserModal({
   }
 
   const handleUnblock = () => {
-    Alert.alert(
-      t('settings.privacy.unblock'),
-      t('settings.privacy.unblockConfirm', { name: userName }),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('settings.privacy.unblock'),
-          onPress: () => {
-            setBlockMessage(false)
-            setBlockCall(false)
-            setBlockStory(false)
+    Alert.alert(t('settings.privacy.unblock'), t('settings.privacy.unblockConfirm', { name: userName }), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('settings.privacy.unblock'),
+        onPress: () => {
+          setBlockMessage(false)
+          setBlockCall(false)
+          setBlockStory(false)
 
-            unblockMutation.mutate(userId, {
-              onSuccess: () => {
-                onClose()
-              }
-            })
-          }
+          unblockMutation.mutate(userId, {
+            onSuccess: () => {
+              onClose()
+            }
+          })
         }
-      ]
-    )
+      }
+    ])
   }
 
   const handleSubmit = () => {
@@ -137,8 +127,7 @@ export function BlockUserModal({
     }
   }
 
-  const isPending =
-    blockMutation.isPending || unblockMutation.isPending || updatePrefMutation.isPending
+  const isPending = blockMutation.isPending || unblockMutation.isPending || updatePrefMutation.isPending
 
   return (
     <Modal visible={visible} transparent animationType='slide' onRequestClose={onClose}>
@@ -213,7 +202,9 @@ export function BlockUserModal({
                   borderColor: isDark ? '#3E444A' : '#CBD5E1'
                 }}
               >
-                <Text style={{ fontSize: 14, color: isDark ? '#DFE2E7' : '#374151' }}>{t('settings.privacy.unblock')}</Text>
+                <Text style={{ fontSize: 14, color: isDark ? '#DFE2E7' : '#374151' }}>
+                  {t('settings.privacy.unblock')}
+                </Text>
               </TouchableOpacity>
             )}
             <TouchableOpacity
@@ -254,5 +245,4 @@ export function BlockUserModal({
       </TouchableOpacity>
     </Modal>
   )
-
 }

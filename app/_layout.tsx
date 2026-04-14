@@ -222,6 +222,7 @@ function ThemeAwareProviders() {
               }}
             />
             <Stack.Screen name='user-profile/[id]' />
+            <Stack.Screen name='find-friends-contacts' />
             <Stack.Screen name='message-options' />
             <Stack.Screen
               name='chat/[id]'
