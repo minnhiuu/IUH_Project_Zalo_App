@@ -138,9 +138,15 @@ export const useFcm = () => {
       const notificationId = response.notification.request.identifier
 
       if (actionId === 'confirm' && requestId) {
-        router.push({ pathname: '/friend-requests', params: { autoAction: 'accept', requestId, timestamp: Date.now().toString() } })
+        router.push({
+          pathname: '/friend-requests',
+          params: { autoAction: 'accept', requestId, timestamp: Date.now().toString() }
+        })
       } else if (actionId === 'decline' && requestId) {
-        router.push({ pathname: '/friend-requests', params: { autoAction: 'decline', requestId, timestamp: Date.now().toString() } })
+        router.push({
+          pathname: '/friend-requests',
+          params: { autoAction: 'decline', requestId, timestamp: Date.now().toString() }
+        })
       } else if (actionId === 'view_profile' && data.actorId) {
         // @ts-ignore - Dynamic path for router.push
         router.push(`/user-profile/${data.actorId}`)

@@ -30,7 +30,7 @@ export function DeviceItem({ device, activeLabel, currentLabel, onPressMore }: D
               name={isMobile ? 'phone-portrait-outline' : 'desktop-outline'}
               size={20}
               color={isMobile ? '#0068FF' : '#9C27B0'}
-              className="dark:opacity-90"
+              className='dark:opacity-90'
             />
           </View>
 
@@ -53,14 +53,16 @@ export function DeviceItem({ device, activeLabel, currentLabel, onPressMore }: D
               {device.os || 'Unknown OS'} • {device.browser || 'Unknown Browser'}
             </Text>
             {device.lastActiveTime && (
-              <Text className='text-xs text-muted-foreground mt-0.5'>{format(new Date(device.lastActiveTime), 'Pp')}</Text>
+              <Text className='text-xs text-muted-foreground mt-0.5'>
+                {format(new Date(device.lastActiveTime), 'Pp')}
+              </Text>
             )}
           </View>
         </View>
 
         {/* More options button */}
         <TouchableOpacity onPress={onPressMore} className='p-2'>
-          <Ionicons name='ellipsis-horizontal' size={20} color='#6B7280' className="dark:text-icon-muted" />
+          <Ionicons name='ellipsis-horizontal' size={20} color='#6B7280' className='dark:text-icon-muted' />
         </TouchableOpacity>
       </View>
     </View>

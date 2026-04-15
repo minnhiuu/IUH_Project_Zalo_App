@@ -4,6 +4,7 @@ import React from 'react'
 import { StatusBar, Platform } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/context'
+import { useChatWebSocket } from '@/features/message/hooks'
 
 const TAB_CONFIG = {
   messages: {
@@ -42,9 +43,16 @@ export default function TabLayout() {
   const { t } = useTranslation()
   const { colors, isDark } = useTheme()
 
+  // Initialize WebSocket connection for real-time messaging
+  useChatWebSocket()
+
   return (
     <>
-      <StatusBar barStyle='light-content' backgroundColor={isDark ? colors.background : colors.tint} translucent={Platform.OS === 'android'} />
+      <StatusBar
+        barStyle='light-content'
+        backgroundColor={isDark ? colors.background : colors.tint}
+        translucent={Platform.OS === 'android'}
+      />
       <Tabs
         screenOptions={{
           tabBarActiveTintColor: colors.tint,

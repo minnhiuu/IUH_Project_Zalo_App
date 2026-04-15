@@ -66,9 +66,22 @@
       "title": "Add Friend",
       "phoneInput": "Enter phone number",
       "scanQR": "Scan QR Code",
+      "scanHint": "Point your camera at a QR code to add friend",
+      "invalidQr": "Invalid QR code or unsupported friend QR",
+      "cameraPermission": "Camera access is required to scan QR codes",
+      "grantCamera": "Grant camera access",
+      "flashOn": "Flash on",
+      "flashOff": "Flash off",
       "mayKnow": "People you may know",
       "mayKnowHint": "View sent friend requests on Contacts page",
-      "qrHint": "Scan code to add me on Zalo",
+      "qrCardSubtitle": "BondHub Contact Card",
+      "qrHint": "Scan to add me on BondHub",
+      "shareQr": "Share",
+      "saveQr": "Save QR",
+      "saveSuccess": "QR code saved to photo library",
+      "saveFailed": "Unable to save QR code",
+      "savePermissionDenied": "Photo permission is required to save QR code",
+      "forwardIntro": "Add me via this QR:",
       "noResult": "User not found",
       "searching": "Searching...",
       "defaultMessage": "Hi, I'm {{name}}. Let's be friends!",
@@ -85,6 +98,20 @@
     "notification": {
       "accepted": "Friend request accepted",
       "declined": "Friend request declined"
+    },
+    "contact": {
+      "title": "Find friends from contacts",
+      "findFromContacts": "Friends from contacts",
+      "fromContacts": "From your contacts",
+      "syncing": "Syncing contacts...",
+      "syncNow": "Sync contacts",
+      "syncResult": "Found {{matched}} users from {{total}} contacts",
+      "permissionTitle": "Contact access required",
+      "permissionDenied": "Allow access to your contacts to find friends who are already on BondHub",
+      "grantPermission": "Allow access",
+      "emptyTitle": "No contacts found",
+      "noSuggestions": "No friends found from your contacts yet. Sync your contacts to find people you know.",
+      "listHeader": "{{count}} people from your contacts"
     }
   }
 }

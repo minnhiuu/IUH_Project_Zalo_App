@@ -22,9 +22,7 @@ export function AllTab({
   onItemPress
 }: AllTabProps) {
   const { t } = useTranslation()
-  const phoneMatchItem = searchResults?.pages
-    ?.flatMap((page: any) => page.data)
-    ?.find((item: any) => item.phoneNumber)
+  const phoneMatchItem = searchResults?.pages?.flatMap((page: any) => page.data)?.find((item: any) => item.phoneNumber)
 
   return (
     <>

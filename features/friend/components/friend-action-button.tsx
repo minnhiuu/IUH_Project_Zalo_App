@@ -26,28 +26,28 @@ const BUTTON_ICON_CONFIGS: Record<
 > = {
   addFriend: {
     icon: 'person-add-outline',
-    labelKey: 'friend.actions.addFriend',
+    labelKey: 'friend.actions.addFriend'
   },
   unfriend: {
     icon: 'person-remove-outline',
-    labelKey: 'friend.actions.unfriend',
+    labelKey: 'friend.actions.unfriend'
   },
   cancelRequest: {
     icon: 'close-circle-outline',
-    labelKey: 'friend.actions.cancelRequest',
+    labelKey: 'friend.actions.cancelRequest'
   },
   message: {
     icon: 'chatbubble-outline',
-    labelKey: 'friend.actions.message',
+    labelKey: 'friend.actions.message'
   },
   accept: {
     icon: 'checkmark-circle-outline',
-    labelKey: 'friend.actions.accept',
+    labelKey: 'friend.actions.accept'
   },
   decline: {
     icon: 'close-outline',
-    labelKey: 'friend.actions.decline',
-  },
+    labelKey: 'friend.actions.decline'
+  }
 }
 
 export function FriendActionButton({
@@ -55,7 +55,7 @@ export function FriendActionButton({
   onPress,
   isLoading = false,
   disabled = false,
-  compact = false,
+  compact = false
 }: FriendActionButtonProps) {
   const { t } = useTranslation()
   const semanticColors = useSemanticColors()
@@ -93,11 +93,11 @@ export function FriendActionButton({
           backgroundColor: bgColor,
           alignItems: 'center',
           justifyContent: 'center',
-          opacity: disabled ? 0.5 : 1,
+          opacity: disabled ? 0.5 : 1
         }}
       >
         {isLoading ? (
-          <ActivityIndicator size="small" color={textColor} />
+          <ActivityIndicator size='small' color={textColor} />
         ) : (
           <Ionicons name={config.icon} size={20} color={textColor} />
         )}
@@ -119,27 +119,22 @@ export function FriendActionButton({
         borderRadius: 20,
         backgroundColor: bgColor,
         opacity: disabled ? 0.5 : 1,
-        gap: 6,
+        gap: 6
       }}
     >
       {isLoading ? (
-        <ActivityIndicator size="small" color={textColor} />
+        <ActivityIndicator size='small' color={textColor} />
       ) : (
         <>
           <Ionicons name={config.icon} size={18} color={textColor} />
-          <Text style={{ fontSize: 14, fontWeight: '600', color: textColor }}>
-            {t(config.labelKey)}
-          </Text>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: textColor }}>{t(config.labelKey)}</Text>
         </>
       )}
     </TouchableOpacity>
   )
 }
 
-export function getFriendButtonVariant(
-  status: FriendStatus | null,
-  isRequester: boolean
-): ButtonVariant | null {
+export function getFriendButtonVariant(status: FriendStatus | null, isRequester: boolean): ButtonVariant | null {
   if (!status) return 'addFriend'
 
   switch (status) {

@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { View, TextInput, Pressable } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
+import { LinearGradient } from 'expo-linear-gradient'
 import { Text } from './text'
 import { HEADER } from '@/constants/theme'
 import { useTheme } from '@/context'
@@ -53,8 +54,8 @@ export function Header({
   onBellPress
 }: HeaderProps) {
   const router = useRouter()
-  const { isDark, colors } = useTheme()
-  const headerBg = isDark ? colors.background : HEADER.backgroundColor
+  const { isDark } = useTheme()
+  const headerGradient = isDark ? HEADER.gradientColorsDark : HEADER.gradientColors
 
   const handleBackPress = () => {
     if (onBackPress) {
@@ -65,12 +66,11 @@ export function Header({
   }
 
   return (
-    <View style={{ backgroundColor: headerBg }}>
-      <SafeAreaView edges={['top']} style={{ backgroundColor: headerBg }}>
+    <LinearGradient colors={headerGradient}>
+      <SafeAreaView edges={['top']} style={{ backgroundColor: 'transparent' }}>
         <View
           style={{
             paddingHorizontal: HEADER.paddingHorizontal,
-            paddingVertical: HEADER.paddingVertical,
             height: HEADER.height
           }}
         >
@@ -158,6 +158,6 @@ export function Header({
           </View>
         </View>
       </SafeAreaView>
-    </View>
+    </LinearGradient>
   )
 }

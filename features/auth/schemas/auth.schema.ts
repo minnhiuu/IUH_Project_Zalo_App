@@ -77,10 +77,7 @@ export const changePasswordRequestSchema = z
     newPassword: z
       .string()
       .min(8, 'auth.validation.newPasswordMinLength')
-      .regex(
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
-        'auth.validation.passwordRegex'
-      ),
+      .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/, 'auth.validation.passwordRegex'),
     confirmPassword: z.string().min(1, 'auth.validation.confirmNewPasswordRequired'),
     logoutOtherDevices: z.boolean().optional()
   })

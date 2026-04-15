@@ -66,9 +66,22 @@
       "title": "Kết bạn",
       "phoneInput": "Nhập số điện thoại",
       "scanQR": "Quét mã QR",
+      "scanHint": "Hướng camera vào mã QR để kết bạn",
+      "invalidQr": "Mã QR không hợp lệ hoặc không phải mã kết bạn",
+      "cameraPermission": "Ứng dụng cần quyền camera để quét mã QR",
+      "grantCamera": "Cấp quyền camera",
+      "flashOn": "Bật đèn",
+      "flashOff": "Tắt đèn",
       "mayKnow": "Bạn bè có thể quen",
       "mayKnowHint": "Xem lời mời kết bạn đã gửi tại trang Danh bạ Zalo",
-      "qrHint": "Quét mã để thêm bạn Zalo với tôi",
+      "qrCardSubtitle": "Danh thiếp BondHub",
+      "qrHint": "Quét mã để thêm bạn BondHub với tôi",
+      "shareQr": "Chia sẻ",
+      "saveQr": "Lưu QR",
+      "saveSuccess": "Đã lưu mã QR vào thư viện ảnh",
+      "saveFailed": "Không thể lưu mã QR",
+      "savePermissionDenied": "Bạn cần cấp quyền ảnh để lưu mã QR",
+      "forwardIntro": "Kết bạn với mình qua QR:",
       "noResult": "Không tìm thấy người dùng",
       "searching": "Đang tìm kiếm...",
       "defaultMessage": "Xin chào, mình là {{name}}. Kết bạn với mình nhé!",
@@ -85,6 +98,20 @@
     "notification": {
       "accepted": "Đã chấp nhận lời mời kết bạn",
       "declined": "Đã từ chối lời mời"
+    },
+    "contact": {
+      "title": "Tìm bạn từ danh bạ",
+      "findFromContacts": "Bạn bè từ danh bạ",
+      "fromContacts": "Từ danh bạ của bạn",
+      "syncing": "Đang đồng bộ danh bạ...",
+      "syncNow": "Đồng bộ danh bạ",
+      "syncResult": "Tìm thấy {{matched}} người dùng từ {{total}} liên hệ",
+      "permissionTitle": "Cần quyền truy cập danh bạ",
+      "permissionDenied": "Cho phép truy cập danh bạ để tìm bạn bè đang sử dụng BondHub",
+      "grantPermission": "Cho phép truy cập",
+      "emptyTitle": "Không tìm thấy liên hệ",
+      "noSuggestions": "Chưa tìm thấy bạn bè từ danh bạ. Đồng bộ danh bạ để tìm người quen.",
+      "listHeader": "{{count}} người từ danh bạ của bạn"
     }
   }
 }

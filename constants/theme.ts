@@ -8,7 +8,7 @@ export const BRAND = {
   blueHover: '#C7E0FF',
   blueText: '#0045AD',
   white: '#FFFFFF',
-  black: '#000000',
+  black: '#000000'
 } as const
 
 // ────────────────────────────────────────────────────────────
@@ -18,7 +18,7 @@ export const STATUS = {
   success: '#00C853',
   warning: '#FFB300',
   error: '#E53838',
-  info: '#0068FF',
+  info: '#0068FF'
 } as const
 
 // ────────────────────────────────────────────────────────────
@@ -27,11 +27,13 @@ export const STATUS = {
 export const HEADER = {
   height: 56,
   paddingHorizontal: 16,
-  paddingVertical: 12,
+  paddingVertical: 0,
   backgroundColor: BRAND.blueDark,
+  gradientColors: ['#0077FF', '#19B8FF'] as const,
+  gradientColorsDark: ['#1B1C20', '#1B1C20'] as const,
   textColor: BRAND.white,
   searchPlaceholderColor: 'rgba(255, 255, 255, 0.8)',
-  iconSize: { search: 22, qr: 24, add: 30, settings: 26, back: 28 },
+  iconSize: { search: 22, qr: 24, add: 30, settings: 26, back: 28 }
 } as const
 
 // ────────────────────────────────────────────────────────────
@@ -115,71 +117,71 @@ export const lightTokens = {
   '--color-typography-700': '#4D4D4D',
   '--color-typography-800': '#333333',
   '--color-typography-900': '#171717',
-  '--color-typography-950': '#000000',
+  '--color-typography-950': '#000000'
 } as const
 
 export const darkTokens = {
   // Primary
-  '--color-primary': '#0068FF',
+  '--color-primary': '#2A7FFF',
   '--color-primary-foreground': '#FFFFFF',
-  '--color-primary-hover': '#005AE0',
+  '--color-primary-hover': '#1F6FE6',
 
-  // Background - Much darker to match Zalo's dark theme
-  '--color-background': '#15181D',
-  '--color-background-secondary': '#1C2630',
+  // Background - tuned to Zalo-like dark UI
+  '--color-background': '#111318',
+  '--color-background-secondary': '#1A1D24',
 
   // Foreground
-  '--color-foreground': '#E8EAED',
+  '--color-foreground': '#EDEFF3',
 
   // Secondary
-  '--color-secondary': '#1C2630',
-  '--color-secondary-foreground': '#E8EAED',
-  '--color-secondary-hover': '#26313D',
+  '--color-secondary': '#20242C',
+  '--color-secondary-foreground': '#EDEFF3',
+  '--color-secondary-hover': '#2A2F38',
 
   // Muted
-  '--color-muted': '#26313D',
-  '--color-muted-foreground': '#9BA3AF',
+  '--color-muted': '#2A2F38',
+  '--color-muted-foreground': '#9AA3B2',
 
   // Accent
-  '--color-accent': '#26313D',
+  '--color-accent': '#2A2F38',
   '--color-accent-foreground': '#FFFFFF',
-  '--color-accent-hover': '#2F3A49',
+  '--color-accent-hover': '#343A45',
 
   // Border / Input / Ring
-  '--color-border': 'rgba(255,255,255,0.08)',
-  '--color-input': '#0D1117',
-  '--color-ring': '#0068FF',
+  '--color-border': 'rgba(255,255,255,0.07)',
+  '--color-input': '#1B2028',
+  '--color-ring': '#2A7FFF',
 
   // Card
-  '--color-card': '#15181D',
-  '--color-card-foreground': '#FFFFFF',
+  '--color-card': '#161A21',
+  '--color-card-foreground': '#F2F4F7',
 
   // Popover
-  '--color-popover': '#15181D',
-  '--color-popover-foreground': '#FFFFFF',
+  '--color-popover': '#161A21',
+  '--color-popover-foreground': '#F2F4F7',
 
   // Destructive
   '--color-destructive': '#E53838',
   '--color-destructive-foreground': '#FFFFFF',
 
   // Divider / Disabled
-  '--color-divider': '#0D1117',
-  '--color-disabled': '#7A8795',
+  '--color-divider': '#232833',
+  '--color-disabled': '#7F8898',
 
   // Icons
-  '--color-icon-muted': '#7A8795',
-  '--color-icon-hover': '#66A6FF',
-  '--color-icon-secondary': '#9BA3AF',
+  '--color-icon-muted': '#7F8898',
+  '--color-icon-hover': '#7EB1FF',
+  '--color-icon-secondary': '#A7B0BF',
 
   // Sidebar
-  '--color-sidebar': '#0D1117',
+  '--color-sidebar': '#12161E',
   '--color-sidebar-foreground': '#FFFFFF',
   '--color-sidebar-primary': '#FFFFFF',
-  '--color-sidebar-primary-foreground': '#0D1117',
-  '--color-sidebar-accent': 'rgba(255,255,255,0.08)',
+  '--color-sidebar-primary-foreground': '#12161E',
+  '--color-sidebar-accent': 'rgba(255,255,255,0.1)',
   '--color-sidebar-accent-foreground': '#FFFFFF',
-  '--color-sidebar-border': 'rgba(255,255,255,0.05)',
-  '--color-sidebar-ring': '#0068FF',
+  '--color-sidebar-border': 'rgba(255,255,255,0.07)',
+  '--color-sidebar-ring': '#2A7FFF',
 
   // Typography scale (inverted for dark mode)
   '--color-typography-0': '#000000',
@@ -193,7 +195,7 @@ export const darkTokens = {
   '--color-typography-700': '#CCCCCC',
   '--color-typography-800': '#E5E5E5',
   '--color-typography-900': '#F2F2F2',
-  '--color-typography-950': '#FFFFFF',
+  '--color-typography-950': '#FFFFFF'
 } as const
 
 // Token map type — uses shared key set with string values (not literal types)
@@ -263,7 +265,7 @@ export const SEMANTIC = {
   success: STATUS.success,
   warning: STATUS.warning,
   error: STATUS.error,
-  info: STATUS.info,
+  info: STATUS.info
 } as const
 
 export const DARK_MODE = {
@@ -314,7 +316,7 @@ export const DARK_MODE = {
   success: STATUS.success,
   warning: STATUS.warning,
   error: STATUS.error,
-  info: STATUS.info,
+  info: STATUS.info
 } as const
 
 // ────────────────────────────────────────────────────────────
@@ -333,7 +335,7 @@ export const Colors = {
     icon: SEMANTIC.iconSecondary,
     iconMuted: SEMANTIC.iconMuted,
     tabIconDefault: SEMANTIC.mutedForeground,
-    tabIconSelected: SEMANTIC.primary,
+    tabIconSelected: SEMANTIC.primary
   },
   dark: {
     text: DARK_MODE.textPrimary,
@@ -346,8 +348,8 @@ export const Colors = {
     icon: DARK_MODE.iconSecondary,
     iconMuted: DARK_MODE.iconMuted,
     tabIconDefault: DARK_MODE.mutedForeground,
-    tabIconSelected: DARK_MODE.primary,
-  },
+    tabIconSelected: DARK_MODE.primary
+  }
 } as const
 
 // ────────────────────────────────────────────────────────────
@@ -360,7 +362,7 @@ export const Spacing = {
   md: 16,
   lg: 24,
   xl: 32,
-  xxl: 48,
+  xxl: 48
 } as const
 
 export const BorderRadius = {
@@ -369,13 +371,19 @@ export const BorderRadius = {
   lg: 12,
   xl: 16,
   xxl: 24,
-  full: 9999,
+  full: 9999
 } as const
 
 export const Shadows = {
   sm: { shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 },
-  md: { shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.15, shadowRadius: 4, elevation: 4 },
-  lg: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 8 },
+  md: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 4,
+    elevation: 4
+  },
+  lg: { shadowColor: '#000', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.2, shadowRadius: 8, elevation: 8 }
 } as const
 
 // ────────────────────────────────────────────────────────────
@@ -387,10 +395,9 @@ export const ZaloTheme = {
   header: HEADER,
   spacing: Spacing,
   borderRadius: BorderRadius,
-  shadows: Shadows,
+  shadows: Shadows
 } as const
 
 export type Theme = typeof ZaloTheme
 
 export default ZaloTheme
-

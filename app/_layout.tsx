@@ -2,6 +2,7 @@ import '../global.css'
 import '@/tasks/background-notification-task'
 import i18n from '@/i18n'
 import '@/features/friend/i18n'
+import '@/features/message/i18n'
 import '@/features/search/i18n'
 import { SEMANTIC } from '@/constants/theme'
 
@@ -213,8 +214,22 @@ function ThemeAwareProviders() {
             <Stack.Screen name='search' />
             <Stack.Screen name='friend-requests' />
             <Stack.Screen name='add-friend' />
+            <Stack.Screen
+              name='add-friend/scan'
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom'
+              }}
+            />
             <Stack.Screen name='user-profile/[id]' />
-            <Stack.Screen name='chat/[id]' />
+            <Stack.Screen name='find-friends-contacts' />
+            <Stack.Screen name='message-options' />
+            <Stack.Screen
+              name='chat/[id]'
+              options={{
+                animation: 'slide_from_right'
+              }}
+            />
             <Stack.Screen
               name='qr/index'
               options={{

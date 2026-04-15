@@ -39,8 +39,8 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
       params: {
         id: resultUser.id,
         fullName: resultUser.fullName,
-        avatar: resultUser.avatar || '',
-      },
+        avatar: resultUser.avatar || ''
+      }
     })
   }
 
@@ -55,7 +55,7 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
   const renderActionButton = () => {
     if (isMe) return null
     if (statusLoading) {
-      return <ActivityIndicator size="small" color={BRAND.blue} />
+      return <ActivityIndicator size='small' color={BRAND.blue} />
     }
 
     if (status?.areFriends) {
@@ -79,14 +79,14 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
             paddingHorizontal: 14,
             borderRadius: 18,
             backgroundColor: semanticColors.secondary,
-            gap: 4,
+            gap: 4
           }}
         >
           {isMutating ? (
-            <ActivityIndicator size="small" color={semanticColors.textPrimary} />
+            <ActivityIndicator size='small' color={semanticColors.textPrimary} />
           ) : (
             <>
-              <Ionicons name="close-circle-outline" size={16} color={semanticColors.textPrimary} />
+              <Ionicons name='close-circle-outline' size={16} color={semanticColors.textPrimary} />
               <Text style={{ fontSize: 13, fontWeight: '600', color: semanticColors.textPrimary }}>
                 {t('friend.actions.withdraw')}
               </Text>
@@ -113,13 +113,11 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
           paddingHorizontal: 14,
           borderRadius: 18,
           backgroundColor: BRAND.blueLight,
-          gap: 4,
+          gap: 4
         }}
       >
-        <Ionicons name="person-add-outline" size={16} color={BRAND.blue} />
-        <Text style={{ fontSize: 13, fontWeight: '600', color: BRAND.blue }}>
-          {t('friend.actions.addFriend')}
-        </Text>
+        <Ionicons name='person-add-outline' size={16} color={BRAND.blue} />
+        <Text style={{ fontSize: 13, fontWeight: '600', color: BRAND.blue }}>{t('friend.actions.addFriend')}</Text>
       </TouchableOpacity>
     )
   }
@@ -134,15 +132,10 @@ export function SearchResultItem({ user: resultUser, onPress }: SearchResultItem
         paddingHorizontal: 16,
         paddingVertical: 12,
         borderBottomWidth: 0.5,
-        borderBottomColor: semanticColors.border,
+        borderBottomColor: semanticColors.border
       }}
     >
-      <UserAvatar
-        source={resultUser.avatar}
-        name={resultUser.fullName}
-        size="lg"
-        className="mr-3"
-      />
+      <UserAvatar source={resultUser.avatar} name={resultUser.fullName} size='lg' className='mr-3' />
       <View style={{ flex: 1 }}>
         <Text style={{ fontSize: 16, fontWeight: '500', color: semanticColors.textPrimary }}>
           {resultUser.fullName}

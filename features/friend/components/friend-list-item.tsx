@@ -14,12 +14,7 @@ interface FriendListItemProps {
   onVideoCall?: (friend: FriendResponse) => void
 }
 
-export function FriendListItem({
-  friend,
-  onPress,
-  onCall,
-  onVideoCall,
-}: FriendListItemProps) {
+export function FriendListItem({ friend, onPress, onCall, onVideoCall }: FriendListItemProps) {
   const semanticColors = useSemanticColors()
 
   return (
@@ -31,30 +26,19 @@ export function FriendListItem({
         alignItems: 'center',
         paddingHorizontal: 16,
         paddingVertical: 10,
-        backgroundColor: semanticColors.background,
+        backgroundColor: semanticColors.background
       }}
     >
-      <UserAvatar
-        source={friend.userAvatar}
-        name={friend.userName}
-        size="md"
-        className="mr-3"
-      />
+      <UserAvatar source={friend.userAvatar} name={friend.userName} size='md' className='mr-3' />
       <Text style={{ flex: 1, fontSize: 16, fontWeight: '500', color: semanticColors.textPrimary }} numberOfLines={1}>
         {friend.userName}
       </Text>
       <View style={{ flexDirection: 'row', gap: 12 }}>
-        <TouchableOpacity
-          onPress={() => onCall?.(friend)}
-          style={{ padding: 4 }}
-        >
-          <Ionicons name="call-outline" size={22} color={BRAND.blue} />
+        <TouchableOpacity onPress={() => onCall?.(friend)} style={{ padding: 4 }}>
+          <Ionicons name='call-outline' size={22} color={BRAND.blue} />
         </TouchableOpacity>
-        <TouchableOpacity
-          onPress={() => onVideoCall?.(friend)}
-          style={{ padding: 4 }}
-        >
-          <Ionicons name="videocam-outline" size={22} color={BRAND.blue} />
+        <TouchableOpacity onPress={() => onVideoCall?.(friend)} style={{ padding: 4 }}>
+          <Ionicons name='videocam-outline' size={22} color={BRAND.blue} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>

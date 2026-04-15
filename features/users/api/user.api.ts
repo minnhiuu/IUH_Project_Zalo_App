@@ -1,7 +1,13 @@
 import http from '@/lib/http'
 import { API_ENDPOINTS } from '@/config/apiConfig'
 import type { ApiResponse } from '@/types/common.types'
-import type { UserResponse, UserProfileResponse, UserUpdateRequest, UserSummaryResponse, UserImageResponse } from '../schemas/user.schema'
+import type {
+  UserResponse,
+  UserProfileResponse,
+  UserUpdateRequest,
+  UserSummaryResponse,
+  UserImageResponse
+} from '../schemas/user.schema'
 
 export const getMyProfile = () => http.get<ApiResponse<UserProfileResponse>>(API_ENDPOINTS.USER.ME)
 

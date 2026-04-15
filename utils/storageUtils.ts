@@ -6,7 +6,7 @@ const SECURE_KEYS = {
   ACCESS_TOKEN: 'access_token',
   REFRESH_TOKEN: 'refresh_token',
   DEVICE_ID: 'device_id',
-  ACCEPT_LANGUAGE: 'accept_language',
+  ACCEPT_LANGUAGE: 'accept_language'
 }
 
 const STORAGE_KEYS = {
@@ -60,7 +60,7 @@ export const secureStorage = {
 
   clearAcceptLanguage: async (): Promise<void> => {
     await SecureStore.deleteItemAsync(SECURE_KEYS.ACCEPT_LANGUAGE)
-  },
+  }
 }
 
 // AsyncStorage for non-sensitive data

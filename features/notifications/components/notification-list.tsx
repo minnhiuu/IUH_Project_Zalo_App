@@ -103,12 +103,7 @@ export function NotificationList({ filter }: NotificationListProps) {
           )
         }
         const notification = item as NotificationGroupResponse
-        return (
-          <NotificationItem
-            notification={notification}
-            onMarkAsRead={(id) => markAsRead(id)}
-          />
-        )
+        return <NotificationItem notification={notification} onMarkAsRead={(id) => markAsRead(id)} />
       }}
       onEndReached={() => {
         if (hasNextPage && !isFetchingNextPage) fetchNextPage()

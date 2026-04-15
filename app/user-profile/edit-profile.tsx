@@ -1,20 +1,12 @@
 import React, { useState } from 'react'
-import {
-  View,
-  TouchableOpacity,
-  ScrollView,
-  Image,
-  TextInput,
-  Modal,
-  Platform,
-  ActivityIndicator
-} from 'react-native'
+import { View, TouchableOpacity, ScrollView, TextInput, Modal, Platform, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import * as ImagePicker from 'expo-image-picker'
 import { Text } from '@/components/ui/text'
+import { UserAvatar } from '@/components/common/user-avatar'
 import { useTheme } from '@/context/theme-context'
 import { useMyProfile } from '@/features/users/queries/use-queries'
 import { useUpdateProfile, useUpdateAvatar } from '@/features/users/queries/use-mutations'
@@ -177,26 +169,7 @@ export default function EditProfileScreen() {
           <View style={{ flexDirection: 'row' }}>
             <View style={{ width: 100, alignItems: 'flex-start', paddingTop: 8 }}>
               <TouchableOpacity onPress={pickImage} style={{ position: 'relative' }}>
-                <View
-                  style={{
-                    width: 80,
-                    height: 80,
-                    borderRadius: 40,
-                    backgroundColor: isDark ? '#2C323A' : '#E5E7EB',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    overflow: 'hidden'
-                  }}
-                >
-                  {myProfile.avatar ? (
-                    <Image
-                      source={{ uri: myProfile.avatar }}
-                      style={{ width: 80, height: 80, borderRadius: 40 }}
-                    />
-                  ) : (
-                    <Ionicons name='person' size={50} color={isDark ? '#6B7280' : '#9CA3AF'} />
-                  )}
-                </View>
+                <UserAvatar source={myProfile.avatar} name={myProfile.fullName} size='xl' />
                 <View
                   style={{
                     position: 'absolute',
@@ -345,29 +318,27 @@ export default function EditProfileScreen() {
           </View>
 
           {/* Save Button */}
-        <TouchableOpacity
-          onPress={handleSave}
-          disabled={updateProfileMutation.isPending}
-          style={{
-            marginTop: 40,
-            marginBottom: 12,
-            paddingVertical: 10,
-            borderRadius: 25,
-            backgroundColor: '#0068FF',
-            alignItems: 'center'
-          }}
-        >
-          {updateProfileMutation.isPending ? (
-            <ActivityIndicator color='#fff' />
-          ) : (
-            <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff', letterSpacing: 2 }}>
-              {t('profile.editProfile.save')}
-            </Text>
-          )}
-        </TouchableOpacity>
+          <TouchableOpacity
+            onPress={handleSave}
+            disabled={updateProfileMutation.isPending}
+            style={{
+              marginTop: 40,
+              marginBottom: 12,
+              paddingVertical: 10,
+              borderRadius: 25,
+              backgroundColor: '#0068FF',
+              alignItems: 'center'
+            }}
+          >
+            {updateProfileMutation.isPending ? (
+              <ActivityIndicator color='#fff' />
+            ) : (
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff', letterSpacing: 2 }}>
+                {t('profile.editProfile.save')}
+              </Text>
+            )}
+          </TouchableOpacity>
         </View>
-
-        
       </ScrollView>
 
       {/* Date Picker Modal */}
@@ -438,12 +409,7 @@ export default function EditProfileScreen() {
                       style={{
                         fontSize: tempDate.day === day ? 18 : 16,
                         fontWeight: tempDate.day === day ? '600' : '400',
-                        color:
-                          tempDate.day === day
-                            ? '#0068FF'
-                            : isDark
-                              ? '#DFE2E7'
-                              : '#111827'
+                        color: tempDate.day === day ? '#0068FF' : isDark ? '#DFE2E7' : '#111827'
                       }}
                     >
                       {day}
@@ -470,12 +436,7 @@ export default function EditProfileScreen() {
                       style={{
                         fontSize: tempDate.month === month ? 18 : 16,
                         fontWeight: tempDate.month === month ? '600' : '400',
-                        color:
-                          tempDate.month === month
-                            ? '#0068FF'
-                            : isDark
-                              ? '#DFE2E7'
-                              : '#111827'
+                        color: tempDate.month === month ? '#0068FF' : isDark ? '#DFE2E7' : '#111827'
                       }}
                     >
                       {month}
@@ -502,12 +463,7 @@ export default function EditProfileScreen() {
                       style={{
                         fontSize: tempDate.year === year ? 18 : 16,
                         fontWeight: tempDate.year === year ? '600' : '400',
-                        color:
-                          tempDate.year === year
-                            ? '#0068FF'
-                            : isDark
-                              ? '#DFE2E7'
-                              : '#111827'
+                        color: tempDate.year === year ? '#0068FF' : isDark ? '#DFE2E7' : '#111827'
                       }}
                     >
                       {year}

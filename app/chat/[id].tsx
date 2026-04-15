@@ -1,153 +1,319 @@
-import React, { useState, useRef } from 'react'
-import { View, FlatList, KeyboardAvoidingView, Platform } from 'react-native'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
+import { View, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { ChatHeader, MessageBubble, ChatInputBar } from '@/features/message/components'
-
-interface MockMessage {
-  id: string
-  content: string
-  timestamp: string
-  isOwn: boolean
-  senderName?: string
-  senderAvatar?: string
-}
-
-// Temporary mock data — will be replaced with real API
-const MOCK_MESSAGES: MockMessage[] = [
-  {
-    id: '1',
-    content: 'Ch hiểu về elasticsearch mà',
-    timestamp: '16:56',
-    isOwn: false
-  },
-  {
-    id: '2',
-    content: 'Nào hiểu đi r hiểu s nó k ăn',
-    timestamp: '16:56',
-    isOwn: false
-  },
-  {
-    id: '3',
-    content: 'T nghiên cứu sync mongo với es',
-    timestamp: '16:57',
-    isOwn: false
-  },
-  {
-    id: '4',
-    content: 'Phải 2 ngày',
-    timestamp: '16:57',
-    isOwn: false
-  },
-  {
-    id: '5',
-    content: 'Để tối ưu',
-    timestamp: '16:58',
-    isOwn: false
-  },
-  {
-    id: '6',
-    content: 'T insert tới 10k user để test time mà',
-    timestamp: '16:58',
-    isOwn: false
-  },
-  {
-    id: '7',
-    content: 'Oke siêng vậy 😄',
-    timestamp: '16:59',
-    isOwn: true
-  },
-  {
-    id: '8',
-    content: 'Mà sao tìm theo sdt không ra vậy?',
-    timestamp: '17:00',
-    isOwn: true
-  }
-]
+import { useTranslation } from 'react-i18next'
+import { useColorScheme } from '@/hooks/use-color-scheme'
+import { Colors } from '@/constants/theme'
+import { useAuthStore } from '@/store'
+import {
+  ChatHeader,
+  MessageBubble,
+  ChatInputBar,
+  DateSeparator,
+  MessageListSkeleton,
+  ForwardMessageModal
+} from '@/features/message/components'
+import {
+  useInfiniteMessages,
+  usePartnerConversation,
+  useMarkAsRead,
+  useConversations
+} from '@/features/message/queries'
+import { useChatWebSocket } from '@/features/message/hooks'
+import { MessageStatus, MessageType, type MessageResponse } from '@/features/message/schemas'
+import { normalizeDateTime } from '@/features/message/utils'
 
 export default function ChatScreen() {
   const router = useRouter()
+  const { t } = useTranslation()
+  const colorScheme = useColorScheme() ?? 'light'
+  const colors = Colors[colorScheme]
+  const isDark = colorScheme === 'dark'
+
   const params = useLocalSearchParams<{
     id: string
-    name: string
-    avatar: string
-    userId: string
+    name?: string
+    avatar?: string
+    userId?: string
+    conversationId?: string
   }>()
+
+  const user = useAuthStore((s) => s.user)
+  const currentUserId = user?.id || ''
+
+  // If we have conversationId directly, use it; otherwise get/create via partner
+  const partnerId = params.userId || params.id
+  const directConversationId = params.conversationId
+
+  const { data: partnerConversation } = usePartnerConversation(
+    partnerId,
+    !directConversationId // only fetch if we don't have conversationId
+  )
+
+  const conversationId = directConversationId || partnerConversation?.id || ''
+  const conversationName = params.name || partnerConversation?.name || 'Chat'
+  const conversationAvatar = params.avatar || partnerConversation?.avatar
+  const isOnline = partnerConversation?.status === 'ONLINE'
+  const lastSeenAt = partnerConversation?.lastSeenAt
+
+  // Messages
+  const {
+    data: messagesData,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading
+  } = useInfiniteMessages(conversationId, 20, !!conversationId)
+
+  // Mutations
+  const {
+    sendMessage: wsSendMessage,
+    revokeMessage: wsRevokeMessage,
+    deleteMessageForMe: wsDeleteForMe
+  } = useChatWebSocket()
+  const markAsReadMutation = useMarkAsRead()
+  const { data: conversations = [] } = useConversations(0, 100, true)
+
   const [inputText, setInputText] = useState('')
-  const [messages, setMessages] = useState<MockMessage[]>(MOCK_MESSAGES)
+  const [replyTo, setReplyTo] = useState<MessageResponse | null>(null)
+  const [forwardMessage, setForwardMessage] = useState<MessageResponse | null>(null)
   const flatListRef = useRef<FlatList>(null)
 
-  const handleSend = () => {
-    if (!inputText.trim()) return
+  // Flatten pages into message list (reversed for inverted FlatList)
+  const messages: MessageResponse[] = messagesData?.pages.flatMap((page) => page.data) ?? []
+  const latestOwnMessage = messages.find(
+    (msg) => msg.senderId === currentUserId && msg.status !== MessageStatus.REVOKED
+  )
+  const latestOwnMessageKey = latestOwnMessage ? latestOwnMessage.id || latestOwnMessage.clientMessageId || null : null
 
-    const newMsg: MockMessage = {
-      id: String(Date.now()),
-      content: inputText.trim(),
-      timestamp: new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }),
-      isOwn: true
+  // Mark as read when entering chat
+  useEffect(() => {
+    if (conversationId) {
+      markAsReadMutation.mutate(conversationId)
     }
-    setMessages((prev) => [...prev, newMsg])
-    setInputText('')
+  }, [conversationId])
 
-    // Scroll to bottom
-    setTimeout(() => {
-      flatListRef.current?.scrollToEnd({ animated: true })
-    }, 100)
+  const handleSend = useCallback(() => {
+    if (!inputText.trim() || !conversationId) return
+
+    wsSendMessage(
+      conversationId,
+      inputText.trim(),
+      replyTo
+        ? {
+            messageId: replyTo.id,
+            senderId: replyTo.senderId,
+            senderName: replyTo.senderName ?? null,
+            content: replyTo.content || '',
+            type: replyTo.type
+          }
+        : null,
+      false
+    )
+
+    setInputText('')
+    setReplyTo(null)
+  }, [inputText, conversationId, replyTo, wsSendMessage])
+
+  const handleRevoke = useCallback(
+    (messageId: string) => {
+      if (!conversationId) return
+      wsRevokeMessage(messageId, conversationId)
+    },
+    [conversationId, wsRevokeMessage]
+  )
+
+  const handleDeleteForMe = useCallback(
+    (messageId: string) => {
+      if (!conversationId) return
+      wsDeleteForMe(messageId, conversationId)
+    },
+    [conversationId, wsDeleteForMe]
+  )
+
+  const handleReply = useCallback((message: MessageResponse) => {
+    setReplyTo(message)
+  }, [])
+
+  const handleForward = useCallback((message: MessageResponse) => {
+    setForwardMessage(message)
+  }, [])
+
+  const handleSubmitForward = useCallback(
+    (conversationIds: string[], note: string) => {
+      if (!forwardMessage) return
+      const forwardedPayload =
+        forwardMessage.content?.trim() ||
+        (forwardMessage.type === MessageType.IMAGE
+          ? '[IMAGE]'
+          : forwardMessage.type === MessageType.FILE
+            ? '[FILE]'
+            : '[FORWARDED]')
+      const notePayload = note.trim()
+
+      conversationIds.forEach((targetConversationId) => {
+        wsSendMessage(targetConversationId, forwardedPayload, null, true)
+        if (notePayload) {
+          wsSendMessage(targetConversationId, notePayload, null, false)
+        }
+      })
+      setForwardMessage(null)
+    },
+    [forwardMessage, wsSendMessage]
+  )
+
+  // Date separator logic
+  const getDateLabel = (dateStr: string | null): string => {
+    if (!dateStr) return ''
+    try {
+      const normalized = normalizeDateTime(dateStr)
+      if (!normalized) return ''
+      const d = new Date(normalized)
+      const now = new Date()
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const yesterday = new Date(today.getTime() - 86400000)
+      const msgDate = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+
+      const time = d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+
+      if (msgDate.getTime() === today.getTime()) return time
+      if (msgDate.getTime() === yesterday.getTime()) return `${time} ${t('message.yesterday')}`
+      return `${time} ${d.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })}`
+    } catch {
+      return ''
+    }
   }
 
+  const shouldShowDateSeparator = (index: number) => {
+    if (index === messages.length - 1) return true // oldest message (inverted)
+    const current = messages[index]
+    const next = messages[index + 1] // next = older in inverted list
+    if (!current.createdAt || !next.createdAt) return false
+    try {
+      const currentDate = new Date(normalizeDateTime(current.createdAt) || '')
+      const nextDate = new Date(normalizeDateTime(next.createdAt) || '')
+      // Show separator if messages are > 30 min apart
+      return Math.abs(currentDate.getTime() - nextDate.getTime()) > 30 * 60 * 1000
+    } catch {
+      return false
+    }
+  }
+
+  const chatBg = isDark ? '#0D1117' : '#E8ECEF'
+
   return (
-    <View style={{ flex: 1, backgroundColor: '#E8ECEF' }}>
-      {/* Header */}
+    <View style={{ flex: 1, backgroundColor: chatBg }}>
       <ChatHeader
-        name={params.name || 'Chat'}
-        avatar={params.avatar}
-        userId={params.userId || params.id}
-        subtitle='Vừa mới truy cập'
+        name={conversationName}
+        avatar={conversationAvatar}
+        isOnline={isOnline}
+        lastSeenAt={lastSeenAt}
+        userId={partnerId}
         onProfilePress={() => {
-          const targetUserId = params.userId || params.id
-          if (targetUserId) {
-            router.push(`/user-profile/${targetUserId}` as any)
-          }
+          if (partnerId) router.push(`/other-profile/${partnerId}` as any)
+        }}
+        onMenu={() => {
+          if (!partnerId) return
+          router.push({
+            pathname: '/message-options' as any,
+            params: {
+              id: partnerId,
+              name: conversationName,
+              isFriend: 'true'
+            }
+          })
         }}
       />
 
-      {/* Messages */}
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={0}
       >
-        <FlatList
-          ref={flatListRef}
-          data={messages}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={{ paddingVertical: 12 }}
-          showsVerticalScrollIndicator={false}
-          onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: false })}
-          renderItem={({ item, index }) => {
-            const prevMsg = index > 0 ? messages[index - 1] : null
-            const showAvatar = !item.isOwn && (prevMsg?.isOwn || index === 0)
-            return (
-              <MessageBubble
-                content={item.content}
-                timestamp={item.timestamp}
-                isOwn={item.isOwn}
-                senderAvatar={params.avatar}
-                senderId={params.userId || params.id}
-                showAvatar={showAvatar}
-                onAvatarPress={(userId) => {
-                  router.push(`/user-profile/${userId}` as any)
-                }}
-              />
-            )
-          }}
-        />
+        {isLoading ? (
+          <MessageListSkeleton />
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={(item, index) => item.id || item.clientMessageId || `msg-${index}`}
+            inverted
+            contentContainerStyle={{ paddingVertical: 8 }}
+            showsVerticalScrollIndicator={false}
+            onEndReached={() => {
+              if (hasNextPage && !isFetchingNextPage) fetchNextPage()
+            }}
+            onEndReachedThreshold={0.3}
+            ListFooterComponent={
+              isFetchingNextPage ? (
+                <View style={{ padding: 16, alignItems: 'center' }}>
+                  <ActivityIndicator size='small' color='#0068FF' />
+                </View>
+              ) : null
+            }
+            renderItem={({ item, index }) => {
+              const isOwn = item.senderId === currentUserId
+              const prevMsg = index > 0 ? messages[index - 1] : null
+              const nextMsg = index < messages.length - 1 ? messages[index + 1] : null
+              // In inverted list, index 0 = newest. prevMsg = next newer message
+              const showAvatar =
+                !isOwn && (!prevMsg || prevMsg.senderId !== item.senderId || prevMsg.senderId === currentUserId)
+              // Show time only for the newest message in a consecutive sender streak
+              const showTime = !prevMsg || prevMsg.senderId !== item.senderId
+              const showDateSep = shouldShowDateSeparator(index)
 
-        {/* Input Bar */}
-        <SafeAreaView edges={['bottom']} style={{ backgroundColor: '#fff' }}>
-          <ChatInputBar value={inputText} onChangeText={setInputText} onSend={handleSend} placeholder='Tin nhắn' />
-        </SafeAreaView>
+              return (
+                <View>
+                  {showDateSep && <DateSeparator label={getDateLabel(item.createdAt)} />}
+                  <MessageBubble
+                    message={item}
+                    isOwn={isOwn}
+                    isLatestOwnMessage={
+                      !!latestOwnMessageKey &&
+                      (item.id === latestOwnMessageKey || item.clientMessageId === latestOwnMessageKey)
+                    }
+                    showTime={showTime}
+                    showAvatar={showAvatar}
+                    onAvatarPress={(userId) => router.push(`/user-profile/${userId}` as any)}
+                    onReply={handleReply}
+                    onRevoke={isOwn ? handleRevoke : undefined}
+                    onDeleteForMe={handleDeleteForMe}
+                    onForward={handleForward}
+                    onOpenMessageOptions={() => {
+                      if (!partnerId) return
+                      router.push({
+                        pathname: '/message-options' as any,
+                        params: {
+                          id: partnerId,
+                          name: conversationName,
+                          isFriend: 'true'
+                        }
+                      })
+                    }}
+                  />
+                </View>
+              )
+            }}
+          />
+        )}
+
+        <ChatInputBar
+          value={inputText}
+          onChangeText={setInputText}
+          onSend={handleSend}
+          placeholder={t('message.inputPlaceholder')}
+          replyTo={replyTo}
+          onCancelReply={() => setReplyTo(null)}
+        />
       </KeyboardAvoidingView>
+
+      <ForwardMessageModal
+        visible={!!forwardMessage}
+        sourceMessage={forwardMessage}
+        conversations={conversations}
+        onClose={() => setForwardMessage(null)}
+        onSubmit={handleSubmitForward}
+      />
     </View>
   )
 }

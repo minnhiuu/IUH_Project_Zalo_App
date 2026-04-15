@@ -1,0 +1,98 @@
+{
+  "message": {
+    "title": "Messages",
+    "conversations": "Conversations",
+    "noConversations": "No conversations yet",
+    "noMessages": "No messages yet",
+    "inputPlaceholder": "Message",
+    "searchPlaceholder": "Search conversations...",
+    "emptyState": "Select a conversation to start chatting",
+    "send": "Send",
+    "you": "You",
+    "user": "User",
+    "online": "Online",
+    "offline": "Offline",
+    "lastSeen": "Last seen {{time}}",
+    "typing": "typing...",
+    "messageRevoked": "Message has been revoked",
+    "yesterday": "Yesterday",
+    "status": {
+      "online": "Active now",
+      "justNow": "Just now",
+      "minutesAgo": "{{count}} minutes ago",
+      "hoursAgo": "{{count}} hours ago",
+      "daysAgo": "{{count}} days ago",
+      "minutesUnit": "min",
+      "hoursUnit": "hr",
+      "sending": "Sending...",
+      "sent": "Sent",
+      "received": "Received"
+    },
+    "errors": {
+      "loadConversations": "Failed to load conversations.",
+      "loadMessages": "Failed to load messages."
+    },
+    "actions": {
+      "reply": "Reply",
+      "forward": "Forward",
+      "revoke": "Revoke",
+      "delete": "Delete for me",
+      "copy": "Copy",
+      "save": "Save My Documents",
+      "pin": "Pin",
+      "reminder": "Remind",
+      "selectMultiple": "Select multiple",
+      "quickMessage": "Quick message",
+      "translate": "Translate",
+      "readText": "Read text",
+      "detail": "Details",
+      "cancel": "Cancel",
+      "revokeConfirm": "Revoke this message?",
+      "deleteConfirm": "Delete this message for you?",
+      "comingSoonTitle": "Notice",
+      "comingSoon": "This feature is under development."
+    },
+    "toast": {
+      "sendSuccess": "Message sent",
+      "revokeSuccess": "Message revoked",
+      "deleteSuccess": "Message deleted",
+      "copySuccess": "Message copied"
+    },
+    "empty": {
+      "conversations": "No conversations yet",
+      "messages": "Start a conversation"
+    },
+    "loading": "Loading...",
+    "error": "Something went wrong, please try again",
+    "messageType": {
+      "image": "[Image]",
+      "file": "[File]"
+    },
+    "quickActions": {
+      "location": "Location",
+      "file": "File",
+      "reminder": "Reminder",
+      "quickMessage": "Quick message",
+      "transfer": "Transfer",
+      "businessCard": "Business card",
+      "myDocuments": "My Documents",
+      "sendAccount": "Send account number",
+      "gif": "@GIF",
+      "draw": "Draw",
+      "font": "Font"
+    },
+    "forward": {
+      "title": "Share",
+      "selectedCount": "Selected: {{count}}",
+      "search": "Search",
+      "sendTo": "Send to",
+      "newGroup": "New group",
+      "journal": "Journal",
+      "otherApps": "Other apps",
+      "recentChats": "Recent chats",
+      "groups": "Groups",
+      "showMore": "SHOW MORE",
+      "notePlaceholder": "Enter message"
+    }
+  }
+}
