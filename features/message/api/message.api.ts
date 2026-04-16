@@ -1,7 +1,13 @@
 import http from '@/lib/http'
 import { API_ENDPOINTS } from '@/config/apiConfig'
 import type { ApiResponse, PageResponse } from '@/types/common.types'
-import type { MessageSendRequest, MessageResponse, ConversationResponse, AttachmentInfo } from '../schemas'
+import type {
+  MessageSendRequest,
+  MessageResponse,
+  ConversationResponse,
+  AttachmentInfo,
+  PinnedMessageInfo
+} from '../schemas'
 
 export const messageApi = {
   getConversations: (page: number = 0, size: number = 20) =>
@@ -23,6 +29,15 @@ export const messageApi = {
     http.get<ApiResponse<ConversationResponse>>(API_ENDPOINTS.MESSAGE.PARTNER_CONVERSATION(partnerId)),
 
   markAsRead: (conversationId: string) => http.put<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.MARK_READ(conversationId)),
+
+  getPinnedMessages: (conversationId: string) =>
+    http.get<ApiResponse<PinnedMessageInfo[]>>(API_ENDPOINTS.MESSAGE.PINS(conversationId)),
+
+  pinMessage: (conversationId: string, messageId: string) =>
+    http.post<ApiResponse<PinnedMessageInfo>>(API_ENDPOINTS.MESSAGE.PIN_MESSAGE(conversationId, messageId)),
+
+  unpinMessage: (conversationId: string, messageId: string) =>
+    http.delete<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.UNPIN_MESSAGE(conversationId, messageId)),
 
   revokeMessage: (messageId: string) => http.patch<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.REVOKE(messageId)),
 

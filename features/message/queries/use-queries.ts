@@ -56,3 +56,15 @@ export const usePartnerConversation = (partnerId: string, enabled: boolean = tru
     staleTime: 5 * 60 * 1000
   })
 }
+
+export const usePinnedMessages = (conversationId: string, enabled: boolean = true) => {
+  return useQuery({
+    queryKey: messageKeys.pins(conversationId),
+    queryFn: async () => {
+      const response = await messageApi.getPinnedMessages(conversationId)
+      return response.data.data ?? []
+    },
+    enabled: enabled && !!conversationId,
+    staleTime: 15 * 1000
+  })
+}

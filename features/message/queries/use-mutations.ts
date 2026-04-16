@@ -101,3 +101,35 @@ export const useDeleteMessageForMe = () => {
     }
   })
 }
+
+export const usePinMessage = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ conversationId, messageId }: { conversationId: string; messageId: string }) =>
+      messageApi.pinMessage(conversationId, messageId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: messageKeys.pins(variables.conversationId) })
+      queryClient.invalidateQueries({ queryKey: messageKeys.messages(variables.conversationId) })
+    },
+    onError: (error: Error) => {
+      handleErrorApi({ error })
+    }
+  })
+}
+
+export const useUnpinMessage = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ conversationId, messageId }: { conversationId: string; messageId: string }) =>
+      messageApi.unpinMessage(conversationId, messageId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: messageKeys.pins(variables.conversationId) })
+      queryClient.invalidateQueries({ queryKey: messageKeys.messages(variables.conversationId) })
+    },
+    onError: (error: Error) => {
+      handleErrorApi({ error })
+    }
+  })
+}

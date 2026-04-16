@@ -16,6 +16,7 @@ const EMOJIS = ['\u2764\uFE0F', '\uD83D\uDC4D', '\uD83D\uDE06', '\uD83D\uDE2E', 
 interface MessageBubbleProps {
   message: MessageResponse
   isOwn: boolean
+  isPinned?: boolean
   isLatestOwnMessage?: boolean
   showTime?: boolean
   showAvatar?: boolean
@@ -25,6 +26,7 @@ interface MessageBubbleProps {
   onRevoke?: (messageId: string) => void
   onDeleteForMe?: (messageId: string) => void
   onForward?: (message: MessageResponse) => void
+  onPin?: (message: MessageResponse) => void
   onOpenMessageOptions?: () => void
   onReplyMessagePress?: (messageId: string) => void
 }
@@ -32,6 +34,7 @@ interface MessageBubbleProps {
 export function MessageBubble({
   message,
   isOwn,
+  isPinned = false,
   isLatestOwnMessage = false,
   showTime = true,
   showAvatar = true,
@@ -41,6 +44,7 @@ export function MessageBubble({
   onRevoke,
   onDeleteForMe,
   onForward,
+  onPin,
   onOpenMessageOptions,
   onReplyMessagePress
 }: MessageBubbleProps) {
@@ -257,6 +261,8 @@ export function MessageBubble({
           })
           break
         case 'pin':
+          closeSheet(() => onPin?.(message))
+          break
         case 'reminder':
         case 'select':
         case 'quickMessage':
@@ -272,15 +278,89 @@ export function MessageBubble({
           break
       }
     },
-    [closeSheet, message, onReply, onForward, onRevoke, onDeleteForMe, onOpenMessageOptions, t]
+    [closeSheet, message, onReply, onForward, onPin, onRevoke, onDeleteForMe, onOpenMessageOptions, t]
   )
 
-  const actionRows = buildActionRows(isOwn, isDark, t)
+  const actionRows = buildActionRows(isOwn, isDark, isPinned, t)
   const deliveryStatusLabel = getDeliveryStatusLabel()
   const effectiveShowTime = showTime || showActions
   const incomingLeftSlotWidth = 44
   const businessCardPayload = parseBusinessCardContent(typeof message.content === 'string' ? message.content : null)
   const contentMaxWidth = !isRevoked && message.type === MessageType.FILE ? '88%' : '75%'
+  const systemAction = String(message.metadata?.action || '').toUpperCase()
+  const isSystemPinNotice =
+    message.type === MessageType.SYSTEM && (systemAction === 'PIN_MESSAGE' || systemAction === 'UNPIN_MESSAGE')
+
+  if (isSystemPinNotice) {
+    const isUnpin = systemAction === 'UNPIN_MESSAGE'
+    const sourceName = String(
+      message.metadata?.actorName || message.senderName || t('message.pinned.userFallback', { defaultValue: 'Người dùng' })
+    ).trim()
+    const actorName = sourceName || t('message.pinned.userFallback', { defaultValue: 'Người dùng' })
+    const contentSnapshot =
+      String(message.metadata?.contentSnapshot || message.metadata?.originalContent || '').trim() ||
+      t('message.pinned.defaultTarget', { defaultValue: 'tin nhắn' })
+    const shouldShowView = !isUnpin && typeof message.metadata?.messageId === 'string' && !!message.metadata?.messageId
+
+    return (
+      <View style={{ alignItems: 'center', paddingHorizontal: 12, marginBottom: 8, marginTop: 2 }}>
+        <View
+          style={{
+            minHeight: 34,
+            borderRadius: 17,
+            backgroundColor: isDark ? '#2C3644' : '#EEF1F5',
+            flexDirection: 'row',
+            alignItems: 'center',
+            paddingHorizontal: 10,
+            maxWidth: '95%'
+          }}
+        >
+          <Ionicons
+            name='pin'
+            size={14}
+            color={isUnpin ? (isDark ? '#F7B267' : '#F59E0B') : isDark ? '#FFB07A' : '#F97316'}
+            style={{ marginRight: 6 }}
+          />
+
+          <Text style={{ fontSize: 14, color: isDark ? '#D5DCE5' : '#667085', flexShrink: 1 }} numberOfLines={1}>
+            {isUnpin
+              ? isOwn
+                ? t('message.pinned.system.youUnpinned', {
+                    defaultValue: 'Bạn đã bỏ ghim tin nhắn {{content}}',
+                    content: ''
+                  })
+                : t('message.pinned.system.userUnpinned', {
+                    defaultValue: '{{name}} đã bỏ ghim tin nhắn {{content}}',
+                    name: actorName,
+                    content: ''
+                  })
+              : isOwn
+                ? t('message.pinned.system.youPinned', {
+                    defaultValue: 'Bạn đã ghim tin nhắn {{content}}',
+                    content: ''
+                  })
+                : t('message.pinned.system.userPinned', {
+                    defaultValue: '{{name}} đã ghim tin nhắn {{content}}',
+                    name: actorName,
+                    content: ''
+                  })}
+            <Text style={{ fontWeight: '700', color: isDark ? '#E6EDF7' : '#475467' }}> {contentSnapshot}</Text>
+          </Text>
+
+          {shouldShowView && (
+            <TouchableOpacity
+              activeOpacity={0.75}
+              onPress={() => onReplyMessagePress?.(String(message.metadata?.messageId))}
+            >
+              <Text style={{ fontSize: 15, color: '#1298F6', fontWeight: '700', marginLeft: 6 }}>
+                {t('message.pinned.system.view', { defaultValue: 'Xem' })}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </View>
+    )
+  }
 
   return (
     <View
@@ -729,7 +809,12 @@ type ActionItem = {
   textColor?: string
 }
 
-function buildActionRows(isOwn: boolean, isDark: boolean, t: (k: string, o?: any) => string): ActionItem[][] {
+function buildActionRows(
+  isOwn: boolean,
+  isDark: boolean,
+  isPinned: boolean,
+  t: (k: string, o?: any) => string
+): ActionItem[][] {
   const blue = '#0068FF'
   const orange = '#FF8C00'
   const red = '#EF4444'
@@ -771,7 +856,14 @@ function buildActionRows(isOwn: boolean, isDark: boolean, t: (k: string, o?: any
       label: t('message.actions.copy', { defaultValue: 'Sao ch\u00E9p' }),
       iconColor: blue
     },
-    { key: 'pin', icon: 'pin-outline', label: t('message.actions.pin', { defaultValue: 'Ghim' }), iconColor: orange },
+    {
+      key: 'pin',
+      icon: isPinned ? 'pin' : 'pin-outline',
+      label: isPinned
+        ? t('message.actions.unpin', { defaultValue: 'Bỏ ghim' })
+        : t('message.actions.pin', { defaultValue: 'Ghim' }),
+      iconColor: orange
+    },
     {
       key: 'reminder',
       icon: 'time-outline',

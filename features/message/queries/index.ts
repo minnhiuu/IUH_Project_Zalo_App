@@ -1,5 +1,12 @@
 export { messageKeys } from './keys'
 
-export { useConversations, useMessages, useInfiniteMessages, usePartnerConversation } from './use-queries'
+export { useConversations, useMessages, useInfiniteMessages, usePartnerConversation, usePinnedMessages } from './use-queries'
 
-export { useSendMessage, useMarkAsRead, useRevokeMessage, useDeleteMessageForMe } from './use-mutations'
+export {
+	useSendMessage,
+	useMarkAsRead,
+	useRevokeMessage,
+	useDeleteMessageForMe,
+	usePinMessage,
+	useUnpinMessage
+} from './use-mutations'

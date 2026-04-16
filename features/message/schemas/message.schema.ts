@@ -144,3 +144,12 @@ export type PresenceEvent = {
   userId: string
   status: 'ONLINE' | 'OFFLINE'
 }
+
+export type PinnedMessageInfo = {
+  messageId: string
+  pinnedBy: string
+  pinnedByName: string | null
+  contentSnapshot: string | null
+  messageType: MessageType
+  pinnedAt: string
+}

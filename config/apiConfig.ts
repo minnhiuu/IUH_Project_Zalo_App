@@ -87,6 +87,11 @@ export const API_ENDPOINTS = {
     SEND: (conversationId: string) => `/messages/conversations/${conversationId}/messages`,
     PARTNER_CONVERSATION: (partnerId: string) => `/messages/conversations/partner/${partnerId}`,
     MARK_READ: (conversationId: string) => `/messages/conversations/${conversationId}/read`,
+    PINS: (conversationId: string) => `/messages/conversations/${conversationId}/pins`,
+    PIN_MESSAGE: (conversationId: string, messageId: string) =>
+      `/messages/conversations/${conversationId}/messages/${messageId}/pin`,
+    UNPIN_MESSAGE: (conversationId: string, messageId: string) =>
+      `/messages/conversations/${conversationId}/messages/${messageId}/pin`,
     REVOKE: (messageId: string) => `/messages/${messageId}/revoke`,
     DELETE_FOR_ME: (messageId: string) => `/messages/${messageId}/me`
   },

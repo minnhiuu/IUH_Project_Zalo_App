@@ -40,6 +40,7 @@
       "copy": "Copy",
       "save": "Save My Documents",
       "pin": "Pin",
+      "unpin": "Unpin",
       "reminder": "Remind",
       "selectMultiple": "Select multiple",
       "quickMessage": "Quick message",
@@ -93,6 +94,38 @@
       "groups": "Groups",
       "showMore": "SHOW MORE",
       "notePlaceholder": "Enter message"
+    },
+    "pinned": {
+      "owner": "Message from {{name}}",
+      "userFallback": "User",
+      "defaultTarget": "message",
+      "upcomingTitle": "Upcoming reminders",
+      "upcomingEmpty": "No upcoming reminders",
+      "listTitle": "Pinned messages",
+      "empty": "No pinned messages",
+      "edit": "Edit",
+      "collapse": "Collapse",
+      "system": {
+        "youPinned": "You pinned message{{content}}",
+        "userPinned": "{{name}} pinned message{{content}}",
+        "youUnpinned": "You unpinned message{{content}}",
+        "userUnpinned": "{{name}} unpinned message{{content}}",
+        "view": "View"
+      },
+      "editComingSoonTitle": "Notice",
+      "editComingSoonDesc": "Pinned message list editing is under development.",
+      "unsupportedTitle": "Cannot pin",
+      "unsupportedDesc": "This message cannot be pinned",
+      "maxReachedTitle": "Cannot pin",
+      "maxReachedDesc": "You can pin up to 3 messages only",
+      "pinSuccessTitle": "Success",
+      "pinSuccessDesc": "Message pinned",
+      "unpinSuccessTitle": "Success",
+      "unpinSuccessDesc": "Message unpinned",
+      "pinFailTitle": "Pin failed",
+      "pinFailDesc": "Unable to pin this message",
+      "unpinFailTitle": "Unpin failed",
+      "unpinFailDesc": "Unable to unpin this message"
     }
   }
 }

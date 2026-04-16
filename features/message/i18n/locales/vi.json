@@ -40,6 +40,7 @@
       "copy": "Sao chép",
       "save": "Lưu My Documents",
       "pin": "Ghim",
+      "unpin": "Bỏ ghim",
       "reminder": "Nhắc hẹn",
       "selectMultiple": "Chọn nhiều",
       "quickMessage": "Tạo tin nhắn nhanh",
@@ -93,6 +94,38 @@
       "groups": "Nhóm",
       "showMore": "XEM THÊM",
       "notePlaceholder": "Nhập tin nhắn"
+    },
+    "pinned": {
+      "owner": "Tin nhắn của {{name}}",
+      "userFallback": "Người dùng",
+      "defaultTarget": "tin nhắn",
+      "upcomingTitle": "Nhắc hẹn sắp tới",
+      "upcomingEmpty": "Chưa có nhắc hẹn nào",
+      "listTitle": "Danh sách ghim",
+      "empty": "Chưa có tin nhắn ghim",
+      "edit": "Chỉnh sửa",
+      "collapse": "Thu gọn",
+      "system": {
+        "youPinned": "Bạn đã ghim tin nhắn{{content}}",
+        "userPinned": "{{name}} đã ghim tin nhắn{{content}}",
+        "youUnpinned": "Bạn đã bỏ ghim tin nhắn{{content}}",
+        "userUnpinned": "{{name}} đã bỏ ghim tin nhắn{{content}}",
+        "view": "Xem"
+      },
+      "editComingSoonTitle": "Thông báo",
+      "editComingSoonDesc": "Chức năng chỉnh sửa danh sách ghim đang phát triển.",
+      "unsupportedTitle": "Không thể ghim",
+      "unsupportedDesc": "Tin nhắn này không hỗ trợ ghim",
+      "maxReachedTitle": "Không thể ghim",
+      "maxReachedDesc": "Chỉ được ghim tối đa 3 tin nhắn",
+      "pinSuccessTitle": "Thành công",
+      "pinSuccessDesc": "Đã ghim tin nhắn",
+      "unpinSuccessTitle": "Thành công",
+      "unpinSuccessDesc": "Đã bỏ ghim tin nhắn",
+      "pinFailTitle": "Ghim thất bại",
+      "pinFailDesc": "Không thể ghim tin nhắn",
+      "unpinFailTitle": "Bỏ ghim thất bại",
+      "unpinFailDesc": "Không thể bỏ ghim tin nhắn"
     }
   }
 }
