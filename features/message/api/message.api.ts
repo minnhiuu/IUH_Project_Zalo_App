@@ -1,7 +1,7 @@
 import http from '@/lib/http'
 import { API_ENDPOINTS } from '@/config/apiConfig'
 import type { ApiResponse, PageResponse } from '@/types/common.types'
-import type { MessageSendRequest, MessageResponse, ConversationResponse } from '../schemas'
+import type { MessageSendRequest, MessageResponse, ConversationResponse, AttachmentInfo } from '../schemas'
 
 export const messageApi = {
   getConversations: (page: number = 0, size: number = 20) =>
@@ -27,5 +27,18 @@ export const messageApi = {
   revokeMessage: (messageId: string) => http.patch<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.REVOKE(messageId)),
 
   deleteMessageForMe: (messageId: string) =>
-    http.delete<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.DELETE_FOR_ME(messageId))
+    http.delete<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.DELETE_FOR_ME(messageId)),
+
+  uploadFile: (fileUri: string, fileName: string, mimeType: string, folder: string = 'chat') => {
+    const formData = new FormData()
+    formData.append('file', {
+      uri: fileUri,
+      name: fileName,
+      type: mimeType
+    } as any)
+    formData.append('folder', folder)
+    return http.post<ApiResponse<AttachmentInfo>>(API_ENDPOINTS.FILE.UPLOAD, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+  }
 }

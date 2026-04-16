@@ -15,6 +15,7 @@ import { ForwardMessageModal } from '@/features/message/components'
 import { useConversations } from '@/features/message/queries'
 import { useChatWebSocket } from '@/features/message/hooks'
 import { MessageStatus, MessageType, type MessageResponse } from '@/features/message/schemas'
+import { serializeBusinessCard } from '@/features/message/utils'
 import { UserAvatar } from '@/components/common/user-avatar'
 import QRCode from 'react-native-qrcode-svg'
 import * as MediaLibrary from 'expo-media-library'
@@ -54,10 +55,15 @@ export default function AddFriendScreen() {
 
   const currentUserId = String(myProfile?.id ?? user?.id ?? '')
   const currentUserName = String(myProfile?.fullName ?? user?.fullName ?? '').trim()
+  const currentUserPhone = String((myProfile as any)?.phoneNumber ?? (myProfile as any)?.phone ?? '')
   const qrValue = `${QR_PREFIX}${currentUserId}?name=${encodeURIComponent(currentUserName)}`
-  const qrForwardContent = `${t('friend.addFriend.forwardIntro', {
-    defaultValue: 'Kết bạn với mình qua QR:'
-  })}\n${qrValue}`
+  const qrForwardContent = serializeBusinessCard({
+    userId: currentUserId,
+    name: currentUserName,
+    phone: currentUserPhone,
+    avatar: myProfile?.avatar ?? user?.avatar ?? null,
+    qrValue
+  })
 
   const forwardSourceMessage: MessageResponse | null = useMemo(() => {
     if (!currentUserId) return null

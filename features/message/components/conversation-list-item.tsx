@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next'
 import type { ConversationResponse } from '../schemas'
 import { MessageStatus } from '../schemas'
 import { formatPreview } from '../utils/chat-preview'
+import { parseMessageDate } from '../utils/date-utils'
 
 interface ConversationListItemProps {
   conversation: ConversationResponse
@@ -20,19 +21,57 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
   const hasUnread = (conversation.unreadCount ?? 0) > 0
+  const rawConversation = conversation as any
+
+  const rawLastMessage =
+    rawConversation.lastMessage ??
+    rawConversation.lastMessageContent ??
+    rawConversation.latestMessage?.content ??
+    rawConversation.latestMessage
+
+  const lastMessageContent =
+    typeof rawLastMessage === 'string'
+      ? rawLastMessage
+      : typeof rawLastMessage?.content === 'string'
+        ? rawLastMessage.content
+        : typeof rawLastMessage?.text === 'string'
+          ? rawLastMessage.text
+          : typeof rawConversation.latestMessage?.message === 'string'
+            ? rawConversation.latestMessage.message
+          : ''
+
+  const lastMessageType =
+    conversation.lastMessageType ?? rawConversation.latestMessage?.type ?? rawLastMessage?.type ?? null
+
+  const lastMessageTime =
+    conversation.lastMessageTime ||
+    rawConversation.lastMessageAt ||
+    rawConversation.lastMessageCreatedAt ||
+    rawConversation.latestMessage?.createdAt ||
+    rawConversation.updatedAt ||
+    null
+
+  const incomingSenderName =
+    rawConversation.lastMessageSenderName ||
+    rawConversation.latestMessage?.senderName ||
+    (!conversation.isGroup ? conversation.name || '' : '')
 
   const preview = formatPreview(
     {
-      content: conversation.lastMessage,
+      content: lastMessageContent,
       isFromMe: conversation.isLastMessageFromMe,
-      type: conversation.lastMessageType,
+      senderName:
+        conversation.isLastMessageFromMe
+          ? ''
+          : incomingSenderName,
+      type: lastMessageType,
       status: conversation.lastMessageStatus
     },
     {
       you: t('message.you'),
-      user: t('message.user', { defaultValue: 'User' }),
+      user: '',
       type: {
-        image: t('message.messageType.image', { defaultValue: '[Image]' }),
+        image: t('message.messageType.image', { defaultValue: '[Hình ảnh]' }),
         file: t('message.messageType.file', { defaultValue: '[File]' })
       }
     }
@@ -40,18 +79,20 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
 
   const isRevoked = conversation.lastMessageStatus === MessageStatus.REVOKED
 
-  const formatTime = (timeStr: string | null) => {
-    if (!timeStr) return ''
+  const formatTime = (timeValue: string | number | Date | null | undefined) => {
+    if (!timeValue) return ''
     try {
-      const date = new Date(timeStr.endsWith('Z') ? timeStr : timeStr + 'Z')
+      const date = parseMessageDate(timeValue)
+      if (!date) return ''
       const now = new Date()
       const diffMs = now.getTime() - date.getTime()
+      const diffSec = Math.floor(diffMs / 1000)
       const diffMin = Math.floor(diffMs / 60000)
       const diffHour = Math.floor(diffMs / 3600000)
 
-      if (diffMin < 1) return `1 ${t('message.status.minutesUnit', { defaultValue: 'phut' })}`
-      if (diffMin < 60) return `${diffMin} ${t('message.status.minutesUnit', { defaultValue: 'min' })}`
-      if (diffHour < 24) return `${diffHour} ${t('message.status.hoursUnit', { defaultValue: 'hr' })}`
+      if (diffSec < 60) return `${Math.max(diffSec, 1)} giây`
+      if (diffMin < 60) return `${diffMin} phút`
+      if (diffHour < 24) return `${diffHour} giờ`
       return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
     } catch {
       return ''
@@ -102,7 +143,7 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
             {conversation.name || t('message.user', { defaultValue: 'User' })}
           </Text>
           <Text style={{ fontSize: 15, color: '#6B7280', marginLeft: 8, marginTop: 1 }}>
-            {formatTime(conversation.lastMessageTime)}
+            {formatTime(lastMessageTime)}
           </Text>
         </View>
 

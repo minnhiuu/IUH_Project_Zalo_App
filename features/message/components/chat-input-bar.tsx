@@ -1,29 +1,37 @@
 import React, { useMemo, useState } from 'react'
-import { View, TouchableOpacity, TextInput } from 'react-native'
+import { View, TouchableOpacity, TextInput, ActivityIndicator, Image } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { Colors, BRAND } from '@/constants/theme'
 import { useTranslation } from 'react-i18next'
-import type { MessageResponse } from '../schemas'
+import * as ImagePicker from 'expo-image-picker'
+import * as DocumentPicker from 'expo-document-picker'
+import { MessageType, type MessageResponse } from '../schemas'
 
 interface ChatInputBarProps {
   value: string
   onChangeText: (text: string) => void
   onSend: () => void
+  onSendImage?: (images: { uri: string; fileName: string; mimeType: string }[]) => void
+  onSendFile?: (uri: string, fileName: string, mimeType: string) => void
   placeholder?: string
   replyTo?: MessageResponse | null
   onCancelReply?: () => void
+  isSendingFile?: boolean
 }
 
 export function ChatInputBar({
   value,
   onChangeText,
   onSend,
+  onSendImage,
+  onSendFile,
   placeholder = 'Tin nhắn',
   replyTo,
-  onCancelReply
+  onCancelReply,
+  isSendingFile = false
 }: ChatInputBarProps) {
   const { t } = useTranslation()
   const hasText = value.trim().length > 0
@@ -104,6 +112,52 @@ export function ChatInputBar({
     [t]
   )
 
+  const getReplyPreviewText = (message: MessageResponse) => {
+    if (message.type === MessageType.IMAGE) {
+      return t('message.messageType.image', { defaultValue: '[Hình ảnh]' })
+    }
+
+    if (message.type === MessageType.FILE) {
+      const firstAttachment = message.attachments?.[0]
+      const fileName =
+        firstAttachment?.originalFileName ||
+        firstAttachment?.fileName ||
+        (typeof message.content === 'string' ? message.content : '')
+
+      if (fileName && fileName.trim()) {
+        return `${t('message.messageType.file', { defaultValue: '[File]' })} ${fileName}`
+      }
+      return t('message.messageType.file', { defaultValue: '[File]' })
+    }
+
+    return message.content || ''
+  }
+
+  const handlePickImage = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+      allowsMultipleSelection: true,
+      selectionLimit: 10
+    })
+    if (!result.canceled && result.assets.length > 0) {
+      const images = result.assets.map((asset) => ({
+        uri: asset.uri,
+        fileName: asset.fileName || `image_${Date.now()}.jpg`,
+        mimeType: asset.mimeType || 'image/jpeg'
+      }))
+      onSendImage?.(images)
+    }
+  }
+
+  const handlePickFile = async () => {
+    const result = await DocumentPicker.getDocumentAsync({ type: '*/*', copyToCacheDirectory: true })
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0]
+      onSendFile?.(asset.uri, asset.name, asset.mimeType || 'application/octet-stream')
+    }
+  }
+
   return (
     <SafeAreaView edges={['bottom']} style={{ backgroundColor: isDark ? '#15181D' : '#fff' }}>
       {/* Reply preview bar */}
@@ -130,9 +184,20 @@ export function ChatInputBar({
             <Text style={{ fontSize: 13, fontWeight: '600', color: BRAND.blue }} numberOfLines={1}>
               {replyTo.senderName || 'User'}
             </Text>
-            <Text style={{ fontSize: 13, color: colors.textSecondary }} numberOfLines={1}>
-              {replyTo.content}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+              {replyTo.type === MessageType.IMAGE && replyTo.attachments?.[0]?.url ? (
+                <Image
+                  source={{ uri: replyTo.attachments[0].url }}
+                  style={{ width: 24, height: 24, borderRadius: 4, marginRight: 6 }}
+                  resizeMode='cover'
+                />
+              ) : replyTo.type === MessageType.FILE ? (
+                <Ionicons name='document-attach-outline' size={14} color={colors.textSecondary} style={{ marginRight: 6 }} />
+              ) : null}
+              <Text style={{ fontSize: 13, color: colors.textSecondary, flex: 1 }} numberOfLines={1}>
+                {getReplyPreviewText(replyTo)}
+              </Text>
+            </View>
           </View>
           <TouchableOpacity onPress={onCancelReply} style={{ padding: 6 }}>
             <Ionicons name='close' size={18} color={colors.textSecondary} />
@@ -177,7 +242,11 @@ export function ChatInputBar({
           }}
         />
 
-        {hasText ? (
+        {isSendingFile ? (
+          <View style={{ padding: 6, marginBottom: 2 }}>
+            <ActivityIndicator size='small' color={BRAND.blue} />
+          </View>
+        ) : hasText ? (
           <TouchableOpacity onPress={onSend} style={{ padding: 6, marginBottom: 2 }}>
             <Ionicons name='send' size={24} color={BRAND.blue} />
           </TouchableOpacity>
@@ -186,10 +255,10 @@ export function ChatInputBar({
             <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={() => setShowMoreActions((v) => !v)}>
               <Ionicons name='ellipsis-horizontal' size={22} color={showMoreActions ? BRAND.blue : colors.icon} />
             </TouchableOpacity>
-            <TouchableOpacity style={{ padding: 6, marginBottom: 2 }}>
-              <Ionicons name='mic-outline' size={24} color={colors.icon} />
+            <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={handlePickFile}>
+              <Ionicons name='document-attach-outline' size={24} color={colors.icon} />
             </TouchableOpacity>
-            <TouchableOpacity style={{ padding: 6, marginBottom: 2 }}>
+            <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={handlePickImage}>
               <Ionicons name='image-outline' size={24} color={colors.icon} />
             </TouchableOpacity>
           </View>

@@ -7,9 +7,9 @@ import { useSendMessage, useRevokeMessage, useDeleteMessageForMe } from '../quer
 import { useAuthStore } from '@/store'
 import { getAccessToken } from '@/lib/http'
 import apiConfig from '@/config/apiConfig'
-import { normalizeDateTime } from '../utils/date-utils'
+import { normalizeDateTime, parseMessageDate } from '../utils/date-utils'
 import { MessageStatus, MessageType } from '../schemas'
-import type { MessageResponse, ConversationResponse, MessageSendRequest, ReplyMetadataResponse } from '../schemas'
+import type { MessageResponse, ConversationResponse, MessageSendRequest, ReplyMetadataResponse, AttachmentInfo } from '../schemas'
 
 // ────────── Singleton state ──────────
 let singletonClient: Client | null = null
@@ -126,7 +126,7 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
           if (idx >= 0) {
             const updated: ConversationResponse = {
               ...conversations[idx],
-              lastMessage: msg.content,
+              lastMessage: typeof msg.content === 'string' ? msg.content : (msg.type === 'IMAGE' ? '[Hình ảnh]' : msg.type === 'FILE' ? '[Tệp]' : ''),
               lastMessageTime: msg.createdAt || new Date().toISOString(),
               isLastMessageFromMe: isOwnMessage,
               lastMessageType: msg.type,
@@ -213,7 +213,11 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
               const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
               if (conversations.find((c: ConversationResponse) => c.id === newConv.id)) return oldData
               const newList = [newConv, ...conversations].sort(
-                (a: any, b: any) => new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
+                (a: any, b: any) => {
+                  const bTime = parseMessageDate(b.lastMessageTime)?.getTime() || 0
+                  const aTime = parseMessageDate(a.lastMessageTime)?.getTime() || 0
+                  return bTime - aTime
+                }
               )
               return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
             })
@@ -278,8 +282,8 @@ export const useChatWebSocket = () => {
 
   // ────────── sendMessage ──────────
   const sendMessage = useCallback(
-    (conversationId: string, content: string, replyTo?: ReplyMetadataResponse | null, isForwarded = false) => {
-      if (!singletonClient?.connected || (!content.trim() && !isForwarded)) return
+    (conversationId: string, content: string, replyTo?: ReplyMetadataResponse | null, isForwarded = false, attachments?: AttachmentInfo[], messageType?: MessageType) => {
+      if (!singletonClient?.connected || (!content.trim() && !isForwarded && !attachments?.length)) return
 
       const clientMessageId = `temp-${Date.now()}`
       const request: MessageSendRequest = {
@@ -289,19 +293,21 @@ export const useChatWebSocket = () => {
         replyTo: replyTo
           ? { messageId: replyTo.messageId, senderId: replyTo.senderId, content: replyTo.content, type: replyTo.type }
           : undefined,
-        isForwarded
+        isForwarded,
+        attachments
       }
 
       sendMsgMutation.mutate(request)
 
       // Optimistic message in cache
       const now = new Date().toISOString()
+      const resolvedType = messageType || (attachments?.length ? MessageType.FILE : MessageType.CHAT)
       const optimisticMsg: MessageResponse = {
         id: clientMessageId,
         clientMessageId,
         senderId: user?.id || '',
-        content,
-        type: MessageType.CHAT,
+        content: content || null,
+        type: resolvedType,
         status: MessageStatus.NORMAL,
         createdAt: now,
         lastModifiedAt: now,
@@ -309,7 +315,10 @@ export const useChatWebSocket = () => {
         senderName: user?.fullName ?? null,
         senderAvatar: null,
         replyTo: replyTo ?? null,
-        isForwarded
+        isForwarded,
+        metadata: null,
+        attachments: attachments ?? null,
+        reactions: null
       }
 
       queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
@@ -329,10 +338,10 @@ export const useChatWebSocket = () => {
         if (idx >= 0) {
           const updated: ConversationResponse = {
             ...conversations[idx],
-            lastMessage: content,
+            lastMessage: content || (resolvedType === MessageType.IMAGE ? '[Hình ảnh]' : resolvedType === MessageType.FILE ? '[Tệp]' : content),
             lastMessageTime: now,
             isLastMessageFromMe: true,
-            lastMessageType: MessageType.CHAT,
+            lastMessageType: resolvedType,
             lastMessageStatus: MessageStatus.NORMAL
           }
           const newList = [updated, ...conversations.filter((_, i) => i !== idx)]

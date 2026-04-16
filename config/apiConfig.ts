@@ -88,7 +88,11 @@ export const API_ENDPOINTS = {
     PARTNER_CONVERSATION: (partnerId: string) => `/messages/conversations/partner/${partnerId}`,
     MARK_READ: (conversationId: string) => `/messages/conversations/${conversationId}/read`,
     REVOKE: (messageId: string) => `/messages/${messageId}/revoke`,
-    DELETE_FOR_ME: (messageId: string) => `/messages/me/${messageId}`
+    DELETE_FOR_ME: (messageId: string) => `/messages/${messageId}/me`
+  },
+  FILE: {
+    UPLOAD: '/files/upload',
+    DOWNLOAD: (filename: string) => `/files/download/${filename}`
   },
   NOTIFICATION: {
     LIST: '/notifications',

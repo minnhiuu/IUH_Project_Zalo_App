@@ -1,12 +1,15 @@
 ﻿import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { View, TouchableOpacity, Alert, Clipboard, Modal, Pressable, Animated, ScrollView } from 'react-native'
+import { View, TouchableOpacity, Alert, Clipboard, Modal, Pressable, Animated, ScrollView, Image, Linking } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
 import { UserAvatar } from '@/components/common/user-avatar'
 import { useTranslation } from 'react-i18next'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { Colors } from '@/constants/theme'
-import { MessageStatus, type MessageResponse, type ReplyMetadataResponse } from '../schemas'
+import { MessageStatus, MessageType, type MessageResponse, type ReplyMetadataResponse } from '../schemas'
+import { parseMessageDate } from '../utils/date-utils'
+import { parseBusinessCardContent } from '../utils'
+import { BusinessCardMessage } from './business-card-message'
 
 const EMOJIS = ['\u2764\uFE0F', '\uD83D\uDC4D', '\uD83D\uDE06', '\uD83D\uDE2E', '\uD83D\uDE22', '\uD83D\uDE21']
 
@@ -23,6 +26,7 @@ interface MessageBubbleProps {
   onDeleteForMe?: (messageId: string) => void
   onForward?: (message: MessageResponse) => void
   onOpenMessageOptions?: () => void
+  onReplyMessagePress?: (messageId: string) => void
 }
 
 export function MessageBubble({
@@ -37,7 +41,8 @@ export function MessageBubble({
   onRevoke,
   onDeleteForMe,
   onForward,
-  onOpenMessageOptions
+  onOpenMessageOptions,
+  onReplyMessagePress
 }: MessageBubbleProps) {
   const { t } = useTranslation()
   const colorScheme = useColorScheme() ?? 'light'
@@ -67,10 +72,59 @@ export function MessageBubble({
 
   const timeColor = isDark ? '#777' : '#9ca3af'
 
+  const getReplyPreviewText = (reply: ReplyMetadataResponse) => {
+    if (reply.type === MessageType.IMAGE) {
+      return t('message.messageType.image', { defaultValue: '[Hình ảnh]' })
+    }
+    if (reply.type === MessageType.FILE) {
+      const raw = (reply.content || '').trim()
+      if (!raw || raw === '[FILE]') {
+        return t('message.messageType.file', { defaultValue: '[File]' })
+      }
+      return `${t('message.messageType.file', { defaultValue: '[File]' })} ${raw}`
+    }
+    return reply.content || ''
+  }
+
+  const getReplyImageUri = (reply: ReplyMetadataResponse) => {
+    if (reply.type !== MessageType.IMAGE) return null
+    const raw = (reply.content || '').trim()
+    if (/^https?:\/\//i.test(raw)) return raw
+    return null
+  }
+
+  const getReplyFileBadge = (reply: ReplyMetadataResponse) => {
+    if (reply.type !== MessageType.FILE) return null
+    const raw = (reply.content || '').trim().toLowerCase()
+    const ext = raw.includes('.') ? raw.split('.').pop() || '' : ''
+    if (ext === 'pdf') return { text: 'PDF', bg: '#E53935' }
+    if (ext === 'doc' || ext === 'docx') return { text: 'W', bg: '#1565C0' }
+    if (ext === 'xls' || ext === 'xlsx') return { text: 'X', bg: '#2E7D32' }
+    if (ext === 'ppt' || ext === 'pptx') return { text: 'P', bg: '#D84315' }
+    return { text: 'FILE', bg: '#546E7A' }
+  }
+
+  const getFileNameFromUrl = (url: string | null | undefined) => {
+    if (!url) return ''
+    try {
+      const raw = decodeURIComponent(url.split('?')[0].split('#')[0].split('/').pop() || '')
+      return raw.trim()
+    } catch {
+      return ''
+    }
+  }
+
+  const getReplyPrefixIcon = (reply: ReplyMetadataResponse) => {
+    if (reply.type === MessageType.IMAGE) return 'image-outline'
+    if (reply.type === MessageType.FILE) return 'document-attach-outline'
+    return null
+  }
+
   const formatTime = (dateStr: string | null) => {
     if (!dateStr) return ''
     try {
-      const d = new Date(dateStr.endsWith('Z') ? dateStr : dateStr + 'Z')
+      const d = parseMessageDate(dateStr)
+      if (!d) return ''
       return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
     } catch {
       return ''
@@ -223,7 +277,10 @@ export function MessageBubble({
 
   const actionRows = buildActionRows(isOwn, isDark, t)
   const deliveryStatusLabel = getDeliveryStatusLabel()
+  const effectiveShowTime = showTime || showActions
   const incomingLeftSlotWidth = 44
+  const businessCardPayload = parseBusinessCardContent(typeof message.content === 'string' ? message.content : null)
+  const contentMaxWidth = !isRevoked && message.type === MessageType.FILE ? '88%' : '75%'
 
   return (
     <View
@@ -255,61 +312,252 @@ export function MessageBubble({
         </View>
       )}
 
-      <View style={{ maxWidth: '70%' }}>
+      <View style={{ maxWidth: contentMaxWidth }}>
         {showSenderName && message.senderName && !isOwn && (
           <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 2, marginLeft: 4 }}>
             {message.senderName}
           </Text>
         )}
 
-        <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
-          <View
-            style={{
-              backgroundColor: bubbleBg,
-              borderRadius: 16,
-              borderTopRightRadius: isOwn ? 4 : 16,
-              borderTopLeftRadius: isOwn ? 16 : 4,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              borderWidth: !isOwn && !isDark && !isRevoked ? 0.5 : 0,
-              borderColor: '#E5E7EB'
-            }}
-          >
-            {message.replyTo && !isRevoked && (
-              <View
-                style={{
-                  borderLeftWidth: 3,
-                  borderLeftColor: '#0068FF',
-                  backgroundColor: isOwn
-                    ? isDark
-                      ? 'rgba(0,0,0,0.15)'
-                      : 'rgba(0,80,200,0.1)'
-                    : isDark
-                      ? 'rgba(255,255,255,0.08)'
-                      : 'rgba(0,0,0,0.04)',
-                  borderRadius: 6,
-                  paddingHorizontal: 10,
-                  paddingVertical: 6,
-                  marginBottom: 6
-                }}
-              >
-                <Text style={{ fontSize: 13, fontWeight: '600', color: '#0068FF' }} numberOfLines={1}>
-                  {message.replyTo.senderName || 'User'}
-                </Text>
-                <Text style={{ fontSize: 13, color: isDark ? '#aaa' : '#666' }} numberOfLines={2}>
-                  {message.replyTo.content}
-                </Text>
-              </View>
-            )}
-            {isRevoked ? (
-              <Text style={{ fontSize: 14, color: textColor, fontStyle: 'italic' }}>{t('message.messageRevoked')}</Text>
-            ) : (
-              <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>{message.content}</Text>
-            )}
-          </View>
-        </TouchableOpacity>
+        {/* Business card message */}
+        {!isRevoked && !!businessCardPayload ? (
+          <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
+            <BusinessCardMessage payload={businessCardPayload} onMessagePress={onAvatarPress} />
+          </TouchableOpacity>
+        ) :
+        /* IMAGE messages - no bubble, direct images */
+        !isRevoked && message.type === MessageType.IMAGE && message.attachments?.length ? (
+          <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
+            <View>
+              {message.attachments.length === 1 ? (
+                <Image
+                  source={{ uri: message.attachments[0].url }}
+                  style={{ width: 220, height: 220, borderRadius: 12 }}
+                  resizeMode='cover'
+                />
+              ) : message.attachments.length === 2 ? (
+                <View style={{ flexDirection: 'row', gap: 2 }}>
+                  {message.attachments.map((att, idx) => (
+                    <Image
+                      key={att.key || idx}
+                      source={{ uri: att.url }}
+                      style={{
+                        width: 118,
+                        height: 118,
+                        borderTopLeftRadius: idx === 0 ? 12 : 0,
+                        borderBottomLeftRadius: idx === 0 ? 12 : 0,
+                        borderTopRightRadius: idx === 1 ? 12 : 0,
+                        borderBottomRightRadius: idx === 1 ? 12 : 0
+                      }}
+                      resizeMode='cover'
+                    />
+                  ))}
+                </View>
+              ) : (
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, maxWidth: 238 }}>
+                  {message.attachments.slice(0, 4).map((att, idx) => (
+                    <View key={att.key || idx} style={{ position: 'relative' }}>
+                      <Image
+                        source={{ uri: att.url }}
+                        style={{ width: 118, height: 118, borderRadius: 4 }}
+                        resizeMode='cover'
+                      />
+                      {idx === 3 && message.attachments!.length > 4 && (
+                        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
+                          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>+{message.attachments!.length - 4}</Text>
+                        </View>
+                      )}
+                    </View>
+                  ))}
+                </View>
+              )}
+              {message.content ? (
+                <Text style={{ fontSize: 15, color: textColor, lineHeight: 21, marginTop: 4 }}>{message.content}</Text>
+              ) : null}
+            </View>
+          </TouchableOpacity>
+        ) : !isRevoked && message.type === MessageType.FILE && message.attachments?.length ? (
+          /* FILE messages - Zalo-style card */
+          <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
+            <View
+              style={{
+                backgroundColor: isDark ? '#1E2732' : '#F3F8FF',
+                borderRadius: 14,
+                borderWidth: isDark ? 0 : 0.5,
+                borderColor: '#D8E4F5',
+                overflow: 'hidden',
+                minWidth: 280,
+                maxWidth: 320
+              }}
+            >
+              {message.attachments.map((att, idx) => {
+                const ext = (att.originalFileName || att.fileName || '').split('.').pop()?.toLowerCase() || ''
+                const iconBg = ext === 'pdf' ? '#E53935' : ext === 'doc' || ext === 'docx' ? '#1565C0' : ext === 'xls' || ext === 'xlsx' ? '#2E7D32' : ext === 'ppt' || ext === 'pptx' ? '#D84315' : '#546E7A'
+                const iconLetter = ext === 'pdf' ? 'PDF' : ext.startsWith('doc') ? 'W' : ext.startsWith('xls') ? 'X' : ext.startsWith('ppt') ? 'P' : ext.slice(0, 3).toUpperCase()
+                const sizeStr = att.size ? (att.size < 1024 * 1024 ? `${(att.size / 1024).toFixed(2)} KB` : `${(att.size / (1024 * 1024)).toFixed(2)} MB`) : ''
+                const fallbackKeyName = att.key?.split('/').pop() || ''
+                const fallbackUrlName = getFileNameFromUrl(att.url)
+                const defaultFileName = ext ? `Tệp ${ext.toUpperCase()}` : 'Tệp tin'
+                const fileName =
+                  att.originalFileName?.trim() ||
+                  att.fileName?.trim() ||
+                  (typeof message.content === 'string' ? message.content.trim() : '') ||
+                  fallbackUrlName ||
+                  fallbackKeyName ||
+                  defaultFileName
 
-        {(showTime || !!deliveryStatusLabel) && (
+                return (
+                  <View key={att.key || idx}>
+                    {idx > 0 && <View style={{ height: 0.5, backgroundColor: isDark ? '#333' : '#E5E7EB' }} />}
+                    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
+                      {/* File type icon */}
+                      <View style={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: 8,
+                        backgroundColor: iconBg,
+                        alignItems: 'center', justifyContent: 'center', marginRight: 10
+                      }}>
+                        <Text style={{ color: '#fff', fontSize: ext === 'pdf' ? 11 : 18, fontWeight: '700' }}>{iconLetter}</Text>
+                      </View>
+                      {/* File info */}
+                      <View style={{ flex: 1, minWidth: 120, marginRight: 6 }}>
+                        <Text
+                          style={{ fontSize: 14, color: textColor, fontWeight: '500' }}
+                          numberOfLines={1}
+                          ellipsizeMode='middle'
+                        >
+                          {fileName}
+                        </Text>
+                        <Text style={{ fontSize: 12, color: isDark ? '#888' : '#9ca3af', marginTop: 2 }} numberOfLines={1}>
+                          {sizeStr || '--'}
+                        </Text>
+                      </View>
+                      {/* Action buttons */}
+                      <View style={{ flexDirection: 'row', gap: 6, marginLeft: 6 }}>
+                        <TouchableOpacity
+                          onPress={() => att.url && Linking.openURL(att.url)}
+                          style={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: 15,
+                            borderWidth: 0.8,
+                            borderColor: isDark ? '#4B5563' : '#D1D5DB',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <Ionicons name='open-outline' size={16} color={isDark ? '#888' : '#6B7280'} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          onPress={() => att.url && Linking.openURL(att.url)}
+                          style={{
+                            width: 30,
+                            height: 30,
+                            borderRadius: 15,
+                            borderWidth: 0.8,
+                            borderColor: isDark ? '#4B5563' : '#D1D5DB',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                          }}
+                        >
+                          <Ionicons name='download-outline' size={16} color={isDark ? '#888' : '#6B7280'} />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
+                )
+              })}
+            </View>
+          </TouchableOpacity>
+        ) : (
+          /* Text / revoked messages - standard bubble */
+          <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
+            <View
+              style={{
+                backgroundColor: bubbleBg,
+                borderRadius: 16,
+                borderTopRightRadius: isOwn ? 4 : 16,
+                borderTopLeftRadius: isOwn ? 16 : 4,
+                paddingHorizontal: 12,
+                paddingVertical: 8,
+                borderWidth: !isOwn && !isDark && !isRevoked ? 0.5 : 0,
+                borderColor: '#E5E7EB'
+              }}
+            >
+              {message.replyTo && !isRevoked && (
+                <TouchableOpacity
+                  activeOpacity={0.75}
+                  onPress={() => message.replyTo?.messageId && onReplyMessagePress?.(message.replyTo.messageId)}
+                >
+                <View
+                  style={{
+                    borderLeftWidth: 3,
+                    borderLeftColor: '#0068FF',
+                    backgroundColor: isOwn
+                      ? isDark
+                        ? 'rgba(0,0,0,0.15)'
+                        : 'rgba(0,80,200,0.1)'
+                      : isDark
+                        ? 'rgba(255,255,255,0.08)'
+                        : 'rgba(0,0,0,0.04)',
+                    borderRadius: 6,
+                    paddingHorizontal: 10,
+                    paddingVertical: 6,
+                    marginBottom: 6
+                  }}
+                >
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#0068FF' }} numberOfLines={1}>
+                    {message.replyTo.senderName || 'User'}
+                  </Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
+                    {!!getReplyImageUri(message.replyTo) ? (
+                      <Image
+                        source={{ uri: getReplyImageUri(message.replyTo)! }}
+                        style={{ width: 22, height: 22, borderRadius: 4, marginRight: 6 }}
+                        resizeMode='cover'
+                      />
+                    ) : message.replyTo.type === MessageType.FILE ? (
+                      <View
+                        style={{
+                          width: 22,
+                          height: 22,
+                          borderRadius: 4,
+                          backgroundColor: getReplyFileBadge(message.replyTo)?.bg || '#546E7A',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          marginRight: 6
+                        }}
+                      >
+                        <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>
+                          {getReplyFileBadge(message.replyTo)?.text || 'F'}
+                        </Text>
+                      </View>
+                    ) : !!getReplyPrefixIcon(message.replyTo) ? (
+                      <Ionicons
+                        name={getReplyPrefixIcon(message.replyTo) as any}
+                        size={13}
+                        color={isDark ? '#aaa' : '#666'}
+                        style={{ marginRight: 4 }}
+                      />
+                    ) : null}
+                    <Text style={{ fontSize: 13, color: isDark ? '#aaa' : '#666', flex: 1 }} numberOfLines={2}>
+                      {getReplyPreviewText(message.replyTo)}
+                    </Text>
+                  </View>
+                </View>
+                </TouchableOpacity>
+              )}
+              {isRevoked ? (
+                <Text style={{ fontSize: 14, color: textColor, fontStyle: 'italic' }}>{t('message.messageRevoked')}</Text>
+              ) : (
+                <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>{typeof message.content === 'string' ? message.content : ''}</Text>
+              )}
+            </View>
+          </TouchableOpacity>
+        )}
+
+        {(effectiveShowTime || !!deliveryStatusLabel) && (
           <View
             style={{
               flexDirection: 'row',
@@ -319,7 +567,7 @@ export function MessageBubble({
               gap: 6
             }}
           >
-            {showTime && <Text style={{ fontSize: 11, color: timeColor }}>{formatTime(message.createdAt)}</Text>}
+            {effectiveShowTime && <Text style={{ fontSize: 11, color: timeColor }}>{formatTime(message.createdAt)}</Text>}
             {!!deliveryStatusLabel && (
               <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>{deliveryStatusLabel}</Text>
             )}
