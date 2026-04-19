@@ -5,7 +5,9 @@ import { messageKeys } from '../queries/keys'
 import { messageApi } from '../api/message.api'
 import { useSendMessage, useRevokeMessage, useDeleteMessageForMe } from '../queries/use-mutations'
 import { useAuthStore } from '@/store'
-import { getAccessToken } from '@/lib/http'
+import { getAccessToken, clearTokens } from '@/lib/http'
+import { storage } from '@/utils/storageUtils'
+import { jwtDecode } from 'jwt-decode'
 import apiConfig from '@/config/apiConfig'
 import { normalizeDateTime } from '../utils/date-utils'
 import { MessageStatus, MessageType } from '../schemas'
@@ -222,6 +224,35 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
           }
         } catch {
           queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+        }
+      })
+
+      // ────────── /queue/session (FORCE_LOGOUT) ──────────
+      client.subscribe('/user/queue/session', async (payload) => {
+        try {
+          const event = JSON.parse(payload.body)
+          if (event?.type !== 'FORCE_LOGOUT') return
+
+          let mySessionId: string | null = null
+          try {
+            const token = await getAccessToken()
+            if (token) {
+              const decoded = jwtDecode<{ sessionId?: string }>(token)
+              mySessionId = decoded.sessionId ?? null
+            }
+          } catch {
+            mySessionId = null // safe fallback → force logout
+          }
+
+          if (mySessionId === null || mySessionId === event.sessionId) {
+            await clearTokens()
+            await storage.remove('user_data')
+            useAuthStore.getState().logoutSuccess()
+            queryClient.clear()
+            disconnectSingleton(user)
+          }
+        } catch (error) {
+          console.error('[Socket] Error handling session event:', error)
         }
       })
 
