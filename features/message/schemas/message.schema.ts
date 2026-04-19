@@ -26,7 +26,8 @@ export enum MemberRole {
 
 export const messageSendRequestSchema = z.object({
   conversationId: z.string().min(1),
-  content: z.string().optional().default(''),
+  recipientId: z.string().optional(),
+  content: z.string().min(1),
   clientMessageId: z.string().optional(),
   replyTo: z
     .object({
@@ -84,12 +85,12 @@ export type MessageResponse = {
   replyTo: ReplyMetadataResponse | null
   isForwarded: boolean
   status: MessageStatus
-  metadata: Record<string, any> | null
-  attachments: AttachmentInfo[] | null
-  reactions: Record<string, string[]> | null
   // Fields from ChatNotification (WebSocket)
   unreadCount?: number
   isFromMe?: boolean
+  metadata?: Record<string, unknown>
+  attachments?: AttachmentInfo[]
+  reactions?: Record<string, string[]>
 }
 
 export type ConversationMemberResponse = {

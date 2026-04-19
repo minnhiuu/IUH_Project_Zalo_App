@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { Modal, View, TouchableOpacity, TextInput, SectionList, KeyboardAvoidingView, Platform } from 'react-native'
+import { Image as ExpoImage } from 'expo-image'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
@@ -8,7 +9,8 @@ import { Text } from '@/components/ui/text'
 import { UserAvatar } from '@/components/common/user-avatar'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { Colors } from '@/constants/theme'
-import type { ConversationResponse, MessageResponse } from '../schemas'
+import { MessageType, type ConversationResponse, type MessageResponse } from '../schemas'
+import { getFileInfo } from './file-badge'
 import { parseBusinessCardContent } from '../utils'
 
 interface ForwardMessageModalProps {
@@ -284,17 +286,52 @@ export function ForwardMessageModal({
           >
             <View
               style={{
-                height: 44,
                 borderRadius: 10,
                 backgroundColor: isDark ? '#4A4A4A' : '#E5E7EB',
-                justifyContent: 'center',
-                paddingHorizontal: 12,
-                marginBottom: 8
+                marginBottom: 8,
+                overflow: 'hidden'
               }}
             >
-              <Text style={{ color: isDark ? '#F9FAFB' : '#111827', fontSize: 13 }} numberOfLines={1}>
-                {sourcePreview}
-              </Text>
+              {(sourceMessage?.type === MessageType.IMAGE || sourceMessage?.type === MessageType.VIDEO) && sourceMessage.attachments?.[0]?.url ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', padding: 8, gap: 10 }}>
+                  <View style={{ width: 48, height: 48, borderRadius: 6, overflow: 'hidden', backgroundColor: '#111' }}>
+                    <ExpoImage
+                      source={{ uri: sourceMessage.attachments[0].url }}
+                      style={{ width: '100%', height: '100%' }}
+                      contentFit='cover'
+                      cachePolicy='memory-disk'
+                    />
+                    {sourceMessage.type === MessageType.VIDEO && (
+                      <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
+                        <Ionicons name='play-circle' size={20} color='rgba(255,255,255,0.9)' />
+                      </View>
+                    )}
+                  </View>
+                  <Text style={{ color: isDark ? '#F9FAFB' : '#111827', fontSize: 13, flex: 1 }} numberOfLines={1}>
+                    {sourceMessage.type === MessageType.IMAGE ? '📷 Hình ảnh' : '🎬 Video'}
+                  </Text>
+                </View>
+              ) : sourceMessage?.type === MessageType.FILE && sourceMessage.attachments?.[0] ? (() => {
+                const att = sourceMessage.attachments[0]
+                const fileName = att.originalFileName || att.fileName || 'file'
+                const { badgeColor, label } = getFileInfo(fileName)
+                return (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', padding: 8, gap: 10 }}>
+                    <View style={{ width: 40, height: 44, borderRadius: 6, backgroundColor: badgeColor, alignItems: 'center', justifyContent: 'center' }}>
+                      <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>{label}</Text>
+                    </View>
+                    <Text style={{ color: isDark ? '#F9FAFB' : '#111827', fontSize: 13, flex: 1 }} numberOfLines={2}>
+                      {fileName}
+                    </Text>
+                  </View>
+                )
+              })() : (
+                <View style={{ height: 44, justifyContent: 'center', paddingHorizontal: 12 }}>
+                  <Text style={{ color: isDark ? '#F9FAFB' : '#111827', fontSize: 13 }} numberOfLines={1}>
+                    {sourceMessage?.content || t('message.forward.notePlaceholder', { defaultValue: 'Nhập tin nhắn' })}
+                  </Text>
+                </View>
+              )}
             </View>
 
             <View style={{ flexDirection: 'row', alignItems: 'center', minHeight: 48 }}>

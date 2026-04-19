@@ -1,13 +1,23 @@
 import http from '@/lib/http'
+import { getAccessToken } from '@/lib/http'
 import { API_ENDPOINTS } from '@/config/apiConfig'
 import type { ApiResponse, PageResponse } from '@/types/common.types'
 import type {
   MessageSendRequest,
   MessageResponse,
-  ConversationResponse,
+  ConversationResponse, 
   AttachmentInfo,
   PinnedMessageInfo
 } from '../schemas'
+
+export type UploadFileResponse = {
+  key: string
+  url: string
+  fileName: string
+  originalFileName: string
+  contentType: string
+  size: number
+}
 
 export const messageApi = {
   getConversations: (page: number = 0, size: number = 20) =>
@@ -44,16 +54,32 @@ export const messageApi = {
   deleteMessageForMe: (messageId: string) =>
     http.delete<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.DELETE_FOR_ME(messageId)),
 
-  uploadFile: (fileUri: string, fileName: string, mimeType: string, folder: string = 'chat') => {
+  uploadFile: async (uri: string, mimeType: string, fileName: string, folder: string = 'chat') => {
     const formData = new FormData()
-    formData.append('file', {
-      uri: fileUri,
-      name: fileName,
-      type: mimeType
-    } as any)
-    formData.append('folder', folder)
-    return http.post<ApiResponse<AttachmentInfo>>(API_ENDPOINTS.FILE.UPLOAD, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-  }
+    formData.append('file', { uri, type: mimeType, name: fileName } as any)
+    const token = await getAccessToken()
+
+    const headers: Record<string, string> = {}
+    if (token) {
+      headers.Authorization = `Bearer ${token}`
+    }
+    headers['Content-Type'] = 'multipart/form-data'
+
+    return http.post<ApiResponse<UploadFileResponse>>(
+      `${API_ENDPOINTS.FILE.UPLOAD}?folder=${folder}`,
+      formData,
+      { headers }
+    )
+  },
+
+  toggleReaction: (messageId: string, emoji: string) =>
+    http.post<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.TOGGLE_REACTION(messageId), { emoji }),
+
+  removeAllMyReactions: (messageId: string) =>
+    http.delete<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.REMOVE_REACTIONS(messageId)),
+
+  getMediaMessages: (conversationId: string, types: string[] = ['IMAGE', 'VIDEO'], page: number = 0, size: number = 50) =>
+    http.get<ApiResponse<PageResponse<MessageResponse[]>>>(
+      `${API_ENDPOINTS.MESSAGE.MEDIA(conversationId)}?types=${types.join(',')}&page=${page}&size=${size}`
+    )
 }

@@ -93,11 +93,13 @@ export const API_ENDPOINTS = {
     UNPIN_MESSAGE: (conversationId: string, messageId: string) =>
       `/messages/conversations/${conversationId}/messages/${messageId}/pin`,
     REVOKE: (messageId: string) => `/messages/${messageId}/revoke`,
-    DELETE_FOR_ME: (messageId: string) => `/messages/${messageId}/me`
+    DELETE_FOR_ME: (messageId: string) => `/messages/me/${messageId}`,
+    TOGGLE_REACTION: (messageId: string) => `/messages/messages/${messageId}/reactions`,
+    REMOVE_REACTIONS: (messageId: string) => `/messages/messages/${messageId}/reactions/me`,
+    MEDIA: (conversationId: string) => `/messages/conversations/${conversationId}/media`
   },
   FILE: {
-    UPLOAD: '/files/upload',
-    DOWNLOAD: (filename: string) => `/files/download/${filename}`
+    UPLOAD: '/files/upload'
   },
   NOTIFICATION: {
     LIST: '/notifications',

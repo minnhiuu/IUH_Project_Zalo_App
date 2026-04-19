@@ -1,17 +1,23 @@
-﻿import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { View, TouchableOpacity, Alert, Clipboard, Modal, Pressable, Animated, ScrollView, Image, Linking } from 'react-native'
+import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { View, TouchableOpacity, Alert, Clipboard, Modal, Pressable, Animated, ScrollView } from 'react-native'
+import { Image as ExpoImage } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
 import { UserAvatar } from '@/components/common/user-avatar'
 import { useTranslation } from 'react-i18next'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { Colors } from '@/constants/theme'
-import { MessageStatus, MessageType, type MessageResponse, type ReplyMetadataResponse } from '../schemas'
-import { parseMessageDate } from '../utils/date-utils'
+import { MessageStatus, MessageType, type MessageResponse, type ConversationMemberResponse } from '../schemas'
+import { useAuthStore } from '@/store'
+import { useToggleReaction, useRemoveAllMyReactions } from '../queries/use-mutations'
+import { normalizeDateTime } from '../utils/date-utils'
+import { FileBadge } from './file-badge'
+import { MessageMediaContent } from './media-content'
+import { MessageReactionBar, EMOJIS } from './message-reaction-bar'
+import { useQueryClient, type InfiniteData } from '@tanstack/react-query'
+import { messageKeys } from '../queries/keys'
 import { parseBusinessCardContent } from '../utils'
 import { BusinessCardMessage } from './business-card-message'
-
-const EMOJIS = ['\u2764\uFE0F', '\uD83D\uDC4D', '\uD83D\uDE06', '\uD83D\uDE2E', '\uD83D\uDE22', '\uD83D\uDE21']
 
 interface MessageBubbleProps {
   message: MessageResponse
@@ -21,7 +27,10 @@ interface MessageBubbleProps {
   showTime?: boolean
   showAvatar?: boolean
   showSenderName?: boolean
+  members?: ConversationMemberResponse[] | null
   onAvatarPress?: (userId: string) => void
+  onBusinessCardPress?: (userId: string) => void
+  onBusinessCardMessagePress?: (userId: string) => void
   onReply?: (message: MessageResponse) => void
   onRevoke?: (messageId: string) => void
   onDeleteForMe?: (messageId: string) => void
@@ -29,6 +38,8 @@ interface MessageBubbleProps {
   onPin?: (message: MessageResponse) => void
   onOpenMessageOptions?: () => void
   onReplyMessagePress?: (messageId: string) => void
+  onScrollToMessage?: (messageId: string) => void
+  isHighlighted?: boolean
 }
 
 export function MessageBubble({
@@ -39,20 +50,54 @@ export function MessageBubble({
   showTime = true,
   showAvatar = true,
   showSenderName = false,
+  members,
   onAvatarPress,
+  onBusinessCardPress,
+  onBusinessCardMessagePress,
   onReply,
   onRevoke,
   onDeleteForMe,
   onForward,
   onPin,
   onOpenMessageOptions,
-  onReplyMessagePress
+  onReplyMessagePress,
+  onScrollToMessage,
+  isHighlighted = false
 }: MessageBubbleProps) {
   const { t } = useTranslation()
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
   const isDark = colorScheme === 'dark'
   const [showActions, setShowActions] = useState(false)
+  const currentUser = useAuthStore((s) => s.user)
+  const currentUserId = currentUser?.id || ''
+  const { mutate: toggleReactionMutate } = useToggleReaction()
+  const { mutate: removeReactionsMutate } = useRemoveAllMyReactions()
+  const queryClient = useQueryClient()
+
+  // Highlight animation
+  const highlightAnim = useRef(new Animated.Value(0)).current
+  useEffect(() => {
+    if (isHighlighted) {
+      Animated.sequence([
+        Animated.timing(highlightAnim, { toValue: 1, duration: 200, useNativeDriver: false }),
+        Animated.delay(700),
+        Animated.timing(highlightAnim, { toValue: 0, duration: 400, useNativeDriver: false })
+      ]).start()
+    }
+  }, [isHighlighted])
+
+  const getReplyAttachmentUrl = (replyMessageId: string): string | null => {
+    const conversationId = message.conversationId
+    if (!conversationId) return null
+    const cached = queryClient.getQueryData<InfiniteData<any>>(messageKeys.messages(conversationId))
+    if (!cached) return null
+    for (const page of cached.pages) {
+      const found = (page.data ?? page.content ?? []).find((m: MessageResponse) => m.id === replyMessageId)
+      if (found) return found.attachments?.[0]?.url ?? null
+    }
+    return null
+  }
 
   const overlayOpacity = useRef(new Animated.Value(0)).current
   const sheetTranslateY = useRef(new Animated.Value(400)).current
@@ -76,59 +121,13 @@ export function MessageBubble({
 
   const timeColor = isDark ? '#777' : '#9ca3af'
 
-  const getReplyPreviewText = (reply: ReplyMetadataResponse) => {
-    if (reply.type === MessageType.IMAGE) {
-      return t('message.messageType.image', { defaultValue: '[Hình ảnh]' })
-    }
-    if (reply.type === MessageType.FILE) {
-      const raw = (reply.content || '').trim()
-      if (!raw || raw === '[FILE]') {
-        return t('message.messageType.file', { defaultValue: '[File]' })
-      }
-      return `${t('message.messageType.file', { defaultValue: '[File]' })} ${raw}`
-    }
-    return reply.content || ''
-  }
-
-  const getReplyImageUri = (reply: ReplyMetadataResponse) => {
-    if (reply.type !== MessageType.IMAGE) return null
-    const raw = (reply.content || '').trim()
-    if (/^https?:\/\//i.test(raw)) return raw
-    return null
-  }
-
-  const getReplyFileBadge = (reply: ReplyMetadataResponse) => {
-    if (reply.type !== MessageType.FILE) return null
-    const raw = (reply.content || '').trim().toLowerCase()
-    const ext = raw.includes('.') ? raw.split('.').pop() || '' : ''
-    if (ext === 'pdf') return { text: 'PDF', bg: '#E53935' }
-    if (ext === 'doc' || ext === 'docx') return { text: 'W', bg: '#1565C0' }
-    if (ext === 'xls' || ext === 'xlsx') return { text: 'X', bg: '#2E7D32' }
-    if (ext === 'ppt' || ext === 'pptx') return { text: 'P', bg: '#D84315' }
-    return { text: 'FILE', bg: '#546E7A' }
-  }
-
-  const getFileNameFromUrl = (url: string | null | undefined) => {
-    if (!url) return ''
-    try {
-      const raw = decodeURIComponent(url.split('?')[0].split('#')[0].split('/').pop() || '')
-      return raw.trim()
-    } catch {
-      return ''
-    }
-  }
-
-  const getReplyPrefixIcon = (reply: ReplyMetadataResponse) => {
-    if (reply.type === MessageType.IMAGE) return 'image-outline'
-    if (reply.type === MessageType.FILE) return 'document-attach-outline'
-    return null
-  }
-
   const formatTime = (dateStr: string | null) => {
     if (!dateStr) return ''
     try {
-      const d = parseMessageDate(dateStr)
-      if (!d) return ''
+      const normalized = normalizeDateTime(dateStr)
+      if (!normalized) return ''
+      const d = new Date(normalized)
+      if (Number.isNaN(d.getTime())) return ''
       return d.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
     } catch {
       return ''
@@ -278,89 +277,121 @@ export function MessageBubble({
           break
       }
     },
-    [closeSheet, message, onReply, onForward, onPin, onRevoke, onDeleteForMe, onOpenMessageOptions, t]
+    [closeSheet, message, onReply, onForward, onRevoke, onDeleteForMe, onPin, onOpenMessageOptions, t]
   )
+
+  const handleEmojiReaction = useCallback(
+    (emoji: string) => {
+      if (!message.id || message.id.startsWith('temp-')) return
+      closeSheet(() => {
+        toggleReactionMutate({
+          messageId: message.id,
+          emoji,
+          conversationId: message.conversationId || '',
+          userId: currentUserId
+        })
+      })
+    },
+    [message, currentUserId, closeSheet, toggleReactionMutate]
+  )
+
+  const handleRemoveReaction = useCallback(() => {
+    if (!message.id || message.id.startsWith('temp-')) return
+    removeReactionsMutate({
+      messageId: message.id,
+      conversationId: message.conversationId || '',
+      userId: currentUserId
+    })
+  }, [message, currentUserId, removeReactionsMutate])
+
+  const renderBubbleContent = () => {
+    if (isRevoked) {
+      return (
+        <Text style={{ fontSize: 14, color: textColor, fontStyle: 'italic' }}>
+          {t('message.messageRevoked')}
+        </Text>
+      )
+    }
+
+    if ((message.type === MessageType.IMAGE || message.type === MessageType.VIDEO) && message.attachments?.length) {
+      const MEDIA_PLACEHOLDERS = ['[Hình ảnh]', '[Image]', '[Video]', '[IMAGE]', '[VIDEO]']
+      const caption = message.content && !MEDIA_PLACEHOLDERS.includes(message.content) ? message.content : null
+      if (caption) {
+        return (
+          <View>
+            <MessageMediaContent attachments={message.attachments} onLongPress={openSheet} />
+            <Text style={{ fontSize: 15, color: textColor, lineHeight: 21, paddingHorizontal: 12, paddingVertical: 10 }}>
+              {caption}
+            </Text>
+          </View>
+        )
+      }
+      return <MessageMediaContent attachments={message.attachments} onLongPress={openSheet} />
+    }
+
+    const businessCard = parseBusinessCardContent(message.content)
+    if (businessCard) {
+      return (
+        <BusinessCardMessage
+          payload={businessCard}
+          onCardPress={(userId) => onBusinessCardPress?.(userId)}
+          onMessagePress={(userId) => onBusinessCardMessagePress?.(userId)}
+          onLongPress={openSheet}
+        />
+      )
+    }
+
+    if (message.type === MessageType.FILE && message.attachments?.length) {
+      const attachmentNames = message.attachments.map((att) => att.originalFileName || att.fileName).filter(Boolean)
+      const shouldRenderContent =
+        !!message.content &&
+        message.content !== '[Tệp tin]' &&
+        message.content !== '[File]' &&
+        !attachmentNames.includes(message.content)
+
+      return (
+        <View style={{ gap: 4 }}>
+          {message.attachments.map((att, i) => (
+            <FileBadge key={i} attachment={att} isDark={isDark} />
+          ))}
+          {shouldRenderContent && (
+              <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>
+                {message.content}
+              </Text>
+            )}
+        </View>
+      )
+    }
+
+    return (
+      <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>
+        {message.content}
+      </Text>
+    )
+  }
+
+  const reactions = message.reactions || {}
+  const reactionEntries = Object.entries(reactions).filter(([, users]) => (users as string[]).length > 0)
+  const myReaction = Object.entries(reactions).find(([, users]) => (users as string[]).includes(currentUserId))?.[0]
+  const MEDIA_PLACEHOLDERS = ['[Hình ảnh]', '[Image]', '[Video]', '[IMAGE]', '[VIDEO]']
+
+  const hasMediaContent =
+    !isRevoked &&
+    (message.type === MessageType.IMAGE || message.type === MessageType.VIDEO) &&
+    !!message.attachments?.length
+
+  const isBusinessCardMessage = !isRevoked && !!parseBusinessCardContent(message.content)
+
+  const hasRealCaption =
+    hasMediaContent &&
+    !!message.content &&
+    !MEDIA_PLACEHOLDERS.includes(message.content)
+
+  const mediaBubbleBg = hasRealCaption ? bubbleBg : 'transparent'
 
   const actionRows = buildActionRows(isOwn, isDark, isPinned, t)
   const deliveryStatusLabel = getDeliveryStatusLabel()
-  const effectiveShowTime = showTime || showActions
   const incomingLeftSlotWidth = 44
-  const businessCardPayload = parseBusinessCardContent(typeof message.content === 'string' ? message.content : null)
-  const contentMaxWidth = !isRevoked && message.type === MessageType.FILE ? '88%' : '75%'
-  const systemAction = String(message.metadata?.action || '').toUpperCase()
-  const isSystemPinNotice =
-    message.type === MessageType.SYSTEM && (systemAction === 'PIN_MESSAGE' || systemAction === 'UNPIN_MESSAGE')
-
-  if (isSystemPinNotice) {
-    const isUnpin = systemAction === 'UNPIN_MESSAGE'
-    const sourceName = String(
-      message.metadata?.actorName || message.senderName || t('message.pinned.userFallback', { defaultValue: 'Người dùng' })
-    ).trim()
-    const actorName = sourceName || t('message.pinned.userFallback', { defaultValue: 'Người dùng' })
-    const contentSnapshot =
-      String(message.metadata?.contentSnapshot || message.metadata?.originalContent || '').trim() ||
-      t('message.pinned.defaultTarget', { defaultValue: 'tin nhắn' })
-    const shouldShowView = !isUnpin && typeof message.metadata?.messageId === 'string' && !!message.metadata?.messageId
-
-    return (
-      <View style={{ alignItems: 'center', paddingHorizontal: 12, marginBottom: 8, marginTop: 2 }}>
-        <View
-          style={{
-            minHeight: 34,
-            borderRadius: 17,
-            backgroundColor: isDark ? '#2C3644' : '#EEF1F5',
-            flexDirection: 'row',
-            alignItems: 'center',
-            paddingHorizontal: 10,
-            maxWidth: '95%'
-          }}
-        >
-          <Ionicons
-            name='pin'
-            size={14}
-            color={isUnpin ? (isDark ? '#F7B267' : '#F59E0B') : isDark ? '#FFB07A' : '#F97316'}
-            style={{ marginRight: 6 }}
-          />
-
-          <Text style={{ fontSize: 14, color: isDark ? '#D5DCE5' : '#667085', flexShrink: 1 }} numberOfLines={1}>
-            {isUnpin
-              ? isOwn
-                ? t('message.pinned.system.youUnpinned', {
-                    defaultValue: 'Bạn đã bỏ ghim tin nhắn {{content}}',
-                    content: ''
-                  })
-                : t('message.pinned.system.userUnpinned', {
-                    defaultValue: '{{name}} đã bỏ ghim tin nhắn {{content}}',
-                    name: actorName,
-                    content: ''
-                  })
-              : isOwn
-                ? t('message.pinned.system.youPinned', {
-                    defaultValue: 'Bạn đã ghim tin nhắn {{content}}',
-                    content: ''
-                  })
-                : t('message.pinned.system.userPinned', {
-                    defaultValue: '{{name}} đã ghim tin nhắn {{content}}',
-                    name: actorName,
-                    content: ''
-                  })}
-            <Text style={{ fontWeight: '700', color: isDark ? '#E6EDF7' : '#475467' }}> {contentSnapshot}</Text>
-          </Text>
-
-          {shouldShowView && (
-            <TouchableOpacity
-              activeOpacity={0.75}
-              onPress={() => onReplyMessagePress?.(String(message.metadata?.messageId))}
-            >
-              <Text style={{ fontSize: 15, color: '#1298F6', fontWeight: '700', marginLeft: 6 }}>
-                {t('message.pinned.system.view', { defaultValue: 'Xem' })}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-    )
-  }
 
   return (
     <View
@@ -369,7 +400,7 @@ export function MessageBubble({
         justifyContent: isOwn ? 'flex-end' : 'flex-start',
         paddingHorizontal: 12,
         marginBottom: 4,
-        alignItems: 'flex-end'
+        alignItems: 'flex-start'
       }}
     >
       {!isOwn && (
@@ -377,7 +408,7 @@ export function MessageBubble({
           style={{
             width: incomingLeftSlotWidth,
             alignItems: 'flex-start',
-            justifyContent: 'flex-end'
+            justifyContent: 'flex-start'
           }}
         >
           {showAvatar && (
@@ -392,252 +423,125 @@ export function MessageBubble({
         </View>
       )}
 
-      <View style={{ maxWidth: contentMaxWidth }}>
+      <View style={{ maxWidth: '70%' }}>
         {showSenderName && message.senderName && !isOwn && (
           <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 2, marginLeft: 4 }}>
             {message.senderName}
           </Text>
         )}
 
-        {/* Business card message */}
-        {!isRevoked && !!businessCardPayload ? (
-          <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
-            <BusinessCardMessage payload={businessCardPayload} onMessagePress={onAvatarPress} />
-          </TouchableOpacity>
-        ) :
-        /* IMAGE messages - no bubble, direct images */
-        !isRevoked && message.type === MessageType.IMAGE && message.attachments?.length ? (
-          <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
-            <View>
-              {message.attachments.length === 1 ? (
-                <Image
-                  source={{ uri: message.attachments[0].url }}
-                  style={{ width: 220, height: 220, borderRadius: 12 }}
-                  resizeMode='cover'
-                />
-              ) : message.attachments.length === 2 ? (
-                <View style={{ flexDirection: 'row', gap: 2 }}>
-                  {message.attachments.map((att, idx) => (
-                    <Image
-                      key={att.key || idx}
-                      source={{ uri: att.url }}
-                      style={{
-                        width: 118,
-                        height: 118,
-                        borderTopLeftRadius: idx === 0 ? 12 : 0,
-                        borderBottomLeftRadius: idx === 0 ? 12 : 0,
-                        borderTopRightRadius: idx === 1 ? 12 : 0,
-                        borderBottomRightRadius: idx === 1 ? 12 : 0
-                      }}
-                      resizeMode='cover'
-                    />
-                  ))}
-                </View>
-              ) : (
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2, maxWidth: 238 }}>
-                  {message.attachments.slice(0, 4).map((att, idx) => (
-                    <View key={att.key || idx} style={{ position: 'relative' }}>
-                      <Image
-                        source={{ uri: att.url }}
-                        style={{ width: 118, height: 118, borderRadius: 4 }}
-                        resizeMode='cover'
-                      />
-                      {idx === 3 && message.attachments!.length > 4 && (
-                        <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 4, alignItems: 'center', justifyContent: 'center' }}>
-                          <Text style={{ color: '#fff', fontSize: 20, fontWeight: '700' }}>+{message.attachments!.length - 4}</Text>
+          <View style={{ alignSelf: isOwn ? 'flex-end' : 'flex-start', minWidth: '55%', paddingBottom: 14 }}>
+            <Animated.View style={{
+              borderRadius: 16,
+              backgroundColor: highlightAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: ['transparent', 'rgba(0,104,255,0.18)']
+              })
+            }}>
+            <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
+              <View
+                style={{
+                  backgroundColor: isBusinessCardMessage
+                    ? 'transparent'
+                    : hasMediaContent
+                      ? mediaBubbleBg
+                      : bubbleBg,
+                  borderRadius: isBusinessCardMessage ? 0 : 16,
+                  borderTopRightRadius: isBusinessCardMessage ? 0 : isOwn ? 4 : 16,
+                  borderTopLeftRadius: isBusinessCardMessage ? 0 : isOwn ? 16 : 4,
+                  paddingHorizontal: isBusinessCardMessage
+                    ? 0
+                    : (hasMediaContent && !hasRealCaption)
+                      ? 0
+                      : hasMediaContent
+                        ? 0
+                        : 12,
+                  paddingVertical: isBusinessCardMessage ? 0 : hasMediaContent ? 0 : 10,
+                  borderWidth: isBusinessCardMessage
+                    ? 0
+                    : (!isOwn && !isDark && !isRevoked && !(hasMediaContent && !hasRealCaption))
+                      ? 0.5
+                      : 0,
+                  borderColor: '#E5E7EB',
+                  overflow: hasMediaContent ? 'hidden' : 'visible'
+                }}
+              >
+                {message.replyTo && !isRevoked && (
+                  <TouchableOpacity
+                    activeOpacity={0.75}
+                    onPress={() => onScrollToMessage?.(message.replyTo!.messageId)}
+                  >
+                  <View
+                    style={{
+                      borderLeftWidth: 3,
+                      borderLeftColor: '#0068FF',
+                      backgroundColor: isOwn
+                        ? isDark
+                          ? 'rgba(0,0,0,0.15)'
+                          : 'rgba(0,80,200,0.1)'
+                        : isDark
+                          ? 'rgba(255,255,255,0.08)'
+                          : 'rgba(0,0,0,0.04)',
+                      borderRadius: 6,
+                      paddingHorizontal: 10,
+                      paddingVertical: 6,
+                      marginBottom: 6,
+                      marginHorizontal: hasMediaContent ? 6 : 0,
+                      marginTop: hasMediaContent ? 4 : 0,
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 8
+                    }}
+                  >
+                    {(message.replyTo.type === 'IMAGE' || message.replyTo.type === 'VIDEO') ? (() => {
+                      const replyImgUrl = getReplyAttachmentUrl(message.replyTo.messageId)
+                      return replyImgUrl ? (
+                        <View style={{ width: 40, height: 40, borderRadius: 5, overflow: 'hidden', backgroundColor: '#111', flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}>
+                          <ExpoImage
+                            source={{ uri: replyImgUrl }}
+                            style={{ width: '100%', height: '100%' }}
+                            contentFit='cover'
+                            cachePolicy='memory-disk'
+                          />
+                          {message.replyTo.type === 'VIDEO' && (
+                            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
+                              <Ionicons name='play-circle' size={20} color='rgba(255,255,255,0.9)' />
+                            </View>
+                          )}
                         </View>
-                      )}
-                    </View>
-                  ))}
-                </View>
-              )}
-              {message.content ? (
-                <Text style={{ fontSize: 15, color: textColor, lineHeight: 21, marginTop: 4 }}>{message.content}</Text>
-              ) : null}
-            </View>
-          </TouchableOpacity>
-        ) : !isRevoked && message.type === MessageType.FILE && message.attachments?.length ? (
-          /* FILE messages - Zalo-style card */
-          <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
-            <View
-              style={{
-                backgroundColor: isDark ? '#1E2732' : '#F3F8FF',
-                borderRadius: 14,
-                borderWidth: isDark ? 0 : 0.5,
-                borderColor: '#D8E4F5',
-                overflow: 'hidden',
-                minWidth: 280,
-                maxWidth: 320
-              }}
-            >
-              {message.attachments.map((att, idx) => {
-                const ext = (att.originalFileName || att.fileName || '').split('.').pop()?.toLowerCase() || ''
-                const iconBg = ext === 'pdf' ? '#E53935' : ext === 'doc' || ext === 'docx' ? '#1565C0' : ext === 'xls' || ext === 'xlsx' ? '#2E7D32' : ext === 'ppt' || ext === 'pptx' ? '#D84315' : '#546E7A'
-                const iconLetter = ext === 'pdf' ? 'PDF' : ext.startsWith('doc') ? 'W' : ext.startsWith('xls') ? 'X' : ext.startsWith('ppt') ? 'P' : ext.slice(0, 3).toUpperCase()
-                const sizeStr = att.size ? (att.size < 1024 * 1024 ? `${(att.size / 1024).toFixed(2)} KB` : `${(att.size / (1024 * 1024)).toFixed(2)} MB`) : ''
-                const fallbackKeyName = att.key?.split('/').pop() || ''
-                const fallbackUrlName = getFileNameFromUrl(att.url)
-                const defaultFileName = ext ? `Tệp ${ext.toUpperCase()}` : 'Tệp tin'
-                const fileName =
-                  att.originalFileName?.trim() ||
-                  att.fileName?.trim() ||
-                  (typeof message.content === 'string' ? message.content.trim() : '') ||
-                  fallbackUrlName ||
-                  fallbackKeyName ||
-                  defaultFileName
-
-                return (
-                  <View key={att.key || idx}>
-                    {idx > 0 && <View style={{ height: 0.5, backgroundColor: isDark ? '#333' : '#E5E7EB' }} />}
-                    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 10 }}>
-                      {/* File type icon */}
-                      <View style={{
-                        width: 42,
-                        height: 42,
-                        borderRadius: 8,
-                        backgroundColor: iconBg,
-                        alignItems: 'center', justifyContent: 'center', marginRight: 10
-                      }}>
-                        <Text style={{ color: '#fff', fontSize: ext === 'pdf' ? 11 : 18, fontWeight: '700' }}>{iconLetter}</Text>
-                      </View>
-                      {/* File info */}
-                      <View style={{ flex: 1, minWidth: 120, marginRight: 6 }}>
-                        <Text
-                          style={{ fontSize: 14, color: textColor, fontWeight: '500' }}
-                          numberOfLines={1}
-                          ellipsizeMode='middle'
-                        >
-                          {fileName}
-                        </Text>
-                        <Text style={{ fontSize: 12, color: isDark ? '#888' : '#9ca3af', marginTop: 2 }} numberOfLines={1}>
-                          {sizeStr || '--'}
-                        </Text>
-                      </View>
-                      {/* Action buttons */}
-                      <View style={{ flexDirection: 'row', gap: 6, marginLeft: 6 }}>
-                        <TouchableOpacity
-                          onPress={() => att.url && Linking.openURL(att.url)}
-                          style={{
-                            width: 30,
-                            height: 30,
-                            borderRadius: 15,
-                            borderWidth: 0.8,
-                            borderColor: isDark ? '#4B5563' : '#D1D5DB',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <Ionicons name='open-outline' size={16} color={isDark ? '#888' : '#6B7280'} />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          onPress={() => att.url && Linking.openURL(att.url)}
-                          style={{
-                            width: 30,
-                            height: 30,
-                            borderRadius: 15,
-                            borderWidth: 0.8,
-                            borderColor: isDark ? '#4B5563' : '#D1D5DB',
-                            alignItems: 'center',
-                            justifyContent: 'center'
-                          }}
-                        >
-                          <Ionicons name='download-outline' size={16} color={isDark ? '#888' : '#6B7280'} />
-                        </TouchableOpacity>
-                      </View>
+                      ) : null
+                    })() : null}
+                    <View style={{ flex: 1 }}>
+                      <Text style={{ fontSize: 13, fontWeight: '600', color: '#0068FF' }} numberOfLines={1}>
+                        {message.replyTo.senderName || 'User'}
+                      </Text>
+                      <Text style={{ fontSize: 13, color: isDark ? '#aaa' : '#666' }} numberOfLines={2}>
+                        {message.replyTo.type === 'IMAGE' ? '📷 Hình ảnh' : message.replyTo.type === 'VIDEO' ? '🎬 Video' : message.replyTo.content}
+                      </Text>
                     </View>
                   </View>
-                )
-              })}
-            </View>
-          </TouchableOpacity>
-        ) : (
-          /* Text / revoked messages - standard bubble */
-          <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
-            <View
-              style={{
-                backgroundColor: bubbleBg,
-                borderRadius: 16,
-                borderTopRightRadius: isOwn ? 4 : 16,
-                borderTopLeftRadius: isOwn ? 16 : 4,
-                paddingHorizontal: 12,
-                paddingVertical: 8,
-                borderWidth: !isOwn && !isDark && !isRevoked ? 0.5 : 0,
-                borderColor: '#E5E7EB'
-              }}
-            >
-              {message.replyTo && !isRevoked && (
-                <TouchableOpacity
-                  activeOpacity={0.75}
-                  onPress={() => message.replyTo?.messageId && onReplyMessagePress?.(message.replyTo.messageId)}
-                >
-                <View
-                  style={{
-                    borderLeftWidth: 3,
-                    borderLeftColor: '#0068FF',
-                    backgroundColor: isOwn
-                      ? isDark
-                        ? 'rgba(0,0,0,0.15)'
-                        : 'rgba(0,80,200,0.1)'
-                      : isDark
-                        ? 'rgba(255,255,255,0.08)'
-                        : 'rgba(0,0,0,0.04)',
-                    borderRadius: 6,
-                    paddingHorizontal: 10,
-                    paddingVertical: 6,
-                    marginBottom: 6
-                  }}
-                >
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#0068FF' }} numberOfLines={1}>
-                    {message.replyTo.senderName || 'User'}
-                  </Text>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2 }}>
-                    {!!getReplyImageUri(message.replyTo) ? (
-                      <Image
-                        source={{ uri: getReplyImageUri(message.replyTo)! }}
-                        style={{ width: 22, height: 22, borderRadius: 4, marginRight: 6 }}
-                        resizeMode='cover'
-                      />
-                    ) : message.replyTo.type === MessageType.FILE ? (
-                      <View
-                        style={{
-                          width: 22,
-                          height: 22,
-                          borderRadius: 4,
-                          backgroundColor: getReplyFileBadge(message.replyTo)?.bg || '#546E7A',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          marginRight: 6
-                        }}
-                      >
-                        <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>
-                          {getReplyFileBadge(message.replyTo)?.text || 'F'}
-                        </Text>
-                      </View>
-                    ) : !!getReplyPrefixIcon(message.replyTo) ? (
-                      <Ionicons
-                        name={getReplyPrefixIcon(message.replyTo) as any}
-                        size={13}
-                        color={isDark ? '#aaa' : '#666'}
-                        style={{ marginRight: 4 }}
-                      />
-                    ) : null}
-                    <Text style={{ fontSize: 13, color: isDark ? '#aaa' : '#666', flex: 1 }} numberOfLines={2}>
-                      {getReplyPreviewText(message.replyTo)}
-                    </Text>
-                  </View>
-                </View>
-                </TouchableOpacity>
-              )}
-              {isRevoked ? (
-                <Text style={{ fontSize: 14, color: textColor, fontStyle: 'italic' }}>{t('message.messageRevoked')}</Text>
-              ) : (
-                <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>{typeof message.content === 'string' ? message.content : ''}</Text>
-              )}
-            </View>
-          </TouchableOpacity>
-        )}
+                  </TouchableOpacity>
+                )}
+                {renderBubbleContent()}
+              </View>
+            </TouchableOpacity>
+            </Animated.View>
 
-        {(effectiveShowTime || !!deliveryStatusLabel) && (
+            <MessageReactionBar
+              messageId={message.id}
+              conversationId={message.conversationId || ''}
+              isOwn={isOwn}
+              isDark={isDark}
+              isRevoked={isRevoked}
+              reactions={reactions}
+              members={members}
+              currentUserId={currentUserId}
+              currentUserName={currentUser?.fullName}
+              currentUserAvatar={currentUser?.avatar ?? undefined}
+            />
+          </View>
+
+        {(showTime || !!deliveryStatusLabel) && (
           <View
             style={{
               flexDirection: 'row',
@@ -647,16 +551,17 @@ export function MessageBubble({
               gap: 6
             }}
           >
-            {effectiveShowTime && <Text style={{ fontSize: 11, color: timeColor }}>{formatTime(message.createdAt)}</Text>}
+            {showTime && <Text style={{ fontSize: 11, color: timeColor }}>{formatTime(message.createdAt)}</Text>}
             {!!deliveryStatusLabel && (
               <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>{deliveryStatusLabel}</Text>
             )}
           </View>
         )}
+
       </View>
 
       {/* Zalo-style action modal */}
-      <Modal visible={showActions} transparent statusBarTranslucent animationType='none' onRequestClose={closeSheet}>
+      <Modal visible={showActions} transparent statusBarTranslucent animationType='none' onRequestClose={() => closeSheet()}>
         <Animated.View
           style={{
             position: 'absolute',
@@ -669,9 +574,10 @@ export function MessageBubble({
           }}
         />
 
-        <Pressable style={{ flex: 1 }} onPress={closeSheet}>
+        <Pressable style={{ flex: 1 }} onPress={() => closeSheet()}>
           <View style={{ flex: 1, justifyContent: 'flex-end' }}>
             {/* Selected message preview */}
+            {!hasMediaContent && (
             <View
               style={{
                 alignSelf: 'flex-end',
@@ -686,8 +592,7 @@ export function MessageBubble({
                   borderRadius: 16,
                   borderTopRightRadius: isOwn ? 4 : 16,
                   borderTopLeftRadius: isOwn ? 16 : 4,
-                  paddingHorizontal: 12,
-                  paddingVertical: 8,
+                  overflow: 'hidden',
                   elevation: 4,
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 2 },
@@ -695,9 +600,11 @@ export function MessageBubble({
                   shadowRadius: 4
                 }}
               >
-                <Text style={{ fontSize: 15, color: isDark ? '#E8EAED' : '#111827', lineHeight: 21 }}>
-                  {message.content}
-                </Text>
+                <View style={{ paddingHorizontal: 12, paddingVertical: 8 }}>
+                  <Text style={{ fontSize: 15, color: isDark ? '#E8EAED' : '#111827', lineHeight: 21 }}>
+                    {message.content}
+                  </Text>
+                </View>
               </View>
               <View style={{ flexDirection: 'row', alignSelf: 'flex-end', marginTop: 2, marginHorizontal: 4, gap: 6 }}>
                 <Text style={{ fontSize: 11, color: timeColor }}>{formatTime(message.createdAt)}</Text>
@@ -706,6 +613,7 @@ export function MessageBubble({
                 )}
               </View>
             </View>
+            )}
 
             {/* Emoji reaction bar */}
             <Animated.View
@@ -730,13 +638,31 @@ export function MessageBubble({
               {EMOJIS.map((emoji, i) => (
                 <TouchableOpacity
                   key={i}
-                  onPress={closeSheet}
+                  onPress={() => handleEmojiReaction(emoji)}
                   activeOpacity={0.7}
                   style={{ width: 42, height: 42, borderRadius: 21, alignItems: 'center', justifyContent: 'center' }}
                 >
                   <Text style={{ fontSize: 26 }}>{emoji}</Text>
                 </TouchableOpacity>
               ))}
+              {!!myReaction && (
+                <TouchableOpacity
+                  onPress={handleRemoveReaction}
+                  activeOpacity={0.7}
+                  style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 16,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: isDark ? '#3B1C1C' : '#FEE2E2',
+                    marginLeft: 4,
+                    alignSelf: 'center'
+                  }}
+                >
+                  <Text style={{ fontSize: 14, color: '#DC2626', fontWeight: '700' }}>✕</Text>
+                </TouchableOpacity>
+              )}
             </Animated.View>
           </View>
         </Pressable>
@@ -796,6 +722,7 @@ export function MessageBubble({
           </ScrollView>
         </Animated.View>
       </Modal>
+
     </View>
   )
 }
@@ -809,12 +736,7 @@ type ActionItem = {
   textColor?: string
 }
 
-function buildActionRows(
-  isOwn: boolean,
-  isDark: boolean,
-  isPinned: boolean,
-  t: (k: string, o?: any) => string
-): ActionItem[][] {
+function buildActionRows(isOwn: boolean, isDark: boolean, isPinned: boolean, t: (k: string, o?: any) => string): ActionItem[][] {
   const blue = '#0068FF'
   const orange = '#FF8C00'
   const red = '#EF4444'
@@ -825,25 +747,25 @@ function buildActionRows(
     {
       key: 'reply',
       icon: 'arrow-undo-outline',
-      label: t('message.actions.reply', { defaultValue: 'Tr\u1EA3 l\u1EDDi' }),
+      label: t('message.actions.reply', { defaultValue: 'Trả lời' }),
       iconColor: blue
     },
     {
       key: 'forward',
       icon: 'arrow-redo-outline',
-      label: t('message.actions.forward', { defaultValue: 'Chuy\u1EC3n ti\u1EBFp' }),
+      label: t('message.actions.forward', { defaultValue: 'Chuyển tiếp' }),
       iconColor: blue
     },
     {
       key: 'save',
       icon: 'folder-open-outline',
-      label: t('message.actions.save', { defaultValue: 'L\u01b0u My Documents' }),
+      label: t('message.actions.save', { defaultValue: 'Lưu My Documents' }),
       iconColor: '#1EA7D8'
     },
     {
       key: 'revoke',
       icon: 'refresh-outline',
-      label: t('message.actions.revoke', { defaultValue: 'Thu h\u1ED3i' }),
+      label: t('message.actions.revoke', { defaultValue: 'Thu hồi' }),
       iconColor: orange
     }
   ]
@@ -853,7 +775,7 @@ function buildActionRows(
     {
       key: 'copy',
       icon: 'copy-outline',
-      label: t('message.actions.copy', { defaultValue: 'Sao ch\u00E9p' }),
+      label: t('message.actions.copy', { defaultValue: 'Sao chép' }),
       iconColor: blue
     },
     {
@@ -867,13 +789,13 @@ function buildActionRows(
     {
       key: 'reminder',
       icon: 'time-outline',
-      label: t('message.actions.reminder', { defaultValue: 'Nh\u1EAFc h\u1EB9n' }),
+      label: t('message.actions.reminder', { defaultValue: 'Nhắc hẹn' }),
       iconColor: '#BE123C'
     },
     {
       key: 'select',
       icon: 'checkbox-outline',
-      label: t('message.actions.selectMultiple', { defaultValue: 'Ch\u1ECDn nhi\u1EC1u' }),
+      label: t('message.actions.selectMultiple', { defaultValue: 'Chọn nhiều' }),
       iconColor: blue
     }
   ]
@@ -883,25 +805,25 @@ function buildActionRows(
     {
       key: 'quickMessage',
       icon: 'flash-outline',
-      label: t('message.actions.quickMessage', { defaultValue: 'T\u1EA1o tin nh\u1EAFn nhanh' }),
+      label: t('message.actions.quickMessage', { defaultValue: 'Tạo tin nhắn nhanh' }),
       iconColor: '#06B6D4'
     },
     {
       key: 'translate',
       icon: 'language-outline',
-      label: t('message.actions.translate', { defaultValue: 'D\u1ECBch' }),
+      label: t('message.actions.translate', { defaultValue: 'Dịch' }),
       iconColor: '#16A34A'
     },
     {
       key: 'readText',
       icon: 'volume-high-outline',
-      label: t('message.actions.readText', { defaultValue: '\u0110\u1ECDc v\u0103n b\u1EA3n' }),
+      label: t('message.actions.readText', { defaultValue: 'Đọc văn bản' }),
       iconColor: '#7C3AED'
     },
     {
       key: 'info',
       icon: 'information-circle-outline',
-      label: t('message.actions.detail', { defaultValue: 'Chi ti\u1EBFt' }),
+      label: t('message.actions.detail', { defaultValue: 'Chi tiết' }),
       iconColor: gray
     }
   ]
@@ -911,7 +833,7 @@ function buildActionRows(
     {
       key: 'delete',
       icon: 'trash-outline',
-      label: t('message.actions.delete', { defaultValue: 'X\u00F3a \u1EDF ph\u00EDa t\u00F4i' }),
+      label: t('message.actions.delete', { defaultValue: 'Xóa ở phía tôi' }),
       iconColor: red,
       bgColor: isDark ? '#3B1C1C' : '#FFE4E6',
       textColor: red

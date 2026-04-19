@@ -410,8 +410,37 @@ export default function AddFriendScreen() {
                   {t('friend.addFriend.scanQR')}
                 </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
                 onPress={() => router.push('/friend-requests' as any)}
                 activeOpacity={0.7}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingHorizontal: 16,
+                  paddingVertical: 16,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: colors.border,
+                  backgroundColor: colors.background
+                }}
+              >
+                <View
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 14
+                  }}
+                >
+                  <Ionicons name='person-add-outline' size={28} color={colors.tint} />
+                </View>
+                <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>
+                  {t('friend.addFriend.friendRequests', { defaultValue: 'Lời mời kết bạn' })}
+                </Text>
+              </TouchableOpacity>
+
               {/* People You May Know */}
               <TouchableOpacity
                 activeOpacity={0.7}

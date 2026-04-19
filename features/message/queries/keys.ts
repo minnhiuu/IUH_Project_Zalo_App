@@ -11,5 +11,8 @@ export const messageKeys = {
 
   pins: (conversationId: string) => [...messageKeys.all, 'pins', conversationId] as const,
 
-  partnerConversation: (partnerId: string) => [...messageKeys.conversations(), 'partner', partnerId] as const
+  partnerConversation: (partnerId: string) => [...messageKeys.conversations(), 'partner', partnerId] as const,
+
+  media: (conversationId: string, types: string[]) =>
+    [...messageKeys.all, 'media', conversationId, types.join(',')] as const
 }

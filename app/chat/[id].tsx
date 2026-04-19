@@ -14,9 +14,10 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { Colors } from '@/constants/theme'
+import { Colors, HEADER } from '@/constants/theme'
 import { Text } from '@/components/ui/text'
 import { useAuthStore } from '@/store'
 import {
@@ -27,6 +28,7 @@ import {
   MessageListSkeleton,
   ForwardMessageModal
 } from '@/features/message/components'
+import type { FileAsset, BusinessCardAsset } from '@/features/message/components'
 import {
   useInfiniteMessages,
   usePartnerConversation,
@@ -37,9 +39,10 @@ import {
   useUnpinMessage
 } from '@/features/message/queries'
 import { useChatWebSocket } from '@/features/message/hooks'
-import { MessageStatus, MessageType, type MessageResponse, type PinnedMessageInfo } from '@/features/message/schemas'
-import { parseBusinessCardContent, parseMessageDate } from '@/features/message/utils'
+import { MessageStatus, MessageType, type MessageResponse, type PinnedMessageInfo, type ConversationMemberResponse } from '@/features/message/schemas'
+import { parseBusinessCardContent, parseMessageDate, serializeBusinessCard } from '@/features/message/utils'
 import { messageApi } from '@/features/message/api'
+import { userApi } from '@/features/users/api/user.api'
 
 export default function ChatScreen() {
   const router = useRouter()
@@ -47,6 +50,7 @@ export default function ChatScreen() {
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
   const isDark = colorScheme === 'dark'
+  const insets = useSafeAreaInsets()
 
   const params = useLocalSearchParams<{
     id: string
@@ -74,6 +78,25 @@ export default function ChatScreen() {
   const isOnline = partnerConversation?.status === 'ONLINE'
   const lastSeenAt = partnerConversation?.lastSeenAt
 
+  // Build effective members list — fallback to partner from params when API members is missing
+  const effectiveMembers = React.useMemo<ConversationMemberResponse[]>(() => {
+    const base = partnerConversation?.members || []
+    const partnerUserId = params.userId || (directConversationId ? '' : params.id)
+    if (partnerUserId && !base.find((m) => m.userId === partnerUserId)) {
+      return [
+        ...base,
+        {
+          userId: partnerUserId,
+          fullName: conversationName,
+          avatar: conversationAvatar || null,
+          lastReadMessageId: null,
+          role: null
+        }
+      ]
+    }
+    return base
+  }, [partnerConversation?.members, params.userId, params.id, directConversationId, conversationName, conversationAvatar])
+
   // Messages
   const {
     data: messagesData,
@@ -87,7 +110,9 @@ export default function ChatScreen() {
   const {
     sendMessage: wsSendMessage,
     revokeMessage: wsRevokeMessage,
-    deleteMessageForMe: wsDeleteForMe
+    deleteMessageForMe: wsDeleteForMe,
+    sendFileMessage: wsSendFileMessage,
+    isUploading
   } = useChatWebSocket()
   const markAsReadMutation = useMarkAsRead()
   const pinMessageMutation = usePinMessage()
@@ -98,7 +123,8 @@ export default function ChatScreen() {
   const [inputText, setInputText] = useState('')
   const [replyTo, setReplyTo] = useState<MessageResponse | null>(null)
   const [forwardMessage, setForwardMessage] = useState<MessageResponse | null>(null)
-  const [isSendingFile, setIsSendingFile] = useState(false)
+  const [pendingAttachments, setPendingAttachments] = useState<FileAsset[]>([])
+  const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
   const [showPinnedPanel, setShowPinnedPanel] = useState(false)
   const flatListRef = useRef<FlatList>(null)
 
@@ -112,25 +138,23 @@ export default function ChatScreen() {
 
   const latestPinnedMessage = pinnedMessagesSorted[0] ?? null
 
-  const pinnedMessageIds = useMemo(() => new Set(pinnedMessages.map((pin) => pin.messageId)), [pinnedMessages])
+  const pinnedMessageIds = useMemo(
+    () => new Set(pinnedMessages.map((pin: PinnedMessageInfo) => pin.messageId)),
+    [pinnedMessages]
+  )
 
   // Flatten pages into message list (reversed for inverted FlatList)
-  // and dedupe by stable key to avoid duplicate React keys from mixed WS/pagination updates.
-  const messages: MessageResponse[] = useMemo(() => {
-    const flat: MessageResponse[] = messagesData?.pages.flatMap((page) => page.data) ?? []
-    const seen = new Set<string>()
+  const messages: MessageResponse[] = messagesData?.pages.flatMap((page) => page.data) ?? []
 
-    return flat.filter((msg) => {
-      const stableKey =
-        msg.id ||
-        msg.clientMessageId ||
-        `${msg.senderId}-${msg.createdAt || ''}-${msg.type}-${typeof msg.content === 'string' ? msg.content : ''}`
-
-      if (seen.has(stableKey)) return false
-      seen.add(stableKey)
-      return true
-    })
-  }, [messagesData])
+  const scrollToMessage = useCallback((messageId: string) => {
+    const index = messages.findIndex((m) => m.id === messageId)
+    if (index === -1) return
+    try {
+      flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
+    } catch {}
+    setHighlightedMessageId(messageId)
+    setTimeout(() => setHighlightedMessageId(null), 1400)
+  }, [messages])
   const latestOwnMessage = messages.find(
     (msg) => msg.senderId === currentUserId && msg.status !== MessageStatus.REVOKED
   )
@@ -166,62 +190,69 @@ export default function ChatScreen() {
   }, [])
 
   const handleSend = useCallback(() => {
-    if (!inputText.trim() || !conversationId) return
+    if (!conversationId) return
+
+    const trimmedContent = inputText.trim()
+    const replyPayload = replyTo
+      ? {
+          messageId: replyTo.id,
+          senderId: replyTo.senderId,
+          senderName: replyTo.senderName ?? null,
+          content: replyTo.content || '',
+          type: replyTo.type
+        }
+      : null
+
+    if (pendingAttachments.length > 0) {
+      wsSendFileMessage(conversationId, pendingAttachments, trimmedContent, replyPayload)
+      setPendingAttachments([])
+      setInputText('')
+      setReplyTo(null)
+      return
+    }
+
+    if (!trimmedContent) return
 
     wsSendMessage(
       conversationId,
-      inputText.trim(),
-      replyTo
-        ? {
-            messageId: replyTo.id,
-            senderId: replyTo.senderId,
-            senderName: replyTo.senderName ?? null,
-            content: getReplyContentForSend(replyTo),
-            type: replyTo.type
-          }
-        : null,
+      trimmedContent,
+      replyPayload,
       false
     )
 
     setInputText('')
     setReplyTo(null)
-  }, [inputText, conversationId, replyTo, wsSendMessage, getReplyContentForSend])
-
-  const handleSendImage = useCallback(
-    async (images: { uri: string; fileName: string; mimeType: string }[]) => {
-      if (!conversationId || images.length === 0) return
-      setIsSendingFile(true)
-      try {
-        const uploadResults = await Promise.all(
-          images.map((img) => messageApi.uploadFile(img.uri, img.fileName, img.mimeType, 'chat'))
-        )
-        const attachments = uploadResults.map((res) => res.data.data)
-        wsSendMessage(conversationId, '', null, false, attachments, MessageType.IMAGE)
-      } catch (e) {
-        Alert.alert('Lỗi', 'Không thể gửi hình ảnh')
-      } finally {
-        setIsSendingFile(false)
-      }
-    },
-    [conversationId, wsSendMessage]
-  )
+  }, [conversationId, inputText, pendingAttachments, replyTo, wsSendFileMessage, wsSendMessage])
 
   const handleSendFile = useCallback(
-    async (uri: string, fileName: string, mimeType: string) => {
-      if (!conversationId) return
-      setIsSendingFile(true)
-      try {
-        const res = await messageApi.uploadFile(uri, fileName, mimeType, 'chat')
-        const attachment = res.data.data
-        wsSendMessage(conversationId, fileName, null, false, [attachment], MessageType.FILE)
-      } catch (e) {
-        Alert.alert('Lỗi', 'Không thể gửi tệp')
-      } finally {
-        setIsSendingFile(false)
-      }
+    (assets: FileAsset[]) => {
+      setPendingAttachments((current) => [...current, ...assets])
     },
-    [conversationId, wsSendMessage]
+    []
   )
+
+  const handleSendFileImmediate = useCallback(
+    (assets: FileAsset[]) => {
+      if (!conversationId) return
+      const replyPayload = replyTo
+        ? { messageId: replyTo.id, senderId: replyTo.senderId, senderName: replyTo.senderName ?? null, content: replyTo.content || '', type: replyTo.type }
+        : null
+      // Send each file as a separate message
+      assets.forEach((asset) => {
+        wsSendFileMessage(conversationId, [asset], '', replyPayload)
+      })
+      setReplyTo(null)
+    },
+    [conversationId, replyTo, wsSendFileMessage]
+  )
+
+  const handleRemovePendingAttachment = useCallback((index: number) => {
+    setPendingAttachments((current) => current.filter((_, currentIndex) => currentIndex !== index))
+  }, [])
+
+  const handleClearPendingAttachments = useCallback(() => {
+    setPendingAttachments([])
+  }, [])
 
   const handleRevoke = useCallback(
     (messageId: string) => {
@@ -246,6 +277,83 @@ export default function ChatScreen() {
   const handleForward = useCallback((message: MessageResponse) => {
     setForwardMessage(message)
   }, [])
+
+  const handleSendBusinessCards = useCallback(
+    async (cards: BusinessCardAsset[]) => {
+      if (!conversationId || !cards.length) return
+
+      const resolvedCards = await Promise.all(
+        cards.map(async (card) => {
+          if (card.includePhone === false) {
+            return {
+              ...card,
+              phone: ''
+            }
+          }
+
+          if (card.phone?.trim()) return card
+          if (!card.userId) return card
+
+          try {
+            const response = await userApi.getUserById(card.userId)
+            const profile = response.data.data
+            const profilePhone = profile?.accountInfo?.phoneNumber || ''
+            return {
+              ...card,
+              phone: String(profilePhone || '').trim()
+            }
+          } catch {
+            return card
+          }
+        })
+      )
+
+      resolvedCards.forEach((card) => {
+        const qrValue = card.userId ? `bondhub://user/${card.userId}?name=${encodeURIComponent(card.name || '')}` : undefined
+        const payload = serializeBusinessCard({
+          userId: card.userId,
+          name: card.name,
+          phone: card.includePhone === false ? '' : (card.phone || ''),
+          avatar: card.avatar || null,
+          qrValue
+        })
+
+        wsSendMessage(conversationId, payload, null, false)
+      })
+    },
+    [conversationId, wsSendMessage]
+  )
+
+  const handleBusinessCardPress = useCallback(
+    (userId: string) => {
+      if (!userId) return
+      router.push(`/user-profile/${userId}` as any)
+    },
+    [router]
+  )
+
+  const handleBusinessCardMessagePress = useCallback(
+    (userId: string) => {
+      if (!userId) return
+      const sourceCard = messages
+        .map((m) => parseBusinessCardContent(m.content))
+        .find((card) => card?.userId === userId)
+
+      const nextName = sourceCard?.name || 'Chat'
+      const nextAvatar = sourceCard?.avatar || undefined
+
+      router.push({
+        pathname: '/chat/[id]',
+        params: {
+          id: userId,
+          userId,
+          name: nextName,
+          avatar: nextAvatar
+        }
+      } as any)
+    },
+    [messages, router]
+  )
 
   const handleReplyMessagePress = useCallback(
     (replyMessageId: string) => {
@@ -413,26 +521,31 @@ export default function ChatScreen() {
     (conversationIds: string[], note: string) => {
       if (!forwardMessage) return
 
-      const isMediaMessage =
-        (forwardMessage.type === MessageType.IMAGE || forwardMessage.type === MessageType.FILE) &&
-        !!forwardMessage.attachments?.length
-
-      const rawContent = typeof forwardMessage.content === 'string' ? forwardMessage.content.trim() : ''
-
-      const forwardedPayload = isMediaMessage
-        ? forwardMessage.type === MessageType.FILE && rawContent && rawContent !== '[FILE]'
-          ? rawContent
-          : ''
-        : rawContent || '[FORWARDED]'
-
-      const forwardType = isMediaMessage ? forwardMessage.type : MessageType.CHAT
-      const forwardAttachments = isMediaMessage ? forwardMessage.attachments || undefined : undefined
-      const notePayload = note.trim()
+      const forwardedBusinessCard = parseBusinessCardContent(forwardMessage.content)
 
       conversationIds.forEach((targetConversationId) => {
-        wsSendMessage(targetConversationId, forwardedPayload, null, true, forwardAttachments, forwardType)
-        if (notePayload) {
-          wsSendMessage(targetConversationId, notePayload, null, false)
+        if (forwardedBusinessCard) {
+          wsSendMessage(targetConversationId, forwardMessage.content || '', null, true)
+        } else if (forwardMessage.attachments?.length) {
+          wsSendMessage(
+            targetConversationId,
+            forwardMessage.content || '',
+            null,
+            true,
+            forwardMessage.attachments
+          )
+        } else {
+          const forwardedPayload =
+            forwardMessage.content?.trim() ||
+            (forwardMessage.type === MessageType.IMAGE
+              ? '[Hình ảnh]'
+              : forwardMessage.type === MessageType.FILE
+                ? '[Tệp tin]'
+                : '[FORWARDED]')
+          wsSendMessage(targetConversationId, forwardedPayload, null, true)
+        }
+        if (note.trim()) {
+          wsSendMessage(targetConversationId, note.trim(), null, false)
         }
       })
       setForwardMessage(null)
@@ -497,13 +610,14 @@ export default function ChatScreen() {
             params: {
               id: partnerId,
               name: conversationName,
-              isFriend: 'true'
+              isFriend: 'true',
+              conversationId
             }
           })
         }}
       />
 
-      {!!latestPinnedMessage && (
+      {!!latestPinnedMessage && !isLoading && (
         <View style={{ paddingHorizontal: 10, paddingTop: 6, paddingBottom: 4, backgroundColor: chatBg }}>
           <TouchableOpacity
             activeOpacity={0.88}
@@ -574,7 +688,9 @@ export default function ChatScreen() {
         keyboardVerticalOffset={0}
       >
         {isLoading ? (
-          <MessageListSkeleton />
+          <View style={{ flex: 1 }}>
+            <MessageListSkeleton includePinned />
+          </View>
         ) : (
           <FlatList
             ref={flatListRef}
@@ -606,10 +722,12 @@ export default function ChatScreen() {
             renderItem={({ item, index }) => {
               const isOwn = item.senderId === currentUserId
               const prevMsg = index > 0 ? messages[index - 1] : null
-              // In inverted list, index 0 = newest. prevMsg = next newer message
+              const nextMsg = index < messages.length - 1 ? messages[index + 1] : null
+              // In inverted list, index 0 = newest (bottom), nextMsg = older (above).
+              // Show avatar on the topmost message of a consecutive group (the oldest one)
               const showAvatar =
-                !isOwn && (!prevMsg || prevMsg.senderId !== item.senderId || prevMsg.senderId === currentUserId)
-              // Show time only on the newest message in a consecutive sender streak.
+                !isOwn && (!nextMsg || nextMsg.senderId !== item.senderId)
+              // Show time only for the newest message in a consecutive sender streak
               const showTime = !prevMsg || prevMsg.senderId !== item.senderId
               const showDateSep = shouldShowDateSeparator(index)
 
@@ -626,12 +744,18 @@ export default function ChatScreen() {
                     }
                     showTime={showTime}
                     showAvatar={showAvatar}
-                    onAvatarPress={(userId) => router.push(`/user-profile/${userId}` as any)}
+                    showSenderName={partnerConversation?.isGroup === true}
+                    members={effectiveMembers}
+                    onAvatarPress={(userId: string) => router.push(`/user-profile/${userId}` as any)}
                     onReply={handleReply}
                     onReplyMessagePress={handleReplyMessagePress}
                     onRevoke={isOwn ? handleRevoke : undefined}
                     onDeleteForMe={handleDeleteForMe}
                     onForward={handleForward}
+                    onBusinessCardPress={handleBusinessCardPress}
+                    onBusinessCardMessagePress={handleBusinessCardMessagePress}
+                    onScrollToMessage={scrollToMessage}
+                    isHighlighted={!!item.id && item.id === highlightedMessageId}
                     onPin={handlePinMessage}
                     onOpenMessageOptions={() => {
                       if (!partnerId) return
@@ -640,7 +764,8 @@ export default function ChatScreen() {
                         params: {
                           id: partnerId,
                           name: conversationName,
-                          isFriend: 'true'
+                          isFriend: 'true',
+                          conversationId
                         }
                       })
                     }}
@@ -655,12 +780,16 @@ export default function ChatScreen() {
           value={inputText}
           onChangeText={setInputText}
           onSend={handleSend}
-          onSendImage={handleSendImage}
-          onSendFile={handleSendFile}
-          isSendingFile={isSendingFile}
           placeholder={t('message.inputPlaceholder')}
           replyTo={replyTo}
           onCancelReply={() => setReplyTo(null)}
+          onSendFile={handleSendFile}
+          onSendFileImmediate={handleSendFileImmediate}
+          selectedAttachments={pendingAttachments}
+          onRemoveAttachment={handleRemovePendingAttachment}
+          onClearAttachments={handleClearPendingAttachments}
+          isUploading={isUploading}
+          onSendBusinessCards={handleSendBusinessCards}
         />
       </KeyboardAvoidingView>
 
