@@ -56,3 +56,21 @@ export const usePartnerConversation = (partnerId: string, enabled: boolean = tru
     staleTime: 5 * 60 * 1000
   })
 }
+
+export const useMediaMessages = (
+  conversationId: string,
+  types: string[] = ['IMAGE', 'VIDEO'],
+  page: number = 0,
+  size: number = 50,
+  enabled: boolean = true
+) => {
+  return useQuery({
+    queryKey: messageKeys.media(conversationId, types),
+    queryFn: async () => {
+      const response = await messageApi.getMediaMessages(conversationId, types, page, size)
+      return response.data.data?.data ?? []
+    },
+    enabled: enabled && !!conversationId,
+    staleTime: 30 * 1000
+  })
+}

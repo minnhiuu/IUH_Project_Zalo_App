@@ -9,7 +9,11 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Ứng dụng cần quyền truy cập thư viện ảnh để gửi ảnh và video trong trò chuyện.",
+        "NSPhotoLibraryAddUsageDescription": "Ứng dụng cần quyền lưu ảnh và video khi bạn tải tệp về thiết bị."
+      }
     },
     "android": {
       "package": "com.bondhubapp",
@@ -51,7 +55,16 @@
           "color": "#0068FF",
           "androidMode": "default"
         }
-      ]
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Ứng dụng cần quyền truy cập thư viện ảnh để gửi ảnh và video trong trò chuyện.",
+          "cameraPermission": "Ứng dụng cần quyền camera để chụp và gửi ảnh.",
+          "microphonePermission": "Ứng dụng cần quyền microphone để quay video có âm thanh."
+        }
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true,
