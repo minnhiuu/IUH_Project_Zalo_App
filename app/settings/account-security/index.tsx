@@ -7,11 +7,16 @@ import { AvatarImage, AvatarFallbackText } from '@/components/ui/avatar'
 import { Pressable } from '@/components/ui/pressable'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
-import { SectionLabel, SettingsCard, SettingsDivider } from '@/features/settings'
+import {
+  SectionLabel,
+  SettingsCard,
+  SettingsDivider,
+  useAccountSecuritySettingsQuery,
+  useUpdateAccountSecuritySettingsMutation
+} from '@/features/settings'
 import { ActionRow } from '@/features/settings/components/action-row'
 import { ToggleRow } from '@/features/settings/components/toggle-row'
 import { useAuthStore } from '@/store'
-import { useAccountSecuritySettingsQuery, useUpdateAccountSecuritySettingsMutation } from '@/features/settings'
 
 export default function AccountSecurityScreen() {
   const { t } = useTranslation()

@@ -1,5 +1,5 @@
 /** @type {import('tailwindcss').Config} */
-const gluestackPlugin = require("@gluestack-ui/nativewind-utils/tailwind-plugin");
+const gluestackPlugin = require('@gluestack-ui/nativewind-utils/tailwind-plugin')
 
 module.exports = {
   darkMode: 'class',
@@ -26,7 +26,7 @@ module.exports = {
             100: '#f1f2f4',
             200: '#ebecf0',
             400: '#5a6981',
-            500: '#081b3a',
+            500: '#081b3a'
           },
           red: '#e53838'
         },
@@ -45,7 +45,7 @@ module.exports = {
           800: '#002966',
           900: '#001433',
           foreground: 'var(--color-primary-foreground)',
-          hover: 'var(--color-primary-hover)',
+          hover: 'var(--color-primary-hover)'
         },
 
         // Typography scale (theme-aware for Gluestack UI v4)
@@ -61,7 +61,7 @@ module.exports = {
           700: 'var(--color-typography-700)',
           800: 'var(--color-typography-800)',
           900: 'var(--color-typography-900)',
-          950: 'var(--color-typography-950)',
+          950: 'var(--color-typography-950)'
         },
 
         // Status colors (static)
@@ -73,37 +73,37 @@ module.exports = {
         // Semantic tokens (theme-aware via CSS variables)
         background: {
           DEFAULT: 'var(--color-background)',
-          secondary: 'var(--color-background-secondary)',
+          secondary: 'var(--color-background-secondary)'
         },
         foreground: 'var(--color-foreground)',
         secondary: {
           DEFAULT: 'var(--color-secondary)',
           foreground: 'var(--color-secondary-foreground)',
-          hover: 'var(--color-secondary-hover)',
+          hover: 'var(--color-secondary-hover)'
         },
         muted: {
           DEFAULT: 'var(--color-muted)',
-          foreground: 'var(--color-muted-foreground)',
+          foreground: 'var(--color-muted-foreground)'
         },
         accent: {
           DEFAULT: 'var(--color-accent)',
           foreground: 'var(--color-accent-foreground)',
-          hover: 'var(--color-accent-hover)',
+          hover: 'var(--color-accent-hover)'
         },
         border: 'var(--color-border)',
         input: 'var(--color-input)',
         ring: 'var(--color-ring)',
         destructive: {
           DEFAULT: 'var(--color-destructive)',
-          foreground: 'var(--color-destructive-foreground)',
+          foreground: 'var(--color-destructive-foreground)'
         },
         card: {
           DEFAULT: 'var(--color-card)',
-          foreground: 'var(--color-card-foreground)',
+          foreground: 'var(--color-card-foreground)'
         },
         popover: {
           DEFAULT: 'var(--color-popover)',
-          foreground: 'var(--color-popover-foreground)',
+          foreground: 'var(--color-popover-foreground)'
         },
         sidebar: {
           DEFAULT: 'var(--color-sidebar)',
@@ -113,7 +113,7 @@ module.exports = {
           accent: 'var(--color-sidebar-accent)',
           'accent-foreground': 'var(--color-sidebar-accent-foreground)',
           border: 'var(--color-sidebar-border)',
-          ring: 'var(--color-sidebar-ring)',
+          ring: 'var(--color-sidebar-ring)'
         },
 
         // Utility colors (theme-aware)
@@ -122,17 +122,17 @@ module.exports = {
         icon: {
           muted: 'var(--color-icon-muted)',
           hover: 'var(--color-icon-hover)',
-          secondary: 'var(--color-icon-secondary)',
-        },
+          secondary: 'var(--color-icon-secondary)'
+        }
       },
       fontFamily: {
         sans: ['Roboto', 'system-ui', 'sans-serif'],
-        heading: ['Roboto', 'system-ui', 'sans-serif'],
+        heading: ['Roboto', 'system-ui', 'sans-serif']
       },
       spacing: {
         'safe-top': 'var(--safe-area-inset-top)',
         'safe-bottom': 'var(--safe-area-inset-bottom)'
-      },
+      }
     }
   },
   plugins: [gluestackPlugin]

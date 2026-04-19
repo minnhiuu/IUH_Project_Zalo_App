@@ -15,10 +15,10 @@ const axiosInstance = axios.create({
 
 let isRefreshing = false
 
-let failedQueue: Array<{
+let failedQueue: {
   resolve: (token: string | null) => void
   reject: (error: AxiosError) => void
-}> = []
+}[] = []
 
 const processQueue = (error: AxiosError | null, token: string | null = null) => {
   failedQueue.forEach((promise) => {
@@ -47,6 +47,11 @@ axiosInstance.interceptors.request.use(
     try {
       const storedLang = await secureStorage.getAcceptLanguage()
       config.headers['Accept-Language'] = storedLang ?? i18n.language ?? 'vi'
+
+      const deviceId = await secureStorage.getDeviceId()
+      if (deviceId) {
+        config.headers['X-Device-Id'] = deviceId
+      }
     } catch {
       config.headers['Accept-Language'] = i18n.language ?? 'vi'
     }

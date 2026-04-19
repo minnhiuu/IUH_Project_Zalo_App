@@ -76,6 +76,7 @@ export type UserSummaryResponse = {
   id: string
   fullName: string
   avatar: string | null
+  phoneNumber?: string | null
 }
 
 export type UserImageResponse = {

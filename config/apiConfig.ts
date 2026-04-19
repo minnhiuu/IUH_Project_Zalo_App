@@ -65,8 +65,15 @@ export const API_ENDPOINTS = {
     UPDATE_AVATAR: '/users/profile/avatar', // PATCH - Update avatar
     UPDATE_BACKGROUND: '/users/profile/background', // PATCH - Update background
     UPDATE_BACKGROUND_POSITION: '/users/profile/background/position', // PATCH - Update background position
-    SEARCH: '/users/search',
-    GET_BY_ID: (id: string) => `/users/${id}`
+    SEARCH: '/search/users',
+    GET_BY_ID: (id: string) => `/users/${id}`,
+    RECENT_SEARCH: {
+      ITEMS: '/search/recent/items',
+      QUERIES: '/search/recent/queries',
+      ADD: '/search/recent',
+      REMOVE: (id: string) => `/search/recent/${id}`,
+      CLEAR_ALL: '/search/recent/clear-all'
+    }
   },
   DEVICE: {
     SESSIONS: '/auth/devices/sessions', // GET - Get grouped active devices with sessions
@@ -75,13 +82,19 @@ export const API_ENDPOINTS = {
     LOGOUT_OTHERS: '/auth/logout-others' // POST - Logout all other devices
   },
   MESSAGE: {
-    CONVERSATIONS: '/message/conversations',
-    MESSAGES: (conversationId: string) => `/message/conversations/${conversationId}/messages`,
-    SEND: '/message/send'
+    CONVERSATIONS: '/messages/conversations',
+    MESSAGES: (conversationId: string) => `/messages/conversations/${conversationId}/messages`,
+    SEND: (conversationId: string) => `/messages/conversations/${conversationId}/messages`,
+    PARTNER_CONVERSATION: (partnerId: string) => `/messages/conversations/partner/${partnerId}`,
+    MARK_READ: (conversationId: string) => `/messages/conversations/${conversationId}/read`,
+    REVOKE: (messageId: string) => `/messages/${messageId}/revoke`,
+    DELETE_FOR_ME: (messageId: string) => `/messages/me/${messageId}`
   },
   NOTIFICATION: {
-    LIST: '/notification',
-    MARK_READ: (id: string) => `/notification/${id}/read`
+    LIST: '/notifications',
+    MARK_READ: (id: string) => `/notifications/${id}/read`,
+    REGISTER_DEVICE: '/notifications/devices',
+    UNREGISTER_DEVICE: (token: string) => `/notifications/devices?token=${token}`
   },
   FRIENDSHIP: {
     // Friend requests
@@ -96,8 +109,14 @@ export const API_ENDPOINTS = {
     UNFRIEND: (friendId: string) => `/friendships/friends/${friendId}`, // DELETE
     // Status & mutual
     CHECK_STATUS: (userId: string) => `/friendships/status/${userId}`, // GET
+    BATCH_STATUS: '/friendships/batch-status', // POST
     MUTUAL_FRIENDS: (userId: string) => `/friendships/mutual/${userId}`, // GET
-    MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count` // GET
+    MUTUAL_FRIENDS_COUNT: (userId: string) => `/friendships/mutual/${userId}/count`, // GET
+    SUGGESTIONS: '/friendships/suggestions', // GET
+    GRAPH_SUGGESTIONS: '/friendships/suggestions/graph', // GET
+    CONTACT_SUGGESTIONS: '/friendships/suggestions/contacts', // GET
+    // Contact import
+    IMPORT_CONTACTS: '/contacts/import' // POST
   },
   SETTINGS: {
     ME: '/users/settings/me', // GET - UserSettingResponse (all sections)
@@ -113,6 +132,15 @@ export const API_ENDPOINTS = {
     ACCOUNT_SECURITY: '/users/settings/me/account-security',
     JOURNAL: '/users/settings/me/journal',
     DATA_ON_DEVICE: '/users/settings/me/data-on-device'
+  },
+  BLOCK: {
+    BLOCK: '/blocks',
+    UNBLOCK: (id: string) => `/blocks/${id}`,
+    UPDATE_PREFERENCE: (id: string) => `/blocks/${id}/preferences`,
+    LIST: '/blocks',
+    LIST_DETAILS: '/blocks/details',
+    CHECK: (id: string) => `/blocks/${id}/check`,
+    DETAILS: (id: string) => `/blocks/${id}`
   }
 } as const
 
@@ -121,7 +149,7 @@ const apiConfig = {
   env: ENV,
   timeout: 30000, // 30 seconds
   retryAttempts: 3,
-  endpoints: API_ENDPOINTS 
+  endpoints: API_ENDPOINTS
 }
 
 // Log config in development for debugging

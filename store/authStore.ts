@@ -39,11 +39,11 @@ interface AuthState {
 }
 
 const initialState = {
+  user: null,
   isAuthenticated: false,
   isLoading: false,
   isInitialized: false,
-  error: null,
-  user: null
+  error: null
 }
 
 export const useAuthStore = create<AuthState>((set) => ({

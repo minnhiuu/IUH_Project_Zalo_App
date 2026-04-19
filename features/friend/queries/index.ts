@@ -7,6 +7,10 @@ export {
   useFriendshipStatus,
   useMutualFriends,
   useMutualFriendsCount,
+  useBatchFriendshipStatus,
+  useUnifiedSuggestions,
+  useGraphSuggestions,
+  useContactSuggestions
 } from './use-queries'
 
 export {
@@ -14,5 +18,7 @@ export {
   useAcceptFriendRequest,
   useDeclineFriendRequest,
   useCancelFriendRequest,
-  useUnfriend,
+  useUnfriend
 } from './use-mutations'
+
+export { useContactSync } from './use-contact-sync'

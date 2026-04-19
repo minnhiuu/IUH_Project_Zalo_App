@@ -1,7 +1,8 @@
 import '../global.css'
+import '@/tasks/background-notification-task'
 import i18n from '@/i18n'
-// Load feature-level i18n bundles (side-effect: registers translations)
 import '@/features/friend/i18n'
+import '@/features/message/i18n'
 import '@/features/search/i18n'
 import { SEMANTIC } from '@/constants/theme'
 
@@ -15,6 +16,7 @@ import Toast from 'react-native-toast-message'
 import { I18nextProvider } from 'react-i18next'
 import { useEffect } from 'react'
 import { View, Text, ActivityIndicator } from 'react-native'
+import { useFcm } from '@/hooks'
 
 import { GluestackProvider } from '@/components/ui/gluestack-ui-provider'
 import { useAuthStore } from '@/store'
@@ -63,6 +65,9 @@ function SimpleLoadingScreen() {
  */
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isInitialized, setInitialized, loginSuccess, logoutSuccess } = useAuthStore()
+
+  // Khởi động FCM: xin quyền, lấy token, register device lên server
+  useFcm()
   const segments = useSegments()
   const router = useRouter()
 
@@ -209,8 +214,22 @@ function ThemeAwareProviders() {
             <Stack.Screen name='search' />
             <Stack.Screen name='friend-requests' />
             <Stack.Screen name='add-friend' />
+            <Stack.Screen
+              name='add-friend/scan'
+              options={{
+                presentation: 'modal',
+                animation: 'slide_from_bottom'
+              }}
+            />
             <Stack.Screen name='user-profile/[id]' />
-            <Stack.Screen name='chat/[id]' />
+            <Stack.Screen name='find-friends-contacts' />
+            <Stack.Screen name='message-options' />
+            <Stack.Screen
+              name='chat/[id]'
+              options={{
+                animation: 'slide_from_right'
+              }}
+            />
             <Stack.Screen
               name='qr/index'
               options={{

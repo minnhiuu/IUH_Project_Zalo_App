@@ -1,0 +1,30 @@
+{
+  "notification": {
+    "title": "Thông báo",
+    "filter": {
+      "all": "Tất cả",
+      "unread": "Chưa đọc"
+    },
+    "group": {
+      "newest": "Mới nhất",
+      "today": "Hôm nay",
+      "previous": "Trước đó"
+    },
+    "empty": {
+      "title": "Bạn không có thông báo nào",
+      "description": "Bạn sẽ nhận được thông báo khi có hoạt động mới."
+    },
+    "action": {
+      "accept": "Đồng ý",
+      "decline": "Từ chối",
+      "markAllRead": "Đánh dấu tất cả là đã đọc"
+    },
+    "settings": {
+      "title": "Cài đặt thông báo",
+      "recent_activities_title": "Thông báo hoạt động từ bạn bè",
+      "notify_new": "Báo hoạt động mới",
+      "not_notify_new": "Không báo hoạt động mới",
+      "notify_new_except": "Báo hoạt động mới, trừ..."
+    }
+  }
+}

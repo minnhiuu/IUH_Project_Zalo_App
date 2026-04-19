@@ -6,20 +6,28 @@ import { useRouter, useLocalSearchParams } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Text } from '@/components/ui/text'
 import { useTheme } from '@/context/theme-context'
+import { useUnfriend } from '@/features/friend/queries/use-mutations'
 import { useMyProfile, useUserById } from '@/features/users/queries/use-queries'
-import { useFriendshipStatus } from '@/features/friend/queries/use-queries'
 
 export default function UserProfileMenuScreen() {
   const { t } = useTranslation()
   const router = useRouter()
-  const { id } = useLocalSearchParams<{ id: string }>()
+  const { id, isFriend: isFriendString } = useLocalSearchParams<{ id: string; isFriend: string }>()
   const { isDark } = useTheme()
+  const isFriend = isFriendString === 'true'
 
   const { data: myProfile } = useMyProfile()
   const { data: userProfile } = useUserById(id as string)
-  const { data: friendshipStatus } = useFriendshipStatus(id as string, id !== myProfile?.id)
+  const unfriend = useUnfriend()
 
-  const isFriend = friendshipStatus?.areFriends === true
+  const handleUnfriend = () => {
+    if (!id) return
+    unfriend.mutate(id, {
+      onSuccess: () => {
+        router.push('/(tabs)')
+      }
+    })
+  }
 
   const [notificationEnabled, setNotificationEnabled] = React.useState(false)
   const [blockActivity, setBlockActivity] = React.useState(false)
@@ -92,15 +100,6 @@ export default function UserProfileMenuScreen() {
           showSwitch: true,
           switchValue: hideActivity,
           onSwitchChange: setHideActivity
-        }
-      ]
-    },
-    {
-      title: t('profile.menu.reportSection'),
-      items: [
-        {
-          label: t('profile.menu.report'),
-          onPress: () => console.log('Report')
         }
       ]
     }
@@ -181,7 +180,6 @@ export default function UserProfileMenuScreen() {
           </View>
         ))}
 
-        {/* Unfriend button - separate at bottom */}
         {isFriend && (
           <View style={{ backgroundColor: isDark ? '#22262B' : '#fff', marginTop: 8 }}>
             <TouchableOpacity

@@ -1,0 +1,98 @@
+{
+  "message": {
+    "title": "Tin nhắn",
+    "conversations": "Cuộc trò chuyện",
+    "noConversations": "Chưa có cuộc trò chuyện nào",
+    "noMessages": "Chưa có tin nhắn nào",
+    "inputPlaceholder": "Tin nhắn",
+    "searchPlaceholder": "Tìm kiếm trò chuyện...",
+    "emptyState": "Chọn một đoạn hội thoại để bắt đầu",
+    "send": "Gửi",
+    "you": "Bạn",
+    "user": "Người dùng",
+    "online": "Đang hoạt động",
+    "offline": "Ngoại tuyến",
+    "lastSeen": "Hoạt động {{time}} trước",
+    "typing": "đang nhập...",
+    "messageRevoked": "Tin nhắn đã được thu hồi",
+    "yesterday": "Hôm qua",
+    "status": {
+      "online": "Đang hoạt động",
+      "justNow": "Vừa mới truy cập",
+      "minutesAgo": "Truy cập {{count}} phút trước",
+      "hoursAgo": "Truy cập {{count}} giờ trước",
+      "daysAgo": "Truy cập {{count}} ngày trước",
+      "minutesUnit": "phút",
+      "hoursUnit": "giờ",
+      "sending": "Đang gửi",
+      "sent": "Đã gửi",
+      "received": "Đã nhận"
+    },
+    "errors": {
+      "loadConversations": "Lỗi khi tải danh sách hội thoại.",
+      "loadMessages": "Lỗi khi tải tin nhắn."
+    },
+    "actions": {
+      "reply": "Trả lời",
+      "forward": "Chuyển tiếp",
+      "revoke": "Thu hồi",
+      "delete": "Xóa ở phía tôi",
+      "copy": "Sao chép",
+      "save": "Lưu My Documents",
+      "pin": "Ghim",
+      "reminder": "Nhắc hẹn",
+      "selectMultiple": "Chọn nhiều",
+      "quickMessage": "Tạo tin nhắn nhanh",
+      "translate": "Dịch",
+      "readText": "Đọc văn bản",
+      "detail": "Chi tiết",
+      "cancel": "Hủy",
+      "revokeConfirm": "Thu hồi tin nhắn này?",
+      "deleteConfirm": "Xóa tin nhắn phía bạn?",
+      "comingSoonTitle": "Thông báo",
+      "comingSoon": "Chức năng đang được phát triển."
+    },
+    "toast": {
+      "sendSuccess": "Đã gửi tin nhắn",
+      "revokeSuccess": "Đã thu hồi tin nhắn",
+      "deleteSuccess": "Đã xóa tin nhắn",
+      "copySuccess": "Đã sao chép tin nhắn"
+    },
+    "empty": {
+      "conversations": "Chưa có cuộc trò chuyện nào",
+      "messages": "Bắt đầu cuộc trò chuyện"
+    },
+    "loading": "Đang tải...",
+    "error": "Có lỗi xảy ra, vui lòng thử lại",
+    "messageType": {
+      "image": "[Hình ảnh]",
+      "file": "[Tệp tin]"
+    },
+    "quickActions": {
+      "location": "Vị trí",
+      "file": "Tài liệu",
+      "reminder": "Nhắc hẹn",
+      "quickMessage": "Tin nhắn nhanh",
+      "transfer": "Chuyển khoản",
+      "businessCard": "Danh thiếp",
+      "myDocuments": "My Documents",
+      "sendAccount": "Gửi số tài khoản",
+      "gif": "@GIF",
+      "draw": "Vẽ hình",
+      "font": "Kiểu chữ"
+    },
+    "forward": {
+      "title": "Chia sẻ",
+      "selectedCount": "Đã chọn: {{count}}",
+      "search": "Tìm kiếm",
+      "sendTo": "Gửi tới",
+      "newGroup": "Nhóm mới",
+      "journal": "Nhật ký",
+      "otherApps": "App khác",
+      "recentChats": "Trò chuyện gần đây",
+      "groups": "Nhóm",
+      "showMore": "XEM THÊM",
+      "notePlaceholder": "Nhập tin nhắn"
+    }
+  }
+}

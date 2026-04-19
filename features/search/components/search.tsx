@@ -1,5 +1,13 @@
 import { SearchTopBar } from '@/components'
-import { useInfiniteSearchUsers } from '../queries/use-queries'
+import {
+  useInfiniteSearchUsers,
+  useRecentSearchItems,
+  useRecentSearchQueries,
+  useAddRecentSearch,
+  useRemoveRecentSearch,
+  useClearAllRecentSearch
+} from '../queries'
+import { useMyProfile } from '@/features/users'
 import { useDebounce } from '@/hooks/useDebounce'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useFocusEffect } from 'expo-router'
@@ -11,10 +19,10 @@ import { ContactsTab } from './contacts/contacts-tab'
 import { MessagesTab } from './messages/messages-tab'
 import { DiscoverTab } from './discover/discover-tab'
 import { RecentSearchList } from './recent-search-list'
-import { RecentSearch } from '../schemas/search-schema'
-import { storage, STORAGE_KEYS } from '@/utils/storageUtils'
+import { RecentSearchResponse } from '../schemas/search-schema'
+import { SearchType } from '@/constants/enum'
 
-export type SearchTab = 'all' | 'contacts' | 'messages' | 'discover'
+export type SearchTab = 'all' | 'contacts' | 'messages' | 'discover' | 'file'
 
 const MOCK_MESSAGES = [
   {
@@ -37,7 +45,6 @@ export function Search() {
   const { t } = useTranslation()
   const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState<SearchTab>('all')
-  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([])
   const debouncedQuery = useDebounce(searchQuery, 300)
   const inputRef = useRef<TextInput>(null)
   const fadeAnim = useRef(new Animated.Value(0)).current
@@ -50,10 +57,21 @@ export function Search() {
     isLoading
   } = useInfiniteSearchUsers(debouncedQuery)
 
+  const { data: recentItems = [], refetch: refetchItems } = useRecentSearchItems()
+  const { data: recentQueriesData = [], refetch: refetchQueries } = useRecentSearchQueries()
+  const { data: myProfile } = useMyProfile()
+
+  const addRecentSearch = useAddRecentSearch()
+  const removeRecentSearch = useRemoveRecentSearch()
+  const clearAllRecentSearch = useClearAllRecentSearch()
+
+  const recentSearches: RecentSearchResponse[] = [...recentItems, ...recentQueriesData]
+
   useFocusEffect(
     useCallback(() => {
-      loadRecentSearches()
-    }, [])
+      refetchItems()
+      refetchQueries()
+    }, [refetchItems, refetchQueries])
   )
 
   useEffect(() => {
@@ -69,45 +87,6 @@ export function Search() {
     return () => clearTimeout(timer)
   }, [fadeAnim])
 
-  const loadRecentSearches = async () => {
-    const saved = await storage.get<RecentSearch[]>(STORAGE_KEYS.RECENT_SEARCHES)
-    if (saved) {
-      setRecentSearches(saved)
-    }
-  }
-
-  const saveRecentSearches = async (updated: RecentSearch[]) => {
-    setRecentSearches(updated)
-    await storage.set(STORAGE_KEYS.RECENT_SEARCHES, updated)
-  }
-
-  const addToRecent = async (item: RecentSearch) => {
-    let users = recentSearches.filter((s) => s.type === 'user')
-    let keywords = recentSearches.filter((s) => s.type === 'keyword')
-
-    if (item.type === 'user') {
-      users = users.filter((s) => s.id !== item.id)
-      users.unshift(item)
-      users = users.slice(0, 10)
-    } else {
-      keywords = keywords.filter((s) => s.id !== item.id && s.displayName !== item.displayName)
-      keywords.unshift(item)
-      keywords = keywords.slice(0, 5)
-    }
-
-    const updated = [...users, ...keywords]
-    await saveRecentSearches(updated)
-  }
-
-  const removeFromRecent = async (id: string) => {
-    const updated = recentSearches.filter((s) => s.id !== id)
-    await saveRecentSearches(updated)
-  }
-
-  const clearAllRecent = async () => {
-    await saveRecentSearches([])
-  }
-
   const handleClear = () => {
     setSearchQuery('')
     inputRef.current?.focus()
@@ -116,29 +95,45 @@ export function Search() {
   const handleSearchSubmit = () => {
     if (!searchQuery.trim()) return
 
-    addToRecent({
-      id: `k-${Date.now()}`,
-      type: 'keyword',
-      displayName: searchQuery.trim(),
-      timestamp: Date.now()
+    const trimmedQuery = searchQuery.trim()
+    const isSelfPhone = myProfile?.phoneNumber === trimmedQuery
+
+    addRecentSearch.mutate({
+      id: isSelfPhone ? myProfile.id : `k-${Date.now()}`,
+      name: trimmedQuery,
+      type: SearchType.Keyword
     })
   }
 
-  const handleRecentSelect = (item: RecentSearch) => {
-    addToRecent({ ...item, timestamp: Date.now() })
+  const handleRecentSelect = (item: RecentSearchResponse) => {
+    addRecentSearch.mutate({
+      id: item.id,
+      name: item.name,
+      avatar: item.avatar,
+      type: item.type
+    })
 
-    if (item.type === 'user') {
+    if (item.type === SearchType.User || item.type === SearchType.Group) {
       router.push(`/user-profile/${item.id}` as any)
     } else {
-      setSearchQuery(item.displayName)
+      setSearchQuery(item.name)
     }
+  }
+
+  const handleRemove = (id: string, type: SearchType) => {
+    removeRecentSearch.mutate({ id, type })
+  }
+
+  const handleClearAll = () => {
+    clearAllRecentSearch.mutate()
   }
 
   const tabs: { key: SearchTab; label: string }[] = [
     { key: 'all', label: t('search.tabs.all') },
     { key: 'contacts', label: t('search.tabs.contacts') },
     { key: 'messages', label: t('search.tabs.messages') },
-    { key: 'discover', label: t('search.tabs.discover') }
+    { key: 'discover', label: t('search.tabs.discover') },
+    { key: 'file', label: t('search.tabs.file') }
   ]
 
   const renderEmptyState = () => {
@@ -161,15 +156,18 @@ export function Search() {
 
   const onItemPress = (item: any) => {
     const isMessage = item.id.startsWith('m')
-    const isUserOrContact = !isMessage
 
-    if (isUserOrContact) {
-      addToRecent({
+    if (!isMessage) {
+      if (item.id === myProfile?.id) {
+        router.push(`/user-profile/${item.id}` as any)
+        return
+      }
+
+      addRecentSearch.mutate({
         id: item.id,
-        type: 'user',
-        displayName: item.fullName || item.senderName,
-        avatar: item.avatar,
-        timestamp: Date.now()
+        name: item.fullName || item.senderName,
+        avatar: item.avatar ?? null,
+        type: SearchType.User
       })
       router.push(`/user-profile/${item.id}` as any)
     } else {
@@ -193,8 +191,8 @@ export function Search() {
         <RecentSearchList
           searches={recentSearches}
           onSelect={handleRecentSelect}
-          onRemove={removeFromRecent}
-          onClear={clearAllRecent}
+          onRemove={handleRemove}
+          onClear={handleClearAll}
         />
       )
     }

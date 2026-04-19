@@ -1,0 +1,167 @@
+import React, { useState } from 'react'
+import { View, TouchableOpacity, ScrollView, Alert } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { useRouter, useLocalSearchParams } from 'expo-router'
+import { useTranslation } from 'react-i18next'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { LinearGradient } from 'expo-linear-gradient'
+import { Text } from '@/components/ui/text'
+import { useTheme } from '@/context/theme-context'
+import { useBlockDetails } from '@/features/users/queries/use-queries'
+import { useMyProfile } from '@/features/users/queries/use-queries'
+import { BlockUserModal } from '@/features/users/components/block-user-modal'
+import { useUnfriend } from '@/features/friend/queries/use-mutations'
+import { HEADER } from '@/constants/theme'
+
+const DIVIDER_COLOR_LIGHT = '#F0F0F0'
+const DIVIDER_COLOR_DARK = 'rgba(255,255,255,0.07)'
+
+interface MenuItemRowProps {
+  icon: keyof typeof Ionicons.glyphMap
+  label: string
+  onPress: () => void
+  destructive?: boolean
+  isDark: boolean
+}
+
+function MenuItemRow({ icon, label, onPress, destructive, isDark }: MenuItemRowProps) {
+  const textColor = destructive ? '#DC2626' : isDark ? '#DFE2E7' : '#111827'
+  const iconColor = destructive ? '#DC2626' : isDark ? '#B6C1CF' : '#374151'
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.55}
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingVertical: 18,
+        paddingHorizontal: 20,
+        backgroundColor: isDark ? '#1C1F24' : '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: isDark ? DIVIDER_COLOR_DARK : DIVIDER_COLOR_LIGHT
+      }}
+    >
+      <Ionicons name={icon} size={22} color={iconColor} style={{ marginRight: 16 }} />
+      <Text style={{ flex: 1, fontSize: 16, color: textColor }}>{label}</Text>
+      <Ionicons name='chevron-forward' size={18} color={isDark ? '#3E444A' : '#C7C7CC'} />
+    </TouchableOpacity>
+  )
+}
+
+export default function UserProfileOptionsScreen() {
+  const { t } = useTranslation()
+  const router = useRouter()
+  const { id, name, isFriend: isFriendString } = useLocalSearchParams<{ id: string; name: string; isFriend: string }>()
+  const { isDark } = useTheme()
+  const { data: myProfile } = useMyProfile()
+  const [blockModalVisible, setBlockModalVisible] = useState(false)
+  const isFriend = isFriendString === 'true'
+  const isOwner = String(id ?? '').trim() === String(myProfile?.id ?? '').trim()
+  const unfriend = useUnfriend()
+
+  const { data: blockDetails } = useBlockDetails(id as string, !!id)
+
+  const handleUnfriend = () => {
+    Alert.alert(t('profile.menu.unfriendConfirm.title'), t('profile.menu.unfriendConfirm.message', { name }), [
+      {
+        text: t('profile.menu.unfriendConfirm.cancel'),
+        style: 'cancel'
+      },
+      {
+        text: t('profile.menu.unfriendConfirm.confirm'),
+        onPress: () => {
+          if (!id) return
+          unfriend.mutate(id, {
+            onSuccess: () => {
+              router.push('/(tabs)')
+            }
+          })
+        },
+        style: 'destructive'
+      }
+    ])
+  }
+
+  const bg = isDark ? '#121416' : '#F3F4F6'
+  const headerGradient = isDark ? HEADER.gradientColorsDark : HEADER.gradientColors
+
+  return (
+    <View style={{ flex: 1, backgroundColor: bg }}>
+      <LinearGradient colors={headerGradient}>
+        <SafeAreaView edges={['top']} style={{ backgroundColor: 'transparent' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: HEADER.paddingHorizontal,
+              height: HEADER.height
+            }}
+          >
+            <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ paddingRight: 10 }}>
+              <Ionicons name='chevron-back' size={24} color='#fff' />
+            </TouchableOpacity>
+            <Text
+              style={{
+                flex: 1,
+                fontSize: 19,
+                fontWeight: '600',
+                color: '#fff'
+              }}
+              numberOfLines={1}
+            >
+              {name}
+            </Text>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
+
+      <ScrollView style={{ flex: 1 }}>
+        <View style={{ marginTop: 8 }}>
+          {!isOwner && !isFriend && (
+            <MenuItemRow icon='person-add-outline' label={t('contacts.addFriend')} onPress={() => {}} isDark={isDark} />
+          )}
+          <MenuItemRow
+            icon='information-circle-outline'
+            label={t('profile.menu.information')}
+            onPress={() => router.push(`/user-profile/personal-info?id=${id}` as any)}
+            isDark={isDark}
+          />
+          <MenuItemRow
+            icon='pencil-outline'
+            label={t('profile.menu.changeNickname')}
+            onPress={() => {}}
+            isDark={isDark}
+          />
+          <MenuItemRow icon='flag-outline' label={t('profile.menu.report')} onPress={() => {}} isDark={isDark} />
+          <MenuItemRow
+            icon='ban-outline'
+            label={blockDetails ? t('settings.privacy.blockSettings') : t('settings.privacy.manageBlock')}
+            onPress={() => setBlockModalVisible(true)}
+            destructive
+            isDark={isDark}
+          />
+          {isFriend && (
+            <MenuItemRow
+              icon='person-remove-outline'
+              label={t('profile.menu.unfriend')}
+              onPress={handleUnfriend}
+              destructive
+              isDark={isDark}
+            />
+          )}
+        </View>
+      </ScrollView>
+
+      <BlockUserModal
+        key={`block-modal-${id}-${!!blockDetails}`}
+        userId={id as string}
+        userName={name as string}
+        visible={blockModalVisible}
+        onClose={() => setBlockModalVisible(false)}
+        isBlocked={!!blockDetails}
+        currentPreference={blockDetails?.preference}
+      />
+    </View>
+  )
+}

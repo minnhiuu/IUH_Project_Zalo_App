@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { View, TouchableOpacity, Image, ScrollView, Dimensions, ActivityIndicator } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
@@ -7,9 +7,15 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import * as ImagePicker from 'expo-image-picker'
 import { Text } from '@/components/ui/text'
 import { ActionSheet, type ActionSheetOption } from '@/components/ui'
+import { UserAvatar } from '@/components'
 import { SEMANTIC, BRAND } from '@/constants/theme'
 import { useFriendshipStatus } from '@/features/friend/queries/use-queries'
-import { useSendFriendRequest } from '@/features/friend/queries/use-mutations'
+import {
+  useSendFriendRequest,
+  useAcceptFriendRequest,
+  useCancelFriendRequest,
+  useUnfriend
+} from '@/features/friend/queries/use-mutations'
 import { useUserById, useMyProfile } from '@/features/users/queries/use-queries'
 import { useUpdateAvatar, useUpdateBackground } from '@/features/users/queries/use-mutations'
 import { useTheme } from '@/context/theme-context'
@@ -24,25 +30,33 @@ export default function UserProfileScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { isDark } = useTheme()
 
-  const { data: myProfile } = useMyProfile()
+  const { data: myProfile, isLoading: myProfileLoading } = useMyProfile()
   const { data: userProfile, isLoading: profileLoading } = useUserById(id as string)
-  const { data: friendshipStatus, isLoading: statusLoading } = useFriendshipStatus(id as string, id !== myProfile?.id)
+  const targetUserId = String(id ?? '').trim()
+  const myUserId = String(myProfile?.id ?? '').trim()
+  const isOwner = !!myUserId && myUserId === targetUserId
+  const { data: friendshipStatus, isLoading: statusLoading } = useFriendshipStatus(
+    targetUserId,
+    !!targetUserId && !isOwner
+  )
   const sendFriendRequest = useSendFriendRequest()
+  const acceptFriendRequest = useAcceptFriendRequest()
+  const cancelFriendRequest = useCancelFriendRequest()
+  const unfriend = useUnfriend()
   const updateAvatarMutation = useUpdateAvatar()
   const updateBackgroundMutation = useUpdateBackground()
 
   const isLoading = profileLoading || statusLoading
-  //TODO: retrieve owner's information from cache or context to avoid loading state on own profile
-  const isOwner = myProfile?.id === id
   const isFriend = friendshipStatus?.areFriends === true
   const isPending = friendshipStatus?.status === 'PENDING'
+  const isReceiver = isPending && String(friendshipStatus?.requestedBy ?? '') !== myUserId
 
   const [showAvatarSheet, setShowAvatarSheet] = useState(false)
   const [showCoverSheet, setShowCoverSheet] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
 
   React.useEffect(() => {
-    (async () => {
+    ;(async () => {
       const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync()
       const { status: mediaStatus } = await ImagePicker.requestMediaLibraryPermissionsAsync()
       if (cameraStatus !== 'granted' || mediaStatus !== 'granted') {
@@ -167,8 +181,34 @@ export default function UserProfileScreen() {
   }
 
   const handleAddFriend = () => {
+    if (!id || !userProfile) return
+    router.push({
+      pathname: '/add-friend-confirm/[id]' as any,
+      params: {
+        id: id as string,
+        fullName: userProfile.fullName,
+        avatar: userProfile.avatar || ''
+      }
+    })
+  }
+
+  const handleAcceptFriend = () => {
+    if (!id || !friendshipStatus?.friendshipId) return
+    acceptFriendRequest.mutate(friendshipStatus.friendshipId)
+  }
+
+  const handleCancelRequest = () => {
+    if (!id || !friendshipStatus?.friendshipId) return
+    cancelFriendRequest.mutate({ friendshipId: friendshipStatus.friendshipId, userId: id })
+  }
+
+  const handleUnfriend = () => {
     if (!id) return
-    sendFriendRequest.mutate({ receiverId: id as string })
+    unfriend.mutate(id, {
+      onSuccess: () => {
+        router.back()
+      }
+    })
   }
 
   const handleMessage = () => {
@@ -334,7 +374,12 @@ export default function UserProfileScreen() {
                   <Ionicons name='search' size={20} color='#fff' />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  onPress={() => router.push(`/user-profile/menu?id=${id}` as any)}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/user-profile/options' as any,
+                      params: { id: id as string, name: userProfile?.fullName ?? '', isFriend: isFriend.toString() }
+                    })
+                  }
                   style={{
                     width: 36,
                     height: 36,
@@ -363,18 +408,13 @@ export default function UserProfileScreen() {
               activeOpacity={isOwner ? 0.8 : 1}
               disabled={!isOwner}
               onPress={() => isOwner && setShowAvatarSheet(true)}
+              style={{
+                borderWidth: 3,
+                borderColor: isDark ? '#22262B' : '#fff',
+                borderRadius: AVATAR_SIZE / 2
+              }}
             >
-              <Image
-                source={{ uri: userProfile.avatar || 'https://i.pravatar.cc/300' }}
-                style={{
-                  width: AVATAR_SIZE,
-                  height: AVATAR_SIZE,
-                  borderRadius: AVATAR_SIZE / 2,
-                  borderWidth: 3,
-                  borderColor: isDark ? '#22262B' : '#fff',
-                  backgroundColor: isDark ? '#2C323A' : '#E5E7EB'
-                }}
-              />
+              <UserAvatar source={userProfile?.avatar} name={userProfile?.fullName || 'User'} size='4xl' />
             </TouchableOpacity>
           </View>
         </View>
@@ -427,7 +467,7 @@ export default function UserProfileScreen() {
           )}
 
           {/* Friend Profile: No Activity Message */}
-          {!isOwner && isFriend && (
+          {!myProfileLoading && !isOwner && isFriend && (
             <Text
               style={{
                 fontSize: 14,
@@ -443,7 +483,7 @@ export default function UserProfileScreen() {
           )}
 
           {/* Stranger Profile: Not Friend Message */}
-          {!isOwner && !isFriend && (
+          {!myProfileLoading && !isOwner && !isFriend && (
             <Text
               style={{
                 fontSize: 14,
@@ -459,7 +499,7 @@ export default function UserProfileScreen() {
           )}
 
           {/* Action Buttons - Only for non-owner */}
-          {!isOwner && (
+          {!myProfileLoading && !isOwner && (
             <View
               style={{
                 flexDirection: 'row',
@@ -469,63 +509,96 @@ export default function UserProfileScreen() {
                 paddingHorizontal: 24
               }}
             >
-              {/* Message Button */}
-              <TouchableOpacity
-                onPress={handleMessage}
-                activeOpacity={0.7}
-                style={{
-                  flex: 1,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  paddingVertical: 12,
-                  borderRadius: 24,
-                  backgroundColor: isDark ? 'rgba(0, 104, 255, 0.15)' : BRAND.blueLight,
-                  gap: 8
-                }}
-              >
-                <Ionicons name='chatbubble-ellipses-outline' size={20} color={isDark ? '#0068FF' : SEMANTIC.primary} />
-                <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#0068FF' : SEMANTIC.primary }}>
-                  {t('friend.actions.message')}
-                </Text>
-              </TouchableOpacity>
-
-              {/* Add Friend / Status Button */}
-              {!isFriend && !isPending && (
+              {isFriend && (
                 <TouchableOpacity
-                  onPress={handleAddFriend}
-                  disabled={sendFriendRequest.isPending}
+                  onPress={handleMessage}
                   activeOpacity={0.7}
                   style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 24,
-                    backgroundColor: isDark ? '#2C323A' : '#F3F4F6',
+                    flex: 1,
+                    flexDirection: 'row',
                     alignItems: 'center',
-                    justifyContent: 'center'
+                    justifyContent: 'center',
+                    paddingVertical: 12,
+                    borderRadius: 24,
+                    backgroundColor: isDark ? 'rgba(0, 104, 255, 0.15)' : BRAND.blueLight,
+                    gap: 8
                   }}
                 >
-                  {sendFriendRequest.isPending ? (
-                    <ActivityIndicator size='small' color='#0068FF' />
-                  ) : (
-                    <Ionicons name='person-add-outline' size={22} color={isDark ? '#DFE2E7' : '#374151'} />
-                  )}
+                  <Ionicons
+                    name='chatbubble-ellipses-outline'
+                    size={20}
+                    color={isDark ? '#0068FF' : SEMANTIC.primary}
+                  />
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#0068FF' : SEMANTIC.primary }}>
+                    {t('friend.actions.message')}
+                  </Text>
                 </TouchableOpacity>
               )}
 
-              {isPending && (
-                <View
+              {!isFriend && !isPending && (
+                <TouchableOpacity
+                  onPress={handleAddFriend}
+                  activeOpacity={0.7}
                   style={{
-                    paddingHorizontal: 14,
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
                     paddingVertical: 12,
                     borderRadius: 24,
-                    backgroundColor: isDark ? '#2C323A' : '#F3F4F6'
+                    backgroundColor: isDark ? 'rgba(0, 104, 255, 0.15)' : BRAND.blueLight,
+                    gap: 8
                   }}
                 >
-                  <Text style={{ fontSize: 13, fontWeight: '500', color: isDark ? '#B6C1CF' : '#6b7280' }}>
-                    {t('friend.status.pending')}
+                  <Ionicons name='person-add-outline' size={20} color={isDark ? '#0068FF' : SEMANTIC.primary} />
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#0068FF' : SEMANTIC.primary }}>
+                    {t('friend.actions.addFriend')}
                   </Text>
-                </View>
+                </TouchableOpacity>
+              )}
+
+              {isPending && isReceiver && (
+                <TouchableOpacity
+                  onPress={handleAcceptFriend}
+                  activeOpacity={0.7}
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: 12,
+                    borderRadius: 24,
+                    backgroundColor: isDark ? 'rgba(0, 104, 255, 0.15)' : BRAND.blueLight,
+                    gap: 8
+                  }}
+                >
+                  <Ionicons name='checkmark-outline' size={20} color={isDark ? '#0068FF' : SEMANTIC.primary} />
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#0068FF' : SEMANTIC.primary }}>
+                    {t('friend.actions.accept')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {isPending && !isReceiver && (
+                <TouchableOpacity
+                  onPress={handleCancelRequest}
+                  activeOpacity={0.7}
+                  style={{
+                    flex: 1,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingVertical: 12,
+                    borderRadius: 24,
+                    backgroundColor: isDark ? '#2C323A' : '#F3F4F6',
+                    gap: 8
+                  }}
+                >
+                  <Ionicons name='close-outline' size={20} color={isDark ? '#DFE2E7' : '#374151'} />
+                  <Text style={{ fontSize: 16, fontWeight: '600', color: isDark ? '#DFE2E7' : '#374151' }}>
+                    {t('friend.actions.cancel')}
+                  </Text>
+                </TouchableOpacity>
               )}
             </View>
           )}
@@ -732,9 +805,33 @@ export default function UserProfileScreen() {
                   }}
                 >
                   <Ionicons name='person-circle-outline' size={36} color={isDark ? '#B6C1CF' : '#9CA3AF'} />
-                  <View style={{ width: 32, height: 3, backgroundColor: isDark ? '#3E444A' : '#D1D5DB', marginTop: 6, borderRadius: 2 }} />
-                  <View style={{ width: 24, height: 3, backgroundColor: isDark ? '#3E444A' : '#E5E7EB', marginTop: 3, borderRadius: 2 }} />
-                  <View style={{ width: 28, height: 3, backgroundColor: isDark ? '#3E444A' : '#E5E7EB', marginTop: 3, borderRadius: 2 }} />
+                  <View
+                    style={{
+                      width: 32,
+                      height: 3,
+                      backgroundColor: isDark ? '#3E444A' : '#D1D5DB',
+                      marginTop: 6,
+                      borderRadius: 2
+                    }}
+                  />
+                  <View
+                    style={{
+                      width: 24,
+                      height: 3,
+                      backgroundColor: isDark ? '#3E444A' : '#E5E7EB',
+                      marginTop: 3,
+                      borderRadius: 2
+                    }}
+                  />
+                  <View
+                    style={{
+                      width: 28,
+                      height: 3,
+                      backgroundColor: isDark ? '#3E444A' : '#E5E7EB',
+                      marginTop: 3,
+                      borderRadius: 2
+                    }}
+                  />
                 </View>
               </View>
             </View>
@@ -782,9 +879,7 @@ export default function UserProfileScreen() {
                 elevation: 4
               }}
             >
-              <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>
-                {t('profile.owner.postToJournal')}
-              </Text>
+              <Text style={{ fontSize: 16, fontWeight: '600', color: '#fff' }}>{t('profile.owner.postToJournal')}</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -805,7 +900,9 @@ export default function UserProfileScreen() {
                 👋 {t('friend.profile.friendSuggestion')}
               </Text>
               <TouchableOpacity>
-                <Text style={{ fontSize: 14, color: isDark ? '#B6C1CF' : '#6b7280' }}>{t('friend.profile.seeMore')}</Text>
+                <Text style={{ fontSize: 14, color: isDark ? '#B6C1CF' : '#6b7280' }}>
+                  {t('friend.profile.seeMore')}
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -936,9 +1033,7 @@ export default function UserProfileScreen() {
             }}
           >
             <ActivityIndicator size='large' color='#0068FF' />
-            <Text style={{ fontSize: 16, color: isDark ? '#DFE2E7' : '#111827' }}>
-              {t('common.loading')}
-            </Text>
+            <Text style={{ fontSize: 16, color: isDark ? '#DFE2E7' : '#111827' }}>{t('common.loading')}</Text>
           </View>
         </View>
       )}

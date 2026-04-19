@@ -1,11 +1,26 @@
 import { UserAvatar } from '@/components/common/user-avatar'
-import { RecentSearch } from '@/features/search/schemas/search-schema'
+import { RecentSearchResponse } from '@/features/search/schemas/search-schema'
+import { useRecentSearchItems, useRecentSearchQueries, useRemoveRecentSearch } from '@/features/search/queries'
 import { storage, STORAGE_KEYS } from '@/utils/storageUtils'
+import { useTheme } from '@/context/theme-context'
+import { HEADER } from '@/constants/theme'
+import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 import { Stack, useRouter } from 'expo-router'
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { LayoutAnimation, Platform, ScrollView, Switch, Text, TouchableOpacity, UIManager, View } from 'react-native'
+import {
+  LayoutAnimation,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TouchableOpacity,
+  UIManager,
+  View
+} from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true)
@@ -14,41 +29,40 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
 export function EditHistory() {
   const router = useRouter()
   const { t } = useTranslation()
-  const [recentSearches, setRecentSearches] = useState<RecentSearch[]>([])
+  const { isDark } = useTheme()
+
   const [showQuickAccess, setShowQuickAccess] = useState(true)
   const [saveContacts, setSaveContacts] = useState(true)
   const [saveQueries, setSaveQueries] = useState(true)
 
+  const { data: contacts = [], refetch: refetchItems } = useRecentSearchItems()
+  const { data: queries = [], refetch: refetchQueries } = useRecentSearchQueries()
+  const removeRecentSearch = useRemoveRecentSearch()
+
   useEffect(() => {
     loadSettings()
-    loadRecentSearches()
   }, [])
 
   const loadSettings = async () => {
     const quick = await storage.get<boolean>(STORAGE_KEYS.SEARCH_SHOW_QUICK_ACCESS)
-    const contacts = await storage.get<boolean>(STORAGE_KEYS.SEARCH_SAVE_CONTACTS)
-    const queries = await storage.get<boolean>(STORAGE_KEYS.SEARCH_SAVE_QUERIES)
+    const contactsPref = await storage.get<boolean>(STORAGE_KEYS.SEARCH_SAVE_CONTACTS)
+    const queriesPref = await storage.get<boolean>(STORAGE_KEYS.SEARCH_SAVE_QUERIES)
 
     if (quick !== null) setShowQuickAccess(quick)
-    if (contacts !== null) setSaveContacts(contacts)
-    if (queries !== null) setSaveQueries(queries)
+    if (contactsPref !== null) setSaveContacts(contactsPref)
+    if (queriesPref !== null) setSaveQueries(queriesPref)
   }
 
-  const loadRecentSearches = async () => {
-    const saved = await storage.get<RecentSearch[]>(STORAGE_KEYS.RECENT_SEARCHES)
-    if (saved) {
-      setRecentSearches(saved)
-    }
-  }
-
-  const saveRecentSearches = async (updated: RecentSearch[]) => {
-    setRecentSearches(updated)
-    await storage.set(STORAGE_KEYS.RECENT_SEARCHES, updated)
-  }
-
-  const handleRemove = async (id: string) => {
-    const updated = recentSearches.filter((s) => s.id !== id)
-    await saveRecentSearches(updated)
+  const handleRemove = (item: RecentSearchResponse) => {
+    removeRecentSearch.mutate(
+      { id: item.id, type: item.type },
+      {
+        onSuccess: () => {
+          refetchItems()
+          refetchQueries()
+        }
+      }
+    )
   }
 
   const toggleQuickAccess = async (val: boolean) => {
@@ -68,96 +82,161 @@ export function EditHistory() {
     await storage.set(STORAGE_KEYS.SEARCH_SAVE_QUERIES, val)
   }
 
-  const contacts = recentSearches.filter((s) => s.type === 'user')
-  const queries = recentSearches.filter((s) => s.type === 'keyword')
+  const bg = isDark ? '#1a1d21' : '#ffffff'
+  const headerGradient = isDark ? HEADER.gradientColorsDark : HEADER.gradientColors
+  const dividerColor = isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'
+  const textMain = isDark ? '#e8eaed' : '#081B3A'
+  const textMuted = isDark ? '#8a9bb0' : '#5A6981'
+  const iconClose = isDark ? '#6b7a8d' : '#9CA3AF'
+  const switchTrackOff = isDark ? '#3e444a' : '#d1d5db'
 
   return (
-    <View>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: bg }]}>
       <Stack.Screen options={{ headerShown: false }} />
 
-      <View className='flex-row items-center p-4 border-b border-gray-100 bg-white'>
-        <TouchableOpacity onPress={() => router.back()} className='mr-4'>
-          <Ionicons name='arrow-back' size={24} color='black' />
-        </TouchableOpacity>
-        <Text className='text-lg font-bold text-black'>{t('search.editHistory.title')}</Text>
-      </View>
+      <LinearGradient colors={headerGradient}>
+        <SafeAreaView edges={['top']} style={{ backgroundColor: 'transparent' }}>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
+              <Ionicons name='chevron-back' size={24} color='#fff' />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>{t('search.editHistory.title')}</Text>
+          </View>
+        </SafeAreaView>
+      </LinearGradient>
 
-      <ScrollView className='flex-1 bg-white'>
-        <View className='flex-row items-center justify-between px-4 py-4 bg-white'>
-          <Text className='text-base text-gray-900'>{t('search.editHistory.showQuickAccess')}</Text>
+      <ScrollView style={{ flex: 1, backgroundColor: bg }} showsVerticalScrollIndicator={false}>
+        <View style={[styles.row, { backgroundColor: bg }]}>
+          <Text style={[styles.rowText, { color: textMain }]}>{t('search.editHistory.showQuickAccess')}</Text>
           <Switch
             value={showQuickAccess}
             onValueChange={toggleQuickAccess}
-            trackColor={{ false: '#767577', true: '#3B82F6' }}
-            thumbColor={'#f4f3f4'}
-            style={{ transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }] }}
+            trackColor={{ false: switchTrackOff, true: '#3B82F6' }}
+            thumbColor='#ffffff'
+            ios_backgroundColor={switchTrackOff}
           />
         </View>
 
-        <View className='h-2 bg-gray-100' />
+        <View style={[styles.divider, { backgroundColor: dividerColor }]} />
 
-        <View className='px-4 py-3'>
-          <Text className='font-bold text-gray-500 mb-1 uppercase text-sm'>
-            {t('search.editHistory.searchHistory')}
-          </Text>
+        <View style={[styles.sectionLabel, { backgroundColor: bg }]}>
+          <Text style={[styles.sectionLabelText, { color: textMain }]}>{t('search.editHistory.searchHistory')}</Text>
         </View>
 
-        <View className='bg-white'>
-          <View className='flex-row items-center justify-between px-4 py-3'>
-            <Text className='text-base text-gray-900'>{t('search.editHistory.saveContacts')}</Text>
-            <Switch
-              value={saveContacts}
-              onValueChange={toggleSaveContacts}
-              trackColor={{ false: '#767577', true: '#3B82F6' }}
-              thumbColor={'#f4f3f4'}
-              style={{ transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }] }}
-            />
-          </View>
-
-          {saveContacts &&
-            contacts.map((contact) => (
-              <View key={contact.id} className='flex-row items-center justify-between px-4 py-3 pl-8'>
-                <View className='flex-row items-center flex-1'>
-                  <UserAvatar source={contact.avatar} name={contact.displayName} size='md' className='mr-3' />
-                  <Text className='text-base text-gray-900 flex-1' numberOfLines={1}>
-                    {contact.displayName}
-                  </Text>
-                </View>
-                <TouchableOpacity onPress={() => handleRemove(contact.id)} className='p-2'>
-                  <Ionicons name='close' size={20} color='#6B7280' />
-                </TouchableOpacity>
-              </View>
-            ))}
-
-          <View className='flex-row items-center justify-between px-4 py-3 mt-2'>
-            <Text className='text-base text-gray-900'>{t('search.editHistory.saveQueries')}</Text>
-            <Switch
-              value={saveQueries}
-              onValueChange={toggleSaveQueries}
-              trackColor={{ false: '#767577', true: '#3B82F6' }}
-              thumbColor={'#f4f3f4'}
-              style={{ transform: [{ scaleX: 1.2 }, { scaleY: 1.2 }] }}
-            />
-          </View>
-
-          {saveQueries &&
-            queries.map((query) => (
-              <View key={query.id} className='flex-row items-center justify-between px-4 py-3 pl-8'>
-                <View className='flex-row items-center flex-1'>
-                  <Ionicons name='search-outline' size={24} color='#6B7280' />
-                  <Text className='text-base text-gray-900 ml-4 flex-1' numberOfLines={1}>
-                    {query.displayName}
-                  </Text>
-                </View>
-                <TouchableOpacity onPress={() => handleRemove(query.id)} className='p-2'>
-                  <Ionicons name='close' size={20} color='#6B7280' />
-                </TouchableOpacity>
-              </View>
-            ))}
+        <View style={[styles.row, { backgroundColor: bg }]}>
+          <Text style={[styles.rowText, { color: textMain }]}>{t('search.editHistory.saveContacts')}</Text>
+          <Switch
+            value={saveContacts}
+            onValueChange={toggleSaveContacts}
+            trackColor={{ false: switchTrackOff, true: '#3B82F6' }}
+            thumbColor='#ffffff'
+            ios_backgroundColor={switchTrackOff}
+          />
         </View>
 
-        <View className='h-20' />
+        {saveContacts &&
+          contacts.map((contact) => (
+            <View key={contact.id} style={[styles.item, { backgroundColor: bg }]}>
+              <UserAvatar source={contact.avatar} name={contact.name} size='sm' />
+              <Text style={[styles.itemText, { color: textMain }]} numberOfLines={1}>
+                {contact.name}
+              </Text>
+              <TouchableOpacity onPress={() => handleRemove(contact)} style={styles.closeBtn}>
+                <Ionicons name='close' size={18} color={iconClose} />
+              </TouchableOpacity>
+            </View>
+          ))}
+
+        <View style={[styles.divider, { backgroundColor: dividerColor }]} />
+
+        <View style={[styles.row, { backgroundColor: bg }]}>
+          <Text style={[styles.rowText, { color: textMain }]}>{t('search.editHistory.saveQueries')}</Text>
+          <Switch
+            value={saveQueries}
+            onValueChange={toggleSaveQueries}
+            trackColor={{ false: switchTrackOff, true: '#3B82F6' }}
+            thumbColor='#ffffff'
+            ios_backgroundColor={switchTrackOff}
+          />
+        </View>
+
+        {saveQueries &&
+          queries.map((query) => (
+            <View key={query.id} style={[styles.item, { backgroundColor: bg }]}>
+              <Ionicons name='search-outline' size={20} color={textMuted} style={styles.searchIcon} />
+              <Text style={[styles.itemText, { color: textMain }]} numberOfLines={1}>
+                {query.name}
+              </Text>
+              <TouchableOpacity onPress={() => handleRemove(query)} style={styles.closeBtn}>
+                <Ionicons name='close' size={18} color={iconClose} />
+              </TouchableOpacity>
+            </View>
+          ))}
+
+        <View style={{ height: 40 }} />
       </ScrollView>
-    </View>
+    </SafeAreaView>
   )
 }
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: HEADER.paddingHorizontal,
+    height: HEADER.height
+  },
+  backBtn: {
+    paddingRight: 10
+  },
+  headerTitle: {
+    fontSize: 19,
+    fontWeight: '600',
+    color: '#fff'
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 14
+  },
+  rowText: {
+    fontSize: 15,
+    flex: 1,
+    marginRight: 12
+  },
+  divider: {
+    height: 1
+  },
+  sectionLabel: {
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 4
+  },
+  sectionLabelText: {
+    fontSize: 15,
+    fontWeight: '700'
+  },
+  item: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 11
+  },
+  itemText: {
+    fontSize: 15,
+    flex: 1,
+    marginLeft: 12
+  },
+  closeBtn: {
+    padding: 6
+  },
+  searchIcon: {
+    width: 32,
+    textAlign: 'center'
+  }
+})
