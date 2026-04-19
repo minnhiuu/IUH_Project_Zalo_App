@@ -1,4 +1,16 @@
 {
+  "reaction": {
+    "title": "Reactions",
+    "all": "All",
+    "empty": "No one",
+    "me": "(You)"
+  },
+  "message": {
+    "mediaStorage": {
+      "typeFile": "File type",
+      "searchFile": "Search file..."
+    }
+  },
   "common": {
     "loading": "Loading...",
     "error": "An error occurred",

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { View, TouchableOpacity, ScrollView, Alert, Switch } from 'react-native'
+import { Image as ExpoImage } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useTranslation } from 'react-i18next'
@@ -12,6 +13,7 @@ import { useBlockDetails, useMyProfile, useUserById } from '@/features/users/que
 import { BlockUserModal } from '@/features/users/components/block-user-modal'
 import { useUnfriend } from '@/features/friend/queries/use-mutations'
 import { HEADER } from '@/constants/theme'
+import { useMediaMessages } from '@/features/message/queries'
 
 const DIVIDER_COLOR_LIGHT = '#F0F0F0'
 const DIVIDER_COLOR_DARK = 'rgba(255,255,255,0.07)'
@@ -55,9 +57,10 @@ function MenuItemRow({ icon, label, onPress, destructive, isDark, showChevron = 
 export default function MessageOptionsScreen() {
   const { t } = useTranslation()
   const router = useRouter()
-  const { id, name, isFriend: isFriendString } = useLocalSearchParams<{ id: string; name: string; isFriend: string }>()
+  const { id, name, isFriend: isFriendString, conversationId } = useLocalSearchParams<{ id: string; name: string; isFriend: string; conversationId?: string }>()
   const { isDark } = useTheme()
   const [blockModalVisible, setBlockModalVisible] = useState(false)
+  const { data: recentMedia = [] } = useMediaMessages(conversationId ?? '', ['IMAGE', 'VIDEO'], 0, 100, !!conversationId)
   const [isBestFriend, setIsBestFriend] = useState(false)
   const [pinChat, setPinChat] = useState(false)
   const [muteNotification, setMuteNotification] = useState(false)
@@ -218,6 +221,13 @@ export default function MessageOptionsScreen() {
         >
           <TouchableOpacity
             activeOpacity={0.7}
+            onPress={() => {
+              if (!conversationId) return
+              router.push({
+                pathname: '/media-storage' as any,
+                params: { conversationId, name }
+              })
+            }}
             style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}
           >
             <Ionicons
@@ -233,12 +243,37 @@ export default function MessageOptionsScreen() {
           </TouchableOpacity>
 
           <View style={{ flexDirection: 'row', gap: 8 }}>
-            {Array.from({ length: 5 }).map((_, idx) => (
-              <View
-                key={idx}
-                style={{ flex: 1, aspectRatio: 1, borderRadius: 8, backgroundColor: isDark ? '#2A2F36' : '#ECEFF3' }}
-              />
-            ))}
+            {Array.from({ length: 5 }).map((_, idx) => {
+              const msg = recentMedia[idx]
+              const url = msg?.attachments?.[0]?.url
+              return (
+                <TouchableOpacity
+                  key={idx}
+                  activeOpacity={url ? 0.8 : 1}
+                  onPress={() => {
+                    if (!conversationId) return
+                    router.push({ pathname: '/media-storage' as any, params: { conversationId, name } })
+                  }}
+                  style={{ flex: 1, aspectRatio: 1, borderRadius: 8, overflow: 'hidden', backgroundColor: isDark ? '#2A2F36' : '#ECEFF3' }}
+                >
+                  {url ? (
+                    <>
+                      <ExpoImage
+                        source={{ uri: url }}
+                        style={{ width: '100%', height: '100%' }}
+                        contentFit='cover'
+                        cachePolicy='memory-disk'
+                      />
+                      {msg.type === 'VIDEO' && (
+                        <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
+                          <Ionicons name='play-circle' size={22} color='rgba(255,255,255,0.9)' />
+                        </View>
+                      )}
+                    </>
+                  ) : null}
+                </TouchableOpacity>
+              )
+            })}
           </View>
         </View>
 

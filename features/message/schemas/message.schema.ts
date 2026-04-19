@@ -5,7 +5,10 @@ export enum MessageType {
   JOIN = 'JOIN',
   LEAVE = 'LEAVE',
   IMAGE = 'IMAGE',
-  FILE = 'FILE'
+  VIDEO = 'VIDEO',
+  FILE = 'FILE',
+  LINK = 'LINK',
+  SYSTEM = 'SYSTEM'
 }
 
 export enum MessageStatus {
@@ -22,7 +25,7 @@ export enum MemberRole {
 
 export const messageSendRequestSchema = z.object({
   conversationId: z.string().min(1),
-  content: z.string().min(1),
+  content: z.string(),
   clientMessageId: z.string().optional(),
   replyTo: z
     .object({
@@ -32,8 +35,29 @@ export const messageSendRequestSchema = z.object({
       type: z.nativeEnum(MessageType)
     })
     .optional(),
-  isForwarded: z.boolean().optional().default(false)
+  isForwarded: z.boolean().optional().default(false),
+  attachments: z
+    .array(
+      z.object({
+        key: z.string(),
+        url: z.string(),
+        fileName: z.string(),
+        originalFileName: z.string(),
+        contentType: z.string(),
+        size: z.number()
+      })
+    )
+    .optional()
 })
+
+export type AttachmentInfo = {
+  key: string
+  url: string
+  fileName: string
+  originalFileName: string
+  contentType: string
+  size: number
+}
 
 export type MessageSendRequest = z.infer<typeof messageSendRequestSchema>
 
@@ -59,6 +83,8 @@ export type MessageResponse = {
   replyTo: ReplyMetadataResponse | null
   isForwarded: boolean
   status: MessageStatus
+  attachments?: AttachmentInfo[] | null
+  reactions?: Record<string, string[]> | null
   // Fields from ChatNotification (WebSocket)
   unreadCount?: number
   isFromMe?: boolean
