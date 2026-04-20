@@ -97,8 +97,8 @@ export const API_ENDPOINTS = {
       `/messages/conversations/${conversationId}/messages/${messageId}/pin`,
     UNPIN_MESSAGE: (conversationId: string, messageId: string) =>
       `/messages/conversations/${conversationId}/messages/${messageId}/pin`,
-    REVOKE: (messageId: string) => `/messages/${messageId}/revoke`,
-    DELETE_FOR_ME: (messageId: string) => `/messages/me/${messageId}`,
+    REVOKE: (messageId: string) => `/messages/messages/${messageId}/revoke`,
+    DELETE_FOR_ME: (messageId: string) => `/messages/messages/${messageId}/me`,
     TOGGLE_REACTION: (messageId: string) => `/messages/messages/${messageId}/reactions`,
     REMOVE_REACTIONS: (messageId: string) => `/messages/messages/${messageId}/reactions/me`,
     MEDIA: (conversationId: string) => `/messages/conversations/${conversationId}/media`,
