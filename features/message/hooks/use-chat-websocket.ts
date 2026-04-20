@@ -7,9 +7,10 @@ import { useSendMessage, useRevokeMessage, useDeleteMessageForMe } from '../quer
 import { useAuthStore } from '@/store'
 import { getAccessToken } from '@/lib/http'
 import apiConfig from '@/config/apiConfig'
-import { normalizeDateTime } from '../utils/date-utils'
+import { normalizeDateTime, parseMessageDate } from '../utils/date-utils'
+import { parseBusinessCardContent, serializeBusinessCard } from '../utils/business-card'
 import { MessageStatus, MessageType } from '../schemas'
-import type { MessageResponse, ConversationResponse, MessageSendRequest, ReplyMetadataResponse, AttachmentInfo } from '../schemas'
+import type { MessageResponse, ConversationResponse, MessageSendRequest, ReplyMetadataResponse,  AttachmentInfo } from '../schemas'
 
 // ────────── Singleton state ──────────
 let singletonClient: Client | null = null
@@ -83,11 +84,30 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
                 pages: [
                   {
                     ...firstPage,
-                    data: firstPage.data.map((m: MessageResponse) =>
-                      m.clientMessageId && m.clientMessageId === msg.clientMessageId
-                        ? { ...msg, status: MessageStatus.NORMAL }
-                        : m
-                    )
+                    data: firstPage.data.map((m: MessageResponse) => {
+                      if (!(m.clientMessageId && m.clientMessageId === msg.clientMessageId)) {
+                        return m
+                      }
+
+                      const optimisticCard = parseBusinessCardContent(m.content)
+                      const incomingCard = parseBusinessCardContent(msg.content)
+
+                      if (optimisticCard && incomingCard) {
+                        const mergedPhone = incomingCard.phone || optimisticCard.phone || ''
+                        const mergedContent = serializeBusinessCard({
+                          ...incomingCard,
+                          phone: mergedPhone
+                        })
+
+                        return {
+                          ...msg,
+                          content: mergedContent,
+                          status: MessageStatus.NORMAL
+                        }
+                      }
+
+                      return { ...msg, status: MessageStatus.NORMAL }
+                    })
                   },
                   ...oldData.pages.slice(1)
                 ]
@@ -126,7 +146,7 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
           if (idx >= 0) {
             const updated: ConversationResponse = {
               ...conversations[idx],
-              lastMessage: msg.content,
+              lastMessage: typeof msg.content === 'string' ? msg.content : (msg.type === 'IMAGE' ? '[Hình ảnh]' : msg.type === 'FILE' ? '[Tệp]' : ''),
               lastMessageTime: msg.createdAt || new Date().toISOString(),
               isLastMessageFromMe: isOwnMessage,
               lastMessageType: msg.type,
@@ -251,17 +271,54 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
             queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
               if (!oldData) return oldData
               const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
-              if (conversations.find((c: ConversationResponse) => c.id === newConv.id)) return oldData
-              const newList = [newConv, ...conversations].sort(
-                (a: any, b: any) => new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
+              const existingIdx = conversations.findIndex((c: ConversationResponse) => c.id === newConv.id)
+              const nextConversations =
+                existingIdx >= 0
+                  ? [
+                      {
+                        ...conversations[existingIdx],
+                        ...newConv,
+                        // Keep members from cache if update payload is partial.
+                        members: Array.isArray(newConv.members) ? newConv.members : conversations[existingIdx].members
+                      },
+                      ...conversations.filter((_, i) => i !== existingIdx)
+                    ]
+                  : [newConv, ...conversations]
+
+              const newList = nextConversations.sort(
+                (a: any, b: any) => {
+                  const bTime = parseMessageDate(b.lastMessageTime)?.getTime() || 0
+                  const aTime = parseMessageDate(a.lastMessageTime)?.getTime() || 0
+                  return bTime - aTime
+                }
               )
+
+              // Match web behavior: update sidebars relying on join requests/member lists.
+              queryClient.invalidateQueries({ queryKey: messageKeys.groupMembers(newConv.id, '') })
+              queryClient.invalidateQueries({ queryKey: messageKeys.joinRequests(newConv.id) })
+
               return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
             })
           } else if (newConv.type === 'REFRESH') {
             queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+            queryClient.invalidateQueries({ queryKey: [...messageKeys.all, 'join-requests'] })
           }
         } catch {
           queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+        }
+      })
+
+      // ────────── /queue/join-requests ──────────
+      client.subscribe('/user/queue/join-requests', (payload) => {
+        try {
+          const update = JSON.parse(payload.body)
+          if (!update?.conversationId) return
+          queryClient.invalidateQueries({ queryKey: messageKeys.joinRequests(update.conversationId) })
+          queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+          queryClient.invalidateQueries({ queryKey: messageKeys.groupMembers(update.conversationId, '') })
+          queryClient.invalidateQueries({ queryKey: messageKeys.messages(update.conversationId) })
+        } catch {
+          // ignore invalid payload
         }
       })
 
@@ -386,7 +443,13 @@ export const useChatWebSocket = () => {
         if (idx >= 0) {
           const updated: ConversationResponse = {
             ...conversations[idx],
-            lastMessage: content,
+            lastMessage:
+              content ||
+              (optimisticType === MessageType.IMAGE
+                ? '[Hình ảnh]'
+                : optimisticType === MessageType.FILE
+                  ? '[Tệp]'
+                  : content),
             lastMessageTime: now,
             isLastMessageFromMe: true,
             lastMessageType: optimisticType,
@@ -453,15 +516,45 @@ export const useChatWebSocket = () => {
 
       setIsUploading(true)
       try {
-        const uploaded = await Promise.all(
-          fileAssets.map(async ({ uri, mimeType, fileName }) => {
-            const res = await messageApi.uploadFile(uri, mimeType, fileName)
-            return res.data.data as AttachmentInfo
-          })
-        )
+        const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
-        const isImage = fileAssets[0].mimeType?.startsWith('image/')
-        const isVideo = fileAssets[0].mimeType?.startsWith('video/')
+        const uploadSingleWithRetry = async (uri: string, mimeType: string, fileName: string): Promise<AttachmentInfo> => {
+          const maxAttempts = 3
+          let lastError: unknown = null
+
+          for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+            try {
+              const res = await messageApi.uploadFile(uri, mimeType, fileName)
+              return res.data.data as AttachmentInfo
+            } catch (error) {
+              lastError = error
+              const message = String((error as any)?.message || '')
+              const status = Number((error as any)?.response?.status || 0)
+              const isRetryable = status === 401 || status === 429 || status >= 500 || message.includes('Network Error')
+
+              if (!isRetryable || attempt === maxAttempts) {
+                break
+              }
+
+              await wait(250 * attempt)
+            }
+          }
+
+          throw lastError
+        }
+
+        // Mobile network + gateway is less stable with multiple parallel multipart uploads.
+        // Upload sequentially to reduce fallback/circuit-breaker spikes.
+        const uploaded: AttachmentInfo[] = []
+        for (const { uri, mimeType, fileName } of fileAssets) {
+          const attachment = await uploadSingleWithRetry(uri, mimeType, fileName)
+          uploaded.push(attachment)
+        }
+
+        const areAllImages = fileAssets.every((asset) => asset.mimeType?.startsWith('image/'))
+        const areAllVideos = fileAssets.every((asset) => asset.mimeType?.startsWith('video/'))
+        const isImage = areAllImages
+        const isVideo = areAllVideos
         const type = isImage ? MessageType.IMAGE : isVideo ? MessageType.VIDEO : MessageType.FILE
         const finalContent = content.trim() || (isImage ? '[Hình ảnh]' : isVideo ? '[Video]' : '[Tệp tin]')
 

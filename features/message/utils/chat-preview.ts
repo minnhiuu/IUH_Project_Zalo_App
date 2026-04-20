@@ -1,4 +1,6 @@
 import { MessageType, MessageStatus } from '../schemas/message.schema'
+import { parseBusinessCardContent } from './business-card'
+import { parseGroupLinkContent } from './group-link'
 
 interface PreviewData {
   content?: string | null
@@ -15,14 +17,32 @@ export const formatPreview = (
   if (!data.content && !data.type) return ''
 
   const isRevoked = data.status === MessageStatus.REVOKED
-  const prefix = isRevoked ? '' : data.isFromMe ? text.you : text.user
+  const senderLabel = data.senderName?.trim() || ''
+  const prefix = isRevoked ? '' : data.isFromMe ? text.you : senderLabel
 
-  let displayContent = data.content || ''
-  if (data.type === MessageType.IMAGE || data.content === '[IMAGE]') {
-    displayContent = text.type.image
-  } else if (data.type === MessageType.FILE || data.content === '[FILE]') {
-    displayContent = text.type.file
+  let displayContent = typeof data.content === 'string' ? data.content : ''
+  const businessCard = parseBusinessCardContent(displayContent)
+  if (businessCard) {
+    displayContent = `[Danh thiếp] ${businessCard.name}`
   }
 
-  return isRevoked ? displayContent : `${prefix}: ${displayContent}`
+  const groupLink = parseGroupLinkContent(displayContent)
+  if (groupLink) {
+    displayContent = `[Link nhóm] ${groupLink.groupName || ''}`.trim()
+  }
+
+  if (data.type === MessageType.IMAGE || displayContent === '[IMAGE]') {
+    displayContent = text.type.image
+  } else if (data.type === MessageType.FILE) {
+    if (!displayContent || displayContent === '[FILE]') {
+      displayContent = text.type.file
+    } else {
+      // Keep filename in conversation preview for file messages.
+      displayContent = `${text.type.file} ${displayContent}`
+    }
+  }
+
+  if (isRevoked) return displayContent
+  if (!prefix) return displayContent
+  return `${prefix}: ${displayContent}`
 }

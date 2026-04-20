@@ -15,6 +15,7 @@ import { ForwardMessageModal } from '@/features/message/components'
 import { useConversations } from '@/features/message/queries'
 import { useChatWebSocket } from '@/features/message/hooks'
 import { MessageStatus, MessageType, type MessageResponse } from '@/features/message/schemas'
+import { serializeBusinessCard } from '@/features/message/utils'
 import { UserAvatar } from '@/components/common/user-avatar'
 import QRCode from 'react-native-qrcode-svg'
 import * as MediaLibrary from 'expo-media-library'
@@ -54,10 +55,15 @@ export default function AddFriendScreen() {
 
   const currentUserId = String(myProfile?.id ?? user?.id ?? '')
   const currentUserName = String(myProfile?.fullName ?? user?.fullName ?? '').trim()
+  const currentUserPhone = String((myProfile as any)?.phoneNumber ?? (myProfile as any)?.phone ?? '')
   const qrValue = `${QR_PREFIX}${currentUserId}?name=${encodeURIComponent(currentUserName)}`
-  const qrForwardContent = `${t('friend.addFriend.forwardIntro', {
-    defaultValue: 'Kết bạn với mình qua QR:'
-  })}\n${qrValue}`
+  const qrForwardContent = serializeBusinessCard({
+    userId: currentUserId,
+    name: currentUserName,
+    phone: currentUserPhone,
+    avatar: myProfile?.avatar ?? user?.avatar ?? null,
+    qrValue
+  })
 
   const forwardSourceMessage: MessageResponse | null = useMemo(() => {
     if (!currentUserId) return null
@@ -404,8 +410,37 @@ export default function AddFriendScreen() {
                   {t('friend.addFriend.scanQR')}
                 </Text>
               </TouchableOpacity>
+
+              <TouchableOpacity
                 onPress={() => router.push('/friend-requests' as any)}
                 activeOpacity={0.7}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingHorizontal: 16,
+                  paddingVertical: 16,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: colors.border,
+                  backgroundColor: colors.background
+                }}
+              >
+                <View
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 8,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    marginRight: 14
+                  }}
+                >
+                  <Ionicons name='person-add-outline' size={28} color={colors.tint} />
+                </View>
+                <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>
+                  {t('friend.addFriend.friendRequests', { defaultValue: 'Lời mời kết bạn' })}
+                </Text>
+              </TouchableOpacity>
+
               {/* People You May Know */}
               <TouchableOpacity
                 activeOpacity={0.7}

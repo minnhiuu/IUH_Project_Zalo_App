@@ -8,7 +8,8 @@ export enum MessageType {
   VIDEO = 'VIDEO',
   FILE = 'FILE',
   LINK = 'LINK',
-  SYSTEM = 'SYSTEM'
+  SYSTEM = 'SYSTEM',
+  CALL = 'CALL'
 }
 
 export enum MessageStatus {
@@ -25,7 +26,8 @@ export enum MemberRole {
 
 export const messageSendRequestSchema = z.object({
   conversationId: z.string().min(1),
-  content: z.string(),
+  recipientId: z.string().optional(),
+  content: z.string().min(1),
   clientMessageId: z.string().optional(),
   replyTo: z
     .object({
@@ -50,6 +52,8 @@ export const messageSendRequestSchema = z.object({
     .optional()
 })
 
+export type MessageSendRequest = z.infer<typeof messageSendRequestSchema>
+
 export type AttachmentInfo = {
   key: string
   url: string
@@ -58,8 +62,6 @@ export type AttachmentInfo = {
   contentType: string
   size: number
 }
-
-export type MessageSendRequest = z.infer<typeof messageSendRequestSchema>
 
 export type ReplyMetadataResponse = {
   messageId: string
@@ -83,11 +85,12 @@ export type MessageResponse = {
   replyTo: ReplyMetadataResponse | null
   isForwarded: boolean
   status: MessageStatus
-  attachments?: AttachmentInfo[] | null
-  reactions?: Record<string, string[]> | null
   // Fields from ChatNotification (WebSocket)
   unreadCount?: number
   isFromMe?: boolean
+  metadata?: Record<string, unknown>
+  attachments?: AttachmentInfo[]
+  reactions?: Record<string, string[]>
 }
 
 export type ConversationMemberResponse = {
@@ -105,6 +108,7 @@ export type ConversationResponse = {
   status: string | null
   lastSeenAt: string | null
   isGroup: boolean
+  isDisbanded?: boolean
   lastMessage: string | null
   lastMessageId: string | null
   lastMessageTime: string | null
@@ -113,6 +117,93 @@ export type ConversationResponse = {
   unreadCount: number | null
   lastMessageStatus: MessageStatus | null
   members: ConversationMemberResponse[] | null
+  settings?: GroupSettings | null
+  joinLinkToken?: string | null
+  pendingJoinRequestCount?: number | null
+  invitedUserIds?: string[] | null
+}
+
+export type GroupSettings = {
+  memberCanChangeInfo?: boolean
+  memberCanPinMessages?: boolean
+  memberCanCreateNotes?: boolean
+  memberCanCreatePolls?: boolean
+  memberCanSendMessages?: boolean
+  membershipApprovalEnabled?: boolean
+  highlightAdminMessages?: boolean
+  newMembersCanReadRecent?: boolean
+  joinByLinkEnabled?: boolean
+  joinQuestion?: string | null
+}
+
+export type GroupConversationCreateRequest = {
+  name: string
+  avatar?: string | null
+  isGroup: true
+  memberIds: string[]
+}
+
+export type LeaveGroupRequest = {
+  silent?: boolean
+  transferTo?: string | null
+  blockReJoin?: boolean
+}
+
+export type SearchMemberResponse = {
+  userId: string
+  fullName: string
+  avatar?: string | null
+  phoneNumber?: string | null
+  role?: string | null
+  isAlreadyMember?: boolean
+}
+
+export type GroupMemberListItemResponse = {
+  userId: string
+  fullName: string
+  avatar?: string | null
+  phoneNumber?: string | null
+  role?: string | null
+  joinedAt?: string | null
+  isFriend?: boolean
+  isCurrentUser?: boolean
+  joinMethod?: string | null
+  addedBy?: string | null
+  addedByName?: string | null
+}
+
+export type AdminMemberResponse = {
+  userId: string
+  fullName: string
+  avatar?: string | null
+  role?: string | null
+}
+
+export type JoinGroupPreviewResponse = {
+  conversationId: string
+  groupName: string | null
+  groupAvatar: string | null
+  memberCount: number
+  createdByName: string | null
+  memberPreviews: { name: string; avatar: string | null }[]
+  isAlreadyMember: boolean
+  isBlockedFromGroup: boolean
+  membershipApprovalEnabled: boolean
+  hasPendingRequest: boolean
+  joinQuestion: string | null
+}
+
+export type JoinRequestResponse = {
+  id: string
+  conversationId: string
+  userId: string
+  fullName: string
+  avatar: string | null
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CANCELLED'
+  requestedAt: string
+  processedAt: string | null
+  processedBy: string | null
+  joinAnswer: string | null
 }
 
 export type ChatNotification = {
@@ -141,4 +232,13 @@ export type ReadReceiptNotification = {
 export type PresenceEvent = {
   userId: string
   status: 'ONLINE' | 'OFFLINE'
+}
+
+export type PinnedMessageInfo = {
+  messageId: string
+  pinnedBy: string
+  pinnedByName: string | null
+  contentSnapshot: string | null
+  messageType: MessageType
+  pinnedAt: string
 }

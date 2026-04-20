@@ -1,9 +1,24 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react'
-import { View, FlatList, KeyboardAvoidingView, Platform, ActivityIndicator } from 'react-native'
+import React, { useState, useRef, useCallback, useEffect, useMemo } from 'react'
+import {
+  View,
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
+  Alert,
+  TouchableOpacity,
+  Modal,
+  Pressable,
+  Dimensions
+} from 'react-native'
 import { useLocalSearchParams, useRouter } from 'expo-router'
+import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import Toast from 'react-native-toast-message'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { Colors } from '@/constants/theme'
+import { Colors, HEADER } from '@/constants/theme'
+import { Text } from '@/components/ui/text'
 import { useAuthStore } from '@/store'
 import {
   ChatHeader,
@@ -11,18 +26,24 @@ import {
   ChatInputBar,
   DateSeparator,
   MessageListSkeleton,
-  ForwardMessageModal
+  ForwardMessageModal,
+  GroupChatIntro
 } from '@/features/message/components'
-import type { FileAsset } from '@/features/message/components'
+import type { FileAsset, BusinessCardAsset } from '@/features/message/components'
 import {
   useInfiniteMessages,
   usePartnerConversation,
   useMarkAsRead,
-  useConversations
+  useConversations,
+  usePinnedMessages,
+  usePinMessage,
+  useUnpinMessage
 } from '@/features/message/queries'
 import { useChatWebSocket } from '@/features/message/hooks'
-import { MessageStatus, MessageType, type MessageResponse, type ConversationMemberResponse } from '@/features/message/schemas'
-import { normalizeDateTime } from '@/features/message/utils'
+import { MessageStatus, MessageType, type MessageResponse, type PinnedMessageInfo, type ConversationMemberResponse } from '@/features/message/schemas'
+import { parseBusinessCardContent, parseMessageDate, serializeBusinessCard } from '@/features/message/utils'
+import { messageApi } from '@/features/message/api'
+import { userApi } from '@/features/users/api/user.api'
 
 export default function ChatScreen() {
   const router = useRouter()
@@ -30,6 +51,7 @@ export default function ChatScreen() {
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
   const isDark = colorScheme === 'dark'
+  const insets = useSafeAreaInsets()
 
   const params = useLocalSearchParams<{
     id: string
@@ -52,29 +74,27 @@ export default function ChatScreen() {
   )
 
   const conversationId = directConversationId || partnerConversation?.id || ''
-  const conversationName = params.name || partnerConversation?.name || 'Chat'
-  const conversationAvatar = params.avatar || partnerConversation?.avatar
-  const isOnline = partnerConversation?.status === 'ONLINE'
-  const lastSeenAt = partnerConversation?.lastSeenAt
 
   // Build effective members list — fallback to partner from params when API members is missing
   const effectiveMembers = React.useMemo<ConversationMemberResponse[]>(() => {
     const base = partnerConversation?.members || []
     const partnerUserId = params.userId || (directConversationId ? '' : params.id)
+    const fallbackName = params.name || 'Chat'
+    const fallbackAvatar = params.avatar || null
     if (partnerUserId && !base.find((m) => m.userId === partnerUserId)) {
       return [
         ...base,
         {
           userId: partnerUserId,
-          fullName: conversationName,
-          avatar: conversationAvatar || null,
+          fullName: fallbackName,
+          avatar: fallbackAvatar,
           lastReadMessageId: null,
           role: null
         }
       ]
     }
     return base
-  }, [partnerConversation?.members, params.userId, params.id, directConversationId, conversationName, conversationAvatar])
+  }, [partnerConversation?.members, params.userId, params.id, params.name, params.avatar, directConversationId])
 
   // Messages
   const {
@@ -94,14 +114,53 @@ export default function ChatScreen() {
     isUploading
   } = useChatWebSocket()
   const markAsReadMutation = useMarkAsRead()
+  const pinMessageMutation = usePinMessage()
+  const unpinMessageMutation = useUnpinMessage()
   const { data: conversations = [] } = useConversations(0, 100, true)
+  const activeConversation = useMemo(
+    () => conversations.find((c) => c.id === conversationId),
+    [conversations, conversationId]
+  )
+
+  const resolvedConversation = activeConversation || partnerConversation
+  const isGroupConversation = !!resolvedConversation?.isGroup
+  const conversationName = params.name || resolvedConversation?.name || 'Chat'
+  const conversationAvatar = params.avatar || resolvedConversation?.avatar
+  const isOnline = resolvedConversation?.status === 'ONLINE'
+  const lastSeenAt = resolvedConversation?.lastSeenAt
+  const groupMembers = resolvedConversation?.members || []
+  const myGroupRole = String(groupMembers.find((m) => m.userId === currentUserId)?.role || 'MEMBER').toUpperCase()
+  const isMemberRole = myGroupRole === 'MEMBER'
+  const groupSettings = (resolvedConversation as any)?.settings || {}
+  const isMemberMessageLocked =
+    isGroupConversation &&
+    isMemberRole &&
+    groupSettings?.memberCanSendMessages === false
+  const groupSubtitle = isGroupConversation ? `${groupMembers.length || 0} thành viên` : undefined
+  const { data: pinnedMessages = [] } = usePinnedMessages(conversationId, !!conversationId)
 
   const [inputText, setInputText] = useState('')
   const [replyTo, setReplyTo] = useState<MessageResponse | null>(null)
   const [forwardMessage, setForwardMessage] = useState<MessageResponse | null>(null)
   const [pendingAttachments, setPendingAttachments] = useState<FileAsset[]>([])
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
+  const [showPinnedPanel, setShowPinnedPanel] = useState(false)
   const flatListRef = useRef<FlatList>(null)
+
+  const pinnedMessagesSorted = useMemo(() => {
+    return [...pinnedMessages].sort((a, b) => {
+      const dateA = parseMessageDate(a.pinnedAt)?.getTime() || 0
+      const dateB = parseMessageDate(b.pinnedAt)?.getTime() || 0
+      return dateB - dateA
+    })
+  }, [pinnedMessages])
+
+  const latestPinnedMessage = pinnedMessagesSorted[0] ?? null
+
+  const pinnedMessageIds = useMemo(
+    () => new Set(pinnedMessages.map((pin: PinnedMessageInfo) => pin.messageId)),
+    [pinnedMessages]
+  )
 
   // Flatten pages into message list (reversed for inverted FlatList)
   const messages: MessageResponse[] = messagesData?.pages.flatMap((page) => page.data) ?? []
@@ -126,6 +185,28 @@ export default function ChatScreen() {
       markAsReadMutation.mutate(conversationId)
     }
   }, [conversationId])
+
+  const getReplyContentForSend = useCallback((msg: MessageResponse) => {
+    if (msg.type === MessageType.IMAGE) {
+      const firstAttachment = msg.attachments?.[0]
+      return firstAttachment?.url || '[Hình ảnh]'
+    }
+
+    if (msg.type === MessageType.FILE) {
+      const firstAttachment = msg.attachments?.[0]
+      const fileName =
+        firstAttachment?.originalFileName ||
+        firstAttachment?.fileName ||
+        (typeof msg.content === 'string' ? msg.content : '')
+
+      if (fileName && fileName.trim()) {
+        return fileName
+      }
+      return '[File]'
+    }
+
+    return msg.content || ''
+  }, [])
 
   const handleSend = useCallback(() => {
     if (!conversationId) return
@@ -216,12 +297,255 @@ export default function ChatScreen() {
     setForwardMessage(message)
   }, [])
 
+  const handleSendBusinessCards = useCallback(
+    async (cards: BusinessCardAsset[]) => {
+      if (!conversationId || !cards.length) return
+
+      const resolvedCards = await Promise.all(
+        cards.map(async (card) => {
+          if (card.includePhone === false) {
+            return {
+              ...card,
+              phone: ''
+            }
+          }
+
+          if (card.phone?.trim()) return card
+          if (!card.userId) return card
+
+          try {
+            const response = await userApi.getUserById(card.userId)
+            const profile = response.data.data
+            const profilePhone = profile?.accountInfo?.phoneNumber || ''
+            return {
+              ...card,
+              phone: String(profilePhone || '').trim()
+            }
+          } catch {
+            return card
+          }
+        })
+      )
+
+      resolvedCards.forEach((card) => {
+        const qrValue = card.userId ? `bondhub://user/${card.userId}?name=${encodeURIComponent(card.name || '')}` : undefined
+        const payload = serializeBusinessCard({
+          userId: card.userId,
+          name: card.name,
+          phone: card.includePhone === false ? '' : (card.phone || ''),
+          avatar: card.avatar || null,
+          qrValue
+        })
+
+        wsSendMessage(conversationId, payload, null, false)
+      })
+    },
+    [conversationId, wsSendMessage]
+  )
+
+  const handleBusinessCardPress = useCallback(
+    (userId: string) => {
+      if (!userId) return
+      router.push(`/user-profile/${userId}` as any)
+    },
+    [router]
+  )
+
+  const handleBusinessCardMessagePress = useCallback(
+    (userId: string) => {
+      if (!userId) return
+      const sourceCard = messages
+        .map((m) => parseBusinessCardContent(m.content))
+        .find((card) => card?.userId === userId)
+
+      const nextName = sourceCard?.name || 'Chat'
+      const nextAvatar = sourceCard?.avatar || undefined
+
+      router.push({
+        pathname: '/chat/[id]',
+        params: {
+          id: userId,
+          userId,
+          name: nextName,
+          avatar: nextAvatar
+        }
+      } as any)
+    },
+    [messages, router]
+  )
+
+  const handleReplyMessagePress = useCallback(
+    (replyMessageId: string) => {
+      const targetIndex = messages.findIndex(
+        (m) => m.id === replyMessageId || m.clientMessageId === replyMessageId
+      )
+
+      if (targetIndex >= 0) {
+        flatListRef.current?.scrollToIndex({ index: targetIndex, animated: true, viewPosition: 0.5 })
+        return
+      }
+
+      if (hasNextPage && !isFetchingNextPage) {
+        fetchNextPage()
+      }
+    },
+    [messages, hasNextPage, isFetchingNextPage, fetchNextPage]
+  )
+
+  const getPinnedPreviewText = useCallback((pinned: PinnedMessageInfo | null) => {
+    if (!pinned) return ''
+
+    const content = (pinned.contentSnapshot || '').trim()
+    const businessCard = parseBusinessCardContent(content)
+
+    if (businessCard) {
+      return `[Danh thiếp] ${businessCard.name}`
+    }
+
+    if (pinned.messageType === MessageType.IMAGE || content === '[IMAGE]') {
+      return '[Hình ảnh]'
+    }
+
+    if (pinned.messageType === MessageType.FILE || content === '[FILE]') {
+      return content && content !== '[FILE]' ? `[File] ${content}` : '[File]'
+    }
+
+    return content || '[Tin nhắn]'
+  }, [])
+
+  const getPinnedOwnerName = useCallback(
+    (pinned: PinnedMessageInfo | null) => {
+      if (!pinned) return t('message.pinned.userFallback', { defaultValue: 'Người dùng' })
+
+      const sourceMessage = messages.find(
+        (m) => m.id === pinned.messageId || m.clientMessageId === pinned.messageId
+      )
+
+      const ownerName = sourceMessage?.senderName?.trim() || pinned.pinnedByName?.trim()
+      return ownerName || t('message.pinned.userFallback', { defaultValue: 'Người dùng' })
+    },
+    [messages, t]
+  )
+
+  const extractErrorMessage = useCallback((error: any, fallback: string) => {
+    const responseMessage = error?.response?.data?.message
+    const errorMessage = error?.message
+
+    if (typeof responseMessage === 'string' && responseMessage.trim()) {
+      return responseMessage.trim()
+    }
+    if (typeof errorMessage === 'string' && errorMessage.trim()) {
+      return errorMessage.trim()
+    }
+    return fallback
+  }, [])
+
+  const canPinMessage = useCallback((message: MessageResponse) => {
+    if (!message.id || message.id.startsWith('temp-')) return false
+    if (message.status === MessageStatus.REVOKED) return false
+    if (message.type === MessageType.SYSTEM || message.type === MessageType.JOIN || message.type === MessageType.LEAVE) {
+      return false
+    }
+    return true
+  }, [])
+
+  const handlePinMessage = useCallback(
+    (message: MessageResponse) => {
+      if (!conversationId) return
+
+      if (!canPinMessage(message)) {
+        Alert.alert(
+          t('message.pinned.unsupportedTitle', { defaultValue: 'Không thể ghim' }),
+          t('message.pinned.unsupportedDesc', { defaultValue: 'Tin nhắn này không hỗ trợ ghim' })
+        )
+        return
+      }
+
+      const isPinned = pinnedMessageIds.has(message.id)
+
+      if (!isPinned && pinnedMessagesSorted.length >= 3) {
+        Toast.show({
+          type: 'error',
+          text1: t('message.pinned.maxReachedTitle', { defaultValue: 'Không thể ghim' }),
+          text2: t('message.pinned.maxReachedDesc', { defaultValue: 'Chỉ được ghim tối đa 3 tin nhắn' }),
+          position: 'top',
+          topOffset: Math.max(80, Math.round(Dimensions.get('window').height * 0.44)),
+          visibilityTime: 2200
+        })
+        return
+      }
+
+      if (isPinned) {
+        unpinMessageMutation.mutate(
+          { conversationId, messageId: message.id },
+          {
+            onSuccess: () => {
+              Alert.alert(
+                t('message.pinned.unpinSuccessTitle', { defaultValue: 'Thành công' }),
+                t('message.pinned.unpinSuccessDesc', { defaultValue: 'Đã bỏ ghim tin nhắn' })
+              )
+            },
+            onError: (error) => {
+              Alert.alert(
+                t('message.pinned.unpinFailTitle', { defaultValue: 'Bỏ ghim thất bại' }),
+                extractErrorMessage(
+                  error,
+                  t('message.pinned.unpinFailDesc', { defaultValue: 'Không thể bỏ ghim tin nhắn' })
+                )
+              )
+            }
+          }
+        )
+        return
+      }
+
+      pinMessageMutation.mutate(
+        { conversationId, messageId: message.id },
+        {
+          onSuccess: () => {
+            Alert.alert(
+              t('message.pinned.pinSuccessTitle', { defaultValue: 'Thành công' }),
+              t('message.pinned.pinSuccessDesc', { defaultValue: 'Đã ghim tin nhắn' })
+            )
+          },
+          onError: (error) => {
+            Alert.alert(
+              t('message.pinned.pinFailTitle', { defaultValue: 'Ghim thất bại' }),
+              extractErrorMessage(error, t('message.pinned.pinFailDesc', { defaultValue: 'Không thể ghim tin nhắn' }))
+            )
+          }
+        }
+      )
+    },
+    [
+      canPinMessage,
+      conversationId,
+      extractErrorMessage,
+      pinMessageMutation,
+      pinnedMessageIds,
+      unpinMessageMutation
+    ]
+  )
+
+  const openPinnedPanel = useCallback(() => {
+    if (!latestPinnedMessage) return
+    setShowPinnedPanel(true)
+  }, [latestPinnedMessage])
+
+  const closePinnedPanel = useCallback(() => {
+    setShowPinnedPanel(false)
+  }, [])
+
   const handleSubmitForward = useCallback(
     (conversationIds: string[], note: string) => {
       if (!forwardMessage) return
 
+      const forwardedBusinessCard = parseBusinessCardContent(forwardMessage.content)
+
       conversationIds.forEach((targetConversationId) => {
-        if (forwardMessage.attachments?.length) {
+        if (forwardedBusinessCard) {
+          wsSendMessage(targetConversationId, forwardMessage.content || '', null, true)
+        } else if (forwardMessage.attachments?.length) {
           wsSendMessage(
             targetConversationId,
             forwardMessage.content || '',
@@ -252,9 +576,8 @@ export default function ChatScreen() {
   const getDateLabel = (dateStr: string | null): string => {
     if (!dateStr) return ''
     try {
-      const normalized = normalizeDateTime(dateStr)
-      if (!normalized) return ''
-      const d = new Date(normalized)
+      const d = parseMessageDate(dateStr)
+      if (!d) return ''
       const now = new Date()
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
       const yesterday = new Date(today.getTime() - 86400000)
@@ -276,8 +599,9 @@ export default function ChatScreen() {
     const next = messages[index + 1] // next = older in inverted list
     if (!current.createdAt || !next.createdAt) return false
     try {
-      const currentDate = new Date(normalizeDateTime(current.createdAt) || '')
-      const nextDate = new Date(normalizeDateTime(next.createdAt) || '')
+      const currentDate = parseMessageDate(current.createdAt)
+      const nextDate = parseMessageDate(next.createdAt)
+      if (!currentDate || !nextDate) return false
       // Show separator if messages are > 30 min apart
       return Math.abs(currentDate.getTime() - nextDate.getTime()) > 30 * 60 * 1000
     } catch {
@@ -292,25 +616,92 @@ export default function ChatScreen() {
       <ChatHeader
         name={conversationName}
         avatar={conversationAvatar}
-        isOnline={isOnline}
+        isOnline={isGroupConversation ? undefined : isOnline}
+        subtitle={groupSubtitle}
         lastSeenAt={lastSeenAt}
-        userId={partnerId}
+        userId={isGroupConversation ? undefined : partnerId}
         onProfilePress={() => {
-          if (partnerId) router.push(`/other-profile/${partnerId}` as any)
+          if (!isGroupConversation && partnerId) router.push(`/other-profile/${partnerId}` as any)
         }}
         onMenu={() => {
-          if (!partnerId) return
+          const targetId = isGroupConversation ? conversationId : partnerId
+          if (!targetId) return
           router.push({
             pathname: '/message-options' as any,
             params: {
-              id: partnerId,
+              id: targetId,
               name: conversationName,
-              isFriend: 'true',
+              isFriend: isGroupConversation ? 'false' : 'true',
               conversationId
             }
           })
         }}
       />
+
+      {!!latestPinnedMessage && !isLoading && (
+        <View style={{ paddingHorizontal: 10, paddingTop: 6, paddingBottom: 4, backgroundColor: chatBg }}>
+          <TouchableOpacity
+            activeOpacity={0.88}
+            onPress={openPinnedPanel}
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: 12,
+              flexDirection: 'row',
+              alignItems: 'center',
+              minHeight: 74,
+              paddingHorizontal: 12,
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 2 },
+              shadowOpacity: 0.12,
+              shadowRadius: 6,
+              elevation: 3
+            }}
+          >
+            <View
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: 16,
+                borderWidth: 1.2,
+                borderColor: '#36A7FF',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginRight: 10
+              }}
+            >
+              <Ionicons name='chatbubble-ellipses-outline' size={17} color='#36A7FF' />
+            </View>
+
+            <View style={{ flex: 1, paddingVertical: 8 }}>
+              <Text style={{ fontSize: 15, color: '#2B2B2B' }} numberOfLines={1}>
+                {getPinnedPreviewText(latestPinnedMessage)}
+              </Text>
+              <Text style={{ fontSize: 13, color: '#8A8A8A', marginTop: 2 }} numberOfLines={1}>
+                {t('message.pinned.owner', {
+                  defaultValue: 'Tin nhắn của {{name}}',
+                  name: getPinnedOwnerName(latestPinnedMessage)
+                })}
+              </Text>
+            </View>
+
+            <View style={{ width: 1, height: 38, backgroundColor: '#E4E4E4', marginHorizontal: 12 }} />
+
+            <View
+              style={{
+                width: 36,
+                height: 36,
+                borderRadius: 18,
+                borderWidth: 1.4,
+                borderColor: '#B8B8B8',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Ionicons name='chevron-down' size={18} color='#7D7D7D' />
+            </View>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
@@ -318,7 +709,9 @@ export default function ChatScreen() {
         keyboardVerticalOffset={0}
       >
         {isLoading ? (
-          <MessageListSkeleton />
+          <View style={{ flex: 1 }}>
+            <MessageListSkeleton includePinned />
+          </View>
         ) : (
           <FlatList
             ref={flatListRef}
@@ -327,16 +720,46 @@ export default function ChatScreen() {
             inverted
             contentContainerStyle={{ paddingVertical: 8 }}
             showsVerticalScrollIndicator={false}
+            onScrollToIndexFailed={(info) => {
+              setTimeout(() => {
+                flatListRef.current?.scrollToIndex({
+                  index: Math.min(info.index, messages.length - 1),
+                  animated: true,
+                  viewPosition: 0.5
+                })
+              }, 150)
+            }}
             onEndReached={() => {
               if (hasNextPage && !isFetchingNextPage) fetchNextPage()
             }}
             onEndReachedThreshold={0.3}
             ListFooterComponent={
-              isFetchingNextPage ? (
-                <View style={{ padding: 16, alignItems: 'center' }}>
-                  <ActivityIndicator size='small' color='#0068FF' />
-                </View>
-              ) : null
+              <>
+                {isGroupConversation ? (
+                  <GroupChatIntro
+                    groupName={conversationName}
+                    isDark={isDark}
+                    texts={{
+                      shareStory: t('message.groupIntro.shareStory'),
+                      createdByYou: t('message.groupIntro.createdByYou'),
+                      waveHello: t('message.groupIntro.waveHello'),
+                      qrJoin: t('message.groupIntro.qrJoin')
+                    }}
+                    members={
+                      (groupMembers || []).map((member) => ({
+                        userId: member.userId,
+                        fullName: member.fullName,
+                        avatar: member.avatar
+                      }))
+                    }
+                  />
+                ) : null}
+                {isFetchingNextPage ? (
+                  <View style={{ padding: 16, alignItems: 'center' }}>
+                    <ActivityIndicator size='small' color='#0068FF' />
+                  </View>
+                ) : null}
+              </>
             }
             renderItem={({ item, index }) => {
               const isOwn = item.senderId === currentUserId
@@ -356,29 +779,35 @@ export default function ChatScreen() {
                   <MessageBubble
                     message={item}
                     isOwn={isOwn}
+                    isPinned={!!item.id && pinnedMessageIds.has(item.id)}
                     isLatestOwnMessage={
                       !!latestOwnMessageKey &&
                       (item.id === latestOwnMessageKey || item.clientMessageId === latestOwnMessageKey)
                     }
                     showTime={showTime}
                     showAvatar={showAvatar}
-                    showSenderName={partnerConversation?.isGroup === true}
+                    showSenderName={isGroupConversation}
                     members={effectiveMembers}
-                    onAvatarPress={(userId) => router.push(`/user-profile/${userId}` as any)}
+                    onAvatarPress={(userId: string) => router.push(`/user-profile/${userId}` as any)}
                     onReply={handleReply}
+                    onReplyMessagePress={handleReplyMessagePress}
                     onRevoke={isOwn ? handleRevoke : undefined}
                     onDeleteForMe={handleDeleteForMe}
                     onForward={handleForward}
+                    onBusinessCardPress={handleBusinessCardPress}
+                    onBusinessCardMessagePress={handleBusinessCardMessagePress}
                     onScrollToMessage={scrollToMessage}
                     isHighlighted={!!item.id && item.id === highlightedMessageId}
+                    onPin={handlePinMessage}
                     onOpenMessageOptions={() => {
-                      if (!partnerId) return
+                      const targetId = isGroupConversation ? conversationId : partnerId
+                      if (!targetId) return
                       router.push({
                         pathname: '/message-options' as any,
                         params: {
-                          id: partnerId,
+                          id: targetId,
                           name: conversationName,
-                          isFriend: 'true',
+                          isFriend: isGroupConversation ? 'false' : 'true',
                           conversationId
                         }
                       })
@@ -390,20 +819,48 @@ export default function ChatScreen() {
           />
         )}
 
-        <ChatInputBar
-          value={inputText}
-          onChangeText={setInputText}
-          onSend={handleSend}
-          placeholder={t('message.inputPlaceholder')}
-          replyTo={replyTo}
-          onCancelReply={() => setReplyTo(null)}
-          onSendFile={handleSendFile}
-          onSendFileImmediate={handleSendFileImmediate}
-          selectedAttachments={pendingAttachments}
-          onRemoveAttachment={handleRemovePendingAttachment}
-          onClearAttachments={handleClearPendingAttachments}
-          isUploading={isUploading}
-        />
+        {!isMemberMessageLocked ? (
+          <ChatInputBar
+            value={inputText}
+            onChangeText={setInputText}
+            onSend={handleSend}
+            placeholder={t('message.inputPlaceholder')}
+            replyTo={replyTo}
+            onCancelReply={() => setReplyTo(null)}
+            onSendFile={handleSendFile}
+            onSendFileImmediate={handleSendFileImmediate}
+            selectedAttachments={pendingAttachments}
+            onRemoveAttachment={handleRemovePendingAttachment}
+            onClearAttachments={handleClearPendingAttachments}
+            isUploading={isUploading}
+            onSendBusinessCards={handleSendBusinessCards}
+          />
+        ) : (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 12,
+              paddingTop: 9,
+              paddingBottom: Math.max(insets.bottom, 8),
+              backgroundColor: isDark ? '#1F2733' : '#EAF3FF',
+              borderTopWidth: 0.5,
+              borderTopColor: isDark ? '#304055' : '#C9E0FF'
+            }}
+          >
+            <Ionicons name='information-circle' size={20} color={isDark ? '#2D9CFF' : '#1F75E8'} />
+            <Text style={{ marginLeft: 8, flex: 1, fontSize: 12.5, lineHeight: 18, color: isDark ? '#DCE8FA' : '#1F4E96' }}>
+              {t('message.groupSettings.lockedLead', { defaultValue: 'Chỉ ' })}
+              <Text style={{ color: isDark ? '#2D9CFF' : '#1F75E8', fontWeight: '700' }}>
+                {t('message.groupSettings.lockedManagersPhrase', { defaultValue: 'trưởng và phó nhóm' })}
+              </Text>
+              {t('message.groupSettings.lockedTail', { defaultValue: ' được gửi tin nhắn vào nhóm. ' })}
+              <Text style={{ color: isDark ? '#2D9CFF' : '#1F75E8', fontWeight: '700' }}>
+                {t('message.groupSettings.learnMore', { defaultValue: 'Tìm hiểu thêm' })}
+              </Text>
+            </Text>
+          </View>
+        )}
       </KeyboardAvoidingView>
 
       <ForwardMessageModal
@@ -413,6 +870,171 @@ export default function ChatScreen() {
         onClose={() => setForwardMessage(null)}
         onSubmit={handleSubmitForward}
       />
+
+      <Modal transparent visible={showPinnedPanel} animationType='fade' onRequestClose={closePinnedPanel}>
+        <Pressable
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.62)' }}
+          onPress={closePinnedPanel}
+        >
+          <Pressable onPress={() => {}} style={{ marginTop: 104 }}>
+            <View
+              style={{
+                marginHorizontal: 8,
+                backgroundColor: '#FFFFFF',
+                borderRadius: 12,
+                overflow: 'hidden'
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 19,
+                  color: '#232323',
+                  fontWeight: '700',
+                  paddingHorizontal: 14,
+                  paddingTop: 12,
+                  paddingBottom: 10
+                }}
+              >
+                {t('message.pinned.upcomingTitle', { defaultValue: 'Nhắc hẹn sắp tới' })}
+              </Text>
+              <View style={{ height: 1, backgroundColor: '#EBEBEB' }} />
+              <Text
+                style={{
+                  fontSize: 18,
+                  color: '#8A8F94',
+                  textAlign: 'center',
+                  paddingVertical: 16
+                }}
+              >
+                {t('message.pinned.upcomingEmpty', { defaultValue: 'Chưa có nhắc hẹn nào' })}
+              </Text>
+            </View>
+
+            <View
+              style={{
+                marginHorizontal: 8,
+                marginTop: 8,
+                backgroundColor: '#FFFFFF',
+                borderRadius: 12,
+                overflow: 'hidden'
+              }}
+            >
+              <Text
+                style={{
+                  fontSize: 19,
+                  color: '#232323',
+                  fontWeight: '700',
+                  paddingHorizontal: 14,
+                  paddingTop: 12,
+                  paddingBottom: 10
+                }}
+              >
+                {t('message.pinned.listTitle', { defaultValue: 'Danh sách ghim' })}
+              </Text>
+              <View style={{ height: 1, backgroundColor: '#EBEBEB' }} />
+
+              {pinnedMessagesSorted.map((pinned, index) => (
+                <TouchableOpacity
+                  key={`${pinned.messageId}-${index}`}
+                  activeOpacity={0.78}
+                  onPress={() => {
+                    closePinnedPanel()
+                    handleReplyMessagePress(pinned.messageId)
+                  }}
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    paddingHorizontal: 14,
+                    paddingVertical: 12,
+                    borderTopWidth: index === 0 ? 0 : 1,
+                    borderTopColor: '#F0F0F0'
+                  }}
+                >
+                  <View
+                    style={{
+                      width: 32,
+                      height: 32,
+                      borderRadius: 16,
+                      borderWidth: 1.2,
+                      borderColor: '#36A7FF',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginRight: 10
+                    }}
+                  >
+                    <Ionicons name='chatbubble-ellipses-outline' size={17} color='#36A7FF' />
+                  </View>
+
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 15, color: '#2B2B2B' }} numberOfLines={1}>
+                      {getPinnedPreviewText(pinned)}
+                    </Text>
+                    <Text style={{ fontSize: 13, color: '#8A8A8A', marginTop: 2 }} numberOfLines={1}>
+                      {t('message.pinned.owner', {
+                        defaultValue: 'Tin nhắn của {{name}}',
+                        name: getPinnedOwnerName(pinned)
+                      })}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+
+              {!pinnedMessagesSorted.length && (
+                <Text
+                  style={{
+                    fontSize: 17,
+                    color: '#8A8F94',
+                    textAlign: 'center',
+                    paddingVertical: 14
+                  }}
+                >
+                  {t('message.pinned.empty', { defaultValue: 'Chưa có tin nhắn ghim' })}
+                </Text>
+              )}
+            </View>
+
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginTop: 10,
+                marginHorizontal: 14,
+                paddingHorizontal: 6
+              }}
+            >
+              <TouchableOpacity
+                activeOpacity={0.75}
+                onPress={() =>
+                  Alert.alert(
+                    t('message.pinned.editComingSoonTitle', { defaultValue: 'Thông báo' }),
+                    t('message.pinned.editComingSoonDesc', {
+                      defaultValue: 'Chức năng chỉnh sửa danh sách ghim đang phát triển.'
+                    })
+                  )
+                }
+                style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }}
+              >
+                <Ionicons name='create-outline' size={28} color='#FFFFFF' style={{ marginRight: 8 }} />
+                <Text style={{ color: '#FFFFFF', fontSize: 20 }}>
+                  {t('message.pinned.edit', { defaultValue: 'Chỉnh sửa' })}
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                activeOpacity={0.75}
+                onPress={closePinnedPanel}
+                style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }}
+              >
+                <Text style={{ color: '#FFFFFF', fontSize: 20, marginRight: 6 }}>
+                  {t('message.pinned.collapse', { defaultValue: 'Thu gọn' })}
+                </Text>
+                <Ionicons name='chevron-up' size={24} color='#FFFFFF' />
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   )
 }

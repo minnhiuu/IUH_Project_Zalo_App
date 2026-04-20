@@ -11,6 +11,7 @@ import { useColorScheme } from '@/hooks/use-color-scheme'
 import { Colors } from '@/constants/theme'
 import { MessageType, type ConversationResponse, type MessageResponse } from '../schemas'
 import { getFileInfo } from './file-badge'
+import { parseBusinessCardContent } from '../utils'
 
 interface ForwardMessageModalProps {
   visible: boolean
@@ -77,6 +78,15 @@ export function ForwardMessageModal({
     onSubmit(selectedIds, note.trim())
     handleClose()
   }
+
+  const sourcePreview = useMemo(() => {
+    const raw = sourceMessage?.content || ''
+    const card = parseBusinessCardContent(raw)
+    if (card) {
+      return `${t('message.quickActions.businessCard', { defaultValue: 'Danh thiếp' })}: ${card.name}`
+    }
+    return raw || t('message.forward.notePlaceholder', { defaultValue: 'Nhập tin nhắn' })
+  }, [sourceMessage?.content, t])
 
   return (
     <Modal
