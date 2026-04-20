@@ -226,6 +226,15 @@ function ThemeAwareProviders() {
             <Stack.Screen name='message-options' />
             <Stack.Screen name='media-storage' />
             <Stack.Screen
+              name='story/capture'
+              options={{
+                presentation: 'fullScreenModal',
+                animation: 'slide_from_bottom',
+                gestureEnabled: false,
+                fullScreenGestureEnabled: false
+              }}
+            />
+            <Stack.Screen
               name='chat/[id]'
               options={{
                 animation: 'slide_from_right'
