@@ -1,0 +1,94 @@
+{
+  "reactions": {
+    "like": "Thích",
+    "love": "Yêu",
+    "haha": "Cười",
+    "wow": "Wow",
+    "sad": "Buồn",
+    "angry": "Tức giận",
+    "react": "Phản ứng"
+  },
+  "composer": {
+    "me": "Bạn đang nghĩ gì?",
+    "visibilityPublic": "Mọi người",
+    "placeholder": "Chia sẻ suy nghĩ của bạn...",
+    "image": "Ảnh",
+    "video": "Video",
+    "feeling": "Cảm xúc",
+    "post": "Đăng",
+    "prompt": "Bạn đang nghĩ gì?"
+  },
+  "post": {
+    "attachmentAlt": "Tệp đính kèm từ {{author}}",
+    "commentCount": "{{count}} bình luận",
+    "shareCount": "{{count}} lượt chia sẻ",
+    "comment": "Bình luận",
+    "share": "Chia sẻ",
+    "visibilityPublic": "Công khai",
+    "visibilityFriends": "Bạn bè",
+    "visibilityPrivate": "Riêng tư",
+    "sharedAPost": "đã chia sẻ một bài viết",
+    "justNow": "vừa xong",
+    "readMore": "Đọc thêm",
+    "showLess": "Ẩn bớt"
+  },
+  "commentsModal": {
+    "title": "Bình luận",
+    "subtitle": "0 bình luận",
+    "mediaAlt": "Tệp đính kèm bình luận",
+    "empty": "Chưa có bình luận nào",
+    "inputPlaceholder": "Viết bình luận...",
+    "closeAriaLabel": "Đóng bình luận",
+    "commentCount": "{{count}} bình luận",
+    "loadingComments": "Đang tải bình luận...",
+    "loadError": "Không thể tải bình luận",
+    "beFirstToComment": "Hãy là người đầu tiên bình luận",
+    "sortBy": "Sắp xếp theo",
+    "sortNewest": "Mới nhất",
+    "sortMostReacted": "Phản ứng nhiều nhất"
+  },
+  "reactionsModal": {
+    "title": "Phản ứng",
+    "subtitle": "Tất cả phản ứng",
+    "loading": "Đang tải phản ứng...",
+    "loadError": "Không thể tải phản ứng",
+    "emptyByType": "Chưa có phản ứng {{type}} nào",
+    "unknownUser": "Người dùng không xác định"
+  },
+  "commentItem": {
+    "reply": "Trả lời",
+    "edited": "đã chỉnh sửa",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "hideReplies": "Ẩn trả lời",
+    "viewReplies": "Xem {{count}} trả lời",
+    "loadingReplies": "Đang tải trả lời...",
+    "loadRepliesError": "Không thể tải trả lời",
+    "noReplies": "Chưa có trả lời nào"
+  },
+  "commentInput": {
+    "replyingTo": "Trả lời {{author}}",
+    "cancel": "Hủy",
+    "uploadPhoto": "Ảnh",
+    "uploadVideo": "Video",
+    "invalidMedia": "Loại phương tiện không hợp lệ",
+    "uploadFailed": "Tải lên không thành công"
+  },
+  "shareModal": {
+    "title": "Chia sẻ bài viết",
+    "captionPlaceholder": "Thêm chú thích...",
+    "shareNow": "Chia sẻ ngay",
+    "shareSuccess": "Bài viết đã được chia sẻ!",
+    "shareFailed": "Không thể chia sẻ bài viết",
+    "unknownUser": "Người dùng không xác định"
+  },
+  "launcher": {
+    "prompt": "Bạn đang nghĩ gì?",
+    "dialogTitle": "Tạo bài viết mới",
+    "dialogDescription": "Chia sẻ những suy nghĩ của bạn",
+    "createPost": "Tạo bài viết",
+    "draft": "Lưu bản nháp"
+  }
+}
