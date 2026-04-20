@@ -8,6 +8,16 @@ import { handleErrorApi } from '@/utils/error-handler'
 import type { MessageSendRequest, ConversationResponse, MessageResponse } from '../schemas'
 import type { InfiniteData } from '@tanstack/react-query'
 
+const invalidateGroupConversationScopes = (queryClient: ReturnType<typeof useQueryClient>, conversationId: string) => {
+  queryClient.invalidateQueries({ queryKey: messageKeys.messages(conversationId) })
+  queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+  queryClient.invalidateQueries({ queryKey: messageKeys.groupMembers(conversationId, '') })
+  queryClient.invalidateQueries({ queryKey: messageKeys.groupAdmins(conversationId) })
+  queryClient.invalidateQueries({ queryKey: messageKeys.joinRequests(conversationId) })
+  queryClient.invalidateQueries({ queryKey: messageKeys.blockedMembers(conversationId) })
+  queryClient.invalidateQueries({ queryKey: messageKeys.myGroups('', 'activity_newest', 'all', 0) })
+}
+
 export const useSendMessage = () => {
   return useMutation({
     mutationFn: (request: MessageSendRequest) => messageApi.sendMessage(request),
@@ -213,5 +223,303 @@ export const useUnpinMessage = () => {
     onError: (error: Error) => {
       handleErrorApi({ error })
     }
+  })
+}
+
+export const useClearConversationHistory = () => {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (conversationId: string) => messageApi.clearConversationHistory(conversationId),
+    onSuccess: (_data, conversationId) => {
+      queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
+        if (!oldData?.data || !Array.isArray(oldData.data)) return oldData
+        return {
+          ...oldData,
+          data: oldData.data.map((conv: ConversationResponse) =>
+            conv.id === conversationId
+              ? {
+                  ...conv,
+                  unreadCount: 0,
+                  lastMessage: null,
+                  lastMessageId: null,
+                  lastMessageTime: null,
+                  isLastMessageFromMe: null,
+                  lastMessageType: null,
+                  lastMessageStatus: null
+                }
+              : conv
+          )
+        }
+      })
+
+      queryClient.setQueryData(messageKeys.messages(conversationId), {
+        pages: [],
+        pageParams: [0]
+      })
+
+      queryClient.invalidateQueries({ queryKey: messageKeys.messages(conversationId) })
+      queryClient.invalidateQueries({ queryKey: messageKeys.media(conversationId, ['IMAGE', 'VIDEO']) })
+      queryClient.invalidateQueries({ queryKey: messageKeys.media(conversationId, ['FILE']) })
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+
+      Toast.show({
+        type: 'success',
+        text1: t('message.toast.clearHistorySuccess'),
+        visibilityTime: 2000
+      })
+    },
+    onError: (error: Error) => {
+      handleErrorApi({ error })
+    }
+  })
+}
+
+export const useDeleteConversation = () => {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (conversationId: string) => messageApi.deleteConversation(conversationId),
+    onSuccess: (_data, conversationId) => {
+      queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
+        if (!oldData?.data || !Array.isArray(oldData.data)) return oldData
+        return {
+          ...oldData,
+          data: oldData.data.filter((conv: ConversationResponse) => conv.id !== conversationId)
+        }
+      })
+      queryClient.removeQueries({ queryKey: messageKeys.messages(conversationId) })
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+
+      Toast.show({
+        type: 'success',
+        text1: t('message.toast.deleteConversationSuccess'),
+        visibilityTime: 2000
+      })
+    },
+    onError: (error: Error) => {
+      handleErrorApi({ error })
+    }
+  })
+}
+
+export const useCreateGroupConversation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: messageApi.createGroupConversation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+      queryClient.invalidateQueries({ queryKey: messageKeys.myGroups('', 'activity_newest', 'all', 0) })
+    },
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useSendGroupInvites = () => {
+  return useMutation({
+    mutationFn: ({ conversationId, userIds }: { conversationId: string; userIds: string[] }) =>
+      messageApi.sendGroupInvites(conversationId, userIds),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useUpdateGroupName = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, name }: { conversationId: string; name: string }) =>
+      messageApi.updateGroupName(conversationId, name),
+    onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useUpdateGroupAvatar = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, uri, mimeType, fileName }: { conversationId: string; uri: string; mimeType: string; fileName: string }) =>
+      messageApi.updateGroupAvatar(conversationId, uri, mimeType, fileName),
+    onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useDisbandGroup = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (conversationId: string) => messageApi.disbandGroup(conversationId),
+    onSuccess: (_data, conversationId) => {
+      queryClient.removeQueries({ queryKey: messageKeys.messages(conversationId) })
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+      queryClient.invalidateQueries({ queryKey: messageKeys.myGroups('', 'activity_newest', 'all', 0) })
+    },
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useLeaveGroup = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, transferOwnershipToUserId }: { conversationId: string; transferOwnershipToUserId?: string }) =>
+      messageApi.leaveGroup(conversationId, { transferOwnershipToUserId }),
+    onSuccess: (_data, variables) => {
+      queryClient.removeQueries({ queryKey: messageKeys.messages(variables.conversationId) })
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+      queryClient.invalidateQueries({ queryKey: messageKeys.myGroups('', 'activity_newest', 'all', 0) })
+    },
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useAddMembersToGroup = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, memberIds }: { conversationId: string; memberIds: string[] }) =>
+      messageApi.addMembersToGroup(conversationId, memberIds),
+    onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useRemoveMemberFromGroup = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, targetUserId, blockFromGroup }: { conversationId: string; targetUserId: string; blockFromGroup?: boolean }) =>
+      messageApi.removeMemberFromGroup(conversationId, targetUserId, blockFromGroup),
+    onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const usePromoteToAdmin = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, targetUserId }: { conversationId: string; targetUserId: string }) =>
+      messageApi.promoteToAdmin(conversationId, targetUserId),
+    onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useDemoteFromAdmin = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, targetUserId }: { conversationId: string; targetUserId: string }) =>
+      messageApi.demoteFromAdmin(conversationId, targetUserId),
+    onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useTransferOwner = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, targetUserId }: { conversationId: string; targetUserId: string }) =>
+      messageApi.transferOwner(conversationId, targetUserId),
+    onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useUpdateGroupSettings = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, settings }: { conversationId: string; settings: Record<string, unknown> }) =>
+      messageApi.updateGroupSettings(conversationId, settings),
+    onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useRefreshJoinLink = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (conversationId: string) => messageApi.refreshJoinLink(conversationId),
+    onSuccess: (_data, conversationId) => invalidateGroupConversationScopes(queryClient, conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useGenerateJoinLink = () => {
+  return useMutation({
+    mutationFn: (conversationId: string) => messageApi.generateJoinLink(conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useJoinGroupByLink = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ token, joinAnswer }: { token: string; joinAnswer?: string }) =>
+      messageApi.joinByLink(token, joinAnswer),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+      queryClient.invalidateQueries({ queryKey: messageKeys.myGroups('', 'activity_newest', 'all', 0) })
+    },
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useUpdateJoinQuestion = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, question }: { conversationId: string; question: string }) =>
+      messageApi.updateJoinQuestion(conversationId, question),
+    onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useApproveJoinRequest = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, requestId }: { conversationId: string; requestId: string }) =>
+      messageApi.approveJoinRequest(conversationId, requestId),
+    onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useRejectJoinRequest = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, requestId }: { conversationId: string; requestId: string }) =>
+      messageApi.rejectJoinRequest(conversationId, requestId),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: messageKeys.joinRequests(variables.conversationId) })
+      queryClient.invalidateQueries({ queryKey: messageKeys.messages(variables.conversationId) })
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+    },
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useCancelMyJoinRequest = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (conversationId: string) => messageApi.cancelMyJoinRequest(conversationId),
+    onSuccess: (_data, conversationId) => invalidateGroupConversationScopes(queryClient, conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useBlockMemberFromGroup = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, targetUserId }: { conversationId: string; targetUserId: string }) =>
+      messageApi.blockMemberFromGroup(conversationId, targetUserId),
+    onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useUnblockMemberFromGroup = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, targetUserId }: { conversationId: string; targetUserId: string }) =>
+      messageApi.unblockMemberFromGroup(conversationId, targetUserId),
+    onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
   })
 }

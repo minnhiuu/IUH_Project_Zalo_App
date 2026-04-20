@@ -26,7 +26,8 @@ import {
   ChatInputBar,
   DateSeparator,
   MessageListSkeleton,
-  ForwardMessageModal
+  ForwardMessageModal,
+  GroupChatIntro
 } from '@/features/message/components'
 import type { FileAsset, BusinessCardAsset } from '@/features/message/components'
 import {
@@ -73,29 +74,27 @@ export default function ChatScreen() {
   )
 
   const conversationId = directConversationId || partnerConversation?.id || ''
-  const conversationName = params.name || partnerConversation?.name || 'Chat'
-  const conversationAvatar = params.avatar || partnerConversation?.avatar
-  const isOnline = partnerConversation?.status === 'ONLINE'
-  const lastSeenAt = partnerConversation?.lastSeenAt
 
   // Build effective members list — fallback to partner from params when API members is missing
   const effectiveMembers = React.useMemo<ConversationMemberResponse[]>(() => {
     const base = partnerConversation?.members || []
     const partnerUserId = params.userId || (directConversationId ? '' : params.id)
+    const fallbackName = params.name || 'Chat'
+    const fallbackAvatar = params.avatar || null
     if (partnerUserId && !base.find((m) => m.userId === partnerUserId)) {
       return [
         ...base,
         {
           userId: partnerUserId,
-          fullName: conversationName,
-          avatar: conversationAvatar || null,
+          fullName: fallbackName,
+          avatar: fallbackAvatar,
           lastReadMessageId: null,
           role: null
         }
       ]
     }
     return base
-  }, [partnerConversation?.members, params.userId, params.id, directConversationId, conversationName, conversationAvatar])
+  }, [partnerConversation?.members, params.userId, params.id, params.name, params.avatar, directConversationId])
 
   // Messages
   const {
@@ -118,6 +117,26 @@ export default function ChatScreen() {
   const pinMessageMutation = usePinMessage()
   const unpinMessageMutation = useUnpinMessage()
   const { data: conversations = [] } = useConversations(0, 100, true)
+  const activeConversation = useMemo(
+    () => conversations.find((c) => c.id === conversationId),
+    [conversations, conversationId]
+  )
+
+  const resolvedConversation = activeConversation || partnerConversation
+  const isGroupConversation = !!resolvedConversation?.isGroup
+  const conversationName = params.name || resolvedConversation?.name || 'Chat'
+  const conversationAvatar = params.avatar || resolvedConversation?.avatar
+  const isOnline = resolvedConversation?.status === 'ONLINE'
+  const lastSeenAt = resolvedConversation?.lastSeenAt
+  const groupMembers = resolvedConversation?.members || []
+  const myGroupRole = String(groupMembers.find((m) => m.userId === currentUserId)?.role || 'MEMBER').toUpperCase()
+  const isMemberRole = myGroupRole === 'MEMBER'
+  const groupSettings = (resolvedConversation as any)?.settings || {}
+  const isMemberMessageLocked =
+    isGroupConversation &&
+    isMemberRole &&
+    groupSettings?.memberCanSendMessages === false
+  const groupSubtitle = isGroupConversation ? `${groupMembers.length || 0} thành viên` : undefined
   const { data: pinnedMessages = [] } = usePinnedMessages(conversationId, !!conversationId)
 
   const [inputText, setInputText] = useState('')
@@ -597,20 +616,22 @@ export default function ChatScreen() {
       <ChatHeader
         name={conversationName}
         avatar={conversationAvatar}
-        isOnline={isOnline}
+        isOnline={isGroupConversation ? undefined : isOnline}
+        subtitle={groupSubtitle}
         lastSeenAt={lastSeenAt}
-        userId={partnerId}
+        userId={isGroupConversation ? undefined : partnerId}
         onProfilePress={() => {
-          if (partnerId) router.push(`/other-profile/${partnerId}` as any)
+          if (!isGroupConversation && partnerId) router.push(`/other-profile/${partnerId}` as any)
         }}
         onMenu={() => {
-          if (!partnerId) return
+          const targetId = isGroupConversation ? conversationId : partnerId
+          if (!targetId) return
           router.push({
             pathname: '/message-options' as any,
             params: {
-              id: partnerId,
+              id: targetId,
               name: conversationName,
-              isFriend: 'true',
+              isFriend: isGroupConversation ? 'false' : 'true',
               conversationId
             }
           })
@@ -713,11 +734,32 @@ export default function ChatScreen() {
             }}
             onEndReachedThreshold={0.3}
             ListFooterComponent={
-              isFetchingNextPage ? (
-                <View style={{ padding: 16, alignItems: 'center' }}>
-                  <ActivityIndicator size='small' color='#0068FF' />
-                </View>
-              ) : null
+              <>
+                {isGroupConversation ? (
+                  <GroupChatIntro
+                    groupName={conversationName}
+                    isDark={isDark}
+                    texts={{
+                      shareStory: t('message.groupIntro.shareStory'),
+                      createdByYou: t('message.groupIntro.createdByYou'),
+                      waveHello: t('message.groupIntro.waveHello'),
+                      qrJoin: t('message.groupIntro.qrJoin')
+                    }}
+                    members={
+                      (groupMembers || []).map((member) => ({
+                        userId: member.userId,
+                        fullName: member.fullName,
+                        avatar: member.avatar
+                      }))
+                    }
+                  />
+                ) : null}
+                {isFetchingNextPage ? (
+                  <View style={{ padding: 16, alignItems: 'center' }}>
+                    <ActivityIndicator size='small' color='#0068FF' />
+                  </View>
+                ) : null}
+              </>
             }
             renderItem={({ item, index }) => {
               const isOwn = item.senderId === currentUserId
@@ -744,7 +786,7 @@ export default function ChatScreen() {
                     }
                     showTime={showTime}
                     showAvatar={showAvatar}
-                    showSenderName={partnerConversation?.isGroup === true}
+                    showSenderName={isGroupConversation}
                     members={effectiveMembers}
                     onAvatarPress={(userId: string) => router.push(`/user-profile/${userId}` as any)}
                     onReply={handleReply}
@@ -758,13 +800,14 @@ export default function ChatScreen() {
                     isHighlighted={!!item.id && item.id === highlightedMessageId}
                     onPin={handlePinMessage}
                     onOpenMessageOptions={() => {
-                      if (!partnerId) return
+                      const targetId = isGroupConversation ? conversationId : partnerId
+                      if (!targetId) return
                       router.push({
                         pathname: '/message-options' as any,
                         params: {
-                          id: partnerId,
+                          id: targetId,
                           name: conversationName,
-                          isFriend: 'true',
+                          isFriend: isGroupConversation ? 'false' : 'true',
                           conversationId
                         }
                       })
@@ -776,21 +819,48 @@ export default function ChatScreen() {
           />
         )}
 
-        <ChatInputBar
-          value={inputText}
-          onChangeText={setInputText}
-          onSend={handleSend}
-          placeholder={t('message.inputPlaceholder')}
-          replyTo={replyTo}
-          onCancelReply={() => setReplyTo(null)}
-          onSendFile={handleSendFile}
-          onSendFileImmediate={handleSendFileImmediate}
-          selectedAttachments={pendingAttachments}
-          onRemoveAttachment={handleRemovePendingAttachment}
-          onClearAttachments={handleClearPendingAttachments}
-          isUploading={isUploading}
-          onSendBusinessCards={handleSendBusinessCards}
-        />
+        {!isMemberMessageLocked ? (
+          <ChatInputBar
+            value={inputText}
+            onChangeText={setInputText}
+            onSend={handleSend}
+            placeholder={t('message.inputPlaceholder')}
+            replyTo={replyTo}
+            onCancelReply={() => setReplyTo(null)}
+            onSendFile={handleSendFile}
+            onSendFileImmediate={handleSendFileImmediate}
+            selectedAttachments={pendingAttachments}
+            onRemoveAttachment={handleRemovePendingAttachment}
+            onClearAttachments={handleClearPendingAttachments}
+            isUploading={isUploading}
+            onSendBusinessCards={handleSendBusinessCards}
+          />
+        ) : (
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 12,
+              paddingTop: 9,
+              paddingBottom: Math.max(insets.bottom, 8),
+              backgroundColor: isDark ? '#1F2733' : '#EAF3FF',
+              borderTopWidth: 0.5,
+              borderTopColor: isDark ? '#304055' : '#C9E0FF'
+            }}
+          >
+            <Ionicons name='information-circle' size={20} color={isDark ? '#2D9CFF' : '#1F75E8'} />
+            <Text style={{ marginLeft: 8, flex: 1, fontSize: 12.5, lineHeight: 18, color: isDark ? '#DCE8FA' : '#1F4E96' }}>
+              {t('message.groupSettings.lockedLead', { defaultValue: 'Chỉ ' })}
+              <Text style={{ color: isDark ? '#2D9CFF' : '#1F75E8', fontWeight: '700' }}>
+                {t('message.groupSettings.lockedManagersPhrase', { defaultValue: 'trưởng và phó nhóm' })}
+              </Text>
+              {t('message.groupSettings.lockedTail', { defaultValue: ' được gửi tin nhắn vào nhóm. ' })}
+              <Text style={{ color: isDark ? '#2D9CFF' : '#1F75E8', fontWeight: '700' }}>
+                {t('message.groupSettings.learnMore', { defaultValue: 'Tìm hiểu thêm' })}
+              </Text>
+            </Text>
+          </View>
+        )}
       </KeyboardAvoidingView>
 
       <ForwardMessageModal

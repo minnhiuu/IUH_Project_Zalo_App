@@ -271,21 +271,54 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
             queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
               if (!oldData) return oldData
               const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
-              if (conversations.find((c: ConversationResponse) => c.id === newConv.id)) return oldData
-              const newList = [newConv, ...conversations].sort(
+              const existingIdx = conversations.findIndex((c: ConversationResponse) => c.id === newConv.id)
+              const nextConversations =
+                existingIdx >= 0
+                  ? [
+                      {
+                        ...conversations[existingIdx],
+                        ...newConv,
+                        // Keep members from cache if update payload is partial.
+                        members: Array.isArray(newConv.members) ? newConv.members : conversations[existingIdx].members
+                      },
+                      ...conversations.filter((_, i) => i !== existingIdx)
+                    ]
+                  : [newConv, ...conversations]
+
+              const newList = nextConversations.sort(
                 (a: any, b: any) => {
                   const bTime = parseMessageDate(b.lastMessageTime)?.getTime() || 0
                   const aTime = parseMessageDate(a.lastMessageTime)?.getTime() || 0
                   return bTime - aTime
                 }
               )
+
+              // Match web behavior: update sidebars relying on join requests/member lists.
+              queryClient.invalidateQueries({ queryKey: messageKeys.groupMembers(newConv.id, '') })
+              queryClient.invalidateQueries({ queryKey: messageKeys.joinRequests(newConv.id) })
+
               return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
             })
           } else if (newConv.type === 'REFRESH') {
             queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+            queryClient.invalidateQueries({ queryKey: [...messageKeys.all, 'join-requests'] })
           }
         } catch {
           queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+        }
+      })
+
+      // ────────── /queue/join-requests ──────────
+      client.subscribe('/user/queue/join-requests', (payload) => {
+        try {
+          const update = JSON.parse(payload.body)
+          if (!update?.conversationId) return
+          queryClient.invalidateQueries({ queryKey: messageKeys.joinRequests(update.conversationId) })
+          queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+          queryClient.invalidateQueries({ queryKey: messageKeys.groupMembers(update.conversationId, '') })
+          queryClient.invalidateQueries({ queryKey: messageKeys.messages(update.conversationId) })
+        } catch {
+          // ignore invalid payload
         }
       })
 

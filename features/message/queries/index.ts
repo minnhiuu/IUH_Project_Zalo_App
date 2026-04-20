@@ -1,12 +1,54 @@
 export { messageKeys } from './keys'
 
-export { useConversations, useMessages, useInfiniteMessages, usePartnerConversation, usePinnedMessages, useMediaMessages } from './use-queries'
+export {
+	useConversations,
+	useMessages,
+	useInfiniteMessages,
+	usePartnerConversation,
+	usePinnedMessages,
+	useMediaMessages,
+	useFriendsDirectory,
+	useSearchMembersInfinite,
+	useGroupMembersInfinite,
+	useGroupAdminsInfinite,
+	useAdminCandidatesInfinite,
+	useJoinPreview,
+	useJoinRequestsInfinite,
+	useBlockedMembersInfinite,
+	useBlockCandidatesInfinite,
+	useMyGroups
+} from './use-queries'
 
 export {
 	useSendMessage,
 	useMarkAsRead,
 	useRevokeMessage,
-	useDeleteMessageForMe, useToggleReaction, useRemoveAllMyReactions,
+	useDeleteMessageForMe,
+	useToggleReaction,
+	useRemoveAllMyReactions,
+	useClearConversationHistory,
+	useDeleteConversation,
 	usePinMessage,
-	useUnpinMessage
+	useUnpinMessage,
+	useCreateGroupConversation,
+	useSendGroupInvites,
+	useUpdateGroupName,
+	useUpdateGroupAvatar,
+	useDisbandGroup,
+	useLeaveGroup,
+	useAddMembersToGroup,
+	useRemoveMemberFromGroup,
+	usePromoteToAdmin,
+	useDemoteFromAdmin,
+	useTransferOwner,
+	useUpdateGroupSettings,
+	useRefreshJoinLink,
+	useGenerateJoinLink,
+	useJoinGroupByLink,
+	useUpdateJoinQuestion,
+	useApproveJoinRequest,
+	useRejectJoinRequest,
+	useCancelMyJoinRequest,
+	useBlockMemberFromGroup,
+	useUnblockMemberFromGroup
 } from './use-mutations'

@@ -83,10 +83,15 @@ export const API_ENDPOINTS = {
   },
   MESSAGE: {
     CONVERSATIONS: '/messages/conversations',
+    DELETE_CONVERSATION: (conversationId: string) => `/messages/conversations/${conversationId}`,
+    CLEAR_HISTORY: (conversationId: string) => `/messages/conversations/${conversationId}/clear-history`,
+    GROUPS: '/messages/conversations/groups',
+    GROUP_INVITES: (conversationId: string) => `/messages/conversations/groups/${conversationId}/invites`,
     MESSAGES: (conversationId: string) => `/messages/conversations/${conversationId}/messages`,
     SEND: (conversationId: string) => `/messages/conversations/${conversationId}/messages`,
     PARTNER_CONVERSATION: (partnerId: string) => `/messages/conversations/partner/${partnerId}`,
     MARK_READ: (conversationId: string) => `/messages/conversations/${conversationId}/read`,
+    UNREAD_ANCHOR: (conversationId: string) => `/messages/conversations/${conversationId}/unread-anchor`,
     PINS: (conversationId: string) => `/messages/conversations/${conversationId}/pins`,
     PIN_MESSAGE: (conversationId: string, messageId: string) =>
       `/messages/conversations/${conversationId}/messages/${messageId}/pin`,
@@ -96,7 +101,47 @@ export const API_ENDPOINTS = {
     DELETE_FOR_ME: (messageId: string) => `/messages/me/${messageId}`,
     TOGGLE_REACTION: (messageId: string) => `/messages/messages/${messageId}/reactions`,
     REMOVE_REACTIONS: (messageId: string) => `/messages/messages/${messageId}/reactions/me`,
-    MEDIA: (conversationId: string) => `/messages/conversations/${conversationId}/media`
+    MEDIA: (conversationId: string) => `/messages/conversations/${conversationId}/media`,
+    SEEN_MEMBERS: (conversationId: string, messageId: string) =>
+      `/messages/conversations/${conversationId}/messages/${messageId}/seen-members`,
+    UPDATE_GROUP_NAME: (conversationId: string) => `/messages/conversations/${conversationId}/name`,
+    UPDATE_GROUP_AVATAR: (conversationId: string) => `/messages/conversations/${conversationId}/avatar`,
+    DISBAND_GROUP: (conversationId: string) => `/messages/conversations/${conversationId}/groups`,
+    LEAVE_GROUP: (conversationId: string) => `/messages/conversations/${conversationId}/leave`,
+    FRIENDS_DIRECTORY: '/messages/conversations/friends-directory',
+    SEARCH_MEMBERS: '/messages/conversations/search-members',
+    ADD_MEMBERS: (conversationId: string) => `/messages/conversations/${conversationId}/members`,
+    GROUP_MEMBERS: (conversationId: string) => `/messages/conversations/${conversationId}/group-members`,
+    REMOVE_MEMBER: (conversationId: string, targetUserId: string) =>
+      `/messages/conversations/${conversationId}/members/${targetUserId}`,
+    PROMOTE_ADMIN: (conversationId: string, targetUserId: string) =>
+      `/messages/conversations/${conversationId}/members/${targetUserId}/promote`,
+    DEMOTE_ADMIN: (conversationId: string, targetUserId: string) =>
+      `/messages/conversations/${conversationId}/members/${targetUserId}/demote`,
+    TRANSFER_OWNER: (conversationId: string, targetUserId: string) =>
+      `/messages/conversations/${conversationId}/transfer-owner/${targetUserId}`,
+    GROUP_ADMINS: (conversationId: string) => `/messages/conversations/${conversationId}/group-admins`,
+    ADMIN_CANDIDATES: (conversationId: string) => `/messages/conversations/${conversationId}/admin-candidates`,
+    UPDATE_GROUP_SETTINGS: (conversationId: string) => `/messages/conversations/${conversationId}/settings`,
+    REFRESH_JOIN_LINK: (conversationId: string) => `/messages/conversations/${conversationId}/join-link/refresh`,
+    GENERATE_JOIN_LINK: (conversationId: string) => `/messages/conversations/${conversationId}/join-link`,
+    JOIN_BY_LINK: (token: string) => `/messages/conversations/join/${token}`,
+    JOIN_PREVIEW: (token: string) => `/messages/conversations/join/${token}/preview`,
+    UPDATE_JOIN_QUESTION: (conversationId: string) => `/messages/conversations/${conversationId}/join-question`,
+    JOIN_REQUESTS: (conversationId: string) => `/messages/conversations/${conversationId}/join-requests`,
+    APPROVE_JOIN_REQUEST: (conversationId: string, requestId: string) =>
+      `/messages/conversations/${conversationId}/join-requests/${requestId}/approve`,
+    REJECT_JOIN_REQUEST: (conversationId: string, requestId: string) =>
+      `/messages/conversations/${conversationId}/join-requests/${requestId}/reject`,
+    CANCEL_MY_JOIN_REQUEST: (conversationId: string) =>
+      `/messages/conversations/${conversationId}/join-requests/me`,
+    BLOCK_MEMBER: (conversationId: string, targetUserId: string) =>
+      `/messages/conversations/${conversationId}/block/${targetUserId}`,
+    UNBLOCK_MEMBER: (conversationId: string, targetUserId: string) =>
+      `/messages/conversations/${conversationId}/block/${targetUserId}`,
+    BLOCKED_MEMBERS: (conversationId: string) => `/messages/conversations/${conversationId}/blocked-members`,
+    BLOCK_CANDIDATES: (conversationId: string) => `/messages/conversations/${conversationId}/block-candidates`,
+    MY_GROUPS: '/messages/conversations/groups/mine'
   },
   FILE: {
     UPLOAD: '/files/upload'

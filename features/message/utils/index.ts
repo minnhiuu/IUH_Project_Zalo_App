@@ -7,3 +7,12 @@ export {
 	parseBusinessCardContent,
 	type BusinessCardPayload
 } from './business-card'
+export {
+	GROUP_LINK_PREFIX,
+	getGroupLinkWebOrigin,
+	buildGroupLinkUrl,
+	serializeGroupLinkContent,
+	parseGroupLinkContent,
+	parseGroupLinkToken,
+	type GroupLinkPayload
+} from './group-link'

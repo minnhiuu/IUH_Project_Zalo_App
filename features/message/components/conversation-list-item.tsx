@@ -1,5 +1,6 @@
 import React from 'react'
 import { View, TouchableOpacity } from 'react-native'
+import { Image as ExpoImage } from 'expo-image'
 import { Text } from '@/components/ui/text'
 import { UserAvatar } from '@/components/common/user-avatar'
 import { useColorScheme } from '@/hooks/use-color-scheme'
@@ -14,6 +15,109 @@ interface ConversationListItemProps {
   conversation: ConversationResponse
   onPress: () => void
   onLongPress?: () => void
+}
+
+function AvatarCell({ uri, label, size, left, top }: { uri?: string | null; label: string; size: number; left: number; top: number }) {
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        left,
+        top,
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        overflow: 'hidden',
+        backgroundColor: '#E5E7EB',
+        borderWidth: 1,
+        borderColor: '#FFFFFF',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      {uri ? (
+        <ExpoImage source={{ uri }} style={{ width: '100%', height: '100%' }} contentFit='cover' />
+      ) : (
+        <Text style={{ fontSize: 10, fontWeight: '700', color: '#475569' }} numberOfLines={1}>
+          {(label || 'U').slice(0, 2).toUpperCase()}
+        </Text>
+      )}
+    </View>
+  )
+}
+
+function GroupConversationAvatar({ conversation }: { conversation: ConversationResponse }) {
+  const members = (conversation.members || []).slice(0, 8)
+  const count = members.length
+  const visible = members.slice(0, 4)
+  const extra = Math.max(count - 4, 0)
+
+  if (count === 0) {
+    return <UserAvatar source={conversation.avatar} name={conversation.name || 'Group'} size='xl' />
+  }
+
+  if (count < 3) {
+    return <UserAvatar source={visible[0]?.avatar || conversation.avatar} name={conversation.name || 'Group'} size='xl' />
+  }
+
+  const threePos = [
+    { left: 6, top: 4, size: 23 },
+    { left: 24, top: 4, size: 23 },
+    { left: 15, top: 24, size: 23 }
+  ]
+  const fourPos = [
+    { left: 4, top: 4, size: 21 },
+    { left: 27, top: 4, size: 21 },
+    { left: 4, top: 27, size: 21 },
+    { left: 27, top: 27, size: 21 }
+  ]
+
+  const layout = count === 3 ? threePos : fourPos
+  const renderMembers = count === 3 ? visible.slice(0, 3) : visible.slice(0, 4)
+
+  return (
+    <View
+      style={{
+        width: 52,
+        height: 52,
+        borderRadius: 26,
+        backgroundColor: '#F1F5F9',
+        overflow: 'hidden',
+        position: 'relative'
+      }}
+    >
+      {renderMembers.map((m, idx) => (
+        <AvatarCell
+          key={`${m.userId}-${idx}`}
+          uri={m.avatar}
+          label={m.fullName || 'U'}
+          size={layout[idx].size}
+          left={layout[idx].left}
+          top={layout[idx].top}
+        />
+      ))}
+      {extra > 0 && (
+        <View
+          style={{
+            position: 'absolute',
+            right: 2,
+            bottom: 2,
+            minWidth: 20,
+            height: 20,
+            borderRadius: 10,
+            paddingHorizontal: 5,
+            backgroundColor: '#0F172A',
+            borderWidth: 1,
+            borderColor: '#FFFFFF',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
+        >
+          <Text style={{ fontSize: 10, fontWeight: '700', color: '#FFFFFF' }}>+{extra}</Text>
+        </View>
+      )}
+    </View>
+  )
 }
 
 export function ConversationListItem({ conversation, onPress, onLongPress }: ConversationListItemProps) {
@@ -114,7 +218,11 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
     >
       {/* Avatar */}
       <View style={{ marginRight: 12, paddingTop: 2 }}>
-        <UserAvatar source={conversation.avatar} name={conversation.name || ''} size='xl' />
+        {conversation.isGroup && !conversation.avatar ? (
+          <GroupConversationAvatar conversation={conversation} />
+        ) : (
+          <UserAvatar source={conversation.avatar} name={conversation.name || ''} size='xl' />
+        )}
       </View>
 
       {/* Content */}

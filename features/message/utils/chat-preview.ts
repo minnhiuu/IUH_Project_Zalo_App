@@ -1,5 +1,6 @@
 import { MessageType, MessageStatus } from '../schemas/message.schema'
 import { parseBusinessCardContent } from './business-card'
+import { parseGroupLinkContent } from './group-link'
 
 interface PreviewData {
   content?: string | null
@@ -23,6 +24,11 @@ export const formatPreview = (
   const businessCard = parseBusinessCardContent(displayContent)
   if (businessCard) {
     displayContent = `[Danh thiếp] ${businessCard.name}`
+  }
+
+  const groupLink = parseGroupLinkContent(displayContent)
+  if (groupLink) {
+    displayContent = `[Link nhóm] ${groupLink.groupName || ''}`.trim()
   }
 
   if (data.type === MessageType.IMAGE || displayContent === '[IMAGE]') {

@@ -71,6 +71,8 @@ interface ChatInputBarProps {
   onClearAttachments?: () => void
   isUploading?: boolean
   onSendBusinessCards?: (cards: BusinessCardAsset[]) => void
+  isLocked?: boolean
+  lockPlaceholder?: string
 }
 
 export function ChatInputBar({
@@ -86,7 +88,9 @@ export function ChatInputBar({
   onRemoveAttachment,
   onClearAttachments,
   isUploading = false,
-  onSendBusinessCards
+  onSendBusinessCards,
+  isLocked = false,
+  lockPlaceholder
 }: ChatInputBarProps) {
   const { t } = useTranslation()
   const hasText = value.trim().length > 0
@@ -522,41 +526,47 @@ export function ChatInputBar({
       <View
         style={{
           flexDirection: 'row',
-          alignItems: 'flex-end',
-          paddingHorizontal: 6,
+          alignItems: 'center',
+          paddingHorizontal: 8,
           paddingTop: 6,
-          paddingBottom: 4,
+          paddingBottom: 5,
           backgroundColor: isDark ? '#15181D' : '#fff',
           borderTopWidth: replyTo ? 0 : 0.5,
           borderTopColor: colors.border
         }}
       >
         {/* Sticker button */}
-        <TouchableOpacity style={{ padding: 6, marginBottom: 2 }}>
-          <Ionicons name='happy-outline' size={26} color={colors.icon} />
+        <TouchableOpacity style={{ paddingHorizontal: 6, paddingVertical: 4 }}>
+          <Ionicons name='happy-outline' size={29} color={isDark ? '#7E8793' : '#667085'} />
         </TouchableOpacity>
 
         {/* Text Input */}
         <TextInput
-          value={value}
+          value={isLocked ? '' : value}
           onChangeText={onChangeText}
-          placeholder={placeholder}
+          placeholder={isLocked ? lockPlaceholder || placeholder : placeholder}
           placeholderTextColor={isDark ? '#666' : '#9ca3af'}
           multiline
+          editable={!isLocked}
           style={{
             flex: 1,
-            fontSize: 16,
-            color: colors.text,
+            fontSize: isLocked ? 17 : 16,
+            color: isLocked ? colors.textSecondary : colors.text,
             maxHeight: 100,
-            paddingHorizontal: 12,
-            paddingVertical: 6,
-            backgroundColor: isDark ? '#2A2F36' : '#F3F4F6',
-            borderRadius: 20,
-            marginHorizontal: 4
+            minHeight: 48,
+            paddingHorizontal: 14,
+            paddingVertical: 8,
+            backgroundColor: isDark ? '#2A2F36' : '#F2F2F7',
+            borderRadius: 24,
+            marginHorizontal: 6
           }}
         />
 
-        {hasText || hasAttachments ? (
+        {isLocked ? (
+          <TouchableOpacity style={{ paddingHorizontal: 6, paddingVertical: 4 }} activeOpacity={1}>
+            <Ionicons name='lock-closed-outline' size={30} color={isDark ? '#7E8793' : '#667085'} />
+          </TouchableOpacity>
+        ) : hasText || hasAttachments ? (
           <TouchableOpacity onPress={onSend} style={{ padding: 6, marginBottom: 2 }}>
             <Ionicons name='send' size={24} color={isUploading ? colors.textSecondary : BRAND.blue} />
           </TouchableOpacity>
