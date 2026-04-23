@@ -18,6 +18,19 @@
       "accept": "Accept",
       "decline": "Decline",
       "markAllRead": "Mark all as read"
+    },
+    "newDeviceLogin": {
+      "title": "New Device Login Warning",
+      "description": "We detected a new login to your account.",
+      "device": "Device",
+      "ipAddress": "IP Address",
+      "time": "Time",
+      "unknown": "Unknown",
+      "warning": "If this was not you, please log in to the original device and log out from this device.",
+      "logoutButton": "Logout this device",
+      "logoutConfirmMessage": "Are you sure you want to log out this device? This action will require logging in again on that device.",
+      "logout": "Logout",
+      "cancel": "Cancel"
     }
   }
 }

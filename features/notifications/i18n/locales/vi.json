@@ -25,6 +25,19 @@
       "notify_new": "Báo hoạt động mới",
       "not_notify_new": "Không báo hoạt động mới",
       "notify_new_except": "Báo hoạt động mới, trừ..."
+    },
+    "newDeviceLogin": {
+      "title": "Cảnh báo đăng nhập thiết bị mới",
+      "description": "Phát hiện một lượt đăng nhập mới vào tài khoản.",
+      "device": "Thiết bị",
+      "ipAddress": "Địa chỉ IP",
+      "time": "Thời gian",
+      "unknown": "Không xác định",
+      "warning": "Nếu đây không phải là bạn, hãy đăng nhập vào thiết bị gốc và đăng xuất khỏi thiết bị này.",
+      "logoutButton": "Đăng xuất thiết bị này",
+      "logoutConfirmMessage": "Bạn có chắc chắn muốn đăng xuất thiết bị này không? Hành động này sẽ yêu cầu đăng nhập lại trên thiết bị đó.",
+      "logout": "Đăng xuất",
+      "cancel": "Hủy"
     }
   }
 }
