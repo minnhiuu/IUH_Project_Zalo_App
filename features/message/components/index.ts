@@ -10,3 +10,4 @@ export { ConversationListSkeleton, MessageListSkeleton } from './skeleton-loadin
 export { BusinessCardMessage } from './business-card-message'
 export { MediaStorageView } from './media-storage-view'
 export * from './group'
+export { SeenMembersModal } from './seen-members-modal'

@@ -75,9 +75,15 @@ export default function ChatScreen() {
 
   const conversationId = directConversationId || partnerConversation?.id || ''
 
+  const { data: conversations = [] } = useConversations(0, 100, true)
+  const activeConversation = useMemo(
+    () => conversations.find((c) => c.id === conversationId),
+    [conversations, conversationId]
+  )
+
   // Build effective members list — fallback to partner from params when API members is missing
   const effectiveMembers = React.useMemo<ConversationMemberResponse[]>(() => {
-    const base = partnerConversation?.members || []
+    const base = activeConversation?.members || partnerConversation?.members || []
     const partnerUserId = params.userId || (directConversationId ? '' : params.id)
     const fallbackName = params.name || 'Chat'
     const fallbackAvatar = params.avatar || null
@@ -94,7 +100,7 @@ export default function ChatScreen() {
       ]
     }
     return base
-  }, [partnerConversation?.members, params.userId, params.id, params.name, params.avatar, directConversationId])
+  }, [activeConversation?.members, partnerConversation?.members, params.userId, params.id, params.name, params.avatar, directConversationId])
 
   // Messages
   const {
@@ -116,11 +122,6 @@ export default function ChatScreen() {
   const markAsReadMutation = useMarkAsRead()
   const pinMessageMutation = usePinMessage()
   const unpinMessageMutation = useUnpinMessage()
-  const { data: conversations = [] } = useConversations(0, 100, true)
-  const activeConversation = useMemo(
-    () => conversations.find((c) => c.id === conversationId),
-    [conversations, conversationId]
-  )
 
   const resolvedConversation = activeConversation || partnerConversation
   const isGroupConversation = !!resolvedConversation?.isGroup
@@ -765,13 +766,14 @@ export default function ChatScreen() {
               const isOwn = item.senderId === currentUserId
               const prevMsg = index > 0 ? messages[index - 1] : null
               const nextMsg = index < messages.length - 1 ? messages[index + 1] : null
+              const showDateSep = shouldShowDateSeparator(index)
               // In inverted list, index 0 = newest (bottom), nextMsg = older (above).
               // Show avatar on the topmost message of a consecutive group (the oldest one)
+              // OR if there is a date separator (time gap > 30 mins)
               const showAvatar =
-                !isOwn && (!nextMsg || nextMsg.senderId !== item.senderId)
+                !isOwn && (!nextMsg || nextMsg.senderId !== item.senderId || showDateSep)
               // Show time only for the newest message in a consecutive sender streak
               const showTime = !prevMsg || prevMsg.senderId !== item.senderId
-              const showDateSep = shouldShowDateSeparator(index)
 
               return (
                 <View>
@@ -786,7 +788,7 @@ export default function ChatScreen() {
                     }
                     showTime={showTime}
                     showAvatar={showAvatar}
-                    showSenderName={isGroupConversation}
+                    showSenderName={isGroupConversation && showAvatar}
                     members={effectiveMembers}
                     onAvatarPress={(userId: string) => router.push(`/user-profile/${userId}` as any)}
                     onReply={handleReply}

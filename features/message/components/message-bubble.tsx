@@ -17,6 +17,7 @@ import { normalizeDateTime } from '../utils/date-utils'
 import { FileBadge } from './file-badge'
 import { MessageMediaContent } from './media-content'
 import { MessageReactionBar, EMOJIS } from './message-reaction-bar'
+import { SeenMembersModal } from './seen-members-modal'
 import { useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { messageKeys } from '../queries/keys'
 import { parseBusinessCardContent, parseGroupLinkContent, parseGroupLinkToken } from '../utils'
@@ -82,6 +83,7 @@ export function MessageBubble({
   const [activeGroupLinkPayload, setActiveGroupLinkPayload] = useState<{ groupName?: string; groupAvatar?: string | null } | null>(null)
   const [joinQuestionOpen, setJoinQuestionOpen] = useState(false)
   const [joinAnswer, setJoinAnswer] = useState('')
+  const [showSeenMembersModal, setShowSeenMembersModal] = useState(false)
   const queryClient = useQueryClient()
   const { mutate: joinByLink, isPending: isJoiningByLink } = useJoinGroupByLink()
   const { data: joinPreview, isLoading: isJoinPreviewLoading } = useJoinPreview(
@@ -445,32 +447,74 @@ export function MessageBubble({
 
   const shouldShowDeliveryStatus = isOwn && !isRevoked && (showActions || isLatestOwnMessage)
 
-  const getDeliveryStatusLabel = () => {
+  const renderDeliveryStatus = () => {
     if (!shouldShowDeliveryStatus) return null
 
+    const readers = members?.filter((m) => m.lastReadMessageId === message.id && m.userId !== currentUserId) || []
+    
+    if (readers.length > 0) {
+      const maxAvatars = 5
+      const visibleReaders = readers.slice(0, maxAvatars)
+      const extraCount = readers.length - maxAvatars
+
+      return (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          onPress={() => setShowSeenMembersModal(true)}
+          style={{ flexDirection: 'row', alignItems: 'center' }}
+        >
+          {visibleReaders.map((r, i) => (
+            <View key={r.userId} style={{ marginLeft: i === 0 ? 0 : -4, zIndex: maxAvatars - i }}>
+              <UserAvatar source={r.avatar} name={r.fullName || 'User'} size='xxs' />
+            </View>
+          ))}
+          {extraCount > 0 && (
+            <View
+              style={{
+                marginLeft: -4,
+                zIndex: 0,
+                width: 16,
+                height: 16,
+                borderRadius: 8,
+                backgroundColor: isDark ? '#374151' : '#E5E7EB',
+                alignItems: 'center',
+                justifyContent: 'center',
+                borderWidth: 1,
+                borderColor: isDark ? '#1F2937' : '#FFFFFF'
+              }}
+            >
+              <Text style={{ fontSize: 8, fontWeight: '700', color: isDark ? '#D1D5DB' : '#4B5563' }}>
+                +{extraCount}
+              </Text>
+            </View>
+          )}
+        </TouchableOpacity>
+      )
+    }
+
+    let label = ''
     if (message.id?.startsWith('temp-')) {
-      return t('message.status.sending', { defaultValue: 'Dang gui' })
+      label = t('message.status.sending', { defaultValue: 'Dang gui' })
+    } else {
+      const rawStatus = String((message as any).deliveryStatus || message.status || '').toUpperCase()
+      if (!rawStatus) {
+        label = t('message.status.sent', { defaultValue: 'Da gui' })
+      } else if (rawStatus.includes('READ') || rawStatus.includes('SEEN')) {
+        label = t('message.status.seen', { defaultValue: 'Đã xem' })
+      } else if (rawStatus.includes('RECEIVED') || rawStatus.includes('DELIVERED')) {
+        label = t('message.status.received', { defaultValue: 'Đã nhận' })
+      } else if (rawStatus.includes('SENDING')) {
+        label = t('message.status.sending', { defaultValue: 'Dang gui' })
+      } else {
+        label = t('message.status.sent', { defaultValue: 'Da gui' })
+      }
     }
 
-    const rawStatus = String((message as any).deliveryStatus || message.status || '').toUpperCase()
-    if (!rawStatus) {
-      return t('message.status.sent', { defaultValue: 'Da gui' })
-    }
-
-    if (
-      rawStatus.includes('RECEIVED') ||
-      rawStatus.includes('DELIVERED') ||
-      rawStatus.includes('READ') ||
-      rawStatus.includes('SEEN')
-    ) {
-      return t('message.status.received', { defaultValue: 'Da nhan' })
-    }
-
-    if (rawStatus.includes('SENDING')) {
-      return t('message.status.sending', { defaultValue: 'Dang gui' })
-    }
-
-    return t('message.status.sent', { defaultValue: 'Da gui' })
+    return (
+      <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>
+        {label}
+      </Text>
+    )
   }
 
   const openSheet = useCallback(() => {
@@ -878,9 +922,13 @@ export function MessageBubble({
 
   const mediaBubbleBg = hasRealCaption ? bubbleBg : 'transparent'
 
+  const showEmptyReactionBtn = hasMediaContent || isBusinessCardMessage || message.type === MessageType.FILE || !!parseGroupLinkContent(message.content)
+  const hasReactions = Object.keys(reactions).length > 0
+  const needReactionSpace = showEmptyReactionBtn || hasReactions
+
   const actionRows = buildActionRows(isOwn, isDark, isPinned, t)
-  const deliveryStatusLabel = getDeliveryStatusLabel()
-  const incomingLeftSlotWidth = 44
+  const deliveryStatusNode = renderDeliveryStatus()
+  const incomingLeftSlotWidth = 36
 
   return (
     <View
@@ -904,7 +952,7 @@ export function MessageBubble({
             <TouchableOpacity
               activeOpacity={0.7}
               onPress={() => message.senderId && onAvatarPress?.(message.senderId)}
-              style={{ marginRight: 8 }}
+              style={{ marginRight: 4 }}
             >
               <UserAvatar source={message.senderAvatar} name={message.senderName || ''} size='sm' />
             </TouchableOpacity>
@@ -912,14 +960,14 @@ export function MessageBubble({
         </View>
       )}
 
-      <View style={{ maxWidth: '70%' }}>
+      <View style={{ maxWidth: '80%' }}>
         {showSenderName && message.senderName && !isOwn && (
           <Text style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 2, marginLeft: 4 }}>
             {message.senderName}
           </Text>
         )}
 
-          <View style={{ alignSelf: isOwn ? 'flex-end' : 'flex-start', minWidth: '55%', paddingBottom: 14 }}>
+          <View style={{ alignSelf: isOwn ? 'flex-end' : 'flex-start', minWidth: '55%', paddingBottom: needReactionSpace ? 14 : 0 }}>
             <Animated.View style={{
               borderRadius: 16,
               backgroundColor: highlightAnim.interpolate({
@@ -962,21 +1010,14 @@ export function MessageBubble({
                   >
                   <View
                     style={{
-                      borderLeftWidth: 3,
+                      borderLeftWidth: 2,
                       borderLeftColor: '#0068FF',
-                      backgroundColor: isOwn
-                        ? isDark
-                          ? 'rgba(0,0,0,0.15)'
-                          : 'rgba(0,80,200,0.1)'
-                        : isDark
-                          ? 'rgba(255,255,255,0.08)'
-                          : 'rgba(0,0,0,0.04)',
-                      borderRadius: 6,
-                      paddingHorizontal: 10,
-                      paddingVertical: 6,
-                      marginBottom: 6,
+                      backgroundColor: 'transparent',
+                      paddingLeft: 10,
+                      paddingVertical: 2,
+                      marginBottom: 4,
+                      marginTop: 4,
                       marginHorizontal: hasMediaContent ? 6 : 0,
-                      marginTop: hasMediaContent ? 4 : 0,
                       flexDirection: 'row',
                       alignItems: 'center',
                       gap: 8
@@ -985,7 +1026,7 @@ export function MessageBubble({
                     {(message.replyTo.type === 'IMAGE' || message.replyTo.type === 'VIDEO') ? (() => {
                       const replyImgUrl = getReplyAttachmentUrl(message.replyTo.messageId)
                       return replyImgUrl ? (
-                        <View style={{ width: 40, height: 40, borderRadius: 5, overflow: 'hidden', backgroundColor: '#111', flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}>
+                        <View style={{ width: 36, height: 36, borderRadius: 4, overflow: 'hidden', backgroundColor: '#111', flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}>
                           <ExpoImage
                             source={{ uri: replyImgUrl }}
                             style={{ width: '100%', height: '100%' }}
@@ -994,18 +1035,18 @@ export function MessageBubble({
                           />
                           {message.replyTo.type === 'VIDEO' && (
                             <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-                              <Ionicons name='play-circle' size={20} color='rgba(255,255,255,0.9)' />
+                              <Ionicons name='play-circle' size={16} color='rgba(255,255,255,0.9)' />
                             </View>
                           )}
                         </View>
                       ) : null
                     })() : null}
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: '#0068FF' }} numberOfLines={1}>
+                    <View style={{ flexShrink: 1, justifyContent: 'center' }}>
+                      <Text style={{ fontSize: 14, fontWeight: '500', color: isDark ? '#E8EAED' : '#111827' }} numberOfLines={1}>
                         {message.replyTo.senderName || 'User'}
                       </Text>
-                      <Text style={{ fontSize: 13, color: isDark ? '#aaa' : '#666' }} numberOfLines={2}>
-                        {message.replyTo.type === 'IMAGE' ? '📷 Hình ảnh' : message.replyTo.type === 'VIDEO' ? '🎬 Video' : message.replyTo.content}
+                      <Text style={{ fontSize: 13, color: isDark ? '#A9B7CC' : '#6B7280', marginTop: 1 }} numberOfLines={1}>
+                        {message.replyTo.type === 'IMAGE' ? '[Hình ảnh]' : message.replyTo.type === 'VIDEO' ? '[Video]' : message.replyTo.content}
                       </Text>
                     </View>
                   </View>
@@ -1027,10 +1068,11 @@ export function MessageBubble({
               currentUserId={currentUserId}
               currentUserName={currentUser?.fullName}
               currentUserAvatar={currentUser?.avatar ?? undefined}
+              showEmptyButton={showEmptyReactionBtn}
             />
           </View>
 
-        {(showTime || !!deliveryStatusLabel) && (
+        {(showTime || !!deliveryStatusNode) && (
           <View
             style={{
               flexDirection: 'row',
@@ -1040,10 +1082,8 @@ export function MessageBubble({
               gap: 6
             }}
           >
-            {showTime && <Text style={{ fontSize: 11, color: timeColor }}>{formatTime(message.createdAt)}</Text>}
-            {!!deliveryStatusLabel && (
-              <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>{deliveryStatusLabel}</Text>
-            )}
+            {showTime && <Text style={{ fontSize: 10.5, color: timeColor, marginTop: 1 }}>{formatTime(message.createdAt)}</Text>}
+            {!!deliveryStatusNode && deliveryStatusNode}
           </View>
         )}
 
@@ -1097,9 +1137,7 @@ export function MessageBubble({
               </View>
               <View style={{ flexDirection: 'row', alignSelf: 'flex-end', marginTop: 2, marginHorizontal: 4, gap: 6 }}>
                 <Text style={{ fontSize: 11, color: timeColor }}>{formatTime(message.createdAt)}</Text>
-                {!!getDeliveryStatusLabel() && (
-                  <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>{getDeliveryStatusLabel()}</Text>
-                )}
+                {!!deliveryStatusNode && deliveryStatusNode}
               </View>
             </View>
             )}
@@ -1455,6 +1493,12 @@ export function MessageBubble({
         </Pressable>
       </Modal>
 
+      <SeenMembersModal
+        visible={showSeenMembersModal}
+        onClose={() => setShowSeenMembersModal(false)}
+        members={members?.filter((m) => m.lastReadMessageId === message.id && m.userId !== currentUserId) || []}
+        currentUserId={currentUserId}
+      />
     </View>
   )
 }

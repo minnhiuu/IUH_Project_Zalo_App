@@ -138,7 +138,7 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
         }
 
         // Update conversations cache (move to top)
-        queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
+        queryClient.setQueriesData({ queryKey: [...messageKeys.conversations(), 'list'] }, (oldData: any) => {
           if (!oldData) return oldData
           const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
           const idx = conversations.findIndex((c) => c.id === conversationId)
@@ -168,7 +168,7 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
       // ────────── /queue/presence ──────────
       client.subscribe('/user/queue/presence', (payload) => {
         const presence = JSON.parse(payload.body)
-        queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
+        queryClient.setQueriesData({ queryKey: [...messageKeys.conversations(), 'list'] }, (oldData: any) => {
           if (!oldData) return oldData
           const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
           const newList = conversations.map((conv: ConversationResponse) => {
@@ -186,7 +186,7 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
       // ────────── /queue/read-receipts ──────────
       client.subscribe('/user/queue/read-receipts', (payload) => {
         const receipt = JSON.parse(payload.body)
-        queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
+        queryClient.setQueriesData({ queryKey: [...messageKeys.conversations(), 'list'] }, (oldData: any) => {
           if (!oldData) return oldData
           const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
           const newList = conversations.map((conv: ConversationResponse) => {

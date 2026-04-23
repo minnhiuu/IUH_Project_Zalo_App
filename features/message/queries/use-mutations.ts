@@ -40,15 +40,21 @@ export const useMarkAsRead = () => {
 
       // Optimistic update: set unreadCount to 0
       queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
-        if (!oldData?.data) return oldData
-        return {
-          ...oldData,
-          data: Array.isArray(oldData.data)
-            ? oldData.data.map((conv: ConversationResponse) =>
-                conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
-              )
-            : oldData.data
+        if (!oldData) return oldData
+        if (Array.isArray(oldData)) {
+          return oldData.map((conv: ConversationResponse) =>
+            conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
+          )
         }
+        if (oldData?.data && Array.isArray(oldData.data)) {
+          return {
+            ...oldData,
+            data: oldData.data.map((conv: ConversationResponse) =>
+              conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
+            )
+          }
+        }
+        return oldData
       })
 
       return { previousData }
@@ -234,24 +240,32 @@ export const useClearConversationHistory = () => {
     mutationFn: (conversationId: string) => messageApi.clearConversationHistory(conversationId),
     onSuccess: (_data, conversationId) => {
       queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
-        if (!oldData?.data || !Array.isArray(oldData.data)) return oldData
-        return {
-          ...oldData,
-          data: oldData.data.map((conv: ConversationResponse) =>
-            conv.id === conversationId
-              ? {
-                  ...conv,
-                  unreadCount: 0,
-                  lastMessage: null,
-                  lastMessageId: null,
-                  lastMessageTime: null,
-                  isLastMessageFromMe: null,
-                  lastMessageType: null,
-                  lastMessageStatus: null
-                }
-              : conv
-          )
+        if (!oldData) return oldData
+
+        const mapFn = (conv: ConversationResponse) =>
+          conv.id === conversationId
+            ? {
+                ...conv,
+                unreadCount: 0,
+                lastMessage: null,
+                lastMessageId: null,
+                lastMessageTime: null,
+                isLastMessageFromMe: null,
+                lastMessageType: null,
+                lastMessageStatus: null
+              }
+            : conv
+
+        if (Array.isArray(oldData)) {
+          return oldData.map(mapFn)
         }
+        if (oldData?.data && Array.isArray(oldData.data)) {
+          return {
+            ...oldData,
+            data: oldData.data.map(mapFn)
+          }
+        }
+        return oldData
       })
 
       queryClient.setQueryData(messageKeys.messages(conversationId), {
@@ -284,11 +298,17 @@ export const useDeleteConversation = () => {
     mutationFn: (conversationId: string) => messageApi.deleteConversation(conversationId),
     onSuccess: (_data, conversationId) => {
       queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
-        if (!oldData?.data || !Array.isArray(oldData.data)) return oldData
-        return {
-          ...oldData,
-          data: oldData.data.filter((conv: ConversationResponse) => conv.id !== conversationId)
+        if (!oldData) return oldData
+        if (Array.isArray(oldData)) {
+          return oldData.filter((conv: ConversationResponse) => conv.id !== conversationId)
         }
+        if (oldData?.data && Array.isArray(oldData.data)) {
+          return {
+            ...oldData,
+            data: oldData.data.filter((conv: ConversationResponse) => conv.id !== conversationId)
+          }
+        }
+        return oldData
       })
       queryClient.removeQueries({ queryKey: messageKeys.messages(conversationId) })
       queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
