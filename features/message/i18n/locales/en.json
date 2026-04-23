@@ -337,5 +337,60 @@
       "unpinFailTitle": "Unpin failed",
       "unpinFailDesc": "Unable to unpin this message"
     }
+  },
+  "messages": {
+    "you": "You",
+    "user": "User",
+    "messageRevoked": "Message has been revoked",
+    "messageType": {
+      "image": "[Image]",
+      "video": "[Video]",
+      "file": "[File]"
+    },
+    "system": {
+      "default": "[Notice]",
+      "call": "[Call]",
+      "andOthers": "and {{count}} others",
+      "pin": {
+        "self": "You pinned a message",
+        "actor": "{{actor}} pinned a message"
+      },
+      "unpin": {
+        "self": "You unpinned a message",
+        "actor": "{{actor}} unpinned a message"
+      },
+      "add": {
+        "self": "You added a member",
+        "actor": "{{actor}} added a member"
+      },
+      "remove": {
+        "self": "You removed a member",
+        "actor": "{{actor}} removed a member"
+      },
+      "leave": {
+        "self": "You left the group",
+        "actor": "{{actor}} left the group"
+      },
+      "revoke": {
+        "self": "You revoked a message",
+        "actor": "{{actor}} revoked a message"
+      },
+      "join": {
+        "self": "You joined the group",
+        "actor": "{{actor}} joined the group"
+      },
+      "update_group_name": {
+        "self": "You changed the group name",
+        "actor": "{{actor}} changed the group name"
+      },
+      "update_avatar": {
+        "self": "You changed the group avatar",
+        "actor": "{{actor}} changed the group avatar"
+      },
+      "create_group": {
+        "self": "You created the group",
+        "actor": "{{actor}} created the group"
+      }
+    }
   }
 }

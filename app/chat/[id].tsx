@@ -27,7 +27,8 @@ import {
   DateSeparator,
   MessageListSkeleton,
   ForwardMessageModal,
-  GroupChatIntro
+  GroupChatIntro,
+  EditPinnedMessagesModal
 } from '@/features/message/components'
 import type { FileAsset, BusinessCardAsset } from '@/features/message/components'
 import {
@@ -146,6 +147,8 @@ export default function ChatScreen() {
   const [pendingAttachments, setPendingAttachments] = useState<FileAsset[]>([])
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
   const [showPinnedPanel, setShowPinnedPanel] = useState(false)
+  const [isEditPinnedModalOpen, setIsEditPinnedModalOpen] = useState(false)
+  const [pendingScrollId, setPendingScrollId] = useState<string | null>(null)
   const flatListRef = useRef<FlatList>(null)
 
   const pinnedMessagesSorted = useMemo(() => {
@@ -167,14 +170,61 @@ export default function ChatScreen() {
   const messages: MessageResponse[] = messagesData?.pages.flatMap((page) => page.data) ?? []
 
   const scrollToMessage = useCallback((messageId: string) => {
-    const index = messages.findIndex((m) => m.id === messageId)
-    if (index === -1) return
-    try {
-      flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
-    } catch {}
-    setHighlightedMessageId(messageId)
-    setTimeout(() => setHighlightedMessageId(null), 1400)
-  }, [messages])
+    const index = messages.findIndex((m) => m.id === messageId || m.clientMessageId === messageId)
+    if (index >= 0) {
+      setPendingScrollId(null)
+      try {
+        flatListRef.current?.scrollToIndex({ 
+          index, 
+          animated: true, 
+          viewPosition: 0.5 
+        })
+      } catch {
+        // Fallback for items not measured
+        flatListRef.current?.scrollToOffset({ 
+          offset: index * 100, // Very rough estimate
+          animated: true 
+        })
+      }
+      setHighlightedMessageId(messageId)
+      setTimeout(() => setHighlightedMessageId(null), 1400)
+    } else {
+      if (hasNextPage && !isFetchingNextPage) {
+        setPendingScrollId(messageId)
+        fetchNextPage()
+        Toast.show({
+          type: 'info',
+          text1: t('message.pinned.loadingMore', { defaultValue: 'Đang tìm tin nhắn cũ hơn...' }),
+          position: 'bottom',
+          visibilityTime: 1500
+        })
+      } else {
+        setPendingScrollId(null)
+        Toast.show({
+          type: 'error',
+          text1: t('message.pinned.notFound', { defaultValue: 'Không tìm thấy tin nhắn hoặc tin nhắn quá cũ' }),
+          position: 'bottom'
+        })
+      }
+    }
+  }, [messages, hasNextPage, isFetchingNextPage, fetchNextPage, t])
+
+  // Auto-retry scroll when messages list updates
+  useEffect(() => {
+    if (pendingScrollId) {
+      const index = messages.findIndex((m) => m.id === pendingScrollId || m.clientMessageId === pendingScrollId)
+      if (index >= 0) {
+        // Delay slightly to allow list to render
+        const timer = setTimeout(() => {
+          scrollToMessage(pendingScrollId)
+        }, 100)
+        return () => clearTimeout(timer)
+      } else if (hasNextPage && !isFetchingNextPage) {
+        // Keep fetching if not found yet
+        fetchNextPage()
+      }
+    }
+  }, [messages, pendingScrollId, hasNextPage, isFetchingNextPage, fetchNextPage, scrollToMessage])
   const latestOwnMessage = messages.find(
     (msg) => msg.senderId === currentUserId && msg.status !== MessageStatus.REVOKED
   )
@@ -641,9 +691,7 @@ export default function ChatScreen() {
 
       {!!latestPinnedMessage && !isLoading && (
         <View style={{ paddingHorizontal: 10, paddingTop: 6, paddingBottom: 4, backgroundColor: chatBg }}>
-          <TouchableOpacity
-            activeOpacity={0.88}
-            onPress={openPinnedPanel}
+          <View
             style={{
               backgroundColor: '#FFFFFF',
               borderRadius: 12,
@@ -658,36 +706,44 @@ export default function ChatScreen() {
               elevation: 3
             }}
           >
-            <View
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                borderWidth: 1.2,
-                borderColor: '#36A7FF',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginRight: 10
-              }}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => scrollToMessage(latestPinnedMessage.messageId)}
+              style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }}
             >
-              <Ionicons name='chatbubble-ellipses-outline' size={17} color='#36A7FF' />
-            </View>
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  borderWidth: 1.2,
+                  borderColor: '#36A7FF',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 10
+                }}
+              >
+                <Ionicons name='chatbubble-ellipses-outline' size={17} color='#36A7FF' />
+              </View>
 
-            <View style={{ flex: 1, paddingVertical: 8 }}>
-              <Text style={{ fontSize: 15, color: '#2B2B2B' }} numberOfLines={1}>
-                {getPinnedPreviewText(latestPinnedMessage)}
-              </Text>
-              <Text style={{ fontSize: 13, color: '#8A8A8A', marginTop: 2 }} numberOfLines={1}>
-                {t('message.pinned.owner', {
-                  defaultValue: 'Tin nhắn của {{name}}',
-                  name: getPinnedOwnerName(latestPinnedMessage)
-                })}
-              </Text>
-            </View>
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 15, color: '#2B2B2B' }} numberOfLines={1}>
+                  {getPinnedPreviewText(latestPinnedMessage)}
+                </Text>
+                <Text style={{ fontSize: 13, color: '#8A8A8A', marginTop: 2 }} numberOfLines={1}>
+                  {t('message.pinned.owner', {
+                    defaultValue: 'Tin nhắn của {{name}}',
+                    name: getPinnedOwnerName(latestPinnedMessage)
+                  })}
+                </Text>
+              </View>
+            </TouchableOpacity>
 
             <View style={{ width: 1, height: 38, backgroundColor: '#E4E4E4', marginHorizontal: 12 }} />
 
-            <View
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={openPinnedPanel}
               style={{
                 width: 36,
                 height: 36,
@@ -699,8 +755,8 @@ export default function ChatScreen() {
               }}
             >
               <Ionicons name='chevron-down' size={18} color='#7D7D7D' />
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -889,9 +945,9 @@ export default function ChatScreen() {
             >
               <Text
                 style={{
-                  fontSize: 19,
+                  fontSize: 16,
                   color: '#232323',
-                  fontWeight: '700',
+                  fontWeight: '600',
                   paddingHorizontal: 14,
                   paddingTop: 12,
                   paddingBottom: 10
@@ -902,10 +958,10 @@ export default function ChatScreen() {
               <View style={{ height: 1, backgroundColor: '#EBEBEB' }} />
               <Text
                 style={{
-                  fontSize: 18,
+                  fontSize: 15,
                   color: '#8A8F94',
                   textAlign: 'center',
-                  paddingVertical: 16
+                  paddingVertical: 14
                 }}
               >
                 {t('message.pinned.upcomingEmpty', { defaultValue: 'Chưa có nhắc hẹn nào' })}
@@ -941,7 +997,7 @@ export default function ChatScreen() {
                   activeOpacity={0.78}
                   onPress={() => {
                     closePinnedPanel()
-                    handleReplyMessagePress(pinned.messageId)
+                    scrollToMessage(pinned.messageId)
                   }}
                   style={{
                     flexDirection: 'row',
@@ -968,10 +1024,10 @@ export default function ChatScreen() {
                   </View>
 
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 15, color: '#2B2B2B' }} numberOfLines={1}>
+                    <Text style={{ fontSize: 14, color: '#2B2B2B' }} numberOfLines={1}>
                       {getPinnedPreviewText(pinned)}
                     </Text>
-                    <Text style={{ fontSize: 13, color: '#8A8A8A', marginTop: 2 }} numberOfLines={1}>
+                    <Text style={{ fontSize: 12, color: '#8A8A8A', marginTop: 2 }} numberOfLines={1}>
                       {t('message.pinned.owner', {
                         defaultValue: 'Tin nhắn của {{name}}',
                         name: getPinnedOwnerName(pinned)
@@ -1007,19 +1063,15 @@ export default function ChatScreen() {
             >
               <TouchableOpacity
                 activeOpacity={0.75}
-                onPress={() =>
-                  Alert.alert(
-                    t('message.pinned.editComingSoonTitle', { defaultValue: 'Thông báo' }),
-                    t('message.pinned.editComingSoonDesc', {
-                      defaultValue: 'Chức năng chỉnh sửa danh sách ghim đang phát triển.'
-                    })
-                  )
-                }
+                onPress={() => {
+                  closePinnedPanel()
+                  setIsEditPinnedModalOpen(true)
+                }}
                 style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }}
               >
-                <Ionicons name='create-outline' size={28} color='#FFFFFF' style={{ marginRight: 8 }} />
-                <Text style={{ color: '#FFFFFF', fontSize: 20 }}>
-                  {t('message.pinned.edit', { defaultValue: 'Chỉnh sửa' })}
+                <Ionicons name='create-outline' size={22} color='#FFFFFF' style={{ marginRight: 6 }} />
+                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '500' }}>
+                  {t('messages.pinned.edit', { defaultValue: 'Chỉnh sửa' })}
                 </Text>
               </TouchableOpacity>
 
@@ -1028,15 +1080,27 @@ export default function ChatScreen() {
                 onPress={closePinnedPanel}
                 style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }}
               >
-                <Text style={{ color: '#FFFFFF', fontSize: 20, marginRight: 6 }}>
-                  {t('message.pinned.collapse', { defaultValue: 'Thu gọn' })}
+                <Text style={{ color: '#FFFFFF', fontSize: 16, fontWeight: '500', marginRight: 4 }}>
+                  {t('messages.pinned.collapse', { defaultValue: 'Thu gọn' })}
                 </Text>
-                <Ionicons name='chevron-up' size={24} color='#FFFFFF' />
+                <Ionicons name='chevron-up' size={20} color='#FFFFFF' />
               </TouchableOpacity>
             </View>
           </Pressable>
         </Pressable>
       </Modal>
+
+      <EditPinnedMessagesModal
+        visible={isEditPinnedModalOpen}
+        onClose={() => setIsEditPinnedModalOpen(false)}
+        pinnedMessages={pinnedMessagesSorted}
+        conversationId={conversationId}
+        onItemPress={(msgId) => {
+          setIsEditPinnedModalOpen(false)
+          closePinnedPanel()
+          scrollToMessage(msgId)
+        }}
+      />
     </View>
   )
 }

@@ -10,6 +10,8 @@ import type { ConversationResponse } from '../schemas'
 import { MessageStatus } from '../schemas'
 import { formatPreview } from '../utils/chat-preview'
 import { parseMessageDate } from '../utils/date-utils'
+import { getSystemMessageText } from '../utils/system-message'
+import { useAuthStore } from '@/store'
 
 interface ConversationListItemProps {
   conversation: ConversationResponse
@@ -122,6 +124,7 @@ function GroupConversationAvatar({ conversation }: { conversation: ConversationR
 
 export function ConversationListItem({ conversation, onPress, onLongPress }: ConversationListItemProps) {
   const { t } = useTranslation()
+  const { user: currentUser } = useAuthStore()
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
   const hasUnread = (conversation.unreadCount ?? 0) > 0
@@ -140,9 +143,13 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
         ? rawLastMessage.content
         : typeof rawLastMessage?.text === 'string'
           ? rawLastMessage.text
-          : typeof rawConversation.latestMessage?.message === 'string'
-            ? rawConversation.latestMessage.message
-          : ''
+        : typeof rawLastMessage?.message === 'string'
+          ? rawLastMessage.message
+        : typeof rawConversation.lastMessageMessage === 'string'
+          ? rawConversation.lastMessageMessage
+        : typeof rawConversation.latestMessage?.message === 'string'
+          ? rawConversation.latestMessage.message
+        : ''
 
   const lastMessageType =
     conversation.lastMessageType ?? rawConversation.latestMessage?.type ?? rawLastMessage?.type ?? null
@@ -160,6 +167,27 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
     rawConversation.latestMessage?.senderName ||
     (!conversation.isGroup ? conversation.name || '' : '')
 
+  // Calculate system text if applicable
+  let systemText = null
+  if (lastMessageType === 'SYSTEM' || lastMessageType === 'JOIN' || lastMessageType === 'LEAVE' || lastMessageType === 'CALL') {
+     const msgObj = (rawConversation.latestMessage || {
+        content: lastMessageContent,
+        type: lastMessageType,
+        senderId: rawConversation.lastMessageSenderId || rawConversation.latestMessage?.senderId,
+        senderName: rawConversation.lastMessageSenderName || rawConversation.latestMessage?.senderName,
+        metadata: rawConversation.lastMessageMetadata || 
+                  rawConversation.latestMessage?.metadata || 
+                  rawConversation.metadata || 
+                  rawConversation.lastMessage?.metadata,
+        payload: rawConversation.lastMessagePayload || 
+                 rawConversation.latestMessage?.payload || 
+                 rawConversation.payload || 
+                 rawConversation.lastMessage?.payload
+     }) as any
+     
+     systemText = getSystemMessageText(msgObj, currentUser?.id, t, conversation.members || [])
+  }
+
   const preview = formatPreview(
     {
       content: lastMessageContent,
@@ -169,14 +197,15 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
           ? ''
           : incomingSenderName,
       type: lastMessageType,
-      status: conversation.lastMessageStatus
+      status: conversation.lastMessageStatus,
+      systemText
     },
     {
-      you: t('message.you'),
-      user: '',
+      you: t('messages.you'),
+      user: t('messages.user'),
       type: {
-        image: t('message.messageType.image', { defaultValue: '[Hình ảnh]' }),
-        file: t('message.messageType.file', { defaultValue: '[File]' })
+        image: t('messages.messageType.image', { defaultValue: '[Hình ảnh]' }),
+        file: t('messages.messageType.file', { defaultValue: '[File]' })
       }
     }
   )
@@ -248,7 +277,7 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
             }}
             numberOfLines={1}
           >
-            {conversation.name || t('message.user', { defaultValue: 'User' })}
+            {conversation.name || t('messages.user', { defaultValue: 'User' })}
           </Text>
           <Text style={{ fontSize: 15, color: '#6B7280', marginLeft: 8, marginTop: 1 }}>
             {formatTime(lastMessageTime)}
@@ -266,7 +295,7 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
               fontWeight: hasUnread ? '500' : '400'
             }}
           >
-            {isRevoked ? t('message.messageRevoked') : preview}
+            {isRevoked ? t('messages.messageRevoked') : preview}
           </Text>
           {hasUnread && (
             <View

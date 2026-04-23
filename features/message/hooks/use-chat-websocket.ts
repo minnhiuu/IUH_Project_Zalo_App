@@ -146,7 +146,7 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
           if (idx >= 0) {
             const updated: ConversationResponse = {
               ...conversations[idx],
-              lastMessage: typeof msg.content === 'string' ? msg.content : (msg.type === 'IMAGE' ? '[Hình ảnh]' : msg.type === 'FILE' ? '[Tệp]' : ''),
+              lastMessage: (typeof msg.content === 'string' && msg.content) ? msg.content : (typeof msg.message === 'string' && msg.message ? msg.message : (msg.type === MessageType.IMAGE ? '[Hình ảnh]' : msg.type === MessageType.FILE ? '[Tệp]' : (msg.content || ''))),
               lastMessageTime: msg.createdAt || new Date().toISOString(),
               isLastMessageFromMe: isOwnMessage,
               lastMessageType: msg.type,
@@ -154,7 +154,8 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
                 msg.unreadCount !== undefined
                   ? msg.unreadCount
                   : (conversations[idx].unreadCount || 0) + (isOwnMessage ? 0 : 1),
-              lastMessageStatus: msg.status
+              lastMessageStatus: msg.status,
+              latestMessage: msg
             }
             const newList = [updated, ...conversations.filter((_, i) => i !== idx)]
             return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
@@ -443,13 +444,7 @@ export const useChatWebSocket = () => {
         if (idx >= 0) {
           const updated: ConversationResponse = {
             ...conversations[idx],
-            lastMessage:
-              content ||
-              (optimisticType === MessageType.IMAGE
-                ? '[Hình ảnh]'
-                : optimisticType === MessageType.FILE
-                  ? '[Tệp]'
-                  : content),
+            lastMessage: [MessageType.SYSTEM, MessageType.JOIN, MessageType.LEAVE].includes(optimisticType) ? content : (content || (optimisticType === MessageType.IMAGE ? '[Hình ảnh]' : optimisticType === MessageType.FILE ? '[Tệp]' : content)),
             lastMessageTime: now,
             isLastMessageFromMe: true,
             lastMessageType: optimisticType,

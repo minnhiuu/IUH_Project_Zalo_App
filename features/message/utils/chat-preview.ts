@@ -8,17 +8,28 @@ interface PreviewData {
   senderName?: string | null
   type?: MessageType | null
   status?: MessageStatus | null
+  systemText?: string | null // Added this
 }
 
 export const formatPreview = (
   data: PreviewData,
   text: { you: string; user: string; type: { image: string; file: string } }
 ) => {
-  if (!data.content && !data.type) return ''
+  if (!data.content && !data.type && !data.systemText) return ''
 
   const isRevoked = data.status === MessageStatus.REVOKED
   const senderLabel = data.senderName?.trim() || ''
-  const prefix = isRevoked ? '' : data.isFromMe ? text.you : senderLabel
+  const isSystem =
+    data.type === MessageType.SYSTEM ||
+    data.type === MessageType.JOIN ||
+    data.type === MessageType.LEAVE ||
+    data.type === MessageType.CALL
+
+  const prefix = isRevoked || isSystem ? '' : data.isFromMe ? text.you : senderLabel
+
+  if (isSystem && data.systemText) {
+    return data.systemText
+  }
 
   let displayContent = typeof data.content === 'string' ? data.content : ''
   const businessCard = parseBusinessCardContent(displayContent)
@@ -37,12 +48,19 @@ export const formatPreview = (
     if (!displayContent || displayContent === '[FILE]') {
       displayContent = text.type.file
     } else {
-      // Keep filename in conversation preview for file messages.
       displayContent = `${text.type.file} ${displayContent}`
     }
+  } else if (data.type === MessageType.CALL) {
+    displayContent = displayContent || '[Cuộc gọi]'
+  } else if (data.type === MessageType.JOIN) {
+    displayContent = displayContent || '[Gia nhập nhóm]'
+  } else if (data.type === MessageType.LEAVE) {
+    displayContent = displayContent || '[Rời nhóm]'
+  } else if (data.type === MessageType.SYSTEM) {
+    displayContent = data.systemText || displayContent || '[Thông báo]'
   }
 
-  if (isRevoked) return displayContent
+  if (isRevoked || isSystem) return displayContent
   if (!prefix) return displayContent
   return `${prefix}: ${displayContent}`
 }

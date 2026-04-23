@@ -527,7 +527,74 @@
     "seen": "Seen",
     "sent": "Sent",
     "group": "Group",
-    "members": "members"
+    "members": "members",
+    "you": "You",
+    "user": "User",
+    "messageRevoked": "Message has been revoked",
+    "messageType": {
+      "image": "[Image]",
+      "file": "[File]",
+      "video": "[Video]",
+      "voice": "[Voice message]"
+    },
+    "pinned": {
+      "title": "Pinned messages",
+      "editTitle": "Edit pinned list",
+      "editSubtitle": "Drag to reorder pins.",
+      "done": "Done",
+      "edit": "Edit",
+      "collapse": "Collapse",
+      "expand": "Expand",
+      "noPinned": "No pinned messages",
+      "attachment": "[Attachment]",
+      "from": "Message from {{name}}"
+    },
+    "system": {
+      "default": "[Notification]",
+      "call": "[Call]",
+      "revoke": {
+        "self": "You revoked a message",
+        "actor": "{{actor}} revoked a message"
+      },
+      "join": {
+        "self": "You joined the group",
+        "actor": "{{actor}} joined the group"
+      },
+      "andOthers": "and {{count}} others",
+      "pin": {
+        "self": "You pinned a message",
+        "actor": "{{actor}} pinned a message"
+      },
+      "unpin": {
+        "self": "You unpinned a message",
+        "actor": "{{actor}} unpinned a message"
+      },
+      "add": {
+        "self": "You added {{targets}} to the group",
+        "actor": "{{actor}} added {{targets}} to the group"
+      },
+      "remove": {
+        "self_target": "You were removed from the group by {{actor}}",
+        "self_actor": "You removed {{target}} from the group",
+        "actor": "{{actor}} removed {{target}} from the group"
+      },
+      "leave": {
+        "self": "You left the group",
+        "actor": "{{actor}} left the group"
+      },
+      "update_name": {
+        "self": "You renamed the group to {{name}}",
+        "actor": "{{actor}} renamed the group to {{name}}"
+      },
+      "update_avatar": {
+        "self": "You changed the group avatar",
+        "actor": "{{actor}} changed the group avatar"
+      },
+      "create_group": {
+        "self": "You created the group",
+        "actor": "{{actor}} created the group"
+      }
+    }
   },
   "contacts": {
     "title": "Contacts",
