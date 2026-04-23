@@ -210,7 +210,15 @@ function ThemeAwareProviders() {
             <Stack.Screen name='friend-requests' />
             <Stack.Screen name='add-friend' />
             <Stack.Screen name='user-profile/[id]' />
-            <Stack.Screen name='chat/[id]' />
+            <Stack.Screen name='find-friends-contacts' />
+            <Stack.Screen name='message-options' />
+            <Stack.Screen name='media-storage' />
+            <Stack.Screen
+              name='chat/[id]'
+              options={{
+                animation: 'slide_from_right'
+              }}
+            />
             <Stack.Screen
               name='qr/index'
               options={{

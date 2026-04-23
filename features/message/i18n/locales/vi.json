@@ -66,7 +66,30 @@
     "error": "Có lỗi xảy ra, vui lòng thử lại",
     "messageType": {
       "image": "[Hình ảnh]",
+      "video": "[Video]",
       "file": "[Tệp tin]"
+    },
+    "attachment": {
+      "permissionDenied": "Cần quyền truy cập thư viện ảnh/video",
+      "uploadFailed": "Tải lên thất bại",
+      "image": "Hình ảnh",
+      "video": "Video",
+      "file": "Tệp tin",
+      "download": "Tải xuống"
+    },
+    "reaction": {
+      "add": "Thả cảm xúc",
+      "remove": "Xóa cảm xúc",
+      "picker": "Chọn biểu cảm"
+    },
+    "storage": {
+      "title": "Kho lưu trữ",
+      "tabMedia": "Ảnh/Video",
+      "tabFiles": "Tệp",
+      "tabLinks": "Liên kết",
+      "noMedia": "Chưa có ảnh/video nào",
+      "noFiles": "Chưa có tệp nào",
+      "noLinks": "Chưa có liên kết nào"
     },
     "quickActions": {
       "location": "Vị trí",

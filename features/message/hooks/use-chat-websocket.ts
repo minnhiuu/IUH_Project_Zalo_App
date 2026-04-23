@@ -11,7 +11,7 @@ import { jwtDecode } from 'jwt-decode'
 import apiConfig from '@/config/apiConfig'
 import { normalizeDateTime } from '../utils/date-utils'
 import { MessageStatus, MessageType } from '../schemas'
-import type { MessageResponse, ConversationResponse, MessageSendRequest, ReplyMetadataResponse } from '../schemas'
+import type { MessageResponse, ConversationResponse, MessageSendRequest, ReplyMetadataResponse, AttachmentInfo } from '../schemas'
 
 // ────────── Singleton state ──────────
 let singletonClient: Client | null = null
@@ -205,6 +205,46 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
         }
       })
 
+      // ────────── /queue/reactions ──────────
+      client.subscribe('/user/queue/reactions', (payload) => {
+        try {
+          const rawEvent = JSON.parse(payload.body)
+          const event = rawEvent.type === 'REACTION_UPDATE' ? rawEvent : rawEvent
+          if (!event.messageId) return
+          const updateFn = (oldData: InfiniteData<any> | undefined) => {
+            if (!oldData) return oldData
+            return {
+              ...oldData,
+              pages: oldData.pages.map((page: any) => ({
+                ...page,
+                data: page.data.map((m: MessageResponse) =>
+                  m.id === event.messageId
+                    ? {
+                        ...m,
+                        reactions: event.reactions && Object.keys(event.reactions).length ? event.reactions : undefined
+                      }
+                    : m
+                )
+              }))
+            }
+          }
+          if (event.conversationId) {
+            queryClient.setQueryData(messageKeys.messages(event.conversationId), updateFn)
+          } else {
+            // Scan all message caches
+            const allKeys = queryClient.getQueryCache().getAll()
+            allKeys.forEach((q) => {
+              const key = q.queryKey as string[]
+              if (key[0] === 'messages' && key[1] === 'chat') {
+                queryClient.setQueryData(key, updateFn)
+              }
+            })
+          }
+        } catch {
+          // ignore parse errors
+        }
+      })
+
       // ────────── /queue/conversations ──────────
       client.subscribe('/user/queue/conversations', (payload) => {
         try {
@@ -297,6 +337,7 @@ export const useChatWebSocket = () => {
   const sendMsgMutation = useSendMessage()
   const revokeMsgMutation = useRevokeMessage()
   const deleteMsgMutation = useDeleteMessageForMe()
+  const [isUploading, setIsUploading] = useState(false)
 
   useEffect(() => {
     if (user) {
@@ -309,8 +350,14 @@ export const useChatWebSocket = () => {
 
   // ────────── sendMessage ──────────
   const sendMessage = useCallback(
-    (conversationId: string, content: string, replyTo?: ReplyMetadataResponse | null, isForwarded = false) => {
-      if (!singletonClient?.connected || (!content.trim() && !isForwarded)) return
+    (
+      conversationId: string,
+      content: string,
+      replyTo?: ReplyMetadataResponse | null,
+      isForwarded = false,
+      attachments?: AttachmentInfo[]
+    ) => {
+      if (!singletonClient?.connected || (!content.trim() && !isForwarded && !attachments?.length)) return
 
       const clientMessageId = `temp-${Date.now()}`
       const request: MessageSendRequest = {
@@ -320,8 +367,17 @@ export const useChatWebSocket = () => {
         replyTo: replyTo
           ? { messageId: replyTo.messageId, senderId: replyTo.senderId, content: replyTo.content, type: replyTo.type }
           : undefined,
-        isForwarded
+        isForwarded,
+        attachments
       }
+
+      const optimisticType = attachments?.length
+        ? attachments.some((attachment) => attachment.contentType.startsWith('video/'))
+          ? MessageType.VIDEO
+          : attachments.some((attachment) => attachment.contentType.startsWith('image/'))
+            ? MessageType.IMAGE
+            : MessageType.FILE
+        : MessageType.CHAT
 
       sendMsgMutation.mutate(request)
 
@@ -332,7 +388,7 @@ export const useChatWebSocket = () => {
         clientMessageId,
         senderId: user?.id || '',
         content,
-        type: MessageType.CHAT,
+        type: optimisticType,
         status: MessageStatus.NORMAL,
         createdAt: now,
         lastModifiedAt: now,
@@ -340,7 +396,8 @@ export const useChatWebSocket = () => {
         senderName: user?.fullName ?? null,
         senderAvatar: null,
         replyTo: replyTo ?? null,
-        isForwarded
+        isForwarded,
+        attachments
       }
 
       queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
@@ -363,7 +420,7 @@ export const useChatWebSocket = () => {
             lastMessage: content,
             lastMessageTime: now,
             isLastMessageFromMe: true,
-            lastMessageType: MessageType.CHAT,
+            lastMessageType: optimisticType,
             lastMessageStatus: MessageStatus.NORMAL
           }
           const newList = [updated, ...conversations.filter((_, i) => i !== idx)]
@@ -415,5 +472,96 @@ export const useChatWebSocket = () => {
     [queryClient, deleteMsgMutation]
   )
 
-  return { connected, sendMessage, revokeMessage, deleteMessageForMe }
+  // ────────── sendFileMessage ──────────
+  const sendFileMessage = useCallback(
+    async (
+      conversationId: string,
+      fileAssets: Array<{ uri: string; mimeType: string; fileName: string }>,
+      content: string = '',
+      replyTo?: ReplyMetadataResponse | null
+    ) => {
+      if (!singletonClient?.connected || !fileAssets.length) return
+
+      setIsUploading(true)
+      try {
+        const uploaded = await Promise.all(
+          fileAssets.map(async ({ uri, mimeType, fileName }) => {
+            const res = await messageApi.uploadFile(uri, mimeType, fileName)
+            return res.data.data as AttachmentInfo
+          })
+        )
+
+        const isImage = fileAssets[0].mimeType?.startsWith('image/')
+        const isVideo = fileAssets[0].mimeType?.startsWith('video/')
+        const type = isImage ? MessageType.IMAGE : isVideo ? MessageType.VIDEO : MessageType.FILE
+        const finalContent = content.trim() || (isImage ? '[Hình ảnh]' : isVideo ? '[Video]' : '[Tệp tin]')
+
+        const clientMessageId = `temp-${Date.now()}`
+        const request: MessageSendRequest = {
+          conversationId,
+          content: finalContent,
+          clientMessageId,
+          attachments: uploaded,
+          replyTo: replyTo
+            ? { messageId: replyTo.messageId, senderId: replyTo.senderId, content: replyTo.content, type: replyTo.type }
+            : undefined,
+          isForwarded: false
+        }
+        sendMsgMutation.mutate(request)
+
+        const now = new Date().toISOString()
+        const optimisticMsg: MessageResponse = {
+          id: clientMessageId,
+          clientMessageId,
+          senderId: user?.id || '',
+          content: finalContent,
+          type,
+          status: MessageStatus.NORMAL,
+          createdAt: now,
+          lastModifiedAt: now,
+          conversationId,
+          senderName: user?.fullName ?? null,
+          senderAvatar: null,
+          replyTo: replyTo ?? null,
+          isForwarded: false,
+          attachments: uploaded
+        }
+
+        queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
+          if (!oldData) return oldData
+          const firstPage = oldData.pages[0]
+          return {
+            ...oldData,
+            pages: [{ ...firstPage, data: [optimisticMsg, ...firstPage.data] }, ...oldData.pages.slice(1)]
+          }
+        })
+
+        queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
+          if (!oldData) return oldData
+          const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
+          const idx = conversations.findIndex((c) => c.id === conversationId)
+          if (idx >= 0) {
+            const updated: ConversationResponse = {
+              ...conversations[idx],
+              lastMessage: finalContent,
+              lastMessageTime: now,
+              isLastMessageFromMe: true,
+              lastMessageType: type,
+              lastMessageStatus: MessageStatus.NORMAL
+            }
+            const newList = [updated, ...conversations.filter((_, i) => i !== idx)]
+            return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
+          }
+          return oldData
+        })
+      } catch (err) {
+        console.error('[sendFileMessage] upload failed:', err)
+      } finally {
+        setIsUploading(false)
+      }
+    },
+    [user, queryClient, sendMsgMutation]
+  )
+
+  return { connected, sendMessage, revokeMessage, deleteMessageForMe, sendFileMessage, isUploading }
 }
