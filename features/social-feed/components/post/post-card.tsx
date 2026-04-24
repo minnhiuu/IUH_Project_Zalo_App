@@ -8,6 +8,7 @@ import type { SocialPost } from '../../types/post'
 import type { ReactionType } from '../../types/reaction'
 import { ReactionPicker, REACTION_EMOJIS } from './reaction-picker'
 import { MediaSection } from './media-section'
+import { Image as ExpoImage } from 'expo-image'
 
 interface PostCardProps {
   post: SocialPost
@@ -43,6 +44,25 @@ export function PostCard({
   useEffect(() => {
     setSelectedReaction((post.currentUserReaction as ReactionType) || null)
   }, [post.currentUserReaction])
+
+  // Prefetch media for post and shared post
+  useEffect(() => {
+    const prefetchMedia = (mediaList?: SocialPost['media']) => {
+      if (!mediaList) return
+      mediaList.forEach((item) => {
+        if (item.url) {
+          void ExpoImage.prefetch(item.url).catch(() => {
+            // Silently handle prefetch errors
+          })
+        }
+      })
+    }
+
+    prefetchMedia(post.media)
+    if (post.postType === 'SHARE' && post.sharedPost?.media) {
+      prefetchMedia(post.sharedPost.media)
+    }
+  }, [post.media, post.postType, post.sharedPost?.media])
 
   const handleReactionPress = (type: ReactionType) => {
     const isRemoving = type === selectedReaction

@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native'
 
-type TabType = 'following' | 'explore'
+type TabType = 'following' | 'reels'
 
 interface TabsProps {
   activeTab: TabType
@@ -31,9 +31,9 @@ export function SocialFeedTabs({ activeTab, onTabChange }: TabsProps) {
       </TouchableOpacity>
 
       <TouchableOpacity
-        onPress={() => onTabChange('explore')}
+        onPress={() => onTabChange('reels')}
         className={`flex-1 py-3 border-b-2 ${
-          activeTab === 'explore'
+          activeTab === 'reels'
             ? 'border-b-blue-600'
             : 'border-b-transparent'
         }`}
@@ -41,12 +41,12 @@ export function SocialFeedTabs({ activeTab, onTabChange }: TabsProps) {
       >
         <Text
           className={`text-center font-semibold ${
-            activeTab === 'explore'
+            activeTab === 'reels'
               ? 'text-blue-600'
               : 'text-gray-600'
           }`}
         >
-          Khác
+          Reels
         </Text>
       </TouchableOpacity>
     </View>

@@ -1,5 +1,6 @@
-import { View, Text, Image, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, Dimensions } from 'react-native'
 import { useEffect, useState } from 'react'
+import { Image as ExpoImage } from 'expo-image'
 import * as VideoThumbnails from 'expo-video-thumbnails'
 import { Video, ResizeMode } from 'expo-av'
 import type { SocialPostMedia } from '../../types/post'
@@ -12,11 +13,13 @@ interface MediaSectionProps {
 function MediaTile({
   item,
   index,
-  onPress
+  onPress,
+  style
 }: {
   item: SocialPostMedia
   index: number
   onPress?: () => void
+  style?: { width: number; height: number }
 }) {
   const [thumbnailUri, setThumbnailUri] = useState<string | null>(null)
   const [thumbnailFailed, setThumbnailFailed] = useState(false)
@@ -56,7 +59,13 @@ function MediaTile({
     return (
       <TouchableOpacity
         onPress={onPress}
-        className='relative w-full aspect-square bg-black rounded-lg overflow-hidden'
+        style={{
+          width: style?.width ?? '100%',
+          height: style?.height ?? '100%',
+          backgroundColor: '#000',
+          borderRadius: 12,
+          overflow: 'hidden'
+        }}
         activeOpacity={0.7}
       >
         <Video
@@ -85,13 +94,19 @@ function MediaTile({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className='relative w-full aspect-square rounded-lg overflow-hidden'
+      style={{
+        width: style?.width ?? '100%',
+        height: style?.height ?? '100%',
+        borderRadius: 12,
+        overflow: 'hidden'
+      }}
       activeOpacity={0.8}
     >
-      <Image
+      <ExpoImage
         source={{ uri: item.url }}
-        className='w-full h-full'
-        resizeMode='cover'
+        style={{ width: '100%', height: '100%' }}
+        contentFit='cover'
+        cachePolicy='memory-disk'
       />
     </TouchableOpacity>
   )
@@ -100,29 +115,111 @@ function MediaTile({
 export function MediaSection({ media, onMediaPress }: MediaSectionProps) {
   if (!media?.length) return null
 
+  const gap = 6
+  const containerWidth = Dimensions.get('window').width - 32
+  const cell = Math.floor((containerWidth - gap) / 2)
+
   if (media.length === 1) {
     return (
-      <View className='rounded-xl overflow-hidden'>
+      <View style={{ borderRadius: 12, overflow: 'hidden' }}>
         <MediaTile
           item={media[0]}
           index={0}
           onPress={() => onMediaPress?.(0)}
+          style={{ width: containerWidth, height: containerWidth }}
         />
       </View>
     )
   }
 
-  return (
-    <View className='gap-1 rounded-xl overflow-hidden'>
-      {media.slice(0, 4).map((item, index) => (
-        <View key={index} className='w-full aspect-square'>
+  if (media.length === 2) {
+    return (
+      <View style={{ flexDirection: 'row' }}>
+        <MediaTile
+          item={media[0]}
+          index={0}
+          onPress={() => onMediaPress?.(0)}
+          style={{ width: cell, height: cell }}
+        />
+        <View style={{ width: gap }} />
+        <MediaTile
+          item={media[1]}
+          index={1}
+          onPress={() => onMediaPress?.(1)}
+          style={{ width: cell, height: cell }}
+        />
+      </View>
+    )
+  }
+
+  if (media.length === 3) {
+    return (
+      <View>
+        <MediaTile
+          item={media[0]}
+          index={0}
+          onPress={() => onMediaPress?.(0)}
+          style={{ width: containerWidth, height: cell }}
+        />
+        <View style={{ height: gap }} />
+        <View style={{ flexDirection: 'row' }}>
           <MediaTile
-            item={item}
-            index={index}
-            onPress={() => onMediaPress?.(index)}
+            item={media[1]}
+            index={1}
+            onPress={() => onMediaPress?.(1)}
+            style={{ width: cell, height: cell }}
+          />
+          <View style={{ width: gap }} />
+          <MediaTile
+            item={media[2]}
+            index={2}
+            onPress={() => onMediaPress?.(2)}
+            style={{ width: cell, height: cell }}
           />
         </View>
-      ))}
+      </View>
+    )
+  }
+
+  const displayItems = media.slice(0, 4)
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+      {displayItems.map((item, index) => {
+        const isLastColumn = index % 2 === 1
+        const isLastRow = index >= 2
+        return (
+          <View
+            key={`${item.url}-${index}`}
+            style={{
+              marginRight: isLastColumn ? 0 : gap,
+              marginBottom: isLastRow ? 0 : gap
+            }}
+          >
+            <View>
+              <MediaTile
+                item={item}
+                index={index}
+                onPress={() => onMediaPress?.(index)}
+                style={{ width: cell, height: cell }}
+              />
+              {media.length > 4 && index === 3 && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: 'rgba(0,0,0,0.45)',
+                    borderRadius: 12
+                  }}
+                >
+                  <Text style={{ color: '#fff', fontSize: 24, fontWeight: '700' }}>+{media.length - 4}</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )
+      })}
     </View>
   )
 }
