@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect, useCallback } from 'react'
 import { View, TouchableOpacity, Alert, Clipboard, Modal, Pressable, Animated, ScrollView, ActivityIndicator, TextInput } from 'react-native'
 import { Image as ExpoImage } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
+import * as FileSystem from 'expo-file-system/legacy'
+import * as MediaLibrary from 'expo-media-library'
 import { useRouter } from 'expo-router'
 import { Text } from '@/components/ui/text'
 import { UserAvatar } from '@/components/common/user-avatar'
@@ -21,6 +23,7 @@ import { useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { messageKeys } from '../queries/keys'
 import { parseBusinessCardContent, parseGroupLinkContent, parseGroupLinkToken } from '../utils'
 import { BusinessCardMessage } from './business-card-message'
+import Toast from 'react-native-toast-message'
 
 interface MessageBubbleProps {
   message: MessageResponse
@@ -449,12 +452,12 @@ export function MessageBubble({
     if (!shouldShowDeliveryStatus) return null
 
     if (message.id?.startsWith('temp-')) {
-      return t('message.status.sending', { defaultValue: 'Dang gui' })
+      return t('message.status.sending', { defaultValue: 'Đang gửi...' })
     }
 
     const rawStatus = String((message as any).deliveryStatus || message.status || '').toUpperCase()
     if (!rawStatus) {
-      return t('message.status.sent', { defaultValue: 'Da gui' })
+      return t('message.status.sent', { defaultValue: 'Đã gửi' })
     }
 
     if (
@@ -463,14 +466,14 @@ export function MessageBubble({
       rawStatus.includes('READ') ||
       rawStatus.includes('SEEN')
     ) {
-      return t('message.status.received', { defaultValue: 'Da nhan' })
+      return t('message.status.received', { defaultValue: 'Đã nhận' })
     }
 
     if (rawStatus.includes('SENDING')) {
-      return t('message.status.sending', { defaultValue: 'Dang gui' })
+      return t('message.status.sending', { defaultValue: 'Đang gửi...' })
     }
 
-    return t('message.status.sent', { defaultValue: 'Da gui' })
+    return t('message.status.sent', { defaultValue: 'Đã gửi' })
   }
 
   const openSheet = useCallback(() => {
@@ -571,6 +574,9 @@ export function MessageBubble({
         case 'pin':
           closeSheet(() => onPin?.(message))
           break
+        case 'download':
+          closeSheet(() => handleDownload())
+          break
         case 'reminder':
         case 'select':
         case 'quickMessage':
@@ -588,6 +594,48 @@ export function MessageBubble({
     },
     [closeSheet, message, onReply, onForward, onRevoke, onDeleteForMe, onPin, onOpenMessageOptions, t]
   )
+
+  const handleDownload = async () => {
+    if (!message.attachments?.length) return
+
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync()
+      if (status !== 'granted') {
+        Alert.alert(t('common.error'), t('message.actions.downloadPermissionDenied', { defaultValue: 'Cần quyền truy cập thư viện để tải xuống.' }))
+        return
+      }
+
+      Toast.show({
+        type: 'info',
+        text1: t('message.actions.downloading', { defaultValue: 'Đang tải xuống...' }),
+        position: 'bottom'
+      })
+
+      const attachment = message.attachments[0]
+      const fileUri = attachment.url
+      if (!fileUri) return
+
+      const fileName = attachment.originalFileName || attachment.fileName || (message.type === 'IMAGE' ? 'image.jpg' : 'video.mp4')
+      const localUri = FileSystem.documentDirectory + fileName
+
+      const result = await FileSystem.downloadAsync(fileUri, localUri)
+      if (result.status === 200) {
+        await MediaLibrary.saveToLibraryAsync(result.uri)
+        Toast.show({
+          type: 'success',
+          text1: t('message.actions.downloadSuccess', { defaultValue: 'Đã lưu vào thư viện.' }),
+          position: 'bottom'
+        })
+      }
+    } catch (error) {
+      console.error('Download error:', error)
+      Toast.show({
+        type: 'error',
+        text1: t('message.actions.downloadFailed', { defaultValue: 'Tải xuống thất bại.' }),
+        position: 'bottom'
+      })
+    }
+  }
 
   const handleEmojiReaction = useCallback(
     (emoji: string) => {
@@ -738,17 +786,41 @@ export function MessageBubble({
     if ((message.type === MessageType.IMAGE || message.type === MessageType.VIDEO) && message.attachments?.length) {
       const MEDIA_PLACEHOLDERS = ['[Hình ảnh]', '[Image]', '[Video]', '[IMAGE]', '[VIDEO]']
       const caption = message.content && !MEDIA_PLACEHOLDERS.includes(message.content) ? message.content : null
+      const isSending = message.id?.startsWith('temp-')
+
+      const mediaContent = (
+        <View>
+          <MessageMediaContent attachments={message.attachments} onLongPress={openSheet} />
+          {isSending && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <ActivityIndicator size='small' color='#fff' />
+            </View>
+          )}
+        </View>
+      )
+
       if (caption) {
         return (
           <View>
-            <MessageMediaContent attachments={message.attachments} onLongPress={openSheet} />
+            {mediaContent}
             <Text style={{ fontSize: 15, color: textColor, lineHeight: 21, paddingHorizontal: 12, paddingVertical: 10 }}>
               {caption}
             </Text>
           </View>
         )
       }
-      return <MessageMediaContent attachments={message.attachments} onLongPress={openSheet} />
+      return mediaContent
     }
 
     const businessCard = parseBusinessCardContent(message.content)
@@ -838,10 +910,31 @@ export function MessageBubble({
         message.content !== '[File]' &&
         !attachmentNames.includes(message.content)
 
+      const isSending = message.id?.startsWith('temp-')
+
       return (
         <View style={{ gap: 4 }}>
           {message.attachments.map((att, i) => (
-            <FileBadge key={i} attachment={att} isDark={isDark} />
+            <View key={i}>
+              <FileBadge attachment={att} isDark={isDark} />
+              {isSending && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(255,255,255,0.4)',
+                    borderRadius: 12,
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <ActivityIndicator size='small' color='#0068FF' />
+                </View>
+              )}
+            </View>
           ))}
           {shouldRenderContent && (
               <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>
@@ -878,7 +971,7 @@ export function MessageBubble({
 
   const mediaBubbleBg = hasRealCaption ? bubbleBg : 'transparent'
 
-  const actionRows = buildActionRows(isOwn, isDark, isPinned, t)
+  const actionRows = buildActionRows(message, isOwn, isDark, isPinned, t)
   const deliveryStatusLabel = getDeliveryStatusLabel()
   const incomingLeftSlotWidth = 44
 
@@ -1172,7 +1265,7 @@ export function MessageBubble({
 
           <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
             {actionRows.map((row, rowIdx) => (
-              <View key={rowIdx} style={{ flexDirection: 'row', paddingHorizontal: 4 }}>
+              <View key={rowIdx} style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 4 }}>
                 {row.map((item) => (
                   <TouchableOpacity
                     key={item.key}
@@ -1468,7 +1561,7 @@ type ActionItem = {
   textColor?: string
 }
 
-function buildActionRows(isOwn: boolean, isDark: boolean, isPinned: boolean, t: (k: string, o?: any) => string): ActionItem[][] {
+function buildActionRows(message: MessageResponse, isOwn: boolean, isDark: boolean, isPinned: boolean, t: (k: string, o?: any) => string): ActionItem[][] {
   const blue = '#0068FF'
   const orange = '#FF8C00'
   const red = '#EF4444'
@@ -1561,16 +1654,26 @@ function buildActionRows(isOwn: boolean, isDark: boolean, isPinned: boolean, t: 
   ]
 
   // Row 4
-  const row4: ActionItem[] = [
-    {
-      key: 'delete',
-      icon: 'trash-outline',
-      label: t('message.actions.delete', { defaultValue: 'Xóa ở phía tôi' }),
-      iconColor: red,
-      bgColor: isDark ? '#3B1C1C' : '#FFE4E6',
-      textColor: red
-    }
-  ]
+  const row4: ActionItem[] = []
+
+  // If it's an image or video, we add Download button before Delete
+  if (message.type === MessageType.IMAGE || message.type === MessageType.VIDEO) {
+    row4.push({
+      key: 'download',
+      icon: 'download-outline',
+      label: t('message.actions.download', { defaultValue: 'Tải về' }),
+      iconColor: '#10B981'
+    })
+  }
+
+  row4.push({
+    key: 'delete',
+    icon: 'trash-outline',
+    label: t('message.actions.delete', { defaultValue: 'Xóa ở phía tôi' }),
+    iconColor: red,
+    bgColor: isDark ? '#3B1C1C' : '#FFE4E6',
+    textColor: red
+  })
 
   const safeRow1 = isOwn ? row1 : row1.filter((item) => item.key !== 'revoke')
 

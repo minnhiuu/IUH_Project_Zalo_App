@@ -256,10 +256,7 @@ export default function ChatScreen() {
       const replyPayload = replyTo
         ? { messageId: replyTo.id, senderId: replyTo.senderId, senderName: replyTo.senderName ?? null, content: replyTo.content || '', type: replyTo.type }
         : null
-      // Send each file as a separate message
-      assets.forEach((asset) => {
-        wsSendFileMessage(conversationId, [asset], '', replyPayload)
-      })
+      wsSendFileMessage(conversationId, assets, '', replyPayload)
       setReplyTo(null)
     },
     [conversationId, replyTo, wsSendFileMessage]

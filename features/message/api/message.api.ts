@@ -26,6 +26,23 @@ export type UploadFileResponse = {
   size: number
 }
 
+export type PresignFileRequest = {
+  folder: string
+  fileName: string
+  contentType: string
+  size: number
+}
+
+export type PresignedUploadResponse = {
+  key: string
+  presignedUrl: string
+  publicUrl: string
+  contentType: string
+  originalFileName: string
+  size: number
+  expiresAt: string
+}
+
 export const messageApi = {
     createGroupConversation: (request: GroupConversationCreateRequest) =>
       http.post<ApiResponse<ConversationResponse>>(API_ENDPOINTS.MESSAGE.GROUPS, request),
@@ -95,6 +112,9 @@ export const messageApi = {
       { headers }
     )
   },
+
+  presignBatch: (requests: PresignFileRequest[]) =>
+    http.post<ApiResponse<PresignedUploadResponse[]>>(API_ENDPOINTS.FILE.PRESIGN_BATCH, requests),
 
   toggleReaction: (messageId: string, emoji: string) =>
     http.post<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.TOGGLE_REACTION(messageId), { emoji }),

@@ -144,7 +144,8 @@ export const API_ENDPOINTS = {
     MY_GROUPS: '/messages/conversations/groups/mine'
   },
   FILE: {
-    UPLOAD: '/files/upload'
+    UPLOAD: '/files/upload',
+    PRESIGN_BATCH: '/files/presign/batch'
   },
   NOTIFICATION: {
     LIST: '/notifications',

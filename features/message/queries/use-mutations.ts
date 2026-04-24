@@ -45,8 +45,8 @@ export const useMarkAsRead = () => {
           ...oldData,
           data: Array.isArray(oldData.data)
             ? oldData.data.map((conv: ConversationResponse) =>
-                conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
-              )
+              conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
+            )
             : oldData.data
         }
       })
@@ -240,15 +240,15 @@ export const useClearConversationHistory = () => {
           data: oldData.data.map((conv: ConversationResponse) =>
             conv.id === conversationId
               ? {
-                  ...conv,
-                  unreadCount: 0,
-                  lastMessage: null,
-                  lastMessageId: null,
-                  lastMessageTime: null,
-                  isLastMessageFromMe: null,
-                  lastMessageType: null,
-                  lastMessageStatus: null
-                }
+                ...conv,
+                unreadCount: 0,
+                lastMessage: null,
+                lastMessageId: null,
+                lastMessageTime: null,
+                isLastMessageFromMe: null,
+                lastMessageType: null,
+                lastMessageStatus: null
+              }
               : conv
           )
         }
