@@ -10,7 +10,9 @@ interface UserAvatarProps {
   showOnline?: boolean
   isOnline?: boolean
   className?: string
+  role?: 'OWNER' | 'ADMIN' | 'MEMBER' | null
 }
+
 
 const sizeStyles: Record<AvatarSize, { container: string; text: string; online: string }> = {
   xxs: {
@@ -91,17 +93,28 @@ export function UserAvatar({
   size = 'md',
   showOnline = false,
   isOnline = false,
-  className
+  className,
+  role
 }: UserAvatarProps) {
   const hasImage = !!source
   const imageSource = typeof source === 'string' ? { uri: source } : source
+
+  const getRoleBorderColor = () => {
+    if (role === 'OWNER') return 'border-[#FFD700]' // Vàng
+    if (role === 'ADMIN') return 'border-[#C0C0C0]' // Bạc
+    return 'border-transparent'
+  }
+
+  const roleBorderWidth = role === 'OWNER' || role === 'ADMIN' ? 'border-[1.5px]' : ''
+  const isDarkBg = role === 'OWNER' || role === 'ADMIN'
+
 
   return (
     <View className={`relative ${className || ''}`}>
       {hasImage ? (
         <Image
           source={imageSource as ImageSourcePropType}
-          className={`${sizeStyles[size].container} rounded-full bg-gray-200`}
+          className={`${sizeStyles[size].container} rounded-full bg-gray-200 ${roleBorderWidth} ${getRoleBorderColor()}`}
           resizeMode='cover'
         />
       ) : (
@@ -110,12 +123,31 @@ export function UserAvatar({
             ${sizeStyles[size].container}
             ${getColorFromName(name)}
             rounded-full items-center justify-center
+            ${roleBorderWidth} ${getRoleBorderColor()}
           `}
         >
           <Text className={`${sizeStyles[size].text} font-medium text-white`}>{getInitials(name || '?')}</Text>
         </View>
       )}
-      {showOnline && (
+
+      {/* Role Key Icon */}
+      {role === 'OWNER' && (
+        <View className='absolute -bottom-1 -right-1 bg-white rounded-full p-[1px]'>
+          <View className='bg-[#FFD700] rounded-full w-4 h-4 items-center justify-center shadow-sm'>
+            <Text style={{ fontSize: 9 }}>🔑</Text>
+          </View>
+        </View>
+      )}
+      {role === 'ADMIN' && (
+        <View className='absolute -bottom-1 -right-1 bg-white rounded-full p-[1px]'>
+          <View className='bg-[#C0C0C0] rounded-full w-4 h-4 items-center justify-center shadow-sm'>
+            <Text style={{ fontSize: 9 }}>🔑</Text>
+          </View>
+        </View>
+      )}
+
+      {/* Online indicator */}
+      {showOnline && !role && (
         <View
           className={`
             absolute bottom-0 right-0

@@ -1,13 +1,13 @@
 {
   "welcome": {
-    "title": "Zalo",
+    "title": "BondHub",
     "subtitle": "Gọi video ổn định\nTrò chuyện thật đã",
     "loginButton": "Đăng nhập",
     "registerButton": "Tạo tài khoản mới",
     "language": "Tiếng Việt"
   },
   "login": {
-    "title": "Đăng nhập Zalo",
+    "title": "Đăng nhập BondHub",
     "phoneTab": "SỐ ĐIỆN THOẠI",
     "qrTab": "QUÉT MÃ QR",
     "phone": "Số điện thoại",
@@ -28,9 +28,13 @@
     "loginSuccess": "Đăng nhập thành công",
     "loginFailed": "Đăng nhập thất bại",
     "or": "Hoặc",
-    "qrInstruction": "Sử dụng ứng dụng Zalo trên thiết bị khác để quét mã QR",
+    "qrInstruction": "Sử dụng ứng dụng BondHub trên thiết bị khác để quét mã QR",
     "otpSent": "Mã xác thực đã được gửi",
-    "checkPhone": "Vui lòng kiểm tra tin nhắn điện thoại"
+    "checkPhone": "Vui lòng kiểm tra tin nhắn điện thoại",
+    "invalidCredentials": "Email hoặc mật khẩu không đúng",
+    "accountLocked": "Tài khoản đã bị khóa. Vui lòng liên hệ hỗ trợ.",
+    "tooManyAttempts": "Bạn thao tác quá nhanh. Vui lòng thử lại sau.",
+    "serverError": "Không thể đăng nhập lúc này. Vui lòng thử lại."
   },
   "logout": {
     "logoutButton": "Đăng xuất",
@@ -45,6 +49,7 @@
   },
   "register": {
     "title": "Tạo tài khoản",
+    "screenTitle": "Đăng ký tài khoản",
     "subtitle": "Vui lòng nhập thông tin để tạo tài khoản mới",
     "phone": "Số điện thoại",
     "phonePlaceholder": "Nhập số điện thoại",
@@ -59,11 +64,13 @@
     "login": "Đăng nhập",
     "registerSuccess": "Đăng ký thành công",
     "registerFailed": "Đăng ký thất bại",
+    "emailExists": "Email đã được sử dụng. Vui lòng dùng email khác.",
+    "serverError": "Không thể đăng ký lúc này. Vui lòng thử lại.",
     "terms": "Bằng việc đăng ký, bạn đồng ý với",
     "termsOfService": "Điều khoản sử dụng",
     "and": "và",
     "privacyPolicy": "Chính sách bảo mật",
-    "ofZalo": "của Zalo"
+    "ofZalo": "của BondHub"
   },
   "validation": {
     "phoneRequired": "Vui lòng nhập số điện thoại",
@@ -113,7 +120,7 @@
   "qrScanner": {
     "title": "Quét mã QR",
     "permissionTitle": "Quyền sử dụng máy ảnh",
-    "permissionMessage": "Zalo cần quyền sử dụng máy ảnh để quét mã QR",
+    "permissionMessage": "BondHub cần quyền sử dụng máy ảnh để quét mã QR",
     "scanInstruction": "Di chuyển camera đến mã QR để quét",
     "invalidQr": "Mã QR không hợp lệ",
     "confirmTitle": "Bạn muốn đăng nhập?",

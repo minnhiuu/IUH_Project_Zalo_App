@@ -552,6 +552,7 @@ export function ChatInputBar({
             flex: 1,
             fontSize: isLocked ? 17 : 16,
             color: isLocked ? colors.textSecondary : colors.text,
+            textAlign: value.length > 0 ? 'left' : 'center',
             maxHeight: 100,
             minHeight: 48,
             paddingHorizontal: 14,

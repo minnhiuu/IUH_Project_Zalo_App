@@ -22,6 +22,9 @@ export {
 export {
 	useSendMessage,
 	useMarkAsRead,
+	useMarkAsUnread,
+	useTogglePinConversation,
+	useToggleMuteConversation,
 	useRevokeMessage,
 	useDeleteMessageForMe,
 	useToggleReaction,

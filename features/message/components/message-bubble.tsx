@@ -21,6 +21,7 @@ import { SeenMembersModal } from './seen-members-modal'
 import { useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { messageKeys } from '../queries/keys'
 import { parseBusinessCardContent, parseGroupLinkContent, parseGroupLinkToken } from '../utils'
+import { GroupLinkCard } from './group/group-link-card'
 import { BusinessCardMessage } from './business-card-message'
 
 interface MessageBubbleProps {
@@ -184,8 +185,9 @@ export function MessageBubble({
         name:
           members?.find((m) => m.userId === id)?.fullName ||
           (Array.isArray(payload.targetNames) ? payload.targetNames[index] : undefined) ||
-          'User'
+          ''
       }))
+      .filter((item) => !!item.avatar || !!String(item.name || '').trim())
 
     const action = String(meta.action || '').toUpperCase()
     const isActorMe = String(message.senderId || '') === String(currentUserId || '')
@@ -194,7 +196,7 @@ export function MessageBubble({
       (firstTargetId && resolveDisplayName(firstTargetId, members?.find((m) => m.userId === firstTargetId)?.fullName)) ||
       (typeof payload.targetName === 'string' ? String(payload.targetName) : '') ||
       targetNamesRaw[0] ||
-      t('message.user', { defaultValue: 'Người dùng' })
+      t('message.system.unknownMember', { defaultValue: 'một thành viên' })
     const isFirstTargetMe = firstTargetId && String(firstTargetId) === String(currentUserId || '')
 
     let systemText = message.content || ''
@@ -222,20 +224,22 @@ export function MessageBubble({
           systemText = `${targetNamesCompact} đã được ${actorName} thêm vào nhóm`
         }
       } else if (action === 'REMOVE_MEMBER') {
+        const removeTargetName = firstTargetName || t('message.system.unknownMember', { defaultValue: 'một thành viên' })
         if (isFirstTargetMe) {
           systemText = `${t('message.you', { defaultValue: 'Bạn' })} đã bị xóa khỏi nhóm`
         } else if (isActorMe) {
-          systemText = `${t('message.you', { defaultValue: 'Bạn' })} đã xóa ${firstTargetName} khỏi nhóm`
+          systemText = `${t('message.you', { defaultValue: 'Bạn' })} đã xóa ${removeTargetName} khỏi nhóm`
         } else {
-          systemText = `${firstTargetName} đã bị ${actorName} xóa khỏi nhóm`
+          systemText = `${removeTargetName} đã bị ${actorName} xóa khỏi nhóm`
         }
       } else if (action === 'BLOCK_MEMBER') {
+        const blockTargetName = firstTargetName || t('message.system.unknownMember', { defaultValue: 'một thành viên' })
         if (isFirstTargetMe) {
           systemText = `${t('message.you', { defaultValue: 'Bạn' })} đã bị chặn khỏi nhóm`
         } else if (isActorMe) {
-          systemText = `${t('message.you', { defaultValue: 'Bạn' })} đã chặn ${firstTargetName} khỏi nhóm`
+          systemText = `${t('message.you', { defaultValue: 'Bạn' })} đã chặn ${blockTargetName} khỏi nhóm`
         } else {
-          systemText = `${firstTargetName} đã bị ${actorName} chặn khỏi nhóm`
+          systemText = `${blockTargetName} đã bị ${actorName} chặn khỏi nhóm`
         }
       } else if (action === 'BLOCKED_FROM_JOINING') {
         systemText = `${firstTargetName} đã bị chặn tham gia nhóm`
@@ -352,8 +356,8 @@ export function MessageBubble({
           style={{
             backgroundColor: isDark ? '#2B3340' : '#F7FAFC',
             borderRadius: 999,
-            paddingHorizontal: 8,
-            paddingVertical: 5,
+            paddingHorizontal: 6,
+            paddingVertical: 3,
             maxWidth: '100%',
             borderWidth: isDark ? 0 : 1,
             borderColor: '#E5EBF1',
@@ -377,10 +381,10 @@ export function MessageBubble({
               </View>
             ))}
           </View>
-          {showPencil && <Text style={{ marginRight: 3, color: '#22A06B', fontSize: 10 }}>✎</Text>}
+          {showPencil && <Text style={{ marginRight: 3, color: '#22A06B', fontSize: 9 }}>✎</Text>}
           <Text
             style={{
-              fontSize: 10,
+              fontSize: 9.5,
               color: isDark ? '#C8D1DE' : '#6B7280',
               textAlign: 'left',
               fontWeight: '500',
@@ -389,26 +393,7 @@ export function MessageBubble({
             numberOfLines={2}
           >
             {(() => {
-              const useTargetAsPrefix =
-                action === 'ADD_MEMBERS' ||
-                action === 'PROMOTE_ADMIN' ||
-                action === 'DEMOTE_ADMIN' ||
-                action === 'REMOVE_MEMBER' ||
-                action === 'BLOCK_MEMBER' ||
-                systemText.startsWith(targetNamesCompact)
-              const prefix = useTargetAsPrefix ? targetNamesCompact : actorName
-              const normalized = systemText.startsWith(`${prefix} `)
-                ? systemText.slice(prefix.length + 1)
-                : systemText
-
-              return (
-                <>
-                  <Text style={{ fontWeight: '700', fontSize: 10, color: isDark ? '#E0E8F4' : '#475569' }}>
-                    {`${prefix} `}
-                  </Text>
-                  {normalized}
-                </>
-              )
+              return systemText
             })()}
           </Text>
         </View>
@@ -809,68 +794,14 @@ export function MessageBubble({
 
     const groupLink = parseGroupLinkContent(message.content)
     if (groupLink) {
-      const name = groupLink.groupName || t('message.groupLink.defaultGroupName', { defaultValue: 'Nhóm' })
       return (
-        <TouchableOpacity activeOpacity={0.9} onPress={() => openGroupLinkPreview(message.content)} onLongPress={openSheet}>
-        <View style={{ minWidth: 236, maxWidth: 276 }}>
-          <Text style={{ fontSize: 14, color: textColor, marginBottom: 8, lineHeight: 18 }}>
-            {t('message.groupLink.openToJoin', { defaultValue: 'Truy cập link để tham gia nhóm' })}
-          </Text>
-
-          <View
-            style={{
-              borderRadius: 12,
-              overflow: 'hidden',
-              backgroundColor: isDark ? '#1D4FA7' : '#1E63D0',
-              borderWidth: 1,
-              borderColor: isDark ? '#2D69C8' : '#2D76E5'
-            }}
-          >
-            <View
-              style={{
-                paddingHorizontal: 12,
-                paddingVertical: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-                minHeight: 92
-              }}
-            >
-              <View
-                style={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: 25,
-                  backgroundColor: '#E8ECF2',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  overflow: 'hidden'
-                }}
-              >
-                {groupLink.groupAvatar ? (
-                  <ExpoImage source={{ uri: groupLink.groupAvatar }} style={{ width: '100%', height: '100%' }} contentFit='cover' />
-                ) : (
-                  <Ionicons name='people' size={22} color='#9AA2AE' />
-                )}
-              </View>
-
-              <View style={{ marginLeft: 10, flex: 1 }}>
-                <Text style={{ fontSize: 13, color: '#CFE0FF', marginBottom: 2 }}>
-                  {t('message.groupLink.groupLabel', { defaultValue: 'Nhóm' })}
-                </Text>
-                <Text style={{ fontSize: 15, fontWeight: '700', color: '#FFFFFF' }} numberOfLines={1}>
-                  {name}
-                </Text>
-              </View>
-            </View>
-
-            <View style={{ borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.22)', backgroundColor: 'rgba(0,0,0,0.08)' }}>
-              <Text style={{ textAlign: 'center', paddingVertical: 9, color: '#D6E6FF', fontSize: 13, fontWeight: '700' }}>
-                {t('message.groupLink.viewInfo', { defaultValue: 'Xem thông tin' })}
-              </Text>
-            </View>
-          </View>
-        </View>
-        </TouchableOpacity>
+        <GroupLinkCard
+          groupName={groupLink.groupName || ''}
+          groupAvatar={groupLink.groupAvatar}
+          linkUrl={groupLink.url}
+          onPress={() => openGroupLinkPreview(message.content)}
+          onLongPress={openSheet}
+        />
       )
     }
 
@@ -954,7 +885,12 @@ export function MessageBubble({
               onPress={() => message.senderId && onAvatarPress?.(message.senderId)}
               style={{ marginRight: 4 }}
             >
-              <UserAvatar source={message.senderAvatar} name={message.senderName || ''} size='sm' />
+              <UserAvatar 
+                source={message.senderAvatar} 
+                name={message.senderName || ''} 
+                size='sm' 
+                role={members?.find(m => m.userId === message.senderId)?.role as 'OWNER' | 'ADMIN' | 'MEMBER' | undefined}
+              />
             </TouchableOpacity>
           )}
         </View>
@@ -972,8 +908,23 @@ export function MessageBubble({
               borderRadius: 16,
               backgroundColor: highlightAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: ['transparent', 'rgba(0,104,255,0.18)']
-              })
+                outputRange: ['transparent', isDark ? 'rgba(54, 167, 255, 0.25)' : 'rgba(0, 104, 255, 0.15)']
+              }),
+              padding: highlightAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 4]
+              }),
+              borderWidth: highlightAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, 1.5]
+              }),
+              borderColor: isDark ? '#36A7FF' : '#0068FF',
+              transform: [{
+                scale: highlightAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [1, 1.02]
+                })
+              }]
             }}>
             <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
               <View
@@ -1072,17 +1023,18 @@ export function MessageBubble({
             />
           </View>
 
-        {(showTime || !!deliveryStatusNode) && (
+        {(showTime || !!deliveryStatusNode || isPinned) && (
           <View
             style={{
               flexDirection: 'row',
               alignSelf: isOwn ? 'flex-end' : 'flex-start',
               marginTop: 2,
               marginHorizontal: 4,
-              gap: 6
+              gap: 6,
+              alignItems: 'center'
             }}
           >
-            {showTime && <Text style={{ fontSize: 10.5, color: timeColor, marginTop: 1 }}>{formatTime(message.createdAt)}</Text>}
+            {showTime && <Text style={{ fontSize: 10.5, color: timeColor }}>{formatTime(message.createdAt)}</Text>}
             {!!deliveryStatusNode && deliveryStatusNode}
           </View>
         )}

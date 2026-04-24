@@ -74,6 +74,116 @@ export const useMarkAsRead = () => {
   })
 }
 
+export const useMarkAsUnread = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (conversationId: string) => messageApi.markAsUnread(conversationId),
+    onMutate: async (conversationId) => {
+      await queryClient.cancelQueries({ queryKey: messageKeys.conversations() })
+      const previousData = queryClient.getQueriesData({ queryKey: messageKeys.conversations() })
+
+      queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
+        if (!oldData) return oldData
+        const mapFn = (conv: ConversationResponse) =>
+          conv.id === conversationId ? { ...conv, unreadCount: (conv.unreadCount || 0) + 1 } : conv
+
+        if (Array.isArray(oldData)) return oldData.map(mapFn)
+        if (oldData?.data && Array.isArray(oldData.data)) {
+          return { ...oldData, data: oldData.data.map(mapFn) }
+        }
+        return oldData
+      })
+
+      return { previousData }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data)
+        })
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+    }
+  })
+}
+
+export const useTogglePinConversation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ conversationId, isPinned }: { conversationId: string; isPinned: boolean }) =>
+      isPinned ? messageApi.unpinConversation(conversationId) : messageApi.pinConversation(conversationId),
+    onMutate: async ({ conversationId, isPinned }) => {
+      await queryClient.cancelQueries({ queryKey: messageKeys.conversations() })
+      const previousData = queryClient.getQueriesData({ queryKey: messageKeys.conversations() })
+
+      queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
+        if (!oldData) return oldData
+        const mapFn = (conv: ConversationResponse) =>
+          conv.id === conversationId ? { ...conv, isPinned: !isPinned } : conv
+
+        if (Array.isArray(oldData)) return oldData.map(mapFn)
+        if (oldData?.data && Array.isArray(oldData.data)) {
+          return { ...oldData, data: oldData.data.map(mapFn) }
+        }
+        return oldData
+      })
+
+      return { previousData }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data)
+        })
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+    }
+  })
+}
+
+export const useToggleMuteConversation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ conversationId, isMuted }: { conversationId: string; isMuted: boolean }) =>
+      isMuted ? messageApi.unmuteConversation(conversationId) : messageApi.muteConversation(conversationId),
+    onMutate: async ({ conversationId, isMuted }) => {
+      await queryClient.cancelQueries({ queryKey: messageKeys.conversations() })
+      const previousData = queryClient.getQueriesData({ queryKey: messageKeys.conversations() })
+
+      queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
+        if (!oldData) return oldData
+        const mapFn = (conv: ConversationResponse) =>
+          conv.id === conversationId ? { ...conv, isMuted: !isMuted } : conv
+
+        if (Array.isArray(oldData)) return oldData.map(mapFn)
+        if (oldData?.data && Array.isArray(oldData.data)) {
+          return { ...oldData, data: oldData.data.map(mapFn) }
+        }
+        return oldData
+      })
+
+      return { previousData }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data)
+        })
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+    }
+  })
+}
+
 export const useRevokeMessage = () => {
   const { t } = useTranslation()
   const queryClient = useQueryClient()

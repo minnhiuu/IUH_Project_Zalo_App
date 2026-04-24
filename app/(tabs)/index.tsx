@@ -9,12 +9,21 @@ import { NotificationPanel, useNotificationStateQuery } from '@/features/notific
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { Colors } from '@/constants/theme'
 import { useAuthStore } from '@/store'
-import { ConversationListItem } from '@/features/message/components'
+import { ConversationListItem, ConversationContextMenu } from '@/features/message/components'
 import { ConversationListSkeleton } from '@/features/message/components'
 import { QuickCreateMenu, type QuickCreateMenuAction } from '@/features/message/components/group'
-import { useClearConversationHistory, useConversations, useDeleteConversation } from '@/features/message/queries'
+import { 
+  useClearConversationHistory, 
+  useConversations, 
+  useDeleteConversation,
+  useMarkAsRead,
+  useMarkAsUnread,
+  useTogglePinConversation,
+  useToggleMuteConversation
+} from '@/features/message/queries'
 import type { ConversationResponse } from '@/features/message/schemas'
 import Toast from 'react-native-toast-message'
+import type { LayoutRectangle } from 'react-native'
 
 export default function MessagesScreen() {
   const { t } = useTranslation()
@@ -25,32 +34,52 @@ export default function MessagesScreen() {
   const { data: notificationState } = useNotificationStateQuery()
   const currentUserId = useAuthStore((s) => s.user?.id)
   const [selectedConversation, setSelectedConversation] = useState<ConversationResponse | null>(null)
+  const [selectedAnchorLayout, setSelectedAnchorLayout] = useState<LayoutRectangle | null>(null)
   const [showOptions, setShowOptions] = useState(false)
   const [showQuickMenu, setShowQuickMenu] = useState(false)
   const [showClearConfirm, setShowClearConfirm] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [isMultiSelectMode, setIsMultiSelectMode] = useState(false)
 
   const { mutate: clearConversationHistory } = useClearConversationHistory()
   const { mutate: deleteConversation } = useDeleteConversation()
+  const { mutate: markAsRead } = useMarkAsRead()
+  const { mutate: markAsUnread } = useMarkAsUnread()
+  const { mutate: togglePin } = useTogglePinConversation()
+  const { mutate: toggleMute } = useToggleMuteConversation()
 
   const { data: conversations = [], isLoading } = useConversations()
 
-  const options: ActionSheetOption[] = [
-    {
-      icon: 'trash-outline',
-      label: t('message.conversationOptions.clearHistory'),
-      onPress: () => setShowClearConfirm(true),
-      iconColor: '#EF4444',
-      color: '#EF4444'
-    },
-    {
-      icon: 'close-circle-outline',
-      label: t('message.conversationOptions.deleteConversation'),
-      onPress: () => setShowDeleteConfirm(true),
-      iconColor: '#EF4444',
-      color: '#EF4444'
+  const handleConversationAction = (action: string, conversation: ConversationResponse) => {
+    switch (action) {
+      case 'toggleRead':
+        const isUnread = (conversation.unreadCount || 0) > 0 || !!conversation.manuallyMarkedUnread
+        if (isUnread) {
+          markAsRead(conversation.id)
+        } else {
+          markAsUnread(conversation.id)
+        }
+        break
+      case 'togglePin':
+        togglePin({ conversationId: conversation.id, isPinned: !!conversation.isPinned })
+        break
+      case 'mute':
+        toggleMute({ conversationId: conversation.id, isMuted: !!conversation.isMuted })
+        break
+      case 'hide':
+        Toast.show({ type: 'info', text1: t('message.quickCreate.comingSoon') })
+        break
+      case 'delete':
+        setShowDeleteConfirm(true)
+        break
+      case 'multiSelect':
+        setIsMultiSelectMode(true)
+        break
+      case 'clearHistory':
+        setShowClearConfirm(true)
+        break
     }
-  ]
+  }
 
   const quickActions: QuickCreateMenuAction[] = [
     {
@@ -140,8 +169,9 @@ export default function MessagesScreen() {
                   }
                 })
               }}
-              onLongPress={() => {
+              onLongPress={(layout) => {
                 setSelectedConversation(item)
+                setSelectedAnchorLayout(layout)
                 setShowOptions(true)
               }}
             />
@@ -150,12 +180,18 @@ export default function MessagesScreen() {
         />
       )}
 
-      <ActionSheet
+      <ConversationContextMenu
         visible={showOptions}
         onClose={() => setShowOptions(false)}
-        options={options}
-        title={t('message.conversationOptions.title')}
-        isDark={colorScheme === 'dark'}
+        conversation={selectedConversation}
+        anchorLayout={selectedAnchorLayout}
+        onAction={handleConversationAction}
+        renderPreview={(conv) => (
+          <ConversationListItem
+            conversation={conv}
+            onPress={() => {}}
+          />
+        )}
       />
 
       <ConfirmDialog

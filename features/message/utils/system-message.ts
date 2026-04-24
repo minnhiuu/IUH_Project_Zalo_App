@@ -71,14 +71,7 @@ export function getSystemMessageText(
   const firstTargetName = targetNamesRaw[0] || safeT('messages.user', { defaultValue: 'Người dùng' })
   const isActorMe = message.senderId === currentUserId
 
-  // Check if content already contains formatted text
-  if (typeof message.content === 'string' && (message.content.includes('|') || message.content.length > 30)) {
-     const contentStr = message.content
-     if (isActorMe && contentStr.includes(message.senderName || '')) {
-        return contentStr.replace(message.senderName || '', safeT('messages.you', { defaultValue: 'Bạn' }))
-     }
-     return contentStr
-  }
+    const hasResolvedAction = !!action
 
   // Action mapping
   switch (action) {
@@ -89,6 +82,105 @@ export function getSystemMessageText(
         : safeT('messages.system.pin.actor', { actor: actorName, defaultValue: `${actorName} đã ghim tin nhắn` })
     
     case 'UNPIN_MESSAGE':
+        case 'PROMOTE_ADMIN':
+          if (targetIds[0] === currentUserId) {
+            return safeT('messages.system.promote.self', { defaultValue: 'Bạn đã được bổ nhiệm làm phó nhóm' })
+          }
+          return isActorMe
+            ? safeT('messages.system.promote.actor_self', { target: firstTargetName, defaultValue: `Bạn đã bổ nhiệm ${firstTargetName} làm phó nhóm` })
+            : safeT('messages.system.promote.actor', { actor: actorName, target: firstTargetName, defaultValue: `${actorName} đã bổ nhiệm ${firstTargetName} làm phó nhóm` })
+
+        case 'DEMOTE_ADMIN':
+          if (targetIds[0] === currentUserId) {
+            return safeT('messages.system.demote.self', { defaultValue: 'Bạn không còn là phó nhóm' })
+          }
+          return isActorMe
+            ? safeT('messages.system.demote.actor_self', { target: firstTargetName, defaultValue: `Bạn đã thu hồi quyền phó nhóm của ${firstTargetName}` })
+            : safeT('messages.system.demote.actor', { actor: actorName, target: firstTargetName, defaultValue: `${actorName} đã thu hồi quyền phó nhóm của ${firstTargetName}` })
+
+        case 'TRANSFER_OWNER':
+          if (targetIds[0] === currentUserId) {
+            return safeT('messages.system.transfer.self', { defaultValue: 'Bạn đã trở thành trưởng nhóm' })
+          }
+          return isActorMe
+            ? safeT('messages.system.transfer.actor_self', { target: firstTargetName, defaultValue: `Bạn đã chuyển quyền trưởng nhóm cho ${firstTargetName}` })
+            : safeT('messages.system.transfer.actor', { actor: actorName, target: firstTargetName, defaultValue: `${actorName} đã chuyển quyền trưởng nhóm cho ${firstTargetName}` })
+
+        case 'UPDATE_SETTINGS':
+          if (payload.setting === 'memberCanSendMessages') {
+            const allowed = payload.value !== false
+            return allowed
+              ? (isActorMe
+                  ? safeT('messages.system.update_settings.send_all.self', { defaultValue: 'Bạn cho phép tất cả thành viên gửi tin nhắn trong nhóm' })
+                  : safeT('messages.system.update_settings.send_all.actor', { actor: actorName, defaultValue: `${actorName} cho phép tất cả thành viên gửi tin nhắn trong nhóm` }))
+              : (isActorMe
+                  ? safeT('messages.system.update_settings.send_admin.self', { defaultValue: 'Bạn chỉ cho phép trưởng/phó nhóm gửi tin nhắn trong nhóm' })
+                  : safeT('messages.system.update_settings.send_admin.actor', { actor: actorName, defaultValue: `${actorName} chỉ cho phép trưởng/phó nhóm gửi tin nhắn trong nhóm` }))
+          }
+          if (payload.setting === 'membershipApprovalEnabled') {
+            return payload.value === true
+              ? safeT('messages.system.update_settings.approval_on', { defaultValue: 'Hình thức tham gia nhóm được thay đổi thành "Cần phê duyệt".' })
+              : safeT('messages.system.update_settings.approval_off', { defaultValue: 'Hình thức tham gia nhóm được thay đổi thành "Không cần phê duyệt".' })
+          }
+          if (payload.setting === 'joinByLinkEnabled') {
+            return payload.value === true
+              ? safeT('messages.system.update_settings.join_by_link_on', { defaultValue: 'Đã cho phép tham gia nhóm bằng link mời' })
+              : safeT('messages.system.update_settings.join_by_link_off', { defaultValue: 'Đã tắt tham gia nhóm bằng link mời' })
+          }
+          break
+
+        case 'JOIN_BY_LINK':
+          return isActorMe
+            ? safeT('messages.system.join_by_link.self', { defaultValue: 'Bạn đã tham gia nhóm bằng link' })
+            : safeT('messages.system.join_by_link.actor', { actor: actorName, defaultValue: `${actorName} đã tham gia nhóm bằng link` })
+
+        case 'GENERATE_JOIN_LINK':
+          return isActorMe
+            ? safeT('messages.system.generate_link.self', { defaultValue: 'Bạn đã tạo link nhóm' })
+            : safeT('messages.system.generate_link.actor', { actor: actorName, defaultValue: `${actorName} đã tạo link nhóm` })
+
+        case 'REFRESH_JOIN_LINK':
+          return isActorMe
+            ? safeT('messages.system.refresh_link.self', { defaultValue: 'Bạn đã làm mới link nhóm' })
+            : safeT('messages.system.refresh_link.actor', { actor: actorName, defaultValue: `${actorName} đã làm mới link nhóm` })
+
+        case 'JOIN_REQUEST_CREATED':
+          return isActorMe
+            ? safeT('messages.system.join_request.created.self', { defaultValue: 'Bạn đã gửi yêu cầu tham gia nhóm' })
+            : safeT('messages.system.join_request.created.actor', { actor: actorName, defaultValue: `${actorName} đã gửi yêu cầu tham gia nhóm` })
+
+        case 'JOIN_REQUEST_APPROVED':
+          if (targetIds[0] === currentUserId) {
+            return safeT('messages.system.join_request.approved.self', { actor: actorName, defaultValue: `${actorName} đã duyệt yêu cầu tham gia của bạn` })
+          }
+          return isActorMe
+            ? safeT('messages.system.join_request.approved.actor_self', { target: firstTargetName, defaultValue: `Bạn đã duyệt yêu cầu tham gia của ${firstTargetName}` })
+            : safeT('messages.system.join_request.approved.actor', { actor: actorName, target: firstTargetName, defaultValue: `${actorName} đã duyệt yêu cầu tham gia của ${firstTargetName}` })
+
+        case 'JOIN_REQUEST_REJECTED':
+          return safeT('messages.system.join_request.rejected', { defaultValue: 'Yêu cầu tham gia nhóm đã bị từ chối' })
+
+        case 'BLOCK_MEMBER':
+          if (targetIds[0] === currentUserId) {
+            return safeT('messages.system.block.self_target', { actor: actorName, defaultValue: `Bạn đã bị ${actorName} chặn khỏi nhóm` })
+          }
+          return isActorMe
+            ? safeT('messages.system.block.actor_self', { target: firstTargetName, defaultValue: `Bạn đã chặn ${firstTargetName} khỏi nhóm` })
+            : safeT('messages.system.block.actor', { actor: actorName, target: firstTargetName, defaultValue: `${actorName} đã chặn ${firstTargetName} khỏi nhóm` })
+
+        case 'BLOCKED_FROM_JOINING':
+          return safeT('messages.system.blocked_from_joining', { target: firstTargetName, defaultValue: `${firstTargetName} đã bị chặn tham gia nhóm` })
+
+        case 'SELF_BLOCKED_FROM_JOINING':
+          return payload?.joinLinkEnabled === true
+            ? safeT('messages.system.self_blocked_from_joining.with_link', { target: firstTargetName, defaultValue: `${firstTargetName} đã bị chặn tham gia lại qua link mời` })
+            : safeT('messages.system.self_blocked_from_joining.without_link', { target: firstTargetName, defaultValue: `${firstTargetName} đã bị chặn tham gia lại nhóm` })
+
+        case 'ADD_MEMBERS_FAILED':
+          return safeT('messages.system.add_failed', { count: Number(payload.failedCount || targetIds.length || 0), defaultValue: `Không thể thêm ${Number(payload.failedCount || targetIds.length || 0)} thành viên vào nhóm` })
+
+        case 'DISBAND_GROUP':
+          return safeT('messages.system.disband', { defaultValue: 'Nhóm đã bị giải tán' })
     case 'UNPIN':
       return isActorMe 
         ? safeT('messages.system.unpin.self', { defaultValue: 'Bạn đã bỏ ghim tin nhắn' })
@@ -151,9 +243,11 @@ export function getSystemMessageText(
           : safeT('messages.system.leave.actor', { actor: actorName, defaultValue: `${actorName} đã rời nhóm` })
       }
       
-      const contentText = typeof message.content === 'string' ? message.content : ''
-      if (contentText && contentText !== '[SYSTEM]' && contentText !== 'SYSTEM') {
-        return contentText
+      if (!hasResolvedAction) {
+        const contentText = typeof message.content === 'string' ? message.content : ''
+        if (contentText && contentText !== '[SYSTEM]' && contentText !== 'SYSTEM') {
+          return contentText
+        }
       }
       
       return safeT('messages.system.default', { defaultValue: '[Thông báo]' })

@@ -1,5 +1,6 @@
-import React from 'react'
-import { View, TouchableOpacity } from 'react-native'
+import React, { useRef } from 'react'
+import { View, TouchableOpacity, LayoutRectangle } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
 import { Image as ExpoImage } from 'expo-image'
 import { Text } from '@/components/ui/text'
 import { UserAvatar } from '@/components/common/user-avatar'
@@ -13,10 +14,12 @@ import { parseMessageDate } from '../utils/date-utils'
 import { getSystemMessageText } from '../utils/system-message'
 import { useAuthStore } from '@/store'
 
+import * as Haptics from 'expo-haptics'
+
 interface ConversationListItemProps {
   conversation: ConversationResponse
   onPress: () => void
-  onLongPress?: () => void
+  onLongPress?: (layout: LayoutRectangle) => void
 }
 
 function AvatarCell({ uri, label, size, left, top }: { uri?: string | null; label: string; size: number; left: number; top: number }) {
@@ -123,12 +126,24 @@ function GroupConversationAvatar({ conversation }: { conversation: ConversationR
 }
 
 export function ConversationListItem({ conversation, onPress, onLongPress }: ConversationListItemProps) {
+  const containerRef = useRef<TouchableOpacity>(null)
   const { t } = useTranslation()
   const { user: currentUser } = useAuthStore()
   const colorScheme = useColorScheme() ?? 'light'
+  const isDark = colorScheme === 'dark'
   const colors = Colors[colorScheme]
-  const hasUnread = (conversation.unreadCount ?? 0) > 0
+  const hasUnread = (conversation.unreadCount ?? 0) > 0 || !!conversation.manuallyMarkedUnread
+  const isPinned = conversation.isPinned
   const rawConversation = conversation as any
+
+  const handleLongPress = () => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    if (onLongPress && containerRef.current) {
+      containerRef.current.measureInWindow((x, y, width, height) => {
+        onLongPress({ x, y, width, height })
+      })
+    }
+  }
 
   const rawLastMessage =
     rawConversation.lastMessage ??
@@ -234,43 +249,36 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
 
   return (
     <TouchableOpacity
-      activeOpacity={0.6}
+      ref={containerRef}
+      activeOpacity={0.7}
       onPress={onPress}
-      onLongPress={onLongPress}
+      onLongPress={handleLongPress}
+      delayLongPress={200}
       style={{
         flexDirection: 'row',
-        alignItems: 'flex-start',
+        alignItems: 'center',
         paddingHorizontal: 16,
-        paddingVertical: 13,
-        backgroundColor: colors.background
+        paddingVertical: 12,
+        backgroundColor: isPinned ? (isDark ? '#2D323C' : '#F8FAFC') : colors.background,
+        borderBottomWidth: 0.5,
+        borderBottomColor: isDark ? '#374151' : '#F1F5F9'
       }}
     >
       {/* Avatar */}
-      <View style={{ marginRight: 12, paddingTop: 2 }}>
+      <View style={{ marginRight: 12 }}>
         {conversation.isGroup && !conversation.avatar ? (
           <GroupConversationAvatar conversation={conversation} />
         ) : (
           <UserAvatar source={conversation.avatar} name={conversation.name || ''} size='xl' />
         )}
       </View>
-
+ 
       {/* Content */}
-      <View
-        style={{
-          flex: 1,
-          justifyContent: 'center',
-          paddingBottom: 14,
-          marginTop: 2,
-          borderBottomWidth: 0.5,
-          borderBottomColor: '#E5E7EB'
-        }}
-      >
-        <View
-          style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}
-        >
+      <View style={{ flex: 1, justifyContent: 'center' }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
           <Text
             style={{
-              fontSize: 18,
+              fontSize: 17,
               fontWeight: hasUnread ? '700' : '500',
               color: colors.text,
               flex: 1
@@ -279,18 +287,21 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
           >
             {conversation.name || t('messages.user', { defaultValue: 'User' })}
           </Text>
-          <Text style={{ fontSize: 15, color: '#6B7280', marginLeft: 8, marginTop: 1 }}>
-            {formatTime(lastMessageTime)}
-          </Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
+            {isPinned && <Ionicons name="pin" size={12} color="#94A3B8" style={{ marginRight: 4 }} />}
+            <Text style={{ fontSize: 13, color: '#94A3B8' }}>
+              {formatTime(lastMessageTime)}
+            </Text>
+          </View>
         </View>
-
-        <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 1 }}>
+ 
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text
             numberOfLines={1}
             style={{
               flex: 1,
-              fontSize: 16,
-              color: '#6B7280',
+              fontSize: 15,
+              color: hasUnread ? colors.text : '#94A3B8',
               fontStyle: isRevoked ? 'italic' : 'normal',
               fontWeight: hasUnread ? '500' : '400'
             }}
@@ -301,17 +312,19 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
             <View
               style={{
                 marginLeft: 8,
-                backgroundColor: '#ef4444',
-                borderRadius: 11,
-                minWidth: 22,
-                height: 22,
-                paddingHorizontal: 7,
+                backgroundColor: '#EF4444',
+                borderRadius: (conversation.unreadCount ?? 0) > 0 ? 10 : 5,
+                minWidth: (conversation.unreadCount ?? 0) > 0 ? 20 : 10,
+                height: (conversation.unreadCount ?? 0) > 0 ? 20 : 10,
+                paddingHorizontal: (conversation.unreadCount ?? 0) > 0 ? 6 : 0,
                 alignItems: 'center',
                 justifyContent: 'center'
               }}
             >
-              <Text style={{ fontSize: 11, fontWeight: '700', color: '#fff' }}>
-                {(conversation.unreadCount ?? 0) > 99 ? '99+' : conversation.unreadCount}
+              <Text style={{ fontSize: 10, fontWeight: '700', color: '#FFFFFF' }}>
+                {(conversation.unreadCount ?? 0) > 0 
+                  ? ((conversation.unreadCount ?? 0) > 99 ? '99+' : conversation.unreadCount) 
+                  : ''}
               </Text>
             </View>
           )}

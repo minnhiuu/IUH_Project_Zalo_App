@@ -1,13 +1,13 @@
 {
   "welcome": {
-    "title": "Zalo",
+    "title": "BondHub",
     "subtitle": "Stable video calls\nGreat conversations",
     "loginButton": "Login",
     "registerButton": "Create new account",
     "language": "English"
   },
   "login": {
-    "title": "Login Zalo",
+    "title": "Login BondHub",
     "phoneTab": "PHONE NUMBER",
     "qrTab": "QR CODE SCAN",
     "phone": "Phone number",
@@ -28,9 +28,13 @@
     "loginSuccess": "Login successful",
     "loginFailed": "Login failed",
     "or": "Or",
-    "qrInstruction": "Use Zalo app on another device to scan QR code",
+    "qrInstruction": "Use BondHub app on another device to scan QR code",
     "otpSent": "Verification code sent",
-    "checkPhone": "Please check your phone messages"
+    "checkPhone": "Please check your phone messages",
+    "invalidCredentials": "Incorrect email or password",
+    "accountLocked": "Your account is locked. Please contact support.",
+    "tooManyAttempts": "Too many attempts. Please try again later.",
+    "serverError": "Unable to sign in right now. Please try again."
   },
   "logout": {
     "logoutButton": "Logout",
@@ -45,6 +49,7 @@
   },
   "register": {
     "title": "Create Account",
+    "screenTitle": "Create your account",
     "subtitle": "Please enter your information to create a new account",
     "phone": "Phone number",
     "phonePlaceholder": "Enter phone number",
@@ -59,11 +64,13 @@
     "login": "Login",
     "registerSuccess": "Registration successful",
     "registerFailed": "Registration failed",
+    "emailExists": "This email is already in use. Please use another one.",
+    "serverError": "Unable to register right now. Please try again.",
     "terms": "By registering, you agree to",
     "termsOfService": "Terms of Service",
     "and": "and",
     "privacyPolicy": "Privacy Policy",
-    "ofZalo": "of Zalo"
+    "ofZalo": "of BondHub"
   },
   "validation": {
     "phoneRequired": "Please enter phone number",
@@ -113,7 +120,7 @@
   "qrScanner": {
     "title": "Scan QR Code",
     "permissionTitle": "Camera Permission",
-    "permissionMessage": "Zalo needs camera permission to scan QR code",
+    "permissionMessage": "BondHub needs camera permission to scan QR code",
     "scanInstruction": "Move camera to QR code to scan",
     "invalidQr": "Invalid QR code",
     "confirmTitle": "Login to Web?",

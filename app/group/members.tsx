@@ -211,9 +211,7 @@ export default function GroupMembersScreen() {
                 <Ionicons name='person-add-outline' size={20} color={palette.text} />
               </View>
               <Text style={{ fontSize: 15, color: palette.text, flex: 1 }}>{t('message.groupMembers.approveMembers')}</Text>
-              <Text style={{ color: palette.subText, fontSize: 14 }}>
-                {pendingRequests.length > 0 ? `(${pendingRequests.length})` : ''}
-              </Text>
+              <Ionicons name='chevron-forward' size={16} color={isDark ? '#3E444A' : '#C7C7CC'} />
             </TouchableOpacity>
           )}
         </>
@@ -272,33 +270,7 @@ export default function GroupMembersScreen() {
           }}
         />
 
-        {isAdmin && activeTab === 'all' && pendingRequests.length > 0 && (
-          <View style={{ backgroundColor: palette.card, marginTop: 8, paddingHorizontal: 16, paddingVertical: 12 }}>
-            {pendingRequests.map((req) => (
-              <View key={req.id} style={[styles.requestRow, { borderBottomColor: palette.line }]}>
-                <UserAvatar source={req.avatar || undefined} name={req.fullName} size='lg' />
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={{ color: palette.text, fontSize: 14, fontWeight: '600' }}>{req.fullName}</Text>
-                  {!!req.joinAnswer && <Text style={{ color: palette.subText, marginTop: 2 }}>{req.joinAnswer}</Text>}
-                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
-                    <TouchableOpacity
-                      style={[styles.actionBtn, { backgroundColor: isDark ? '#2A3442' : '#EFF3F8' }]}
-                      onPress={() => rejectJoin.mutate({ conversationId: conversationId || '', requestId: req.id })}
-                    >
-                      <Text style={{ color: palette.text, fontWeight: '700' }}>{t('message.groupMembers.reject')}</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={[styles.actionBtn, { backgroundColor: '#2E86FF' }]}
-                      onPress={() => approveJoin.mutate({ conversationId: conversationId || '', requestId: req.id })}
-                    >
-                      <Text style={{ color: '#fff', fontWeight: '700' }}>{t('message.groupMembers.approve')}</Text>
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
+        {/* Join requests are handled only in the approval screen. */}
       </ScrollView>
 
       <Modal transparent visible={memberInfoOpen} animationType='fade' onRequestClose={closeMemberInfo}>

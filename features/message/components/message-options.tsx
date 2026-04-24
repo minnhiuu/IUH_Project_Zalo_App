@@ -92,6 +92,8 @@ export default function MessageOptionsScreen() {
   const groupTitle = isUnnamedGroup ? t('message.groupOptions.setGroupName') : groupName
   const groupAvatar = activeConversation?.avatar || null
   const groupMembersCount = activeConversation?.members?.length || 0
+  const groupLinkEnabled =
+    !!activeConversation?.joinLinkToken || activeConversation?.settings?.joinByLinkEnabled === true
 
   const quickActions = useMemo(
     () => [
@@ -451,7 +453,11 @@ export default function MessageOptionsScreen() {
                 isDark={isDark}
                 rightNode={
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Text style={{ color: groupPalette.subText, fontSize: 12 }}>{t('message.groupOptions.off')}</Text>
+                    <Text style={{ color: groupPalette.subText, fontSize: 12 }}>
+                      {groupLinkEnabled
+                        ? t('message.groupSettings.approveStatusOn', { defaultValue: 'Đã bật' })
+                        : t('message.groupSettings.approveStatusOff', { defaultValue: 'Đã tắt' })}
+                    </Text>
                     <Ionicons name='chevron-forward' size={16} color={isDark ? '#3E444A' : '#C7C7CC'} />
                   </View>
                 }

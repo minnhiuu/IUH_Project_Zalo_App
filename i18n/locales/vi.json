@@ -27,7 +27,7 @@
   },
   "auth": {
     "welcome": {
-      "title": "Zalo",
+      "title": "BondHub",
       "subtitle": "Gọi video ổn định\nTrò chuyện thật đã",
       "loginButton": "Đăng nhập",
       "registerButton": "Tạo tài khoản mới",
@@ -59,8 +59,8 @@
       "or": "Hoặc",
       "loginWithPassword": "ĐĂNG NHẬP VỚI MẬT KHẨU",
       "loginWithoutPassword": "ĐĂNG NHẬP KHÔNG DÙNG MẬT KHẨU",
-      "loginWithFacebook": "Đăng nhập bằng Facebook",
-      "qrInstruction": "Quét mã QR để đăng nhập Zalo trên thiết bị này",
+      "loginWithFacebook": "",
+      "qrInstruction": "Quét mã QR để đăng nhập BondHub trên thiết bị này",
       "otpSent": "Đã gửi mã OTP",
       "checkPhone": "Vui lòng kiểm tra email của bạn"
     },
@@ -87,7 +87,7 @@
       "termsOfService": "Điều khoản sử dụng",
       "and": "và",
       "privacyPolicy": "Chính sách bảo mật",
-      "ofZalo": "của Zalo"
+      "ofZalo": "của BondHub"
     },
     "otp": {
       "title": "Xác minh OTP",
@@ -145,7 +145,7 @@
     "qrScanner": {
       "title": "Quét mã QR",
       "permissionTitle": "Quyền sử dụng máy ảnh",
-      "permissionMessage": "Zalo cần quyền sử dụng máy ảnh để quét mã QR",
+      "permissionMessage": "BondHub cần quyền sử dụng máy ảnh để quét mã QR",
       "scanInstruction": "Di chuyển camera đến mã QR để quét",
       "invalidQr": "Mã QR không hợp lệ hoặc đã hết hạn",
       "confirmTitle": "Bạn muốn đăng nhập?",
@@ -245,7 +245,7 @@
         "subtitle": "Tùy chỉnh giao diện và ngôn ngữ"
       },
       "about": {
-        "title": "Thông tin về Zalo",
+        "title": "Thông tin về BondHub",
         "subtitle": "Phiên bản và thông tin ứng dụng"
       },
       "support": {
@@ -267,7 +267,7 @@
       "notLinked": "Chưa liên kết",
       "securityCheck": "Kiểm tra bảo mật",
       "securityCheckSubtitle": "3 vấn đề bảo mật cần xử lý",
-      "lockZalo": "Khoá Zalo",
+      "lockZalo": "Khoá BondHub",
       "off": "Đang tắt",
       "twoFactor": "Bảo mật 2 lớp",
       "twoFactorSubtitle": "Tăng cường bảo mật tài khoản",
@@ -362,7 +362,7 @@
     "dataOnDevice": {
       "totalUsed": "Tổng dung lượng đã sử dụng",
       "percentOfPhone": "{{percent}}% dung lượng điện thoại",
-      "zaloData": "Dữ liệu Zalo",
+      "zaloData": "Dữ liệu BondHub",
       "zCloudDescription": "Giải phóng dung lượng điện thoại bằng cách lưu trữ ảnh, video lên zCloud miễn phí",
       "learnMore": "Tìm hiểu thêm",
       "cache": "Bộ nhớ đệm",
@@ -501,8 +501,8 @@
     },
     "about": {
       "version": "Phiên bản {{version}}",
-      "description": "Zalo là ứng dụng nhắn tin và gọi điện miễn phí, giúp bạn kết nối với bạn bè và người thân một cách dễ dàng và nhanh chóng.",
-      "copyright": "© 2024 Zalo. All rights reserved."
+      "description": "BondHub là ứng dụng nhắn tin và gọi điện miễn phí, giúp bạn kết nối với bạn bè và người thân một cách dễ dàng và nhanh chóng.",
+      "copyright": "© 2024 BondHub. All rights reserved."
     },
     "support": {
       "faq": "Câu hỏi thường gặp",
@@ -672,7 +672,7 @@
     "title": "Khám phá",
     "search": "Tìm kiếm",
     "services": {
-      "video": "Zalo Video",
+      "video": "BondHub Video",
       "gameCenter": "Game Center",
       "miniApp": "Mini App",
       "shop": "Shop",
@@ -713,12 +713,12 @@
     "menu": {
       "zCloud": "zCloud",
       "zCloudDesc": "Không gian lưu trữ dữ liệu trên đám mây",
-      "zStyle": "zStyle – Nổi bật trên Zalo",
-      "zStyleDesc": "Hình nền và nhạc cho cuộc gọi Zalo",
+      "zStyle": "zStyle – Nổi bật trên BondHub",
+      "zStyleDesc": "Hình nền và nhạc cho cuộc gọi BondHub",
       "myDocs": "My Documents",
       "myDocsDesc": "Lưu trữ các tin nhắn quan trọng",
       "storage": "Dữ liệu trên máy",
-      "storageDesc": "Quản lý dữ liệu Zalo của bạn",
+      "storageDesc": "Quản lý dữ liệu BondHub của bạn",
       "qrWallet": "Ví QR",
       "qrWalletDesc": "Lưu trữ và xuất trình các mã QR quan trọng",
       "accountSecurity": "Tài khoản và bảo mật",
