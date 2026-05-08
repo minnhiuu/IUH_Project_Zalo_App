@@ -369,6 +369,30 @@ function groupByDate(messages: MessageResponse[]): { dateLabel: string; items: M
   return [...map.entries()].map(([dateLabel, items]) => ({ dateLabel, items }))
 }
 
+type MediaGridItem = {
+  key: string
+  url: string
+  isVideo: boolean
+  createdAt: string | null
+}
+
+function groupMediaItemsByDate(items: MediaGridItem[]): { dateLabel: string; items: MediaGridItem[] }[] {
+  const map = new Map<string, MediaGridItem[]>()
+  for (const item of items) {
+    if (!item.createdAt) continue
+    const normalized = normalizeDateTime(item.createdAt)
+    if (!normalized) continue
+    const d = new Date(normalized)
+    const day = d.getDate()
+    const month = d.getMonth() + 1
+    const year = d.getFullYear()
+    const label = `Ngày ${day} tháng ${month}, ${year}`
+    if (!map.has(label)) map.set(label, [])
+    map.get(label)!.push(item)
+  }
+  return [...map.entries()].map(([dateLabel, groupedItems]) => ({ dateLabel, items: groupedItems }))
+}
+
 function getExtColor(ext: string): string {
   if (ext === 'PDF') return '#EF4444'
   if (['DOC', 'DOCX'].includes(ext)) return '#2563EB'
@@ -464,26 +488,38 @@ function MediaTab({
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
 
   const filtered = useMemo(() => applyCommonFilters(messages, filter), [messages, filter])
-  const grouped = useMemo(() => groupByDate(filtered), [filtered])
+  const mediaItems = useMemo<MediaGridItem[]>(() => {
+    const result: MediaGridItem[] = []
+    for (const message of filtered) {
+      const attachments = message.attachments ?? []
+      if (!attachments.length) continue
 
-  // Both images and videos go into lightbox
-  const allItems = useMemo(() => {
-    const result: { url: string; isVideo: boolean }[] = []
-    for (const { items } of grouped) {
-      for (const m of items) {
-        const att = m.attachments?.[0]
-        const isVideo = m.type === MessageType.VIDEO || att?.contentType?.startsWith('video/')
-        if (att?.url) result.push({ url: att.url, isVideo: !!isVideo })
+      for (let i = 0; i < attachments.length; i++) {
+        const attachment = attachments[i]
+        if (!attachment?.url) continue
+        result.push({
+          key: `${message.id}-${attachment.key || i}`,
+          url: attachment.url,
+          isVideo: message.type === MessageType.VIDEO || attachment.contentType?.startsWith('video/'),
+          createdAt: message.createdAt
+        })
       }
     }
     return result
-  }, [grouped])
+  }, [filtered])
 
-  const urlToImageIdx = useMemo(() => {
+  const grouped = useMemo(() => groupMediaItemsByDate(mediaItems), [mediaItems])
+
+  // Both images and videos go into lightbox
+  const allItems = useMemo(() => {
+    return mediaItems.map((item) => ({ url: item.url, isVideo: item.isVideo }))
+  }, [mediaItems])
+
+  const keyToImageIdx = useMemo(() => {
     const map = new Map<string, number>()
-    allItems.forEach((item, i) => map.set(item.url, i))
+    mediaItems.forEach((item, i) => map.set(item.key, i))
     return map
-  }, [allItems])
+  }, [mediaItems])
 
   // Prefetch all images so lightbox opens instantly
   React.useEffect(() => {
@@ -516,17 +552,13 @@ function MediaTab({
                 {dateLabel}
               </Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                {items.map((m, i) => {
-                  const att = m.attachments?.[0]
-                  const isVideo = m.type === MessageType.VIDEO || att?.contentType?.startsWith('video/')
-                  const url = att?.url || ''
+                {items.map((item, i) => {
                   return (
                     <TouchableOpacity
-                      key={`${m.id}-${i}`}
+                      key={item.key}
                       activeOpacity={0.85}
                       onPress={() => {
-                        if (!url) return
-                        const idx = urlToImageIdx.get(url)
+                        const idx = keyToImageIdx.get(item.key)
                         if (idx !== undefined) setLightboxIdx(idx)
                       }}
                       style={{
@@ -536,12 +568,34 @@ function MediaTab({
                         marginBottom: CELL_GAP
                       }}
                     >
-                      {isVideo ? (
-                        <View style={{ width: '100%', height: '100%', backgroundColor: '#111', alignItems: 'center', justifyContent: 'center' }}>
-                          <Ionicons name='play-circle' size={40} color='rgba(255,255,255,0.85)' />
+                      {item.isVideo ? (
+                        <View style={{ width: '100%', height: '100%', backgroundColor: '#111' }}>
+                          <Video
+                            source={{ uri: item.url }}
+                            style={{ width: '100%', height: '100%' }}
+                            resizeMode={ResizeMode.COVER}
+                            shouldPlay={false}
+                            isLooping={false}
+                            isMuted
+                            useNativeControls={false}
+                          />
+                          <View
+                            style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor: 'rgba(0,0,0,0.18)'
+                            }}
+                          >
+                            <Ionicons name='play-circle' size={40} color='rgba(255,255,255,0.9)' />
+                          </View>
                         </View>
                       ) : (
-                        <ExpoImage source={{ uri: url }} style={{ width: '100%', height: '100%' }} contentFit='cover' cachePolicy='memory-disk' />
+                        <ExpoImage source={{ uri: item.url }} style={{ width: '100%', height: '100%' }} contentFit='cover' cachePolicy='memory-disk' />
                       )}
                     </TouchableOpacity>
                   )

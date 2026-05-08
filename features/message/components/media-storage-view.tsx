@@ -104,11 +104,23 @@ export function MediaStorageView({ conversationId }: MediaStorageViewProps) {
         activeOpacity={0.8}
         style={{ width: GRID_ITEM_SIZE, height: GRID_ITEM_SIZE }}
       >
-        <Image
-          source={{ uri: item.att.url }}
-          style={{ width: '100%', height: '100%' }}
-          resizeMode='cover'
-        />
+        {isVideo ? (
+          <Video
+            source={{ uri: item.att.url }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode={ResizeMode.COVER}
+            shouldPlay={false}
+            isLooping={false}
+            isMuted
+            useNativeControls={false}
+          />
+        ) : (
+          <Image
+            source={{ uri: item.att.url }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode='cover'
+          />
+        )}
         {isVideo && (
           <View
             style={{
