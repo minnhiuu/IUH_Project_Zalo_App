@@ -26,5 +26,8 @@ export const notificationApi = {
 
   markAsRead: (notificationId: string) => http.post<ApiResponse<void>>(`/notifications/${notificationId}/read`),
 
+  markChatConversationAsRead: (conversationId: string) =>
+    http.post<ApiResponse<void>>(`/notifications/conversations/${conversationId}/read`),
+
   markAllAsRead: () => http.post<ApiResponse<void>>('/notifications/read-all')
 }

@@ -12,12 +12,33 @@
     },
     "empty": {
       "title": "No notifications yet",
-      "description": "You'll see activity here when it happens."
+      "description": "You'll see activity here when it happens.",
+      "placeholder": "Check back later for new updates"
     },
     "action": {
       "accept": "Accept",
       "decline": "Decline",
-      "markAllRead": "Mark all as read"
+      "accepted": "Accepted friend invitation",
+      "declined": "Declined friend invitation",
+      "viewProfile": "View Profile",
+      "followers": "{{count}} followers"
+    },
+    "menu": {
+      "markAllAsRead": "Mark all as read",
+      "settings": "Notification settings",
+      "open": "Open notifications"
+    },
+    "list": {
+      "newUpdates": "New notifications",
+      "loading": "Loading...",
+      "loadPrevious": "View previous notifications"
+    },
+    "settings": {
+      "title": "Notification settings",
+      "recent_activities_title": "Activity notifications from friends",
+      "notify_new": "Notify new activity",
+      "not_notify_new": "Don't notify new activity",
+      "notify_new_except": "Notify new activity, except..."
     }
   }
 }

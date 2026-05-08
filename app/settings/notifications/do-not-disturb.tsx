@@ -21,7 +21,7 @@ const parseTime = (time: string): { hour: number; minute: number } => {
   const parsedHour = Number(hourPart)
   const parsedMinute = Number(minutePart)
 
-  const hour = Number.isFinite(parsedHour) && parsedHour >= 1 && parsedHour <= 24 ? parsedHour : 1
+  const hour = Number.isFinite(parsedHour) && parsedHour >= 0 && parsedHour <= 23 ? parsedHour : 0
   const minute = Number.isFinite(parsedMinute) && parsedMinute >= 0 && parsedMinute <= 59 ? parsedMinute : 0
 
   return { hour, minute }
@@ -33,12 +33,22 @@ export default function DoNotDisturbScreen() {
   const updateNotification = useUpdateNotificationSettingsMutation()
 
   const [activeTimeKey, setActiveTimeKey] = useState<DndTimeKey | null>(null)
-  const [selectedHour, setSelectedHour] = useState(1)
+  const [selectedHour, setSelectedHour] = useState(0)
   const [selectedMinute, setSelectedMinute] = useState(0)
 
   const dndEnabled = notifSettings?.doNotDisturb?.dndEnabled ?? false
   const dndStartTime = notifSettings?.doNotDisturb?.dndStartTime ?? '22:00'
   const dndEndTime = notifSettings?.doNotDisturb?.dndEndTime ?? '07:00'
+  const dndTimezone = notifSettings?.doNotDisturb?.dndTimezone ?? 'GMT+07:00'
+  const activeDays = notifSettings?.doNotDisturb?.activeDays ?? [
+    'MONDAY',
+    'TUESDAY',
+    'WEDNESDAY',
+    'THURSDAY',
+    'FRIDAY',
+    'SATURDAY',
+    'SUNDAY'
+  ]
 
   const activeTitleKey = useMemo(() => {
     if (activeTimeKey === 'dndStartTime') return 'settings.notifications.dndStartTime'
@@ -53,6 +63,8 @@ export default function DoNotDisturbScreen() {
           dndEnabled,
           dndStartTime,
           dndEndTime,
+          dndTimezone,
+          activeDays,
           ...patch
         }
       } as Partial<NotificationSettings>,
@@ -68,7 +80,7 @@ export default function DoNotDisturbScreen() {
   }
 
   const openTimeSheet = (key: DndTimeKey) => {
-    if (isLoading || updateNotification.isPending) return
+    if (isLoading || updateNotification.isPending || !dndEnabled) return
 
     setActiveTimeKey(key)
     const currentTime = key === 'dndStartTime' ? dndStartTime : dndEndTime
@@ -105,10 +117,17 @@ export default function DoNotDisturbScreen() {
         <ActionRow
           icon='time-outline'
           title={t('settings.notifications.dndStartTime')}
+          disabled={!dndEnabled || isLoading || updateNotification.isPending}
           rightComponent={
             <View className='flex-row items-center gap-1'>
-              <Text className='text-sm text-muted-foreground'>{dndStartTime}</Text>
-              <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+              <Text className={`text-sm ${dndEnabled ? 'text-muted-foreground' : 'text-muted-foreground/50'}`}>
+                {dndStartTime}
+              </Text>
+              <Ionicons
+                name='chevron-forward'
+                size={20}
+                className={dndEnabled ? 'text-icon-secondary' : 'text-icon-secondary/40'}
+              />
             </View>
           }
           onPress={() => openTimeSheet('dndStartTime')}
@@ -117,10 +136,17 @@ export default function DoNotDisturbScreen() {
         <ActionRow
           icon='alarm-outline'
           title={t('settings.notifications.dndEndTime')}
+          disabled={!dndEnabled || isLoading || updateNotification.isPending}
           rightComponent={
             <View className='flex-row items-center gap-1'>
-              <Text className='text-sm text-muted-foreground'>{dndEndTime}</Text>
-              <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+              <Text className={`text-sm ${dndEnabled ? 'text-muted-foreground' : 'text-muted-foreground/50'}`}>
+                {dndEndTime}
+              </Text>
+              <Ionicons
+                name='chevron-forward'
+                size={20}
+                className={dndEnabled ? 'text-icon-secondary' : 'text-icon-secondary/40'}
+              />
             </View>
           }
           onPress={() => openTimeSheet('dndEndTime')}

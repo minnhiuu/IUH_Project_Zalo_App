@@ -1,9 +1,14 @@
 import '../global.css'
+import { registerNotifeeBackgroundHandler } from '@/tasks/notifee-background-handler'
+import '@/tasks/background-notification-task'
+
+// Must be called at module level, outside any React component
 import i18n from '@/i18n'
 // Load feature-level i18n bundles (side-effect: registers translations)
 import '@/features/friend/i18n'
 import '@/features/search/i18n'
 import { SEMANTIC } from '@/constants/theme'
+import { notificationToastConfig } from '@/features/notifications/components/notification-toast'
 
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -21,6 +26,8 @@ import { useAuthStore } from '@/store'
 import { getAccessToken, getRefreshToken, setUnauthorizedHandler } from '@/lib/http'
 import { ThemeProvider, useTheme } from '@/context'
 import { storage } from '@/utils/storageUtils'
+
+registerNotifeeBackgroundHandler()
 
 // Create a client for React Query
 const queryClient = new QueryClient({
@@ -230,7 +237,7 @@ function ThemeAwareProviders() {
           </Stack>
         </AuthGuard>
         <StatusBar style={isDark ? 'light' : 'dark'} />
-        <Toast />
+        <Toast config={notificationToastConfig} />
       </NavigationThemeProvider>
     </GluestackProvider>
   )

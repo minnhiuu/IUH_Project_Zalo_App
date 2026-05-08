@@ -21,7 +21,12 @@ import {
   useConversations
 } from '@/features/message/queries'
 import { useChatWebSocket } from '@/features/message/hooks'
-import { MessageStatus, MessageType, type MessageResponse, type ConversationMemberResponse } from '@/features/message/schemas'
+import {
+  MessageStatus,
+  MessageType,
+  type MessageResponse,
+  type ConversationMemberResponse
+} from '@/features/message/schemas'
 import { normalizeDateTime } from '@/features/message/utils'
 
 export default function ChatScreen() {
@@ -74,7 +79,14 @@ export default function ChatScreen() {
       ]
     }
     return base
-  }, [partnerConversation?.members, params.userId, params.id, directConversationId, conversationName, conversationAvatar])
+  }, [
+    partnerConversation?.members,
+    params.userId,
+    params.id,
+    directConversationId,
+    conversationName,
+    conversationAvatar
+  ])
 
   // Messages
   const {
@@ -106,15 +118,18 @@ export default function ChatScreen() {
   // Flatten pages into message list (reversed for inverted FlatList)
   const messages: MessageResponse[] = messagesData?.pages.flatMap((page) => page.data) ?? []
 
-  const scrollToMessage = useCallback((messageId: string) => {
-    const index = messages.findIndex((m) => m.id === messageId)
-    if (index === -1) return
-    try {
-      flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
-    } catch {}
-    setHighlightedMessageId(messageId)
-    setTimeout(() => setHighlightedMessageId(null), 1400)
-  }, [messages])
+  const scrollToMessage = useCallback(
+    (messageId: string) => {
+      const index = messages.findIndex((m) => m.id === messageId)
+      if (index === -1) return
+      try {
+        flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
+      } catch {}
+      setHighlightedMessageId(messageId)
+      setTimeout(() => setHighlightedMessageId(null), 1400)
+    },
+    [messages]
+  )
   const latestOwnMessage = messages.find(
     (msg) => msg.senderId === currentUserId && msg.status !== MessageStatus.REVOKED
   )
@@ -151,29 +166,27 @@ export default function ChatScreen() {
 
     if (!trimmedContent) return
 
-    wsSendMessage(
-      conversationId,
-      trimmedContent,
-      replyPayload,
-      false
-    )
+    wsSendMessage(conversationId, trimmedContent, replyPayload, false)
 
     setInputText('')
     setReplyTo(null)
   }, [conversationId, inputText, pendingAttachments, replyTo, wsSendFileMessage, wsSendMessage])
 
-  const handleSendFile = useCallback(
-    (assets: FileAsset[]) => {
-      setPendingAttachments((current) => [...current, ...assets])
-    },
-    []
-  )
+  const handleSendFile = useCallback((assets: FileAsset[]) => {
+    setPendingAttachments((current) => [...current, ...assets])
+  }, [])
 
   const handleSendFileImmediate = useCallback(
     (assets: FileAsset[]) => {
       if (!conversationId) return
       const replyPayload = replyTo
-        ? { messageId: replyTo.id, senderId: replyTo.senderId, senderName: replyTo.senderName ?? null, content: replyTo.content || '', type: replyTo.type }
+        ? {
+            messageId: replyTo.id,
+            senderId: replyTo.senderId,
+            senderName: replyTo.senderName ?? null,
+            content: replyTo.content || '',
+            type: replyTo.type
+          }
         : null
       // Send each file as a separate message
       assets.forEach((asset) => {
@@ -222,13 +235,7 @@ export default function ChatScreen() {
 
       conversationIds.forEach((targetConversationId) => {
         if (forwardMessage.attachments?.length) {
-          wsSendMessage(
-            targetConversationId,
-            forwardMessage.content || '',
-            null,
-            true,
-            forwardMessage.attachments
-          )
+          wsSendMessage(targetConversationId, forwardMessage.content || '', null, true, forwardMessage.attachments)
         } else {
           const forwardedPayload =
             forwardMessage.content?.trim() ||
@@ -344,8 +351,7 @@ export default function ChatScreen() {
               const nextMsg = index < messages.length - 1 ? messages[index + 1] : null
               // In inverted list, index 0 = newest (bottom), nextMsg = older (above).
               // Show avatar on the topmost message of a consecutive group (the oldest one)
-              const showAvatar =
-                !isOwn && (!nextMsg || nextMsg.senderId !== item.senderId)
+              const showAvatar = !isOwn && (!nextMsg || nextMsg.senderId !== item.senderId)
               // Show time only for the newest message in a consecutive sender streak
               const showTime = !prevMsg || prevMsg.senderId !== item.senderId
               const showDateSep = shouldShowDateSeparator(index)

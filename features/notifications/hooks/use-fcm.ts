@@ -1,7 +1,7 @@
 import * as Device from 'expo-device'
 import * as Notifications from 'expo-notifications'
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { Platform as RNPlatform, AppState } from 'react-native'
+import { Platform as RNPlatform, AppState, ToastAndroid } from 'react-native'
 import Constants from 'expo-constants'
 import { useRouter } from 'expo-router'
 import { useAuth } from '@/features/auth'
@@ -12,6 +12,23 @@ import { friendApi } from '@/features/friend/api/friend.api'
 import { useTranslation } from 'react-i18next'
 import i18n from '@/i18n'
 import { secureStorage } from '@/utils/storageUtils'
+import notifee, { EventType } from '@notifee/react-native'
+import { displayChatNotification } from '@/tasks/notifee-background-handler'
+
+const isChatNotification = (type?: string) => type === 'MESSAGE_DIRECT' || type === 'MESSAGE_GROUP'
+
+function resolveFcmNotificationId(data: Record<string, string>) {
+  if (isChatNotification(data.type) && data.conversationId) {
+    return `CHAT_${data.conversationId}`
+  }
+
+  const stableId = data.notificationId || data.id || data.referenceId || data.requestId
+  return stableId ? `${data.type || 'NOTIFICATION'}_${stableId}` : undefined
+}
+
+function resolveNotificationRecordId(data?: Record<string, unknown>) {
+  return String(data?.notificationId || data?.id || data?.referenceId || data?.requestId || '')
+}
 
 Notifications.setNotificationHandler({
   handleNotification: async (notification) => {
@@ -20,30 +37,26 @@ Notifications.setNotificationHandler({
 
     console.log('[FCM] Received foreground notification:', { title, body, data })
 
-    // 1. Trường hợp Data-only (Silent/Data-only message từ Server)
-    // Chúng ta tự tạo Local Notification để hiện đầy đủ Avatar + Nút bấm
+    // 1. Data-only Case (Manual Local Notification)
     const customTitle = data?.customTitle || data?.title
     const customBody = data?.customBody || data?.body
 
     if (!title && !body && customTitle) {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: customTitle,
-          body: customBody || '',
-          data: data as unknown as Record<string, unknown>,
-          categoryIdentifier: data.categoryIdentifier || 'friend_request',
-          // @ts-ignore
-          channelId: 'friend_requests',
-          sound: 'default',
-          // Ảnh đại diện cho iOS/Rich Media
-          attachments: data.actorAvatar ? [{ identifier: 'avatar', url: data.actorAvatar, type: 'image' }] : []
-        },
-        trigger: null
-      })
+      // 1. Deduplication check
+      const notiId = resolveFcmNotificationId(data) || Math.random().toString()
+      if (processedFcmNotifications.has(notiId)) {
+        return { shouldPlaySound: false, shouldSetBadge: false, shouldShowBanner: false, shouldShowList: false }
+      }
+      processedFcmNotifications.add(notiId)
+      if (processedFcmNotifications.size > 50) {
+        const first = processedFcmNotifications.values().next().value
+        if (first) processedFcmNotifications.delete(first)
+      }
 
-      // Không cần hiện cảnh báo mặc định của hệ thống nữa vì đã tự hiện ở trên
+      console.log('[FCM] Received payload:', JSON.stringify(data))
+      await displayChatNotification(data)
+
       return {
-        shouldShowAlert: false,
         shouldPlaySound: false,
         shouldSetBadge: false,
         shouldShowBanner: false,
@@ -51,19 +64,17 @@ Notifications.setNotificationHandler({
       }
     }
 
-    // 2. Trường hợp đã có Title/Body từ Server (Web/iOS system) -> Hiện luôn
+    // 2. Normal Notification Case (Already has Title/Body)
     if (title || body) {
       return {
-        shouldShowAlert: true,
         shouldPlaySound: true,
-        shouldSetBadge: false,
+        shouldSetBadge: true,
         shouldShowBanner: true,
         shouldShowList: true
       }
     }
 
     return {
-      shouldShowAlert: false,
       shouldPlaySound: false,
       shouldSetBadge: false,
       shouldShowBanner: false,
@@ -92,6 +103,9 @@ async function registerNotificationCategories() {
   ])
 }
 
+// Global set to track processed FCM notification IDs and prevent duplicates
+const processedFcmNotifications = new Set<string>()
+
 export const useFcm = () => {
   const router = useRouter()
   const { user } = useAuth()
@@ -105,7 +119,50 @@ export const useFcm = () => {
   const notificationListener = useRef<Notifications.Subscription | null>(null)
   const responseListener = useRef<Notifications.Subscription | null>(null)
 
+  const navigateFromNotificationData = useCallback(
+    (rawData?: Record<string, unknown>) => {
+      if (!rawData) return
+
+      const type = String(rawData.type || '')
+      if (isChatNotification(type)) {
+        const conversationId = String(rawData.conversationId || rawData.referenceId || '')
+        if (!conversationId) return
+
+        router.push({
+          pathname: '/chat/[id]' as any,
+          params: {
+            id: conversationId,
+            conversationId,
+            name: String(rawData.conversationName || rawData.title || rawData.customTitle || ''),
+            avatar: String(rawData.conversationAvatar || rawData.actorAvatar || '')
+          }
+        })
+        return
+      }
+
+      router.push({
+        pathname: '/' as any,
+        params: {
+          openNotifications: '1',
+          highlightNotificationId: resolveNotificationRecordId(rawData),
+          timestamp: Date.now().toString()
+        }
+      })
+    },
+    [router]
+  )
+
   useEffect(() => {
+    // Ensure high priority channel exists
+    if (RNPlatform.OS === 'android') {
+      Notifications.setNotificationChannelAsync('chat-messages', {
+        name: 'Chat Messages',
+        importance: Notifications.AndroidImportance.MAX,
+        vibrationPattern: [0, 250, 250, 250],
+        lightColor: '#FF231F7C',
+        showBadge: true
+      })
+    }
     registerNotificationCategories().catch((e) => console.error('[FCM] Error registering categories:', e))
   }, [i18nInstance.language])
 
@@ -151,9 +208,7 @@ export const useFcm = () => {
         // @ts-ignore - Dynamic path for router.push
         router.push(`/user-profile/${data.actorId}`)
       } else if (actionId === Notifications.DEFAULT_ACTION_IDENTIFIER) {
-        if (data.type === 'FRIEND_REQUEST') {
-          router.push('/friend-requests')
-        }
+        navigateFromNotificationData(data)
       }
 
       // Xóa thông báo sau khi click
@@ -162,12 +217,71 @@ export const useFcm = () => {
       console.log('Notification Response:', response)
     })
 
+    const notifeeForegroundUnsubscribe = notifee.onForegroundEvent(async ({ type, detail }) => {
+      const { notification, pressAction } = detail
+
+      if (type === EventType.PRESS) {
+        navigateFromNotificationData(notification?.data as Record<string, unknown> | undefined)
+        if (notification?.id) {
+          await notifee.cancelNotification(notification.id)
+        }
+        return
+      }
+
+      if (type !== EventType.ACTION_PRESS) return
+
+      const referenceId = notification?.data?.referenceId as string
+      const actorId = notification?.data?.actorId as string
+
+      if (!referenceId) {
+        console.warn('[NotificationActions] Missing referenceId in notification data')
+        return
+      }
+
+      switch (pressAction?.id) {
+        case 'accept_friend':
+          try {
+            await friendApi.acceptFriendRequest(referenceId)
+            ToastAndroid.show('Accepted friend request', ToastAndroid.SHORT)
+          } catch (error) {
+            console.error('[NotificationActions] Failed to accept:', error)
+          }
+          break
+
+        case 'decline_friend':
+          try {
+            await friendApi.declineFriendRequest(referenceId)
+            ToastAndroid.show('Declined friend request', ToastAndroid.SHORT)
+          } catch (error) {
+            console.error('[NotificationActions] Failed to decline:', error)
+          }
+          break
+
+        case 'view_profile':
+          if (actorId) {
+            router.push(`/other-profile/${actorId}`)
+          }
+          break
+      }
+
+      if (notification?.id) {
+        await notifee.cancelNotification(notification.id)
+      }
+    })
+
+    notifee.getInitialNotification().then((initialNotification) => {
+      if (initialNotification?.notification?.data) {
+        navigateFromNotificationData(initialNotification.notification.data as Record<string, unknown>)
+      }
+    }).catch((error) => console.error('[NotificationActions] Failed to read initial notification:', error))
+
     return () => {
+      notifeeForegroundUnsubscribe()
       tokenRefreshListener.remove()
       notificationListener.current?.remove()
       responseListener.current?.remove()
     }
-  }, [setFcmTokenStore, router])
+  }, [setFcmTokenStore, router, navigateFromNotificationData])
 
   const doRegister = useCallback(
     async (token: string) => {
