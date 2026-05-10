@@ -40,7 +40,13 @@ import {
   useUnpinMessage
 } from '@/features/message/queries'
 import { useChatWebSocket } from '@/features/message/hooks'
-import { MessageStatus, MessageType, type MessageResponse, type PinnedMessageInfo, type ConversationMemberResponse } from '@/features/message/schemas'
+import {
+  MessageStatus,
+  MessageType,
+  type MessageResponse,
+  type PinnedMessageInfo,
+  type ConversationMemberResponse
+} from '@/features/message/schemas'
 import { parseBusinessCardContent, parseMessageDate, serializeBusinessCard } from '@/features/message/utils'
 import { messageApi } from '@/features/message/api'
 import { userApi } from '@/features/users/api/user.api'
@@ -132,10 +138,7 @@ export default function ChatScreen() {
   const myGroupRole = String(groupMembers.find((m) => m.userId === currentUserId)?.role || 'MEMBER').toUpperCase()
   const isMemberRole = myGroupRole === 'MEMBER'
   const groupSettings = (resolvedConversation as any)?.settings || {}
-  const isMemberMessageLocked =
-    isGroupConversation &&
-    isMemberRole &&
-    groupSettings?.memberCanSendMessages === false
+  const isMemberMessageLocked = isGroupConversation && isMemberRole && groupSettings?.memberCanSendMessages === false
   const groupSubtitle = isGroupConversation ? `${groupMembers.length || 0} thành viên` : undefined
   const { data: pinnedMessages = [] } = usePinnedMessages(conversationId, !!conversationId)
 
@@ -165,15 +168,18 @@ export default function ChatScreen() {
   // Flatten pages into message list (reversed for inverted FlatList)
   const messages: MessageResponse[] = messagesData?.pages.flatMap((page) => page.data) ?? []
 
-  const scrollToMessage = useCallback((messageId: string) => {
-    const index = messages.findIndex((m) => m.id === messageId)
-    if (index === -1) return
-    try {
-      flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
-    } catch {}
-    setHighlightedMessageId(messageId)
-    setTimeout(() => setHighlightedMessageId(null), 1400)
-  }, [messages])
+  const scrollToMessage = useCallback(
+    (messageId: string) => {
+      const index = messages.findIndex((m) => m.id === messageId)
+      if (index === -1) return
+      try {
+        flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
+      } catch {}
+      setHighlightedMessageId(messageId)
+      setTimeout(() => setHighlightedMessageId(null), 1400)
+    },
+    [messages]
+  )
   const latestOwnMessage = messages.find(
     (msg) => msg.senderId === currentUserId && msg.status !== MessageStatus.REVOKED
   )
@@ -232,29 +238,27 @@ export default function ChatScreen() {
 
     if (!trimmedContent) return
 
-    wsSendMessage(
-      conversationId,
-      trimmedContent,
-      replyPayload,
-      false
-    )
+    wsSendMessage(conversationId, trimmedContent, replyPayload, false)
 
     setInputText('')
     setReplyTo(null)
   }, [conversationId, inputText, pendingAttachments, replyTo, wsSendFileMessage, wsSendMessage])
 
-  const handleSendFile = useCallback(
-    (assets: FileAsset[]) => {
-      setPendingAttachments((current) => [...current, ...assets])
-    },
-    []
-  )
+  const handleSendFile = useCallback((assets: FileAsset[]) => {
+    setPendingAttachments((current) => [...current, ...assets])
+  }, [])
 
   const handleSendFileImmediate = useCallback(
     (assets: FileAsset[]) => {
       if (!conversationId) return
       const replyPayload = replyTo
-        ? { messageId: replyTo.id, senderId: replyTo.senderId, senderName: replyTo.senderName ?? null, content: replyTo.content || '', type: replyTo.type }
+        ? {
+            messageId: replyTo.id,
+            senderId: replyTo.senderId,
+            senderName: replyTo.senderName ?? null,
+            content: replyTo.content || '',
+            type: replyTo.type
+          }
         : null
       wsSendFileMessage(conversationId, assets, '', replyPayload)
       setReplyTo(null)
@@ -325,11 +329,13 @@ export default function ChatScreen() {
       )
 
       resolvedCards.forEach((card) => {
-        const qrValue = card.userId ? `bondhub://user/${card.userId}?name=${encodeURIComponent(card.name || '')}` : undefined
+        const qrValue = card.userId
+          ? `bondhub://user/${card.userId}?name=${encodeURIComponent(card.name || '')}`
+          : undefined
         const payload = serializeBusinessCard({
           userId: card.userId,
           name: card.name,
-          phone: card.includePhone === false ? '' : (card.phone || ''),
+          phone: card.includePhone === false ? '' : card.phone || '',
           avatar: card.avatar || null,
           qrValue
         })
@@ -373,9 +379,7 @@ export default function ChatScreen() {
 
   const handleReplyMessagePress = useCallback(
     (replyMessageId: string) => {
-      const targetIndex = messages.findIndex(
-        (m) => m.id === replyMessageId || m.clientMessageId === replyMessageId
-      )
+      const targetIndex = messages.findIndex((m) => m.id === replyMessageId || m.clientMessageId === replyMessageId)
 
       if (targetIndex >= 0) {
         flatListRef.current?.scrollToIndex({ index: targetIndex, animated: true, viewPosition: 0.5 })
@@ -414,9 +418,7 @@ export default function ChatScreen() {
     (pinned: PinnedMessageInfo | null) => {
       if (!pinned) return t('message.pinned.userFallback', { defaultValue: 'Người dùng' })
 
-      const sourceMessage = messages.find(
-        (m) => m.id === pinned.messageId || m.clientMessageId === pinned.messageId
-      )
+      const sourceMessage = messages.find((m) => m.id === pinned.messageId || m.clientMessageId === pinned.messageId)
 
       const ownerName = sourceMessage?.senderName?.trim() || pinned.pinnedByName?.trim()
       return ownerName || t('message.pinned.userFallback', { defaultValue: 'Người dùng' })
@@ -440,7 +442,11 @@ export default function ChatScreen() {
   const canPinMessage = useCallback((message: MessageResponse) => {
     if (!message.id || message.id.startsWith('temp-')) return false
     if (message.status === MessageStatus.REVOKED) return false
-    if (message.type === MessageType.SYSTEM || message.type === MessageType.JOIN || message.type === MessageType.LEAVE) {
+    if (
+      message.type === MessageType.SYSTEM ||
+      message.type === MessageType.JOIN ||
+      message.type === MessageType.LEAVE
+    ) {
       return false
     }
     return true
@@ -514,14 +520,7 @@ export default function ChatScreen() {
         }
       )
     },
-    [
-      canPinMessage,
-      conversationId,
-      extractErrorMessage,
-      pinMessageMutation,
-      pinnedMessageIds,
-      unpinMessageMutation
-    ]
+    [canPinMessage, conversationId, extractErrorMessage, pinMessageMutation, pinnedMessageIds, unpinMessageMutation]
   )
 
   const openPinnedPanel = useCallback(() => {
@@ -543,13 +542,7 @@ export default function ChatScreen() {
         if (forwardedBusinessCard) {
           wsSendMessage(targetConversationId, forwardMessage.content || '', null, true)
         } else if (forwardMessage.attachments?.length) {
-          wsSendMessage(
-            targetConversationId,
-            forwardMessage.content || '',
-            null,
-            true,
-            forwardMessage.attachments
-          )
+          wsSendMessage(targetConversationId, forwardMessage.content || '', null, true, forwardMessage.attachments)
         } else {
           const forwardedPayload =
             forwardMessage.content?.trim() ||
@@ -742,13 +735,11 @@ export default function ChatScreen() {
                       waveHello: t('message.groupIntro.waveHello'),
                       qrJoin: t('message.groupIntro.qrJoin')
                     }}
-                    members={
-                      (groupMembers || []).map((member) => ({
-                        userId: member.userId,
-                        fullName: member.fullName,
-                        avatar: member.avatar
-                      }))
-                    }
+                    members={(groupMembers || []).map((member) => ({
+                      userId: member.userId,
+                      fullName: member.fullName,
+                      avatar: member.avatar
+                    }))}
                   />
                 ) : null}
                 {isFetchingNextPage ? (
@@ -764,8 +755,7 @@ export default function ChatScreen() {
               const nextMsg = index < messages.length - 1 ? messages[index + 1] : null
               // In inverted list, index 0 = newest (bottom), nextMsg = older (above).
               // Show avatar on the topmost message of a consecutive group (the oldest one)
-              const showAvatar =
-                !isOwn && (!nextMsg || nextMsg.senderId !== item.senderId)
+              const showAvatar = !isOwn && (!nextMsg || nextMsg.senderId !== item.senderId)
               // Show time only for the newest message in a consecutive sender streak
               const showTime = !prevMsg || prevMsg.senderId !== item.senderId
               const showDateSep = shouldShowDateSeparator(index)
@@ -846,7 +836,9 @@ export default function ChatScreen() {
             }}
           >
             <Ionicons name='information-circle' size={20} color={isDark ? '#2D9CFF' : '#1F75E8'} />
-            <Text style={{ marginLeft: 8, flex: 1, fontSize: 12.5, lineHeight: 18, color: isDark ? '#DCE8FA' : '#1F4E96' }}>
+            <Text
+              style={{ marginLeft: 8, flex: 1, fontSize: 12.5, lineHeight: 18, color: isDark ? '#DCE8FA' : '#1F4E96' }}
+            >
               {t('message.groupSettings.lockedLead', { defaultValue: 'Chỉ ' })}
               <Text style={{ color: isDark ? '#2D9CFF' : '#1F75E8', fontWeight: '700' }}>
                 {t('message.groupSettings.lockedManagersPhrase', { defaultValue: 'trưởng và phó nhóm' })}
@@ -869,10 +861,7 @@ export default function ChatScreen() {
       />
 
       <Modal transparent visible={showPinnedPanel} animationType='fade' onRequestClose={closePinnedPanel}>
-        <Pressable
-          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.62)' }}
-          onPress={closePinnedPanel}
-        >
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.62)' }} onPress={closePinnedPanel}>
           <Pressable onPress={() => {}} style={{ marginTop: 104 }}>
             <View
               style={{

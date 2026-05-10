@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import Toast from 'react-native-toast-message'
 import { useTranslation } from 'react-i18next'
-import { getNotificationSettings, updateNotificationSettings } from '../api/notification-settings.api'
+import { getNotificationSettings, normalizeNotificationSettings, updateNotificationSettings } from '../api/notification-settings.api'
 import { settingsKeys } from '../../queries/keys'
 import { getCurrentSettings, mergePatch, refreshSettingsQueries } from '../../queries/shared/settings-mutation.utils'
 import type { NotificationSettings, UserSettings } from '../../schemas'
@@ -12,7 +12,7 @@ export const useNotificationSettingsQuery = (enabled: boolean = true) => {
     queryKey: settingsKeys.notification(),
     queryFn: async () => {
       const response = await getNotificationSettings()
-      return response.data.data ?? null
+      return response.data.data ? normalizeNotificationSettings(response.data.data) : null
     },
     enabled
   })
@@ -27,7 +27,7 @@ export const useUpdateNotificationSettingsMutation = () => {
     mutationFn: async (patch: Partial<NotificationSettings>) => {
       const cachedSettings = queryClient.getQueryData<UserSettings | null>(settingsKeys.me())
       const current = cachedSettings ?? (await getCurrentSettings())
-      return updateNotificationSettings(mergePatch(current.notificationSettings, patch))
+      return updateNotificationSettings(normalizeNotificationSettings(mergePatch(current.notificationSettings, patch)))
     },
     onMutate: async (patch) => {
       await queryClient.cancelQueries({ queryKey: settingsKeys.notification() })
@@ -37,13 +37,16 @@ export const useUpdateNotificationSettingsMutation = () => {
       const previousMySettings = queryClient.getQueryData<UserSettings | null>(settingsKeys.me())
 
       if (previousSection) {
-        queryClient.setQueryData<NotificationSettings>(settingsKeys.notification(), mergePatch(previousSection, patch))
+        queryClient.setQueryData<NotificationSettings>(
+          settingsKeys.notification(),
+          normalizeNotificationSettings(mergePatch(previousSection, patch))
+        )
       }
 
       if (previousMySettings) {
         queryClient.setQueryData<UserSettings>(settingsKeys.me(), {
           ...previousMySettings,
-          notificationSettings: mergePatch(previousMySettings.notificationSettings, patch)
+          notificationSettings: normalizeNotificationSettings(mergePatch(previousMySettings.notificationSettings, patch))
         })
       }
 
@@ -68,7 +71,18 @@ export const useUpdateNotificationSettingsMutation = () => {
         text2: t('common.unknownError')
       })
     },
-    onSuccess: async () => {
+    onSuccess: async (response) => {
+      const updatedSettings = response.data.data
+      if (updatedSettings?.notificationSettings) {
+        const notificationSettings = normalizeNotificationSettings(updatedSettings.notificationSettings)
+
+        queryClient.setQueryData<NotificationSettings>(settingsKeys.notification(), notificationSettings)
+        queryClient.setQueryData<UserSettings>(settingsKeys.me(), {
+          ...updatedSettings,
+          notificationSettings
+        })
+      }
+
       await refreshSettingsQueries(queryClient)
     }
   })

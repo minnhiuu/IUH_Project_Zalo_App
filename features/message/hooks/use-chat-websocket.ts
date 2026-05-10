@@ -1,16 +1,25 @@
-import { useEffect, useState, useCallback, useSyncExternalStore } from 'react'
+import { useEffect, useState, useCallback, useSyncExternalStore, useRef } from 'react'
+import { AppState, AppStateStatus } from 'react-native'
 import { Client } from '@stomp/stompjs'
 import { useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query'
 import { messageKeys } from '../queries/keys'
 import { messageApi } from '../api/message.api'
 import { useSendMessage, useRevokeMessage, useDeleteMessageForMe } from '../queries/use-mutations'
 import { useAuthStore } from '@/store'
-import { getAccessToken } from '@/lib/http'
+import { getAccessToken, clearTokens } from '@/lib/http'
+import { storage } from '@/utils/storageUtils'
+import { jwtDecode } from 'jwt-decode'
 import apiConfig from '@/config/apiConfig'
 import { normalizeDateTime, parseMessageDate } from '../utils/date-utils'
 import { parseBusinessCardContent, serializeBusinessCard } from '../utils/business-card'
 import { MessageStatus, MessageType } from '../schemas'
-import type { MessageResponse, ConversationResponse, MessageSendRequest, ReplyMetadataResponse, AttachmentInfo } from '../schemas'
+import type {
+  MessageResponse,
+  ConversationResponse,
+  MessageSendRequest,
+  ReplyMetadataResponse,
+  AttachmentInfo
+} from '../schemas'
 import type { PresignFileRequest, PresignedUploadResponse } from '../api/message.api'
 import * as FileSystem from 'expo-file-system/legacy'
 
@@ -57,6 +66,8 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
   const client = new Client({
     brokerURL: getWsUrl(),
     reconnectDelay: 5000,
+    heartbeatIncoming: 10000,
+    heartbeatOutgoing: 10000,
     connectHeaders: {
       Authorization: `Bearer ${token}`
     },
@@ -332,6 +343,35 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
         }
       })
 
+      // ────────── /queue/session (FORCE_LOGOUT) ──────────
+      client.subscribe('/user/queue/session', async (payload) => {
+        try {
+          const event = JSON.parse(payload.body)
+          if (event?.type !== 'FORCE_LOGOUT') return
+
+          let mySessionId: string | null = null
+          try {
+            const token = await getAccessToken()
+            if (token) {
+              const decoded = jwtDecode<{ sessionId?: string }>(token)
+              mySessionId = decoded.sessionId ?? null
+            }
+          } catch {
+            mySessionId = null // safe fallback → force logout
+          }
+
+          if (mySessionId === null || mySessionId === event.sessionId) {
+            await clearTokens()
+            await storage.remove('user_data')
+            useAuthStore.getState().logoutSuccess()
+            queryClient.clear()
+            disconnectSingleton(user)
+          }
+        } catch (error) {
+          console.error('[Socket] Error handling session event:', error)
+        }
+      })
+
       // Announce presence
       client.publish({
         destination: '/app/user.addUser',
@@ -393,13 +433,56 @@ export const useChatWebSocket = () => {
     return nameFromPath && nameFromPath.length > 0 ? nameFromPath : fallbackName
   }, [])
 
+  const appState = useRef(AppState.currentState)
+  const isPresenceOffline = useRef(false)
+
   useEffect(() => {
+    // 1. Initial connection logic
     if (user) {
       connectSingleton(user, queryClient)
     } else {
       disconnectSingleton(user)
     }
-    // Don't disconnect on unmount — singleton stays alive
+
+    // 2. AppState listener for Online/Offline management
+    // NOTE: Android freezes JS (including setTimeout) when app is in background.
+    // So we MUST send presence updates IMMEDIATELY - no timers allowed here.
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+        // App came to FOREGROUND -> set ONLINE
+        console.log('[Socket] App foregrounded!')
+        if (user) {
+          connectSingleton(user, queryClient)
+          if (singletonClient?.connected && isPresenceOffline.current) {
+            console.log('[Socket] Sending user.addUser (ONLINE)')
+            singletonClient.publish({
+              destination: '/app/user.addUser',
+              body: JSON.stringify(user)
+            })
+            isPresenceOffline.current = false
+          }
+        }
+      } else if (appState.current === 'active' && nextAppState.match(/inactive|background/)) {
+        // App went to BACKGROUND -> set OFFLINE IMMEDIATELY
+        // Must be immediate - Android freezes JS timers in background.
+        console.log('[Socket] App backgrounded! Sending OFFLINE immediately...')
+        if (singletonClient?.connected && user) {
+          singletonClient.publish({
+            destination: '/app/user.disconnectUser',
+            body: JSON.stringify(user)
+          })
+          isPresenceOffline.current = true
+          console.log('[Socket] Sent user.disconnectUser (OFFLINE)')
+        }
+      }
+      appState.current = nextAppState
+    }
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange)
+
+    return () => {
+      subscription.remove()
+    }
   }, [user, queryClient])
 
   // ────────── sendMessage ──────────
@@ -550,6 +633,9 @@ export const useChatWebSocket = () => {
       const now = new Date().toISOString()
       const clientMessageId = `temp-${Date.now()}`
 
+      const imageCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('image/')).length
+      const videoCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('video/')).length
+      
       // Prepare optimistic attachments
       const optimisticAttachments: AttachmentInfo[] = fileAssets.map((asset, index) => ({
         key: `temp-${index}`,

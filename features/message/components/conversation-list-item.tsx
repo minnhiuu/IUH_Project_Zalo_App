@@ -125,63 +125,40 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
   const hasUnread = (conversation.unreadCount ?? 0) > 0
-  const rawConversation = conversation as any
-
-  const rawLastMessage =
-    rawConversation.lastMessage ??
-    rawConversation.lastMessageContent ??
-    rawConversation.latestMessage?.content ??
-    rawConversation.latestMessage
+  const lastMessageObject =
+    conversation.lastMessage && typeof conversation.lastMessage === 'object' ? conversation.lastMessage : null
 
   const lastMessageContent =
-    typeof rawLastMessage === 'string'
-      ? rawLastMessage
-      : typeof rawLastMessage?.content === 'string'
-        ? rawLastMessage.content
-        : typeof rawLastMessage?.text === 'string'
-          ? rawLastMessage.text
-          : typeof rawConversation.latestMessage?.message === 'string'
-            ? rawConversation.latestMessage.message
-          : ''
+    typeof conversation.lastMessage === 'string'
+      ? conversation.lastMessage
+      : (lastMessageObject?.content ?? null)
 
-  const lastMessageType =
-    conversation.lastMessageType ?? rawConversation.latestMessage?.type ?? rawLastMessage?.type ?? null
-
-  const lastMessageTime =
-    conversation.lastMessageTime ||
-    rawConversation.lastMessageAt ||
-    rawConversation.lastMessageCreatedAt ||
-    rawConversation.latestMessage?.createdAt ||
-    rawConversation.updatedAt ||
-    null
-
-  const incomingSenderName =
-    rawConversation.lastMessageSenderName ||
-    rawConversation.latestMessage?.senderName ||
-    (!conversation.isGroup ? conversation.name || '' : '')
+  const lastMessageTime = conversation.lastMessageTime ?? lastMessageObject?.timestamp ?? null
+  const lastMessageType = conversation.lastMessageType ?? lastMessageObject?.type ?? null
+  const lastMessageStatus = conversation.lastMessageStatus ?? lastMessageObject?.status ?? null
+  const isLastMessageFromMe = conversation.isLastMessageFromMe ?? lastMessageObject?.isFromMe ?? null
 
   const preview = formatPreview(
     {
       content: lastMessageContent,
-      isFromMe: conversation.isLastMessageFromMe,
-      senderName:
-        conversation.isLastMessageFromMe
-          ? ''
-          : incomingSenderName,
+      isFromMe: isLastMessageFromMe,
+      isGroup: conversation.isGroup,
+      senderName: lastMessageObject?.senderName ?? null,
       type: lastMessageType,
-      status: conversation.lastMessageStatus
+      status: lastMessageStatus
     },
     {
       you: t('message.you'),
       user: '',
       type: {
         image: t('message.messageType.image', { defaultValue: '[Hình ảnh]' }),
+        video: t('message.messageType.video', { defaultValue: '[Video]' }),
         file: t('message.messageType.file', { defaultValue: '[File]' })
       }
     }
   )
 
-  const isRevoked = conversation.lastMessageStatus === MessageStatus.REVOKED
+  const isRevoked = lastMessageStatus === MessageStatus.REVOKED
 
   const formatTime = (timeValue: string | number | Date | null | undefined) => {
     if (!timeValue) return ''
