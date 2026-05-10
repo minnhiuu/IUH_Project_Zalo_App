@@ -20,25 +20,36 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
   const hasUnread = (conversation.unreadCount ?? 0) > 0
+  const lastMessageObject =
+    conversation.lastMessage && typeof conversation.lastMessage === 'object' ? conversation.lastMessage : null
+  const lastMessageContent =
+    typeof conversation.lastMessage === 'string' ? conversation.lastMessage : lastMessageObject?.content ?? null
+  const lastMessageTime = conversation.lastMessageTime ?? lastMessageObject?.timestamp ?? null
+  const lastMessageType = conversation.lastMessageType ?? lastMessageObject?.type ?? null
+  const lastMessageStatus = conversation.lastMessageStatus ?? lastMessageObject?.status ?? null
+  const isLastMessageFromMe = conversation.isLastMessageFromMe ?? lastMessageObject?.isFromMe ?? null
 
   const preview = formatPreview(
     {
-      content: conversation.lastMessage,
-      isFromMe: conversation.isLastMessageFromMe,
-      type: conversation.lastMessageType,
-      status: conversation.lastMessageStatus
+      content: lastMessageContent,
+      isFromMe: isLastMessageFromMe,
+      isGroup: conversation.isGroup,
+      senderName: lastMessageObject?.senderName ?? null,
+      type: lastMessageType,
+      status: lastMessageStatus
     },
     {
       you: t('message.you'),
       user: t('message.user', { defaultValue: 'User' }),
       type: {
         image: t('message.messageType.image', { defaultValue: '[Image]' }),
+        video: t('message.messageType.video', { defaultValue: '[Video]' }),
         file: t('message.messageType.file', { defaultValue: '[File]' })
       }
     }
   )
 
-  const isRevoked = conversation.lastMessageStatus === MessageStatus.REVOKED
+  const isRevoked = lastMessageStatus === MessageStatus.REVOKED
 
   const formatTime = (timeStr: string | null) => {
     if (!timeStr) return ''
@@ -102,7 +113,7 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
             {conversation.name || t('message.user', { defaultValue: 'User' })}
           </Text>
           <Text style={{ fontSize: 15, color: '#6B7280', marginLeft: 8, marginTop: 1 }}>
-            {formatTime(conversation.lastMessageTime)}
+            {formatTime(lastMessageTime)}
           </Text>
         </View>
 

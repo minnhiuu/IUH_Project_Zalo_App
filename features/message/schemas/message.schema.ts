@@ -98,6 +98,18 @@ export type ConversationMemberResponse = {
   role: string | null
 }
 
+export type LastMessageResponse = {
+  id: string | null
+  senderId: string | null
+  senderName: string | null
+  content: string | null
+  timestamp: string | null
+  type: MessageType | null
+  status: MessageStatus | null
+  isFromMe: boolean | null
+  metadata?: Record<string, unknown> | null
+}
+
 export type ConversationResponse = {
   id: string
   name: string | null
@@ -105,7 +117,7 @@ export type ConversationResponse = {
   status: string | null
   lastSeenAt: string | null
   isGroup: boolean
-  lastMessage: string | null
+  lastMessage: string | LastMessageResponse | null
   lastMessageId: string | null
   lastMessageTime: string | null
   isLastMessageFromMe: boolean | null

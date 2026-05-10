@@ -17,6 +17,8 @@ export interface DoNotDisturbSettings {
   dndEnabled: boolean
   dndStartTime: string
   dndEndTime: string
+  dndTimezone: string
+  activeDays: string[]
 }
 
 export interface NotificationSettings {

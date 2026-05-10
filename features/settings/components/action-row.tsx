@@ -20,6 +20,7 @@ interface ActionRowProps {
   /** Replace the default chevron with a custom right element */
   rightComponent?: React.ReactNode
   showChevron?: boolean
+  disabled?: boolean
 }
 
 export function ActionRow({
@@ -30,12 +31,16 @@ export function ActionRow({
   subtitle,
   onPress,
   rightComponent,
-  showChevron = true
+  showChevron = true,
+  disabled = false
 }: ActionRowProps) {
   return (
     <TouchableOpacity
-      className='flex-row items-center px-4 py-3 gap-3 bg-background active:bg-secondary'
+      className={`flex-row items-center px-4 py-3 gap-3 bg-background ${
+        disabled ? 'opacity-50' : 'active:bg-secondary'
+      }`}
       onPress={onPress}
+      disabled={disabled}
     >
       <View className={`w-10 h-10 rounded-full items-center justify-center ${iconBgClass}`}>
         <Ionicons name={icon as any} size={22} className={iconColorClass} />

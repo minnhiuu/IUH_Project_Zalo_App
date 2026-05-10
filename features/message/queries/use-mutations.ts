@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 
 import { messageApi } from '../api/message.api'
 import { messageKeys } from './keys'
+import { notificationApi } from '@/features/notifications/api/notification.api'
 import { handleErrorApi } from '@/utils/error-handler'
 import type { MessageSendRequest, ConversationResponse, MessageResponse } from '../schemas'
 import type { InfiniteData } from '@tanstack/react-query'
@@ -23,7 +24,12 @@ export const useMarkAsRead = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (conversationId: string) => messageApi.markAsRead(conversationId),
+    mutationFn: async (conversationId: string) => {
+      await messageApi.markAsRead(conversationId)
+      await notificationApi.markChatConversationAsRead(conversationId).catch((error) => {
+        console.warn('[Notification] Failed to mark chat notification as read:', error)
+      })
+    },
     onMutate: async (conversationId) => {
       await queryClient.cancelQueries({ queryKey: messageKeys.conversations() })
       const previousData = queryClient.getQueriesData({ queryKey: messageKeys.conversations() })

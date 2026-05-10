@@ -1,4 +1,5 @@
-import { useEffect, useState, useCallback, useSyncExternalStore } from 'react'
+import { useEffect, useState, useCallback, useSyncExternalStore, useRef } from 'react'
+import { AppState, AppStateStatus } from 'react-native'
 import { Client } from '@stomp/stompjs'
 import { useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query'
 import { messageKeys } from '../queries/keys'
@@ -11,7 +12,13 @@ import { jwtDecode } from 'jwt-decode'
 import apiConfig from '@/config/apiConfig'
 import { normalizeDateTime } from '../utils/date-utils'
 import { MessageStatus, MessageType } from '../schemas'
-import type { MessageResponse, ConversationResponse, MessageSendRequest, ReplyMetadataResponse, AttachmentInfo } from '../schemas'
+import type {
+  MessageResponse,
+  ConversationResponse,
+  MessageSendRequest,
+  ReplyMetadataResponse,
+  AttachmentInfo
+} from '../schemas'
 
 // ────────── Singleton state ──────────
 let singletonClient: Client | null = null
@@ -50,6 +57,8 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
   const client = new Client({
     brokerURL: getWsUrl(),
     reconnectDelay: 5000,
+    heartbeatIncoming: 10000,
+    heartbeatOutgoing: 10000,
     connectHeaders: {
       Authorization: `Bearer ${token}`
     },
@@ -339,13 +348,56 @@ export const useChatWebSocket = () => {
   const deleteMsgMutation = useDeleteMessageForMe()
   const [isUploading, setIsUploading] = useState(false)
 
+  const appState = useRef(AppState.currentState)
+  const isPresenceOffline = useRef(false)
+
   useEffect(() => {
+    // 1. Initial connection logic
     if (user) {
       connectSingleton(user, queryClient)
     } else {
       disconnectSingleton(user)
     }
-    // Don't disconnect on unmount — singleton stays alive
+
+    // 2. AppState listener for Online/Offline management
+    // NOTE: Android freezes JS (including setTimeout) when app is in background.
+    // So we MUST send presence updates IMMEDIATELY - no timers allowed here.
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+        // App came to FOREGROUND -> set ONLINE
+        console.log('[Socket] App foregrounded!')
+        if (user) {
+          connectSingleton(user, queryClient)
+          if (singletonClient?.connected && isPresenceOffline.current) {
+            console.log('[Socket] Sending user.addUser (ONLINE)')
+            singletonClient.publish({
+              destination: '/app/user.addUser',
+              body: JSON.stringify(user)
+            })
+            isPresenceOffline.current = false
+          }
+        }
+      } else if (appState.current === 'active' && nextAppState.match(/inactive|background/)) {
+        // App went to BACKGROUND -> set OFFLINE IMMEDIATELY
+        // Must be immediate - Android freezes JS timers in background.
+        console.log('[Socket] App backgrounded! Sending OFFLINE immediately...')
+        if (singletonClient?.connected && user) {
+          singletonClient.publish({
+            destination: '/app/user.disconnectUser',
+            body: JSON.stringify(user)
+          })
+          isPresenceOffline.current = true
+          console.log('[Socket] Sent user.disconnectUser (OFFLINE)')
+        }
+      }
+      appState.current = nextAppState
+    }
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange)
+
+    return () => {
+      subscription.remove()
+    }
   }, [user, queryClient])
 
   // ────────── sendMessage ──────────
@@ -491,15 +543,25 @@ export const useChatWebSocket = () => {
           })
         )
 
-        const isImage = fileAssets[0].mimeType?.startsWith('image/')
-        const isVideo = fileAssets[0].mimeType?.startsWith('video/')
+        const imageCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('image/')).length
+        const videoCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('video/')).length
+        const isImage = imageCount > 0
+        const isVideo = videoCount > 0 && imageCount === 0
         const type = isImage ? MessageType.IMAGE : isVideo ? MessageType.VIDEO : MessageType.FILE
-        const finalContent = content.trim() || (isImage ? '[Hình ảnh]' : isVideo ? '[Video]' : '[Tệp tin]')
+        const finalContent =
+          content.trim() ||
+          (imageCount > 0 && videoCount > 0
+            ? `[${imageCount > 1 ? 'Nhiều ảnh' : 'Ảnh'} và ${videoCount > 1 ? 'nhiều video' : 'video'}]`
+            : imageCount > 0
+              ? imageCount > 1 ? '[Nhiều ảnh]' : '[Ảnh]'
+              : videoCount > 0
+                ? videoCount > 1 ? '[Nhiều video]' : '[Video]'
+                : `[File] ${fileAssets[0].fileName}`)
 
         const clientMessageId = `temp-${Date.now()}`
         const request: MessageSendRequest = {
           conversationId,
-          content: finalContent,
+          content: content.trim(),
           clientMessageId,
           attachments: uploaded,
           replyTo: replyTo
