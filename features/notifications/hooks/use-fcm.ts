@@ -123,17 +123,27 @@ export const useFcm = () => {
     (rawData?: Record<string, unknown>) => {
       if (!rawData) return
 
+      console.log('[FCM] Navigating from notification data:', JSON.stringify(rawData))
+
       const type = String(rawData.type || '')
-      if (isChatNotification(type)) {
-        const conversationId = String(rawData.conversationId || rawData.referenceId || '')
-        if (!conversationId) return
+      const conversationId = String(rawData.conversationId || rawData.conversation_id || '')
+      
+      if (isChatNotification(type) || conversationId) {
+        // Fallback: if we have conversationId but type is missing or generic, treat as chat
+        const targetId = conversationId || String(rawData.referenceId || '')
+        if (!targetId) {
+          console.warn('[FCM] Navigation failed: No conversationId found in data')
+          return
+        }
+
+        console.log('[FCM] Navigating to chat:', targetId)
 
         router.push({
           pathname: '/chat/[id]' as any,
           params: {
-            id: conversationId,
-            conversationId,
-            name: String(rawData.conversationName || rawData.title || rawData.customTitle || ''),
+            id: targetId,
+            conversationId: targetId,
+            name: String(rawData.conversationName || rawData.groupName || rawData.title || rawData.customTitle || ''),
             avatar: String(rawData.conversationAvatar || rawData.actorAvatar || '')
           }
         })

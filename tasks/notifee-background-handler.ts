@@ -8,7 +8,6 @@ import notifee, {
   AndroidBigTextStyle,
   AndroidVisibility
 } from '@notifee/react-native'
-import { cacheDirectory, downloadAsync, getInfoAsync } from 'expo-file-system/legacy'
 
 const CHAT_NOTIFICATION_PREFIX = 'CHAT_'
 
@@ -40,12 +39,6 @@ function createFallbackNotificationId(type: string) {
   return `${safeType}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
 }
 
-function isValidLargeIcon(icon: string | number | object | undefined) {
-  if (!icon) return false
-  if (typeof icon !== 'string') return true
-  return icon.startsWith('http://') || icon.startsWith('https://') || icon.startsWith('file://') || icon.startsWith('content://')
-}
-
 function normalizeBody(value: string) {
   return value.replace(/\\n/g, '\n').trim()
 }
@@ -65,16 +58,16 @@ function getAndroidStyle(type: string, bodyLines: string[], compactBody: string,
   if (!isChatNotification(type)) return undefined
 
   return bodyLines.length > 1
-    ? {
+    ? ({
         type: AndroidStyle.INBOX,
         lines: bodyLines,
         title,
         summary: compactBody
-      } satisfies AndroidInboxStyle
-    : {
+      } satisfies AndroidInboxStyle)
+    : ({
         type: AndroidStyle.BIGTEXT,
         text: compactBody
-      } satisfies AndroidBigTextStyle
+      } satisfies AndroidBigTextStyle)
 }
 
 function getAndroidActions(type: string) {
@@ -94,7 +87,7 @@ export function registerNotifeeBackgroundHandler() {
   notifee.onBackgroundEvent(async ({ type, detail }: Event) => {
     const { notification } = detail
 
-    if (type === EventType.ACTION_PRESS || type === EventType.PRESS || type === EventType.DISMISSED) {
+    if (type === EventType.DISMISSED || type === EventType.ACTION_PRESS) {
       if (notification?.id) {
         await notifee.cancelNotification(notification.id)
       }
@@ -122,29 +115,9 @@ export async function displayChatNotification(rawData: Record<string, string>) {
     sound: 'default'
   })
 
-  let largeIcon: string | number | object | undefined
-  const avatarUrl = data.actorAvatar
-  try {
-    if (avatarUrl && avatarUrl.startsWith('http')) {
-      const filename = avatarUrl.split('/').pop()?.split('?')[0] || 'avatar.jpg'
-      const fileUri = `${cacheDirectory}${filename}`
-      const fileInfo = await getInfoAsync(fileUri)
-      largeIcon = fileInfo.exists ? fileUri : (await downloadAsync(avatarUrl, fileUri)).uri
-    } else if (avatarUrl && avatarUrl.startsWith('file')) {
-      largeIcon = avatarUrl
-    } else {
-      largeIcon = require('@/assets/images/logo.jpg')
-    }
-  } catch {
-    largeIcon = require('@/assets/images/logo.jpg')
-  }
-  if (!isValidLargeIcon(largeIcon)) {
-    console.log('[BGNotification] Skipping invalid largeIcon:', largeIcon)
-    largeIcon = undefined
-  }
-
   const notificationId = resolveNotificationId(data, type) || createFallbackNotificationId(type)
-  const groupId = isChatNotification(type) && data.conversationId ? getChatNotificationId(data.conversationId) : undefined
+  const groupId =
+    isChatNotification(type) && data.conversationId ? getChatNotificationId(data.conversationId) : undefined
   const bodyLines = getBodyLines(body)
   const compactBody = isChatNotification(type) ? getCompactBody(bodyLines, body) : body
   const style = getAndroidStyle(type, bodyLines, compactBody, title)
@@ -171,7 +144,6 @@ export async function displayChatNotification(rawData: Record<string, string>) {
       category: AndroidCategory.MESSAGE,
       visibility: AndroidVisibility.PUBLIC,
       smallIcon: 'ic_launcher',
-      ...(largeIcon ? { largeIcon } : {}),
       circularLargeIcon: true,
       color: '#0084FF',
       ...(groupId ? { groupId } : {}),

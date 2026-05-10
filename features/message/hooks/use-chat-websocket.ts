@@ -543,15 +543,25 @@ export const useChatWebSocket = () => {
           })
         )
 
-        const isImage = fileAssets[0].mimeType?.startsWith('image/')
-        const isVideo = fileAssets[0].mimeType?.startsWith('video/')
+        const imageCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('image/')).length
+        const videoCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('video/')).length
+        const isImage = imageCount > 0
+        const isVideo = videoCount > 0 && imageCount === 0
         const type = isImage ? MessageType.IMAGE : isVideo ? MessageType.VIDEO : MessageType.FILE
-        const finalContent = content.trim() || (isImage ? '[Hình ảnh]' : isVideo ? '[Video]' : '[Tệp tin]')
+        const finalContent =
+          content.trim() ||
+          (imageCount > 0 && videoCount > 0
+            ? `[${imageCount > 1 ? 'Nhiều ảnh' : 'Ảnh'} và ${videoCount > 1 ? 'nhiều video' : 'video'}]`
+            : imageCount > 0
+              ? imageCount > 1 ? '[Nhiều ảnh]' : '[Ảnh]'
+              : videoCount > 0
+                ? videoCount > 1 ? '[Nhiều video]' : '[Video]'
+                : `[File] ${fileAssets[0].fileName}`)
 
         const clientMessageId = `temp-${Date.now()}`
         const request: MessageSendRequest = {
           conversationId,
-          content: finalContent,
+          content: content.trim(),
           clientMessageId,
           attachments: uploaded,
           replyTo: replyTo
