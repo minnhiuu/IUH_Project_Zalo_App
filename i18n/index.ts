@@ -4,6 +4,8 @@ import * as Localization from 'expo-localization'
 
 import en from './locales/en.json'
 import vi from './locales/vi.json'
+import socialEn from '@/features/social-feed/locales/en.json'
+import socialVi from '@/features/social-feed/locales/vi.json'
 
 // Define supported languages
 export const LANGUAGES = {
@@ -27,8 +29,8 @@ const getDeviceLanguage = (): LanguageCode => {
 
 // Resources for i18n
 const resources = {
-  en: { translation: en },
-  vi: { translation: vi }
+  en: { translation: en, social: socialEn },
+  vi: { translation: vi, social: socialVi }
 }
 
 // Initialize i18n
@@ -43,7 +45,7 @@ i18n.use(initReactI18next).init({
 
   // Namespace configuration
   defaultNS: 'translation',
-  ns: ['translation'],
+  ns: ['translation', 'social'],
 
   // React-i18next configuration
   react: {

@@ -9,6 +9,7 @@ import { UserAvatar } from '@/components/common/user-avatar'
 import { useTranslation } from 'react-i18next'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { HEADER } from '@/constants/theme'
+import { parseMessageDate } from '../utils/date-utils'
 
 interface ChatHeaderProps {
   name: string
@@ -48,7 +49,8 @@ export function ChatHeader({
     if (isOnline) return t('message.online', { defaultValue: 'Online' })
     if (lastSeenAt) {
       try {
-        const d = new Date(lastSeenAt.endsWith('Z') ? lastSeenAt : lastSeenAt + 'Z')
+        const d = parseMessageDate(lastSeenAt)
+        if (!d) return ''
         const now = new Date()
         const diffMin = Math.floor((now.getTime() - d.getTime()) / 60000)
         if (diffMin < 1) return t('message.status.justNow', { defaultValue: 'Just now' })

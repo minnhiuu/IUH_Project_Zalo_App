@@ -60,24 +60,121 @@ export function ConversationListSkeleton({ count = 6 }: { count?: number }) {
   )
 }
 
-export function MessageListSkeleton({ count = 14 }: { count?: number }) {
+export function MessageListSkeleton({
+  count = 18,
+  includePinned = false
+}: {
+  count?: number
+  includePinned?: boolean
+}) {
+  const colorScheme = useColorScheme() ?? 'light'
+  const isDark = colorScheme === 'dark'
+  const bubbleWidths = [128, 176, 214, 152, 238, 190]
+
   return (
-    <View style={{ flex: 1, paddingHorizontal: 12, paddingVertical: 8, justifyContent: 'flex-end' }}>
+    <View
+      style={{
+        flex: 1,
+        paddingHorizontal: 12,
+        paddingTop: 10,
+        paddingBottom: 8,
+        justifyContent: 'flex-start',
+        backgroundColor: isDark ? '#0D1117' : '#E8ECEF'
+      }}
+    >
+      {includePinned && (
+        <View style={{ paddingHorizontal: 2, paddingTop: 4, paddingBottom: 8 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              backgroundColor: isDark ? '#1D232D' : '#FFFFFF',
+              borderRadius: 12,
+              paddingHorizontal: 12,
+              minHeight: 68,
+              borderWidth: isDark ? 1 : 0,
+              borderColor: isDark ? '#2E3745' : 'transparent'
+            }}
+          >
+            <SkeletonPulse style={{ width: 30, height: 30, borderRadius: 15, marginRight: 10 }} />
+            <View style={{ flex: 1 }}>
+              <SkeletonPulse style={{ width: '78%', height: 13, borderRadius: 7, marginBottom: 7 }} />
+              <SkeletonPulse style={{ width: '55%', height: 11, borderRadius: 6 }} />
+            </View>
+            <SkeletonPulse style={{ width: 26, height: 26, borderRadius: 13, marginLeft: 10 }} />
+          </View>
+        </View>
+      )}
+
       {Array.from({ length: count }).map((_, i) => {
-        const isOwn = i % 3 === 0
-        const width = 120 + (i % 4) * 40
+        const isOwn = i % 4 === 0 || i % 7 === 0
+        const bubbleWidth = bubbleWidths[i % bubbleWidths.length]
+        const bubbleHeight = i % 6 === 0 ? 54 : i % 5 === 0 ? 46 : 38
+        const showAvatar = !isOwn && (i % 3 === 0 || i % 5 === 0)
+        const isMediaLike = i % 8 === 3
+        const isTiny = i % 9 === 4
+
         return (
           <View
             key={i}
             style={{
               flexDirection: 'row',
               justifyContent: isOwn ? 'flex-end' : 'flex-start',
-              marginBottom: 12,
-              alignItems: 'flex-end'
+              marginBottom: 8,
+              alignItems: 'flex-end',
+              paddingHorizontal: 2
             }}
           >
-            {!isOwn && <SkeletonPulse style={{ width: 32, height: 32, borderRadius: 16, marginRight: 8 }} />}
-            <SkeletonPulse style={{ width, height: 40, borderRadius: 16 }} />
+            {!isOwn && (
+              <View style={{ width: 40, alignItems: 'flex-start' }}>
+                {showAvatar ? (
+                  <SkeletonPulse style={{ width: 30, height: 30, borderRadius: 15, marginRight: 8 }} />
+                ) : null}
+              </View>
+            )}
+
+            <View style={{ maxWidth: '72%' }}>
+              {isMediaLike ? (
+                <>
+                  <SkeletonPulse
+                    style={{
+                      width: Math.min(230, bubbleWidth + 16),
+                      height: 124,
+                      borderRadius: 14,
+                      borderTopLeftRadius: isOwn ? 14 : 6,
+                      borderTopRightRadius: isOwn ? 6 : 14
+                    }}
+                  />
+                  <SkeletonPulse
+                    style={{
+                      width: Math.max(88, bubbleWidth - 44),
+                      height: 10,
+                      borderRadius: 6,
+                      marginTop: 6
+                    }}
+                  />
+                </>
+              ) : (
+                <SkeletonPulse
+                  style={{
+                    width: isTiny ? 88 : bubbleWidth,
+                    height: isTiny ? 30 : bubbleHeight,
+                    borderRadius: 16,
+                    borderTopLeftRadius: isOwn ? 16 : 6,
+                    borderTopRightRadius: isOwn ? 6 : 16
+                  }}
+                />
+              )}
+              <SkeletonPulse
+                style={{
+                  width: isOwn ? 46 : 38,
+                  height: 8,
+                  borderRadius: 4,
+                  marginTop: 4,
+                  alignSelf: isOwn ? 'flex-end' : 'flex-start'
+                }}
+              />
+            </View>
           </View>
         )
       })}

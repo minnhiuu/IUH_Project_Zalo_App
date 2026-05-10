@@ -10,7 +10,8 @@ import { getAccessToken, clearTokens } from '@/lib/http'
 import { storage } from '@/utils/storageUtils'
 import { jwtDecode } from 'jwt-decode'
 import apiConfig from '@/config/apiConfig'
-import { normalizeDateTime } from '../utils/date-utils'
+import { normalizeDateTime, parseMessageDate } from '../utils/date-utils'
+import { parseBusinessCardContent, serializeBusinessCard } from '../utils/business-card'
 import { MessageStatus, MessageType } from '../schemas'
 import type {
   MessageResponse,
@@ -19,11 +20,14 @@ import type {
   ReplyMetadataResponse,
   AttachmentInfo
 } from '../schemas'
+import type { PresignFileRequest, PresignedUploadResponse } from '../api/message.api'
+import * as FileSystem from 'expo-file-system/legacy'
 
 // ────────── Singleton state ──────────
 let singletonClient: Client | null = null
 let singletonConnected = false
 let singletonUserId: string | null = null
+let isConnecting = false
 const listeners = new Set<() => void>()
 
 const notifyListeners = () => listeners.forEach((l) => l())
@@ -41,10 +45,13 @@ const getWsUrl = () => {
 }
 
 const connectSingleton = async (user: any, queryClient: QueryClient) => {
+  if (isConnecting) return
   // Already connected for this user
   if (singletonClient?.active && singletonUserId === user.id) return
+
   // Disconnect previous if switching users
   if (singletonClient?.active && singletonUserId !== user.id) {
+    console.log('[useChatWebSocket] Switching user, deactivating old connection...')
     singletonClient.deactivate()
     singletonClient = null
   }
@@ -52,6 +59,8 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
   const token = await getAccessToken()
   if (!token) return
 
+  console.log('[useChatWebSocket] Initializing new WebSocket connection...')
+  isConnecting = true
   singletonUserId = user.id
 
   const client = new Client({
@@ -65,8 +74,10 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
     forceBinaryWSFrames: true,
     appendMissingNULLonIncoming: true,
     onConnect: () => {
+      isConnecting = false
       singletonConnected = true
       notifyListeners()
+      console.log('[useChatWebSocket] WebSocket Connected & Subscribed.')
 
       // ────────── /queue/messages ──────────
       client.subscribe('/user/queue/messages', (payload) => {
@@ -94,11 +105,30 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
                 pages: [
                   {
                     ...firstPage,
-                    data: firstPage.data.map((m: MessageResponse) =>
-                      m.clientMessageId && m.clientMessageId === msg.clientMessageId
-                        ? { ...msg, status: MessageStatus.NORMAL }
-                        : m
-                    )
+                    data: firstPage.data.map((m: MessageResponse) => {
+                      if (!(m.clientMessageId && m.clientMessageId === msg.clientMessageId)) {
+                        return m
+                      }
+
+                      const optimisticCard = parseBusinessCardContent(m.content)
+                      const incomingCard = parseBusinessCardContent(msg.content)
+
+                      if (optimisticCard && incomingCard) {
+                        const mergedPhone = incomingCard.phone || optimisticCard.phone || ''
+                        const mergedContent = serializeBusinessCard({
+                          ...incomingCard,
+                          phone: mergedPhone
+                        })
+
+                        return {
+                          ...msg,
+                          content: mergedContent,
+                          status: MessageStatus.NORMAL
+                        }
+                      }
+
+                      return { ...msg, status: MessageStatus.NORMAL }
+                    })
                   },
                   ...oldData.pages.slice(1)
                 ]
@@ -137,7 +167,7 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
           if (idx >= 0) {
             const updated: ConversationResponse = {
               ...conversations[idx],
-              lastMessage: msg.content,
+              lastMessage: typeof msg.content === 'string' ? msg.content : (msg.type === 'IMAGE' ? '[Hình ảnh]' : msg.type === 'FILE' ? '[Tệp]' : ''),
               lastMessageTime: msg.createdAt || new Date().toISOString(),
               isLastMessageFromMe: isOwnMessage,
               lastMessageType: msg.type,
@@ -229,9 +259,9 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
                 data: page.data.map((m: MessageResponse) =>
                   m.id === event.messageId
                     ? {
-                        ...m,
-                        reactions: event.reactions && Object.keys(event.reactions).length ? event.reactions : undefined
-                      }
+                      ...m,
+                      reactions: event.reactions && Object.keys(event.reactions).length ? event.reactions : undefined
+                    }
                     : m
                 )
               }))
@@ -262,17 +292,54 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
             queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
               if (!oldData) return oldData
               const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
-              if (conversations.find((c: ConversationResponse) => c.id === newConv.id)) return oldData
-              const newList = [newConv, ...conversations].sort(
-                (a: any, b: any) => new Date(b.lastMessageTime).getTime() - new Date(a.lastMessageTime).getTime()
+              const existingIdx = conversations.findIndex((c: ConversationResponse) => c.id === newConv.id)
+              const nextConversations =
+                existingIdx >= 0
+                  ? [
+                    {
+                      ...conversations[existingIdx],
+                      ...newConv,
+                      // Keep members from cache if update payload is partial.
+                      members: Array.isArray(newConv.members) ? newConv.members : conversations[existingIdx].members
+                    },
+                    ...conversations.filter((_, i) => i !== existingIdx)
+                  ]
+                  : [newConv, ...conversations]
+
+              const newList = nextConversations.sort(
+                (a: any, b: any) => {
+                  const bTime = parseMessageDate(b.lastMessageTime)?.getTime() || 0
+                  const aTime = parseMessageDate(a.lastMessageTime)?.getTime() || 0
+                  return bTime - aTime
+                }
               )
+
+              // Match web behavior: update sidebars relying on join requests/member lists.
+              queryClient.invalidateQueries({ queryKey: messageKeys.groupMembers(newConv.id, '') })
+              queryClient.invalidateQueries({ queryKey: messageKeys.joinRequests(newConv.id) })
+
               return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
             })
           } else if (newConv.type === 'REFRESH') {
             queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+            queryClient.invalidateQueries({ queryKey: [...messageKeys.all, 'join-requests'] })
           }
         } catch {
           queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+        }
+      })
+
+      // ────────── /queue/join-requests ──────────
+      client.subscribe('/user/queue/join-requests', (payload) => {
+        try {
+          const update = JSON.parse(payload.body)
+          if (!update?.conversationId) return
+          queryClient.invalidateQueries({ queryKey: messageKeys.joinRequests(update.conversationId) })
+          queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+          queryClient.invalidateQueries({ queryKey: messageKeys.groupMembers(update.conversationId, '') })
+          queryClient.invalidateQueries({ queryKey: messageKeys.messages(update.conversationId) })
+        } catch {
+          // ignore invalid payload
         }
       })
 
@@ -312,10 +379,22 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
       })
     },
     onDisconnect: () => {
+      isConnecting = false
       singletonConnected = false
       notifyListeners()
     },
-    debug: __DEV__ ? (msg) => console.log('[STOMP]', msg) : undefined
+    onStompError: (frame) => {
+      isConnecting = false
+      console.error('[useChatWebSocket] STOMP Error:', frame.headers['message'])
+    },
+    onWebSocketClose: () => {
+      isConnecting = false
+    },
+    debug: __DEV__ ? (msg) => {
+      if (msg.includes('MESSAGE') || msg.includes('CONNECT')) {
+        console.log('[STOMP]', msg)
+      }
+    } : undefined
   })
 
   client.activate()
@@ -323,6 +402,7 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
 }
 
 const disconnectSingleton = (user: any) => {
+  isConnecting = false
   if (singletonClient) {
     if (singletonClient.connected && user) {
       singletonClient.publish({
@@ -347,6 +427,11 @@ export const useChatWebSocket = () => {
   const revokeMsgMutation = useRevokeMessage()
   const deleteMsgMutation = useDeleteMessageForMe()
   const [isUploading, setIsUploading] = useState(false)
+
+  const getFileNameFromUri = useCallback((uri: string, fallbackName: string) => {
+    const nameFromPath = uri.split('/').pop()?.split('?')[0]
+    return nameFromPath && nameFromPath.length > 0 ? nameFromPath : fallbackName
+  }, [])
 
   const appState = useRef(AppState.currentState)
   const isPresenceOffline = useRef(false)
@@ -469,7 +554,13 @@ export const useChatWebSocket = () => {
         if (idx >= 0) {
           const updated: ConversationResponse = {
             ...conversations[idx],
-            lastMessage: content,
+            lastMessage:
+              content ||
+              (optimisticType === MessageType.IMAGE
+                ? '[Hình ảnh]'
+                : optimisticType === MessageType.FILE
+                  ? '[Tệp]'
+                  : content),
             lastMessageTime: now,
             isLastMessageFromMe: true,
             lastMessageType: optimisticType,
@@ -481,7 +572,7 @@ export const useChatWebSocket = () => {
         return oldData
       })
     },
-    [user, queryClient, sendMsgMutation]
+    [getFileNameFromUri, user, queryClient, sendMsgMutation]
   )
 
   // ────────── revokeMessage ──────────
@@ -534,50 +625,38 @@ export const useChatWebSocket = () => {
     ) => {
       if (!singletonClient?.connected || !fileAssets.length) return
 
-      setIsUploading(true)
-      try {
-        const uploaded = await Promise.all(
-          fileAssets.map(async ({ uri, mimeType, fileName }) => {
-            const res = await messageApi.uploadFile(uri, mimeType, fileName)
-            return res.data.data as AttachmentInfo
-          })
-        )
+      // B1. Detect type: Chỉ gộp khi TOÀN BỘ là ảnh hoặc TOÀN BỘ là video
+      const allImages = fileAssets.every((asset) => asset.mimeType?.startsWith('image/'))
+      const allVideos = fileAssets.every((asset) => asset.mimeType?.startsWith('video/'))
+      const isMedia = allImages || allVideos
 
-        const imageCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('image/')).length
-        const videoCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('video/')).length
-        const isImage = imageCount > 0
-        const isVideo = videoCount > 0 && imageCount === 0
-        const type = isImage ? MessageType.IMAGE : isVideo ? MessageType.VIDEO : MessageType.FILE
-        const finalContent =
-          content.trim() ||
-          (imageCount > 0 && videoCount > 0
-            ? `[${imageCount > 1 ? 'Nhiều ảnh' : 'Ảnh'} và ${videoCount > 1 ? 'nhiều video' : 'video'}]`
-            : imageCount > 0
-              ? imageCount > 1 ? '[Nhiều ảnh]' : '[Ảnh]'
-              : videoCount > 0
-                ? videoCount > 1 ? '[Nhiều video]' : '[Video]'
-                : `[File] ${fileAssets[0].fileName}`)
+      const now = new Date().toISOString()
+      const clientMessageId = `temp-${Date.now()}`
 
-        const clientMessageId = `temp-${Date.now()}`
-        const request: MessageSendRequest = {
-          conversationId,
-          content: content.trim(),
-          clientMessageId,
-          attachments: uploaded,
-          replyTo: replyTo
-            ? { messageId: replyTo.messageId, senderId: replyTo.senderId, content: replyTo.content, type: replyTo.type }
-            : undefined,
-          isForwarded: false
-        }
-        sendMsgMutation.mutate(request)
+      const imageCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('image/')).length
+      const videoCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('video/')).length
+      
+      // Prepare optimistic attachments
+      const optimisticAttachments: AttachmentInfo[] = fileAssets.map((asset, index) => ({
+        key: `temp-${index}`,
+        url: asset.uri,
+        fileName: asset.fileName || `file-${index}`,
+        originalFileName: asset.fileName || `file-${index}`,
+        contentType: asset.mimeType,
+        size: 0
+      }))
 
-        const now = new Date().toISOString()
+      // Optimistic UI logic
+      if (isMedia) {
+        // IMAGE / VIDEO: Gộp chung 1 bubble
+        const optimisticType = allVideos ? MessageType.VIDEO : MessageType.IMAGE
+        const optimisticContent = content.trim() || (allVideos ? '[Video]' : '[Hình ảnh]')
         const optimisticMsg: MessageResponse = {
           id: clientMessageId,
           clientMessageId,
           senderId: user?.id || '',
-          content: finalContent,
-          type,
+          content: optimisticContent,
+          type: optimisticType,
           status: MessageStatus.NORMAL,
           createdAt: now,
           lastModifiedAt: now,
@@ -586,7 +665,7 @@ export const useChatWebSocket = () => {
           senderAvatar: null,
           replyTo: replyTo ?? null,
           isForwarded: false,
-          attachments: uploaded
+          attachments: optimisticAttachments
         }
 
         queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
@@ -597,32 +676,123 @@ export const useChatWebSocket = () => {
             pages: [{ ...firstPage, data: [optimisticMsg, ...firstPage.data] }, ...oldData.pages.slice(1)]
           }
         })
-
-        queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
-          if (!oldData) return oldData
-          const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
-          const idx = conversations.findIndex((c) => c.id === conversationId)
-          if (idx >= 0) {
-            const updated: ConversationResponse = {
-              ...conversations[idx],
-              lastMessage: finalContent,
-              lastMessageTime: now,
-              isLastMessageFromMe: true,
-              lastMessageType: type,
-              lastMessageStatus: MessageStatus.NORMAL
-            }
-            const newList = [updated, ...conversations.filter((_, i) => i !== idx)]
-            return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
+      } else {
+        // FILE / MIX: Mỗi file 1 bubble riêng
+        fileAssets.forEach((asset, index) => {
+          const individualId = `${clientMessageId}-${index}`
+          const individualOptimistic: MessageResponse = {
+            id: individualId,
+            clientMessageId: individualId,
+            senderId: user?.id || '',
+            content: asset.fileName || '[Tệp tin]',
+            type: MessageType.FILE,
+            status: MessageStatus.NORMAL,
+            createdAt: now,
+            lastModifiedAt: now,
+            conversationId,
+            senderName: user?.fullName ?? null,
+            senderAvatar: null,
+            replyTo: replyTo ?? null,
+            isForwarded: false,
+            attachments: [optimisticAttachments[index]]
           }
-          return oldData
+
+          queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
+            if (!oldData) return oldData
+            const firstPage = oldData.pages[0]
+            return {
+              ...oldData,
+              pages: [{ ...firstPage, data: [individualOptimistic, ...firstPage.data] }, ...oldData.pages.slice(1)]
+            }
+          })
         })
+      }
+
+      setIsUploading(true)
+      try {
+        // B2. Prepare presignRequests cho toàn bộ files (Chỉ gọi 1 lần ngoài loop)
+        const presignRequests: PresignFileRequest[] = await Promise.all(
+          fileAssets.map(async (asset, index) => {
+            const fallbackName = `upload-${index + 1}`
+            const fileName = asset.fileName || getFileNameFromUri(asset.uri, fallbackName)
+            const info = await FileSystem.getInfoAsync(asset.uri)
+            const size = (info as { size?: number }).size ?? 0
+            return { folder: 'chat', fileName, contentType: asset.mimeType, size }
+          })
+        )
+
+        // B3. Call API ONLY ONCE
+        const presignResponse = await messageApi.presignBatch(presignRequests)
+        const presignedList = presignResponse.data?.data ?? []
+        const resolvedPresigned = presignRequests.map((_, index) => presignedList[index])
+
+        // B4. Upload toàn bộ files lên S3 (Tuần tự)
+        for (const [index, presigned] of resolvedPresigned.entries()) {
+          if (!presigned) continue
+          await FileSystem.uploadAsync(presigned.presignedUrl, fileAssets[index].uri, {
+            httpMethod: 'PUT',
+            uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+            headers: { 'Content-Type': presigned.contentType }
+          })
+        }
+
+        const uploaded: AttachmentInfo[] = resolvedPresigned.map((entry, index) => {
+          const resolved = entry as PresignedUploadResponse
+          return {
+            key: resolved.key,
+            url: resolved.publicUrl,
+            fileName: resolved.originalFileName || presignRequests[index].fileName,
+            originalFileName: resolved.originalFileName || presignRequests[index].fileName,
+            contentType: resolved.contentType,
+            size: resolved.size
+          }
+        })
+
+        // B5. Final Mutations
+        if (isMedia) {
+          // B5A. IMAGE / VIDEO: Gửi 1 message duy nhất
+          const finalContent = content.trim() || (allVideos ? '[Video]' : '[Hình ảnh]')
+          sendMsgMutation.mutate({
+            conversationId,
+            content: finalContent,
+            clientMessageId,
+            attachments: uploaded,
+            replyTo: replyTo ? { messageId: replyTo.messageId, senderId: replyTo.senderId, content: replyTo.content, type: replyTo.type } : undefined,
+            isForwarded: false
+          })
+        } else {
+          // B5B. FILE / MIX: Mỗi file 1 message riêng
+          for (let i = 0; i < uploaded.length; i++) {
+            const attachment = uploaded[i]
+            const individualId = `${clientMessageId}-${i}`
+            sendMsgMutation.mutate({
+              conversationId,
+              content: attachment.fileName || '[Tệp tin]',
+              clientMessageId: individualId,
+              attachments: [attachment],
+              replyTo: replyTo ? { messageId: replyTo.messageId, senderId: replyTo.senderId, content: replyTo.content, type: replyTo.type } : undefined,
+              isForwarded: false
+            })
+          }
+        }
       } catch (err) {
-        console.error('[sendFileMessage] upload failed:', err)
+        console.error('[sendFileMessage] Luồng gửi thất bại:', err)
+        // Cleanup optimistic messages
+        queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
+          if (!oldData) return oldData
+          return {
+            ...oldData,
+            pages: oldData.pages.map(page => ({
+              ...page,
+              data: page.data.filter((m: MessageResponse) => !m.id?.startsWith(clientMessageId))
+            }))
+          }
+        })
       } finally {
         setIsUploading(false)
       }
     },
-    [user, queryClient, sendMsgMutation]
+    [getFileNameFromUri, user, queryClient, sendMsgMutation]
   )
 
   return { connected, sendMessage, revokeMessage, deleteMessageForMe, sendFileMessage, isUploading }

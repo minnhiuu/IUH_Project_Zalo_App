@@ -1,0 +1,98 @@
+{
+  "reactions": {
+    "like": "Like",
+    "love": "Love",
+    "haha": "Haha",
+    "wow": "Wow",
+    "sad": "Sad",
+    "angry": "Angry",
+    "react": "React"
+  },
+  "composer": {
+    "me": "What's on your mind?",
+    "visibilityPublic": "Everyone",
+    "placeholder": "Share your thoughts...",
+    "image": "Photo",
+    "video": "Video",
+    "feeling": "Feeling",
+    "post": "Post",
+    "prompt": "What's on your mind?"
+  },
+  "post": {
+    "attachmentAlt": "Attachment from {{author}}",
+    "commentCount": "{{count}} comment",
+    "commentCount_plural": "{{count}} comments",
+    "shareCount": "{{count}} share",
+    "shareCount_plural": "{{count}} shares",
+    "comment": "Comment",
+    "share": "Share",
+    "visibilityPublic": "Public",
+    "visibilityFriends": "Friends",
+    "visibilityPrivate": "Private",
+    "sharedAPost": "shared a post",
+    "justNow": "just now",
+    "readMore": "Read more",
+    "showLess": "Show less"
+  },
+  "commentsModal": {
+    "title": "Comments",
+    "subtitle": "0 comments",
+    "mediaAlt": "Comment attachment",
+    "empty": "No comments yet",
+    "inputPlaceholder": "Write a comment...",
+    "closeAriaLabel": "Close comments",
+    "commentCount": "{{count}} comment",
+    "commentCount_plural": "{{count}} comments",
+    "loadingComments": "Loading comments...",
+    "loadError": "Failed to load comments",
+    "beFirstToComment": "Be the first to comment",
+    "sortBy": "Sort by",
+    "sortNewest": "Newest",
+    "sortMostReacted": "Most reacted"
+  },
+  "reactionsModal": {
+    "title": "Reactions",
+    "subtitle": "All reactions",
+    "loading": "Loading reactions...",
+    "loadError": "Failed to load reactions",
+    "emptyByType": "No {{type}} reactions yet",
+    "unknownUser": "Unknown user"
+  },
+  "commentItem": {
+    "reply": "Reply",
+    "edited": "edited",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "hideReplies": "Hide replies",
+    "viewReplies": "View {{count}} reply",
+    "viewReplies_plural": "View {{count}} replies",
+    "loadingReplies": "Loading replies...",
+    "loadRepliesError": "Failed to load replies",
+    "noReplies": "No replies"
+  },
+  "commentInput": {
+    "replyingTo": "Replying to {{author}}",
+    "cancel": "Cancel",
+    "uploadPhoto": "Photo",
+    "uploadVideo": "Video",
+    "invalidMedia": "Invalid media type",
+    "uploadFailed": "Failed to upload"
+  },
+  "shareModal": {
+    "title": "Share post",
+    "captionPlaceholder": "Add a caption...",
+    "shareNow": "Share now",
+    "shareSuccess": "Post shared!",
+    "shareFailed": "Failed to share post",
+    "unknownUser": "Unknown user"
+  },
+  "launcher": {
+    "prompt": "What's on your mind?",
+    "dialogTitle": "Create a new post",
+    "dialogDescription": "Share what you're thinking",
+    "createPost": "Create Post",
+    "draft": "Save as draft"
+  }
+}

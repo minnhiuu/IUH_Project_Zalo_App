@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons'
 import { ScrollView, ActivityIndicator } from 'react-native'
+import { useEffect } from 'react'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { Header, Avatar, Text, Box, VStack, HStack, Card, Divider } from '@/components/ui'
@@ -41,6 +42,34 @@ export default function ProfileScreen() {
   const router = useRouter()
   const { t } = useTranslation()
   const { data: user, isLoading } = useMyProfile()
+
+  useEffect(() => {
+    if (!__DEV__) return
+
+    const extractAvatarLikeFields = (obj: unknown) => {
+      if (!obj || typeof obj !== 'object') return {}
+      const entries = Object.entries(obj as Record<string, unknown>)
+      return Object.fromEntries(
+        entries.filter(([key, value]) => {
+          const lowerKey = key.toLowerCase()
+          const isAvatarLikeKey =
+            lowerKey.includes('avatar') ||
+            lowerKey.includes('image') ||
+            lowerKey.includes('photo') ||
+            lowerKey.includes('background')
+
+          return isAvatarLikeKey && (typeof value === 'string' || value === null)
+        })
+      )
+    }
+
+    console.log('[AvatarDebug][ProfileTab] useMyProfile', {
+      userId: user?.id ?? null,
+      fullName: user?.fullName ?? null,
+      avatar: user?.avatar ?? null,
+      avatarLikeFields: extractAvatarLikeFields(user)
+    })
+  }, [user])
 
   const getInitials = (fullName: string) => {
     const names = fullName.trim().split(' ')
