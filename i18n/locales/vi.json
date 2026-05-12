@@ -337,6 +337,14 @@
       "onlyMe": "Chỉ mình tôi",
       "allowViewAndComment": "Cho phép xem và bình luận",
       "blockAndHide": "Chặn và ẩn",
+      "nameSearchVisibility": "Tìm tôi bằng tên",
+      "phoneSearchVisibility": "Tìm tôi bằng số điện thoại",
+      "searchVisibility": {
+        "public": "Mọi người",
+        "friendsOfFriends": "Bạn của bạn bè",
+        "friendsOnly": "Chỉ bạn bè",
+        "none": "Không ai"
+      },
       "manageFriendSources": "Quản lý nguồn tìm kiếm và kết bạn",
       "friendSourceByPhone": "Số điện thoại",
       "friendSourceByQr": "Mã QR",
