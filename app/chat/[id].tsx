@@ -65,42 +65,27 @@ export default function ChatScreen() {
     avatar?: string
     userId?: string
     conversationId?: string
+    aroundMessageId?: string
+    searchKeyword?: string
   }>()
 
   const user = useAuthStore((s) => s.user)
   const currentUserId = user?.id || ''
 
-  // If we have conversationId directly, use it; otherwise get/create via partner
-  const partnerId = params.userId || params.id
-  const directConversationId = params.conversationId
+  const aroundMessageId = params.aroundMessageId
+  const searchKeyword = params.searchKeyword || null
+  const consumedJumpTargetRef = useRef<string | null>(null)
+
+  const isSearchMessageJump = !!aroundMessageId
+  const directConversationId = params.conversationId || (isSearchMessageJump ? params.id : undefined)
+  const partnerId = params.userId || (directConversationId ? '' : params.id)
 
   const { data: partnerConversation } = usePartnerConversation(
     partnerId,
-    !directConversationId // only fetch if we don't have conversationId
+    !directConversationId
   )
 
   const conversationId = directConversationId || partnerConversation?.id || ''
-
-  // Build effective members list — fallback to partner from params when API members is missing
-  const effectiveMembers = React.useMemo<ConversationMemberResponse[]>(() => {
-    const base = partnerConversation?.members || []
-    const partnerUserId = params.userId || (directConversationId ? '' : params.id)
-    const fallbackName = params.name || 'Chat'
-    const fallbackAvatar = params.avatar || null
-    if (partnerUserId && !base.find((m) => m.userId === partnerUserId)) {
-      return [
-        ...base,
-        {
-          userId: partnerUserId,
-          fullName: fallbackName,
-          avatar: fallbackAvatar,
-          lastReadMessageId: null,
-          role: null
-        }
-      ]
-    }
-    return base
-  }, [partnerConversation?.members, params.userId, params.id, params.name, params.avatar, directConversationId])
 
   // Messages
   const {
@@ -109,7 +94,7 @@ export default function ChatScreen() {
     hasNextPage,
     isFetchingNextPage,
     isLoading
-  } = useInfiniteMessages(conversationId, 20, !!conversationId)
+  } = useInfiniteMessages(conversationId, 20, !!conversationId, aroundMessageId)
 
   // Mutations
   const {
@@ -135,6 +120,21 @@ export default function ChatScreen() {
   const isOnline = resolvedConversation?.status === 'ONLINE'
   const lastSeenAt = resolvedConversation?.lastSeenAt
   const groupMembers = resolvedConversation?.members || []
+  const effectiveMembers = useMemo<ConversationMemberResponse[]>(() => {
+    const base = resolvedConversation?.members || []
+    if (!partnerId) return base
+    if (base.find((m) => m.userId === partnerId)) return base
+    return [
+      ...base,
+      {
+        userId: partnerId,
+        fullName: params.name || 'Chat',
+        avatar: params.avatar || null,
+        lastReadMessageId: null,
+        role: null
+      }
+    ]
+  }, [resolvedConversation?.members, partnerId, params.name, params.avatar])
   const myGroupRole = String(groupMembers.find((m) => m.userId === currentUserId)?.role || 'MEMBER').toUpperCase()
   const isMemberRole = myGroupRole === 'MEMBER'
   const groupSettings = (resolvedConversation as any)?.settings || {}
@@ -147,6 +147,7 @@ export default function ChatScreen() {
   const [forwardMessage, setForwardMessage] = useState<MessageResponse | null>(null)
   const [pendingAttachments, setPendingAttachments] = useState<FileAsset[]>([])
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
+  const [highlightBackgroundMessageId, setHighlightBackgroundMessageId] = useState<string | null>(null)
   const [showPinnedPanel, setShowPinnedPanel] = useState(false)
   const flatListRef = useRef<FlatList>(null)
 
@@ -176,10 +177,18 @@ export default function ChatScreen() {
         flatListRef.current?.scrollToIndex({ index, animated: true, viewPosition: 0.5 })
       } catch {}
       setHighlightedMessageId(messageId)
-      setTimeout(() => setHighlightedMessageId(null), 1400)
+      setHighlightBackgroundMessageId(messageId)
+      setTimeout(() => setHighlightBackgroundMessageId(null), 3200)
     },
     [messages]
   )
+
+  useEffect(() => {
+    if (!aroundMessageId || !messages.length) return
+    if (consumedJumpTargetRef.current === aroundMessageId) return
+    consumedJumpTargetRef.current = aroundMessageId
+    scrollToMessage(aroundMessageId)
+  }, [aroundMessageId, messages.length, scrollToMessage])
   const latestOwnMessage = messages.find(
     (msg) => msg.senderId === currentUserId && msg.status !== MessageStatus.REVOKED
   )
@@ -785,7 +794,9 @@ export default function ChatScreen() {
                     onBusinessCardMessagePress={handleBusinessCardMessagePress}
                     onScrollToMessage={scrollToMessage}
                     isHighlighted={!!item.id && item.id === highlightedMessageId}
+                    showHighlightBackground={!!item.id && item.id === highlightBackgroundMessageId}
                     onPin={handlePinMessage}
+                    highlightKeyword={item.id === highlightedMessageId ? searchKeyword : null}
                     onOpenMessageOptions={() => {
                       const targetId = isGroupConversation ? conversationId : partnerId
                       if (!targetId) return

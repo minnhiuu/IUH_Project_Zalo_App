@@ -15,16 +15,9 @@ interface RecentSearchListProps {
   onClear: () => void
 }
 
-const MOCK_QUICK_ACCESS = [
-  { id: '1', name: 'QR Wallet', icon: 'qr-code-outline', color: '#60A5FA' },
-  { id: '2', name: 'Zalo Video', icon: 'play-circle-outline', color: '#A78BFA' },
-  { id: '3', name: 'Add', icon: 'add', color: '#E5E7EB', isAdd: true }
-]
-
 export function RecentSearchList({ searches, onSelect, onRemove, onClear }: RecentSearchListProps) {
   const { t } = useTranslation()
   const router = useRouter()
-  const [showQuickAccess, setShowQuickAccess] = useState(true)
   const [showContacts, setShowContacts] = useState(true)
   const [showQueries, setShowQueries] = useState(true)
 
@@ -35,11 +28,9 @@ export function RecentSearchList({ searches, onSelect, onRemove, onClear }: Rece
   )
 
   const loadSettings = async () => {
-    const quick = await storage.get<boolean>(STORAGE_KEYS.SEARCH_SHOW_QUICK_ACCESS)
     const contacts = await storage.get<boolean>(STORAGE_KEYS.SEARCH_SAVE_CONTACTS)
     const queries = await storage.get<boolean>(STORAGE_KEYS.SEARCH_SAVE_QUERIES)
 
-    if (quick !== null) setShowQuickAccess(quick)
     if (contacts !== null) setShowContacts(contacts)
     if (queries !== null) setShowQueries(queries)
   }
@@ -85,30 +76,6 @@ export function RecentSearchList({ searches, onSelect, onRemove, onClear }: Rece
           </ScrollView>
           <View className='h-px bg-border mx-0 mt-2' />
         </View>
-      )}
-
-      {showQuickAccess && (
-        <>
-          <View className='mt-2'>
-            <Text className='font-bold text-foreground px-4 mb-3'>{t('search.recent.quickAccess')}</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} className='pl-4 pb-2'>
-              {MOCK_QUICK_ACCESS.map((item) => (
-                <TouchableOpacity key={item.id} className='mr-6 items-center w-16'>
-                  <View
-                    className={`w-12 h-12 rounded-xl items-center justify-center mb-1 ${item.isAdd ? 'bg-muted' : 'bg-background'}`}
-                    style={!item.isAdd ? { backgroundColor: item.color + '20' } : {}}
-                  >
-                    <Ionicons name={item.icon as any} size={24} color={item.isAdd ? '#9FACBC' : item.color} />
-                  </View>
-                  <Text className='text-xs text-center text-muted-foreground' numberOfLines={2}>
-                    {item.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-          <View className='h-px bg-border mx-0 mt-2' />
-        </>
       )}
 
       {showQueries && queries.length > 0 && (

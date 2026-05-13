@@ -21,6 +21,15 @@ export interface PageResponse<T> {
   totalItems: number
 }
 
+export interface CursorPageResponse<T> {
+  data: T[]
+  olderCursor: string | null
+  newerCursor: string | null
+  hasMoreOlder: boolean
+  hasMoreNewer: boolean
+  isJumpResult: boolean
+}
+
 export interface PaginatedResponse<T> {
   data: T[]
   pagination: {

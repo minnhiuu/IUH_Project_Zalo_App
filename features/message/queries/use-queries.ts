@@ -51,15 +51,33 @@ export const useMessages = (conversationId: string, page: number = 0, size: numb
   })
 }
 
-export const useInfiniteMessages = (conversationId: string, size: number = 20, enabled: boolean = true) => {
+export const useInfiniteMessages = (
+  conversationId: string,
+  size: number = 20,
+  enabled: boolean = true,
+  aroundMessageId?: string | null
+) => {
   return useInfiniteQuery({
-    queryKey: messageKeys.messages(conversationId),
+    queryKey: messageKeys.messages(conversationId, aroundMessageId),
     queryFn: async ({ pageParam = 0 }) => {
-      const response = await messageApi.getMessages(conversationId, pageParam, size)
+      if (aroundMessageId || typeof pageParam === 'string') {
+        const response = await messageApi.getMessagesV2(conversationId, {
+          cursor: typeof pageParam === 'string' ? pageParam : null,
+          limit: size,
+          direction: 'OLDER',
+          aroundMessageId: pageParam === 0 ? aroundMessageId : null
+        })
+        return response.data.data
+      }
+
+      const response = await messageApi.getMessages(conversationId, pageParam as number, size)
       return response.data.data
     },
     initialPageParam: 0,
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: (lastPage: any) => {
+      if (typeof lastPage?.olderCursor === 'string') {
+        return lastPage.hasMoreOlder ? lastPage.olderCursor : undefined
+      }
       if (lastPage.page < lastPage.totalPages - 1) {
         return lastPage.page + 1
       }

@@ -1,12 +1,12 @@
 import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
-import { BaseSearchResultItem, HighlightText } from '../core/search-result-item'
+import { BaseSearchResultItem } from '../core/search-result-item'
 import { MessageSearchResponse } from '../../schemas'
-import { SearchLinkPreview } from './message-group-item'
+import { formatFileSize, SearchFilePreview } from '../messages/message-group-item'
 import { formatSearchTime } from '../../utils/format-search-time'
 import { resolveMessageResultAvatar, resolveMessageResultTitle } from '../../utils/message-result-display'
 
-export function MessageSearchResult({
+export function FileSearchResult({
   item,
   searchQuery,
   onPress,
@@ -18,9 +18,9 @@ export function MessageSearchResult({
   compact?: boolean
 }) {
   const title = resolveMessageResultTitle(item)
-  const content = item.displayHighlights || item.displayContent || ''
+  const fileName = item.displayHighlights || item.displayContent || item.type || 'File'
+  const subtitle = item.conversationName || item.senderName || ''
   const time = formatSearchTime(item.createdAt)
-  const isLink = item.type?.toUpperCase() === 'LINK' || item.hasLink
 
   return (
     <BaseSearchResultItem
@@ -38,18 +38,13 @@ export function MessageSearchResult({
         <Text className='text-muted-foreground text-xs'>{time}</Text>
       </View>
 
-      <HighlightText
-        text={content}
-        highlight={searchQuery}
-        className='text-muted-foreground text-sm'
-        highlightClassName='text-primary font-medium'
-      />
-
-      {isLink && <SearchLinkPreview preview={content} searchQuery={searchQuery} />}
+      <SearchFilePreview fileName={fileName} fileSize={formatFileSize(item.size)} searchQuery={searchQuery} />
 
       {!compact && (
         <TouchableOpacity className='flex-row items-center mt-1'>
-          <Text className='text-muted-foreground text-xs'>{item.conversationName || item.senderName}</Text>
+          <Text className='text-muted-foreground text-xs' numberOfLines={1}>
+            {subtitle}
+          </Text>
         </TouchableOpacity>
       )}
     </BaseSearchResultItem>

@@ -1,35 +1,34 @@
-import { UserSummaryResponse } from '@/features/users'
 import React from 'react'
-import { Text, TouchableOpacity, ActivityIndicator } from 'react-native'
+import { Text, TouchableOpacity, ActivityIndicator, View } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { useRouter } from 'expo-router'
+import { useQueryClient } from '@tanstack/react-query'
 import { SearchResultItem } from '@/features/search/components/core/search-result-item'
 import { useTheme } from '@/context/theme-context'
-import { useFriendshipStatus } from '@/features/friend/queries'
-import { useCancelFriendRequest, useAcceptFriendRequest } from '@/features/friend/queries/use-mutations'
+import { useAcceptFriendRequest } from '@/features/friend/queries/use-mutations'
 import { FriendStatus } from '@/features/friend/schemas'
 import { useAuthStore } from '@/store'
+import { UserSearchResponse } from '../../schemas'
+import { searchKeys } from '../../queries/keys'
 
 interface DiscoverItemProps {
-  item: UserSummaryResponse
+  item: UserSearchResponse
   searchQuery: string
-  onPress: (item: UserSummaryResponse) => void
+  onPress: (item: UserSearchResponse) => void
 }
 
 export function DiscoverItem({ item, searchQuery, onPress }: DiscoverItemProps) {
   const { t } = useTranslation()
   const { isDark } = useTheme()
   const router = useRouter()
+  const queryClient = useQueryClient()
   const currentUser = useAuthStore((s) => s.user)
-
-  const { data: status, isLoading: statusLoading } = useFriendshipStatus(item.id)
-  const cancelRequest = useCancelFriendRequest()
   const acceptRequest = useAcceptFriendRequest()
 
   const isMe = currentUser?.id === item.id
-  const isMutating = cancelRequest.isPending || acceptRequest.isPending
+  const isMutating = acceptRequest.isPending
+  const friendshipStatus = item.friendshipStatus?.toUpperCase()
 
-  // Navigate to Add Friend Confirmation screen
   const handleAddFriend = () => {
     router.push({
       pathname: '/add-friend-confirm/[id]' as any,
@@ -41,88 +40,71 @@ export function DiscoverItem({ item, searchQuery, onPress }: DiscoverItemProps) 
     })
   }
 
-  // Cancel/withdraw friend request I sent
-  const handleCancel = () => {
-    if (status?.friendshipId) {
-      cancelRequest.mutate({ friendshipId: status.friendshipId, userId: item.id })
-    }
-  }
-
-  // Accept friend request they sent me
   const handleAccept = () => {
-    if (status?.friendshipId) {
-      acceptRequest.mutate(status.friendshipId)
-    }
+    if (!item.friendshipId) return
+
+    acceptRequest.mutate(item.friendshipId, {
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: searchKeys.all })
+      }
+    })
   }
 
   const renderActionButton = () => {
     if (isMe) return null
+    if (friendshipStatus === FriendStatus.ACCEPTED) return null
 
-    if (statusLoading) {
-      return (
-        <TouchableOpacity
-          className='bg-gray-200 px-4 py-1.5 rounded-full items-center justify-center min-w-[80px]'
-          disabled
-        >
-          <ActivityIndicator size='small' color='#0068FF' />
-        </TouchableOpacity>
-      )
-    }
+    const isPending = friendshipStatus === FriendStatus.PENDING
+    const iSentRequest = item.requestedBy === currentUser?.id
 
-    // Already friends - no button
-    if (status?.areFriends) {
-      return null
-    }
+    if (isPending && iSentRequest) return null
 
-    const isPending = status?.status === FriendStatus.PENDING
-    const iSentRequest = status?.requestedBy === currentUser?.id
-
-    // I sent a pending request - show "Thu hồi"
-    if (isPending && iSentRequest) {
-      return (
-        <TouchableOpacity
-          className={`${isDark ? 'bg-gray-700' : 'bg-gray-200'} px-4 py-1.5 rounded-full items-center justify-center min-w-[80px]`}
-          onPress={handleCancel}
-          disabled={isMutating}
-        >
-          {isMutating ? (
-            <ActivityIndicator size='small' color='#374151' />
-          ) : (
-            <Text className={`${isDark ? 'text-gray-300' : 'text-gray-700'} font-medium text-xs`}>
-              {t('friend.actions.withdraw')}
-            </Text>
-          )}
-        </TouchableOpacity>
-      )
-    }
-
-    // They sent me a request - show "Đồng ý"
     if (isPending) {
       return (
         <TouchableOpacity
-          className='bg-primary px-4 py-1.5 rounded-full items-center justify-center min-w-[80px]'
+          className='bg-primary px-6 py-2.5 rounded-full items-center justify-center min-w-[104px]'
           onPress={handleAccept}
           disabled={isMutating}
         >
           {isMutating ? (
             <ActivityIndicator size='small' color='#fff' />
           ) : (
-            <Text className='text-white font-medium text-xs'>{t('friend.actions.accept')}</Text>
+            <Text className='text-white font-semibold text-sm'>{t('friend.actions.accept')}</Text>
           )}
         </TouchableOpacity>
       )
     }
 
-    // No relationship - show "Kết bạn"
     return (
       <TouchableOpacity
-        className={`${isDark ? 'bg-primary/20' : 'bg-primary-50'} px-4 py-1.5 rounded-full items-center justify-center min-w-[80px]`}
+        className={`${isDark ? 'bg-primary/20' : 'bg-primary-50'} px-5 py-2 rounded-full items-center justify-center min-w-[88px]`}
         onPress={handleAddFriend}
       >
-        <Text className='text-primary font-medium text-xs'>{t('friend.actions.addFriend')}</Text>
+        <Text className='text-primary font-semibold text-sm'>{t('friend.actions.addFriend')}</Text>
       </TouchableOpacity>
     )
   }
 
-  return <SearchResultItem item={item} searchQuery={searchQuery} onPress={onPress} action={renderActionButton()} />
+  const mutualFriendsCount = item.mutualFriendsCount ?? 0
+  const sharedGroupsCount = item.sharedGroupsCount ?? 0
+  const socialLabels = [
+    mutualFriendsCount > 0 ? t('friend.mutualFriends', { count: mutualFriendsCount }) : null,
+    sharedGroupsCount > 0 ? t('search.sharedGroups', { count: sharedGroupsCount }) : null
+  ].filter(Boolean)
+
+  return (
+    <SearchResultItem
+      item={item}
+      searchQuery={searchQuery}
+      onPress={onPress}
+      action={renderActionButton()}
+      subtitle={
+        socialLabels.length > 0 ? (
+          <View className='mt-1'>
+            <Text className='text-xs text-muted-foreground'>{socialLabels.join(' - ')}</Text>
+          </View>
+        ) : null
+      }
+    />
+  )
 }

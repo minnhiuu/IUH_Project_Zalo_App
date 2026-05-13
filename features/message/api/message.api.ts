@@ -1,7 +1,7 @@
 import http from '@/lib/http'
 import { getAccessToken } from '@/lib/http'
 import { API_ENDPOINTS } from '@/config/apiConfig'
-import type { ApiResponse, PageResponse } from '@/types/common.types'
+import type { ApiResponse, CursorPageResponse, PageResponse } from '@/types/common.types'
 import type {
   MessageSendRequest,
   MessageResponse,
@@ -59,6 +59,19 @@ export const messageApi = {
     http.get<ApiResponse<PageResponse<MessageResponse[]>>>(
       `${API_ENDPOINTS.MESSAGE.MESSAGES(conversationId)}?page=${page}&size=${size}`
     ),
+
+  getMessagesV2: (
+    conversationId: string,
+    params?: { cursor?: string | null; limit?: number; direction?: 'OLDER' | 'NEWER'; aroundMessageId?: string | null }
+  ) =>
+    http.get<ApiResponse<CursorPageResponse<MessageResponse>>>(API_ENDPOINTS.MESSAGE.MESSAGES_V2(conversationId), {
+      params: {
+        cursor: params?.cursor || undefined,
+        limit: params?.limit ?? 20,
+        direction: params?.direction ?? 'OLDER',
+        aroundMessageId: params?.aroundMessageId || undefined
+      }
+    }),
 
   sendMessage: (request: MessageSendRequest) => {
     const { conversationId, ...body } = request

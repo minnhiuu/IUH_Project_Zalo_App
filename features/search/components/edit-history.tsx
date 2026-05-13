@@ -31,7 +31,6 @@ export function EditHistory() {
   const { t } = useTranslation()
   const { isDark } = useTheme()
 
-  const [showQuickAccess, setShowQuickAccess] = useState(true)
   const [saveContacts, setSaveContacts] = useState(true)
   const [saveQueries, setSaveQueries] = useState(true)
 
@@ -44,11 +43,9 @@ export function EditHistory() {
   }, [])
 
   const loadSettings = async () => {
-    const quick = await storage.get<boolean>(STORAGE_KEYS.SEARCH_SHOW_QUICK_ACCESS)
     const contactsPref = await storage.get<boolean>(STORAGE_KEYS.SEARCH_SAVE_CONTACTS)
     const queriesPref = await storage.get<boolean>(STORAGE_KEYS.SEARCH_SAVE_QUERIES)
 
-    if (quick !== null) setShowQuickAccess(quick)
     if (contactsPref !== null) setSaveContacts(contactsPref)
     if (queriesPref !== null) setSaveQueries(queriesPref)
   }
@@ -63,11 +60,6 @@ export function EditHistory() {
         }
       }
     )
-  }
-
-  const toggleQuickAccess = async (val: boolean) => {
-    setShowQuickAccess(val)
-    await storage.set(STORAGE_KEYS.SEARCH_SHOW_QUICK_ACCESS, val)
   }
 
   const toggleSaveContacts = async (val: boolean) => {
@@ -91,7 +83,7 @@ export function EditHistory() {
   const switchTrackOff = isDark ? '#3e444a' : '#d1d5db'
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: bg }]}>
+    <SafeAreaView edges={['left', 'right', 'bottom']} style={[styles.safeArea, { backgroundColor: bg }]}>
       <Stack.Screen options={{ headerShown: false }} />
 
       <LinearGradient colors={headerGradient}>
@@ -106,19 +98,6 @@ export function EditHistory() {
       </LinearGradient>
 
       <ScrollView style={{ flex: 1, backgroundColor: bg }} showsVerticalScrollIndicator={false}>
-        <View style={[styles.row, { backgroundColor: bg }]}>
-          <Text style={[styles.rowText, { color: textMain }]}>{t('search.editHistory.showQuickAccess')}</Text>
-          <Switch
-            value={showQuickAccess}
-            onValueChange={toggleQuickAccess}
-            trackColor={{ false: switchTrackOff, true: '#3B82F6' }}
-            thumbColor='#ffffff'
-            ios_backgroundColor={switchTrackOff}
-          />
-        </View>
-
-        <View style={[styles.divider, { backgroundColor: dividerColor }]} />
-
         <View style={[styles.sectionLabel, { backgroundColor: bg }]}>
           <Text style={[styles.sectionLabelText, { color: textMain }]}>{t('search.editHistory.searchHistory')}</Text>
         </View>

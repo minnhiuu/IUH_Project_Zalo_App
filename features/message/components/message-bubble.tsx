@@ -46,6 +46,8 @@ interface MessageBubbleProps {
   onReplyMessagePress?: (messageId: string) => void
   onScrollToMessage?: (messageId: string) => void
   isHighlighted?: boolean
+  showHighlightBackground?: boolean
+  highlightKeyword?: string | null
 }
 
 export function MessageBubble({
@@ -68,7 +70,9 @@ export function MessageBubble({
   onOpenMessageOptions,
   onReplyMessagePress,
   onScrollToMessage,
-  isHighlighted = false
+  isHighlighted = false,
+  showHighlightBackground = false,
+  highlightKeyword = null
 }: MessageBubbleProps) {
   const { t } = useTranslation()
   const router = useRouter()
@@ -92,17 +96,61 @@ export function MessageBubble({
     groupLinkPreviewOpen && !!activeGroupLinkToken
   )
 
-  // Highlight animation
-  const highlightAnim = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    if (isHighlighted) {
-      Animated.sequence([
-        Animated.timing(highlightAnim, { toValue: 1, duration: 200, useNativeDriver: false }),
-        Animated.delay(700),
-        Animated.timing(highlightAnim, { toValue: 0, duration: 400, useNativeDriver: false })
-      ]).start()
-    }
-  }, [isHighlighted])
+  const removeAccents = useCallback((value: string) => {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+  }, [])
+
+  const renderHighlightedText = useCallback(
+    (content: string | null | undefined, keyword: string | null | undefined, style: any) => {
+      const value = content || ''
+      const normalizedKeyword = keyword ? removeAccents(keyword.trim()) : ''
+      if (!value || !normalizedKeyword) {
+        return <Text style={style}>{value}</Text>
+      }
+
+      const normalizedContent = removeAccents(value)
+      const parts: React.ReactNode[] = []
+      let lastIndex = 0
+      let matchIndex = normalizedContent.indexOf(normalizedKeyword)
+
+      if (matchIndex === -1) {
+        return <Text style={style}>{value}</Text>
+      }
+
+      while (matchIndex !== -1) {
+        if (matchIndex > lastIndex) {
+          parts.push(value.substring(lastIndex, matchIndex))
+        }
+
+        const endIndex = matchIndex + normalizedKeyword.length
+        parts.push(
+          <Text
+            key={`${matchIndex}-${endIndex}`}
+            style={{
+              backgroundColor: isDark ? 'rgba(234,179,8,0.55)' : '#FDE68A',
+              color: isDark ? '#FFFFFF' : '#111827',
+              borderRadius: 2
+            }}
+          >
+            {value.substring(matchIndex, endIndex)}
+          </Text>
+        )
+
+        lastIndex = endIndex
+        matchIndex = normalizedContent.indexOf(normalizedKeyword, lastIndex)
+      }
+
+      if (lastIndex < value.length) {
+        parts.push(value.substring(lastIndex))
+      }
+
+      return <Text style={style}>{parts}</Text>
+    },
+    [isDark, removeAccents]
+  )
 
   const getReplyAttachmentUrl = (replyMessageId: string): string | null => {
     const conversationId = message.conversationId
@@ -814,9 +862,13 @@ export function MessageBubble({
         return (
           <View>
             {mediaContent}
-            <Text style={{ fontSize: 15, color: textColor, lineHeight: 21, paddingHorizontal: 12, paddingVertical: 10 }}>
-              {caption}
-            </Text>
+            {renderHighlightedText(caption, highlightKeyword, {
+              fontSize: 15,
+              color: textColor,
+              lineHeight: 21,
+              paddingHorizontal: 12,
+              paddingVertical: 10
+            })}
           </View>
         )
       }
@@ -936,20 +988,17 @@ export function MessageBubble({
               )}
             </View>
           ))}
-          {shouldRenderContent && (
-              <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>
-                {message.content}
-              </Text>
-            )}
+          {shouldRenderContent &&
+            renderHighlightedText(message.content, highlightKeyword, {
+              fontSize: 15,
+              color: textColor,
+              lineHeight: 21
+            })}
         </View>
       )
     }
 
-    return (
-      <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>
-        {message.content}
-      </Text>
-    )
+    return renderHighlightedText(message.content, highlightKeyword, { fontSize: 15, color: textColor, lineHeight: 21 })
   }
 
   const reactions = message.reactions || {}
@@ -981,8 +1030,14 @@ export function MessageBubble({
         flexDirection: 'row',
         justifyContent: isOwn ? 'flex-end' : 'flex-start',
         paddingHorizontal: 12,
-        marginBottom: 4,
-        alignItems: 'flex-start'
+        paddingVertical: isHighlighted ? 6 : 0,
+        marginBottom: isHighlighted ? 0 : 4,
+        marginHorizontal: 4,
+        alignItems: 'flex-start',
+        borderRadius: 4,
+        backgroundColor: showHighlightBackground
+          ? (isDark ? 'rgba(0,104,255,0.22)' : 'rgba(0,104,255,0.12)')
+          : 'transparent'
       }}
     >
       {!isOwn && (
@@ -1013,13 +1068,20 @@ export function MessageBubble({
         )}
 
           <View style={{ alignSelf: isOwn ? 'flex-end' : 'flex-start', minWidth: '55%', paddingBottom: 14 }}>
-            <Animated.View style={{
-              borderRadius: 16,
-              backgroundColor: highlightAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: ['transparent', 'rgba(0,104,255,0.18)']
-              })
-            }}>
+            <View
+              style={{
+                borderRadius: 18,
+                borderTopRightRadius: isOwn ? 6 : 18,
+                borderTopLeftRadius: isOwn ? 18 : 6,
+                borderWidth: isHighlighted ? 2 : 0,
+                borderColor: isHighlighted ? '#0068FF' : 'transparent',
+                shadowColor: isHighlighted ? '#0068FF' : 'transparent',
+                shadowOpacity: isHighlighted ? 0.35 : 0,
+                shadowRadius: isHighlighted ? 5 : 0,
+                shadowOffset: { width: 0, height: 0 },
+                elevation: isHighlighted ? 3 : 0
+              }}
+            >
             <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
               <View
                 style={{
@@ -1107,7 +1169,7 @@ export function MessageBubble({
                 {renderBubbleContent()}
               </View>
             </TouchableOpacity>
-            </Animated.View>
+            </View>
 
             <MessageReactionBar
               messageId={message.id}

@@ -20,7 +20,12 @@
       "discover": "Discover",
       "contacts": "Contacts",
       "messages": "Messages",
+      "files": "Files",
       "seeMore": "See more"
+    },
+    "filters": {
+      "link": "Link",
+      "file": "File"
     },
     "recent": {
       "contacts": "Recent contacts",
@@ -45,6 +50,10 @@
       "nameRequired": "Name is required"
     },
     "findByPhone": "Find friends by phone number:",
-    "phoneNumber": "Phone number:"
+    "phoneNumber": "Phone number:",
+    "sharedGroups": "{{count}} mutual groups",
+    "matchingResults": "matching results",
+    "unknownConversation": "Conversation",
+    "noFilteredResults": "No results found with the selected filter"
   }
 }

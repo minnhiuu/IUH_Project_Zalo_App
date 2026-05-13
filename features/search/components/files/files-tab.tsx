@@ -1,15 +1,15 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { SearchSection } from '../core/search-sections'
-import { ContactItem } from './contact-item'
-import { ConversationSearchResponse } from '../../schemas'
 import { InfiniteData } from '@tanstack/react-query'
 import { PageResponse } from '@/types/common.types'
+import { SearchSection } from '../core/search-sections'
+import { MessageSearchResponse } from '../../schemas'
+import { FileSearchResult } from './file-item'
 
-interface ContactsTabProps {
-  searchResults: InfiniteData<PageResponse<ConversationSearchResponse[]>> | undefined
+interface FilesTabProps {
+  searchResults: InfiniteData<PageResponse<MessageSearchResponse[]>> | undefined
   searchQuery: string
-  onItemPress: (item: ConversationSearchResponse) => void
+  onItemPress: (item: MessageSearchResponse) => void
   fetchNextPage?: () => void
   hasNextPage?: boolean
   isFetchingNextPage?: boolean
@@ -17,7 +17,7 @@ interface ContactsTabProps {
   onSeeMore?: () => void
 }
 
-export function ContactsTab({
+export function FilesTab({
   searchResults,
   searchQuery,
   onItemPress,
@@ -26,7 +26,7 @@ export function ContactsTab({
   isFetchingNextPage,
   preview = false,
   onSeeMore
-}: ContactsTabProps) {
+}: FilesTabProps) {
   const { t } = useTranslation()
 
   const allItems = searchResults?.pages ? searchResults.pages.flatMap((page) => page.data) : []
@@ -35,12 +35,12 @@ export function ContactsTab({
 
   return (
     <SearchSection
-      title={t('search.sections.contacts')}
+      title={t('search.sections.files')}
       count={totalCount > 99 ? '99+' : totalCount}
       items={items}
       searchQuery={searchQuery}
+      renderItem={(item) => <FileSearchResult item={item} searchQuery={searchQuery} onPress={onItemPress} />}
       onItemPress={onItemPress}
-      renderItem={(item) => <ContactItem item={item} searchQuery={searchQuery} onPress={onItemPress} />}
       onEndReached={() => {
         if (!preview && hasNextPage && fetchNextPage) {
           fetchNextPage()

@@ -1,4 +1,5 @@
 import { searchApi } from '../api/search.api'
+import { MessageSearchFilter } from '../schemas'
 import { searchKeys } from './keys'
 
 export const searchOptions = {
@@ -15,8 +16,81 @@ export const searchOptions = {
   usersInfinite: (query: string) => ({
     queryKey: searchKeys.usersInfinite(query),
     queryFn: async ({ pageParam = 0 }) => {
-      await new Promise((resolve) => setTimeout(resolve, 1500))
       const response = await searchApi.searchUsers(query, pageParam as number, 10)
+      return response.data.data
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: any) => {
+      const nextPage = lastPage.page + 1
+      return nextPage < lastPage.totalPages ? nextPage : undefined
+    },
+    enabled: !!query
+  }),
+
+  contactsInfinite: (query: string, isGroup?: boolean) => ({
+    queryKey: searchKeys.contactsInfinite(query, isGroup),
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await searchApi.searchContacts(query, pageParam as number, 10, isGroup)
+      return response.data.data
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: any) => {
+      const nextPage = lastPage.page + 1
+      return nextPage < lastPage.totalPages ? nextPage : undefined
+    },
+    enabled: !!query
+  }),
+
+  messagesInfinite: (query: string, filters: MessageSearchFilter[] = []) => ({
+    queryKey: searchKeys.messagesInfinite(query, filters),
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await searchApi.searchMessages({ keyword: query, filters }, pageParam as number, 10)
+      return response.data.data
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: any) => {
+      const nextPage = lastPage.page + 1
+      return nextPage < lastPage.totalPages ? nextPage : undefined
+    },
+    enabled: !!query
+  }),
+
+  conversationMessagesInfinite: (conversationId: string, query: string, filters: MessageSearchFilter[] = []) => ({
+    queryKey: searchKeys.conversationMessagesInfinite(conversationId, query, filters),
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await searchApi.searchMessages(
+        { keyword: query, conversationId, filters },
+        pageParam as number,
+        20
+      )
+      return response.data.data
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: any) => {
+      const nextPage = lastPage.page + 1
+      return nextPage < lastPage.totalPages ? nextPage : undefined
+    },
+    enabled: !!query && !!conversationId
+  }),
+
+  messageGroupsInfinite: (query: string, filters: MessageSearchFilter[] = []) => ({
+    queryKey: searchKeys.messageGroupsInfinite(query, filters),
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await searchApi.searchMessageGroups({ keyword: query, filters }, pageParam as number, 10)
+      return response.data.data
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage: any) => {
+      const nextPage = lastPage.page + 1
+      return nextPage < lastPage.totalPages ? nextPage : undefined
+    },
+    enabled: !!query
+  }),
+
+  filesInfinite: (query: string) => ({
+    queryKey: searchKeys.filesInfinite(query),
+    queryFn: async ({ pageParam = 0 }) => {
+      const response = await searchApi.searchFiles({ keyword: query }, pageParam as number, 10)
       return response.data.data
     },
     initialPageParam: 0,
