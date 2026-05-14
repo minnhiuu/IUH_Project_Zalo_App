@@ -10,6 +10,7 @@ export const searchKeys = {
     [...searchKeys.all, 'messages', 'conversation', conversationId, query, filters.join(',')] as const,
   messageGroupsInfinite: (query: string, filters: readonly string[] = []) =>
     [...searchKeys.all, 'message-groups', 'infinite', query, filters.join(',')] as const,
+  messageSenders: (query: string) => [...searchKeys.all, 'messages', 'senders', query] as const,
   filesInfinite: (query: string) => [...searchKeys.all, 'files', 'infinite', query] as const,
   recentItems: () => [...searchKeys.all, 'recent', 'items'] as const,
   recentQueries: () => [...searchKeys.all, 'recent', 'queries'] as const

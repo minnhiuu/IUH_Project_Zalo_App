@@ -10,6 +10,7 @@ import type {
   GroupConversationCreateRequest,
   LeaveGroupRequest,
   SearchMemberResponse,
+  ConversationParticipantResponse,
   GroupMemberListItemResponse,
   AdminMemberResponse,
   GroupSettings,
@@ -174,6 +175,18 @@ export const messageApi = {
 
   addMembersToGroup: (conversationId: string, memberIds: string[]) =>
     http.post<ApiResponse<ConversationResponse>>(API_ENDPOINTS.MESSAGE.ADD_MEMBERS(conversationId), { memberIds }),
+
+  getConversationParticipants: (conversationId: string, params?: { query?: string; page?: number; size?: number }) =>
+    http.get<ApiResponse<PageResponse<ConversationParticipantResponse[]>>>(
+      API_ENDPOINTS.MESSAGE.PARTICIPANTS(conversationId),
+      {
+        params: {
+          query: params?.query,
+          page: params?.page ?? 0,
+          size: params?.size ?? 20
+        }
+      }
+    ),
 
   getGroupMembers: (conversationId: string, params?: { query?: string; page?: number; size?: number }) =>
     http.get<ApiResponse<PageResponse<GroupMemberListItemResponse[]>>>(API_ENDPOINTS.MESSAGE.GROUP_MEMBERS(conversationId), {

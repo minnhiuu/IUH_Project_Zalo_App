@@ -889,7 +889,9 @@ export function MessageBubble({
 
     const groupLink = parseGroupLinkContent(message.content)
     if (groupLink) {
-      const name = groupLink.groupName || t('message.groupLink.defaultGroupName', { defaultValue: 'Nhóm' })
+      const participantNames = members?.map((member) => member.fullName).filter((name): name is string => !!name?.trim()) ?? []
+      const participantTitle = participantNames.join(', ')
+      const name = groupLink.groupName || participantTitle || t('message.groupLink.defaultGroupName', { defaultValue: 'Nhóm' })
       return (
         <TouchableOpacity activeOpacity={0.9} onPress={() => openGroupLinkPreview(message.content)} onLongPress={openSheet}>
         <View style={{ minWidth: 236, maxWidth: 276 }}>
@@ -968,7 +970,7 @@ export function MessageBubble({
         <View style={{ gap: 4 }}>
           {message.attachments.map((att, i) => (
             <View key={i}>
-              <FileBadge attachment={att} isDark={isDark} />
+              <FileBadge attachment={att} isDark={isDark} highlightKeyword={highlightKeyword} />
               {isSending && (
                 <View
                   style={{

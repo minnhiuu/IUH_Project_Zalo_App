@@ -13,6 +13,8 @@ export const messageKeys = {
     [...messageKeys.messages(conversationId), page, size] as const,
 
   pins: (conversationId: string) => [...messageKeys.all, 'pins', conversationId] as const,
+  participants: (conversationId: string, query: string) =>
+    [...messageKeys.all, 'participants', conversationId, query] as const,
   groupMembers: (conversationId: string, query: string) =>
     [...messageKeys.all, 'group-members', conversationId, query] as const,
   groupAdmins: (conversationId: string) => [...messageKeys.all, 'group-admins', conversationId] as const,

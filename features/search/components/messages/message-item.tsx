@@ -2,9 +2,7 @@ import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { BaseSearchResultItem, HighlightText } from '../core/search-result-item'
 import { MessageSearchResponse } from '../../schemas'
-import { SearchLinkPreview } from './message-group-item'
-import { formatSearchTime } from '../../utils/format-search-time'
-import { resolveMessageResultAvatar, resolveMessageResultTitle } from '../../utils/message-result-display'
+import { SearchFilePreview, SearchLinkPreview, formatFileSize } from './message-group-item'
 
 export function MessageSearchResult({
   item,
@@ -20,7 +18,10 @@ export function MessageSearchResult({
   const title = resolveMessageResultTitle(item)
   const content = item.displayHighlights || item.displayContent || ''
   const time = formatSearchTime(item.createdAt)
-  const isLink = item.type?.toUpperCase() === 'LINK' || item.hasLink
+  const previewType = item.type?.toUpperCase()
+  const isFile = previewType === 'FILE' || (item.hasAttachment && !item.hasLink)
+  const isLink = previewType === 'LINK' || item.hasLink
+  const fileSize = formatFileSize(item.size)
 
   return (
     <BaseSearchResultItem
@@ -42,7 +43,7 @@ export function MessageSearchResult({
         text={content}
         highlight={searchQuery}
         className='text-muted-foreground text-sm'
-        highlightClassName='text-primary font-medium'
+        highlightClassName='bg-[#FFF066] dark:bg-[#FFD700] text-black px-0.5 rounded-sm font-medium'
       />
 
       {isLink && <SearchLinkPreview preview={content} searchQuery={searchQuery} />}

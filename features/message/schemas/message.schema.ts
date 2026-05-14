@@ -170,6 +170,13 @@ export type SearchMemberResponse = {
   isAlreadyMember?: boolean
 }
 
+export type ConversationParticipantResponse = {
+  userId: string
+  fullName: string
+  avatar: string | null
+  isMe: boolean
+}
+
 export type GroupMemberListItemResponse = {
   userId: string
   fullName: string

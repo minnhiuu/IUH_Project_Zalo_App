@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { UserAvatar } from '@/components/common/user-avatar'
 import { getFileInfo } from '@/features/message/components/file-badge'
+import { useAuthStore } from '@/store'
 import { HighlightText } from '../core/search-result-item'
 import { MessageSearchGroupResponse } from '../../schemas'
 import { formatSearchTime } from '../../utils/format-search-time'
@@ -57,7 +58,7 @@ export function SearchFilePreview({
           text={fileName}
           highlight={searchQuery}
           className='text-foreground font-medium text-sm'
-          highlightClassName='text-primary font-semibold'
+          highlightClassName='bg-[#FFF066] dark:bg-[#FFD700] text-black px-0.5 rounded-sm font-semibold'
         />
         {!!fileSize && <Text className='text-muted-foreground text-xs mt-1'>{fileSize}</Text>}
       </View>
@@ -107,8 +108,11 @@ export function MessageGroupResult({
   onMatchResultsPress: (item: MessageSearchGroupResponse) => void
 }) {
   const { t } = useTranslation()
-  const fallbackTitle = item.participantNames?.filter(Boolean).join(', ')
-  const title = item.title || fallbackTitle || t('search.unknownConversation')
+  const currentUserName = useAuthStore((state) => state.user?.fullName?.trim())
+  const participantNames = item.participantNames?.filter((name): name is string => !!name?.trim()) ?? []
+  const directParticipantTitle = participantNames.find((name) => name.trim() !== currentUserName)
+  const fallbackTitle = item.isGroup ? participantNames.join(', ') : directParticipantTitle
+  const title = (item.isGroup ? item.title : directParticipantTitle || item.title) || fallbackTitle || t('search.unknownConversation')
   const preview = item.previewHighlights || item.previewContent || ''
   const time = formatSearchTime(item.lastMatchedAt)
   const matchCount = item.matchCount > 99 ? '99+' : item.matchCount
@@ -144,7 +148,7 @@ export function MessageGroupResult({
                 text={preview}
                 highlight={searchQuery}
                 className='text-muted-foreground text-sm'
-                highlightClassName='text-primary font-medium'
+                highlightClassName='bg-[#FFF066] dark:bg-[#FFD700] text-black px-0.5 rounded-sm font-medium'
               />
               <SearchLinkPreview preview={preview} searchQuery={searchQuery} />
             </>
@@ -153,7 +157,7 @@ export function MessageGroupResult({
               text={preview}
               highlight={searchQuery}
               className='text-muted-foreground text-sm'
-              highlightClassName='text-primary font-medium'
+              highlightClassName='bg-[#FFF066] dark:bg-[#FFD700] text-black px-0.5 rounded-sm font-medium'
             />
           )}
         </TouchableOpacity>

@@ -8,7 +8,8 @@ import {
   MessageSearchResponse,
   RecentSearchResponse,
   RecentSearchRequest,
-  UserSearchResponse
+  UserSearchResponse,
+  MessageNavigationResponse
 } from '../schemas/search-schema'
 import { SearchType } from '@/constants/enum'
 
@@ -36,6 +37,22 @@ export const searchApi = {
   searchFiles: (request: GlobalSearchRequest, page = 0, limit = 10) =>
     http.get<ApiResponse<PageResponse<MessageSearchResponse[]>>>('/search/messages', {
       params: { ...request, page, size: limit, section: 'files' }
+    }),
+
+  searchMessageSenders: (keyword = '') =>
+    http.get<ApiResponse<ConversationSearchResponse[]>>('/search/messages/senders', {
+      params: { keyword }
+    }),
+
+  navigateSearchResult: (
+    keyword: string,
+    conversationId: string,
+    currentMessageId?: string | null,
+    direction: 'NEXT' | 'PREVIOUS' | 'CURRENT' = 'NEXT',
+    senderId?: string | null
+  ) =>
+    http.get<ApiResponse<MessageNavigationResponse>>('/search/messages/navigation', {
+      params: { keyword, conversationId, senderId, currentMessageId, direction, section: 'all' }
     }),
 
   recordUserClick: (request: { keyword: string; targetUserId: string; rank: number; eventType: 'USER_RESULT_CLICK' }) =>

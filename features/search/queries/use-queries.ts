@@ -6,12 +6,12 @@ export const useSearchUsers = (query: string) => {
   return useQuery(searchOptions.users(query))
 }
 
-export const useInfiniteSearchUsers = (query: string) => {
-  return useInfiniteQuery(searchOptions.usersInfinite(query))
+export const useInfiniteSearchUsers = (query: string, enabled: boolean = true) => {
+  return useInfiniteQuery(searchOptions.usersInfinite(query, enabled))
 }
 
-export const useInfiniteSearchContacts = (query: string, isGroup?: boolean) => {
-  return useInfiniteQuery(searchOptions.contactsInfinite(query, isGroup))
+export const useInfiniteSearchContacts = (query: string, isGroup?: boolean, enabled: boolean = true) => {
+  return useInfiniteQuery(searchOptions.contactsInfinite(query, isGroup, enabled))
 }
 
 export const useInfiniteSearchMessages = (query: string, filters: MessageSearchFilter[] = []) => {
@@ -26,8 +26,16 @@ export const useInfiniteSearchConversationMessages = (
   return useInfiniteQuery(searchOptions.conversationMessagesInfinite(conversationId, query, filters))
 }
 
-export const useInfiniteSearchMessageGroups = (query: string, filters: MessageSearchFilter[] = []) => {
-  return useInfiniteQuery(searchOptions.messageGroupsInfinite(query, filters))
+export const useInfiniteSearchMessageGroups = (
+  query: string,
+  filters: MessageSearchFilter[] = [],
+  enabled: boolean = true
+) => {
+  return useInfiniteQuery(searchOptions.messageGroupsInfinite(query, filters, enabled))
+}
+
+export const useMessageSearchSenders = (query: string = '', enabled: boolean = true) => {
+  return useQuery(searchOptions.messageSenders(query, enabled))
 }
 
 export const useInfiniteSearchFiles = (query: string) => {

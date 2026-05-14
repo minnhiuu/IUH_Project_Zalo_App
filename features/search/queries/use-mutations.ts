@@ -39,3 +39,21 @@ export const useClearAllRecentSearch = () => {
     }
   })
 }
+
+export const useNavigateSearch = () => {
+  return useMutation({
+    mutationFn: ({
+      keyword,
+      conversationId,
+      currentMessageId,
+      direction,
+      senderId
+    }: {
+      keyword: string
+      conversationId: string
+      currentMessageId?: string | null
+      direction: 'NEXT' | 'PREVIOUS' | 'CURRENT'
+      senderId?: string | null
+    }) => searchApi.navigateSearchResult(keyword, conversationId, currentMessageId, direction, senderId)
+  })
+}

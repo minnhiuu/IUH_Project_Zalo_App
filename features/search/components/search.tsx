@@ -20,6 +20,8 @@ import { AllTab } from './all/all-tab'
 import { ContactsTab } from './contacts/contacts-tab'
 import { MessagesTab } from './messages/messages-tab'
 import { DiscoverTab } from './discover/discover-tab'
+import { DiscoverItem } from './discover/discover-item'
+import { ContactItem } from './contacts/contact-item'
 import { RecentSearchList } from './recent-search-list'
 import {
   ConversationSearchResponse,
@@ -35,6 +37,18 @@ import { SearchResultSkeleton } from './core/search-result-skeleton'
 
 export type SearchTab = 'all' | 'contacts' | 'messages' | 'discover'
 
+const toRouteParam = (value: unknown) => {
+  if (value === null || value === undefined) return undefined
+  return String(value)
+}
+
+const routeParams = (params: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(params)
+      .map(([key, value]) => [key, toRouteParam(value)] as const)
+      .filter((entry): entry is [string, string] => entry[1] !== undefined)
+  )
+
 export function Search() {
   const router = useRouter()
   const { t } = useTranslation()
@@ -44,6 +58,11 @@ export function Search() {
   const debouncedQuery = useDebounce(searchQuery, 300)
   const inputRef = useRef<TextInput>(null)
   const fadeAnim = useRef(new Animated.Value(0)).current
+  const normalizedQuery = searchQuery.trim()
+  const isPhoneSearch = /^\+?\d{8,15}$/.test(normalizedQuery.replace(/[\s.-]/g, ''))
+  const shouldSearchUsers = isPhoneSearch || activeTab === 'all' || activeTab === 'discover'
+  const shouldSearchContacts = isPhoneSearch || activeTab === 'all' || activeTab === 'contacts'
+  const shouldSearchMessages = !isPhoneSearch && (activeTab === 'all' || activeTab === 'messages')
 
   const {
     data: userSearchResults,
@@ -52,7 +71,7 @@ export function Search() {
     isFetchingNextPage: isFetchingNextUsersPage,
     isFetching: isFetchingUsers,
     isLoading: isLoadingUsers
-  } = useInfiniteSearchUsers(debouncedQuery)
+  } = useInfiniteSearchUsers(debouncedQuery, shouldSearchUsers)
   const {
     data: contactSearchResults,
     fetchNextPage: fetchNextContactsPage,
@@ -60,7 +79,7 @@ export function Search() {
     isFetchingNextPage: isFetchingNextContactsPage,
     isFetching: isFetchingContacts,
     isLoading: isLoadingContacts
-  } = useInfiniteSearchContacts(debouncedQuery)
+  } = useInfiniteSearchContacts(debouncedQuery, undefined, shouldSearchContacts)
   const {
     data: messageSearchResults,
     fetchNextPage: fetchNextMessagesPage,
@@ -70,7 +89,8 @@ export function Search() {
     isLoading: isLoadingMessages
   } = useInfiniteSearchMessageGroups(
     debouncedQuery,
-    activeTab === 'messages' || activeTab === 'all' ? messageFilters : []
+    shouldSearchMessages ? messageFilters : [],
+    shouldSearchMessages
   )
 
   const { data: recentItems = [], refetch: refetchItems } = useRecentSearchItems()
@@ -196,54 +216,75 @@ export function Search() {
     }
 
     if ('conversationId' in item && 'matchCount' in item) {
+      const conversationId = toRouteParam(item.conversationId)
+      if (!conversationId) return
+
       router.push({
         pathname: '/chat/[id]',
-        params: {
-          id: item.conversationId,
-          conversationId: item.conversationId,
-          name: item.title || '',
+        params: routeParams({
+          id: conversationId,
+          conversationId,
+          name: item.title,
           searchKeyword: debouncedQuery,
-          ...(item.messageId ? { aroundMessageId: item.messageId } : {})
-        }
+          isSearchMode: 'true',
+          aroundMessageId: item.messageId
+        })
       } as any)
       return
     }
 
     if ('conversationId' in item && !('messageId' in item)) {
+      const conversationId = toRouteParam(item.conversationId)
+      const recipientId = toRouteParam(item.recipientId)
+      if (!conversationId && !recipientId) return
+
+      if (!conversationId && recipientId) {
+        router.push(`/user-profile/${recipientId}` as any)
+        return
+      }
+
       router.push({
         pathname: '/chat/[id]',
-        params: {
-          id: item.conversationId,
-          conversationId: item.conversationId,
-          name: item.name || ''
-        }
+        params: routeParams({
+          id: conversationId,
+          conversationId,
+          name: item.name
+        })
       } as any)
       return
     }
 
     if ('messageId' in item) {
+      const conversationId = toRouteParam(item.conversationId)
+      const messageId = toRouteParam(item.messageId)
+      if (!conversationId || !messageId) return
+
       router.push({
         pathname: '/chat/[id]',
-        params: {
-          id: item.conversationId,
-          conversationId: item.conversationId,
-          aroundMessageId: item.messageId,
+        params: routeParams({
+          id: conversationId,
+          conversationId,
+          isSearchMode: 'true',
+          aroundMessageId: messageId,
           searchKeyword: debouncedQuery
-        }
+        })
       } as any)
     }
   }
 
   const openMessageMatchResults = (item: MessageSearchGroupResponse) => {
-      router.push({
-        pathname: '/search/message-results',
-        params: {
-          conversationId: item.conversationId,
-          title: item.title || '',
-          keyword: debouncedQuery,
-          filters: messageFilters.join(',')
-        }
-      } as any)
+    const conversationId = toRouteParam(item.conversationId)
+    if (!conversationId) return
+
+    router.push({
+      pathname: '/search/message-results',
+      params: routeParams({
+        conversationId,
+        title: item.title,
+        keyword: debouncedQuery,
+        filters: messageFilters.join(',')
+      })
+    } as any)
   }
 
   const hasResults = [userSearchResults, contactSearchResults, messageSearchResults].some((result) =>
@@ -251,12 +292,13 @@ export function Search() {
   )
 
   const isLoadingAll = isLoadingUsers && isLoadingContacts && isLoadingMessages
-  const normalizedQuery = searchQuery.trim()
   const isDebouncingSearch = !!normalizedQuery && normalizedQuery !== debouncedQuery
   const isSearchingUsers = isDebouncingSearch || (isFetchingUsers && !isFetchingNextUsersPage)
   const isSearchingContacts = isDebouncingSearch || (isFetchingContacts && !isFetchingNextContactsPage)
   const isSearchingMessages = isDebouncingSearch || (isFetchingMessages && !isFetchingNextMessagesPage)
   const isSearchingAll = isDebouncingSearch || isSearchingUsers || isSearchingContacts || isSearchingMessages
+  const phoneUserResult = userSearchResults?.pages?.flatMap((page) => page.data).find((item) => item.phoneNumber)
+  const phoneContactResult = contactSearchResults?.pages?.flatMap((page) => page.data).find((item) => item.phoneNumber)
 
   const renderContent = () => {
     if (!searchQuery) {
@@ -267,6 +309,32 @@ export function Search() {
           onRemove={handleRemove}
           onClear={handleClearAll}
         />
+      )
+    }
+
+    if (isPhoneSearch && debouncedQuery) {
+      return (
+        <ScrollView
+          className='flex-1 bg-background-secondary'
+          keyboardShouldPersistTaps='handled'
+          onScrollBeginDrag={() => Keyboard.dismiss()}
+        >
+          {(isSearchingUsers || isSearchingContacts) && renderLoading()}
+          {!isSearchingUsers && !isSearchingContacts && (
+            <>
+              <View className='px-4 py-3 bg-background border-b border-divider'>
+                <Text className='text-sm font-bold text-foreground'>{t('search.findByPhone')}</Text>
+              </View>
+              {phoneUserResult ? (
+                <DiscoverItem item={phoneUserResult} searchQuery={debouncedQuery} onPress={onItemPress} />
+              ) : phoneContactResult ? (
+                <ContactItem item={phoneContactResult} searchQuery={debouncedQuery} onPress={onItemPress} />
+              ) : (
+                renderEmptyState()
+              )}
+            </>
+          )}
+        </ScrollView>
       )
     }
 

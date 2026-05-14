@@ -95,3 +95,13 @@ export type GlobalSearchRequest = {
   fileType?: string
   filters?: MessageSearchFilter[]
 }
+
+export type MessageNavigationResponse = {
+  messageId: string
+  conversationId: string
+  index: number
+  total: number
+  createdAt: string
+  displayHighlights: string | null
+  direction: 'NEXT' | 'PREVIOUS' | 'CURRENT'
+}

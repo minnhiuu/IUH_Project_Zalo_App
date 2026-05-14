@@ -53,6 +53,12 @@
     "phoneNumber": "Phone number:",
     "sharedGroups": "{{count}} mutual groups",
     "matchingResults": "matching results",
+    "resultOrdinal": "Result {{index}} of {{total}}",
+    "chatMessagePlaceholder": "Search text messages",
+    "fromLabel": "From:",
+    "chooseSenderPlaceholder": "Choose sender",
+    "youWithName": "You ({{name}})",
+    "noSenderResults": "No senders found",
     "unknownConversation": "Conversation",
     "noFilteredResults": "No results found with the selected filter"
   }

@@ -112,6 +112,7 @@ export const API_ENDPOINTS = {
     FRIENDS_DIRECTORY: '/messages/conversations/friends-directory',
     SEARCH_MEMBERS: '/messages/conversations/search-members',
     ADD_MEMBERS: (conversationId: string) => `/messages/conversations/${conversationId}/members`,
+    PARTICIPANTS: (conversationId: string) => `/messages/conversations/${conversationId}/participants`,
     GROUP_MEMBERS: (conversationId: string) => `/messages/conversations/${conversationId}/group-members`,
     REMOVE_MEMBER: (conversationId: string, targetUserId: string) =>
       `/messages/conversations/${conversationId}/members/${targetUserId}`,

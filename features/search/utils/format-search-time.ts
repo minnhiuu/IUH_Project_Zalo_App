@@ -5,9 +5,7 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000
 const getStartOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate())
 
 export const formatSearchTime = (value: string | number | Date | null | undefined) => {
-  const normalizedValue =
-    typeof value === 'string' && value.endsWith('Z') ? value.slice(0, -1) : value
-  const date = parseMessageDate(normalizedValue)
+  const date = parseMessageDate(value)
   if (!date) return ''
 
   const now = new Date()

@@ -15,6 +15,18 @@ import { MessageSearchFilter, MessageSearchResponse } from '@/features/search/sc
 const isFileResult = (item: MessageSearchResponse) =>
   item.type?.toUpperCase() === 'FILE' || (item.hasAttachment && !item.hasLink)
 
+const toRouteParam = (value: unknown) => {
+  if (value === null || value === undefined) return undefined
+  return String(value)
+}
+
+const routeParams = (params: Record<string, unknown>) =>
+  Object.fromEntries(
+    Object.entries(params)
+      .map(([key, value]) => [key, toRouteParam(value)] as const)
+      .filter((entry): entry is [string, string] => entry[1] !== undefined)
+  )
+
 export default function SearchMessageResultsScreen() {
   const router = useRouter()
   const { t } = useTranslation()
@@ -43,15 +55,20 @@ export default function SearchMessageResultsScreen() {
   const hasActiveFilters = filters.length > 0
 
   const openMessage = (item: MessageSearchResponse) => {
+    const itemConversationId = toRouteParam(item.conversationId)
+    const messageId = toRouteParam(item.messageId)
+    if (!itemConversationId || !messageId) return
+
     router.push({
       pathname: '/chat/[id]',
-      params: {
-        id: item.conversationId,
-        conversationId: item.conversationId,
-        aroundMessageId: item.messageId,
-        name: params.title || '',
-        searchKeyword: keyword
-      }
+      params: routeParams({
+        id: itemConversationId,
+        conversationId: itemConversationId,
+        aroundMessageId: messageId,
+        name: params.title,
+        searchKeyword: keyword,
+        isSearchMode: 'true'
+      })
     } as any)
   }
 
