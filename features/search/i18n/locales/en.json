@@ -60,6 +60,7 @@
     "youWithName": "You ({{name}})",
     "noSenderResults": "No senders found",
     "unknownConversation": "Conversation",
-    "noFilteredResults": "No results found with the selected filter"
+    "noFilteredResults": "No results found with the selected filter",
+    "friendLabel": "Friend"
   }
 }

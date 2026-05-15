@@ -35,8 +35,13 @@ export function RecentSearchList({ searches, onSelect, onRemove, onClear }: Rece
     if (queries !== null) setShowQueries(queries)
   }
 
-  const contacts = searches.filter((item) => item.type === SearchType.User || item.type === SearchType.Group)
-  const queries = searches.filter((item) => item.type === SearchType.Keyword)
+  const contacts = Array.from(new Map(searches
+    .filter((item) => item.type === SearchType.User || item.type === SearchType.Group)
+    .map(item => [item.id, item])).values())
+    
+  const queries = Array.from(new Map(searches
+    .filter((item) => item.type === SearchType.Keyword)
+    .map(item => [item.id, item])).values())
 
   return (
     <ScrollView
@@ -53,7 +58,7 @@ export function RecentSearchList({ searches, onSelect, onRemove, onClear }: Rece
           <ScrollView horizontal showsHorizontalScrollIndicator={false} className='pl-4 pb-4'>
             {contacts.map((contact) => (
               <TouchableOpacity
-                key={contact.id}
+                key={`contact-${contact.id}`}
                 className='mr-4 items-center w-20 relative'
                 onPress={() => onSelect(contact)}
               >
@@ -85,7 +90,7 @@ export function RecentSearchList({ searches, onSelect, onRemove, onClear }: Rece
           </View>
           {queries.map((query) => (
             <TouchableOpacity
-              key={query.id}
+              key={`query-${query.id}`}
               className='flex-row items-center px-4 py-3 active:bg-muted'
               onPress={() => onSelect(query)}
             >

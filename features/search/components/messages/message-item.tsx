@@ -3,6 +3,8 @@ import { Text, TouchableOpacity, View } from 'react-native'
 import { BaseSearchResultItem, HighlightText } from '../core/search-result-item'
 import { MessageSearchResponse } from '../../schemas'
 import { SearchFilePreview, SearchLinkPreview, formatFileSize } from './message-group-item'
+import { resolveMessageResultTitle, resolveMessageResultAvatar } from '../../utils/message-result-display'
+import { formatSearchTime } from '../../utils/format-search-time'
 
 export function MessageSearchResult({
   item,
@@ -43,7 +45,7 @@ export function MessageSearchResult({
         text={content}
         highlight={searchQuery}
         className='text-muted-foreground text-sm'
-        highlightClassName='bg-[#FFF066] dark:bg-[#FFD700] text-black px-0.5 rounded-sm font-medium'
+        highlightClassName='text-primary font-medium'
       />
 
       {isLink && <SearchLinkPreview preview={content} searchQuery={searchQuery} />}

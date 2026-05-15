@@ -114,8 +114,8 @@ export function EditHistory() {
         </View>
 
         {saveContacts &&
-          contacts.map((contact) => (
-            <View key={contact.id} style={[styles.item, { backgroundColor: bg }]}>
+          Array.from(new Map(contacts.map(item => [item.id, item])).values()).map((contact) => (
+            <View key={`contact-${contact.id}`} style={[styles.item, { backgroundColor: bg }]}>
               <UserAvatar source={contact.avatar} name={contact.name} size='sm' />
               <Text style={[styles.itemText, { color: textMain }]} numberOfLines={1}>
                 {contact.name}
@@ -140,8 +140,8 @@ export function EditHistory() {
         </View>
 
         {saveQueries &&
-          queries.map((query) => (
-            <View key={query.id} style={[styles.item, { backgroundColor: bg }]}>
+          Array.from(new Map(queries.map(item => [item.id, item])).values()).map((query) => (
+            <View key={`query-${query.id}`} style={[styles.item, { backgroundColor: bg }]}>
               <Ionicons name='search-outline' size={20} color={textMuted} style={styles.searchIcon} />
               <Text style={[styles.itemText, { color: textMain }]} numberOfLines={1}>
                 {query.name}

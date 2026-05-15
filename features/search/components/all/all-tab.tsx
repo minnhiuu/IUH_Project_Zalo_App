@@ -15,6 +15,9 @@ interface AllTabProps {
   onMessageMatchResultsPress?: (item: any) => void
   messageFilters?: MessageSearchFilter[]
   onMessageFiltersChange?: (filters: MessageSearchFilter[]) => void
+  isSearchingUsers?: boolean
+  isSearchingContacts?: boolean
+  isSearchingMessages?: boolean
 }
 
 export function AllTab({
@@ -26,7 +29,10 @@ export function AllTab({
   onItemPress,
   onMessageMatchResultsPress,
   messageFilters,
-  onMessageFiltersChange
+  onMessageFiltersChange,
+  isSearchingUsers,
+  isSearchingContacts,
+  isSearchingMessages
 }: AllTabProps) {
   const { t } = useTranslation()
   const phoneMatchItem = userResults?.pages?.flatMap((page: any) => page.data)?.find((item: any) => item.phoneNumber)
@@ -44,6 +50,7 @@ export function AllTab({
         onItemPress={onItemPress}
         preview={true}
         onSeeMore={() => setActiveTab('contacts')}
+        isLoading={isSearchingContacts}
       />
 
       <MessagesTab
@@ -55,6 +62,7 @@ export function AllTab({
         onSeeMore={() => setActiveTab('messages')}
         filters={messageFilters}
         onFiltersChange={onMessageFiltersChange}
+        isLoading={isSearchingMessages}
       />
 
       <DiscoverTab
@@ -63,6 +71,7 @@ export function AllTab({
         onItemPress={onItemPress}
         preview={true}
         onSeeMore={() => setActiveTab('discover')}
+        isLoading={isSearchingUsers}
       />
     </>
   )

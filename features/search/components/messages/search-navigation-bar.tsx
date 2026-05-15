@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, TouchableOpacity, Text, ActivityIndicator } from 'react-native'
+import { View, TouchableOpacity, Text, ActivityIndicator, Platform } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
@@ -13,6 +13,7 @@ interface SearchNavigationBarProps {
   isSenderActive?: boolean
   isLoading?: boolean
   isDark?: boolean
+  hasSearched?: boolean
 }
 
 export function SearchNavigationBar({
@@ -23,7 +24,8 @@ export function SearchNavigationBar({
   onSenderPress,
   isSenderActive = false,
   isLoading = false,
-  isDark = false
+  isDark = false,
+  hasSearched = false
 }: SearchNavigationBarProps) {
   const { t } = useTranslation()
   const insets = useSafeAreaInsets()
@@ -34,16 +36,12 @@ export function SearchNavigationBar({
   return (
     <View
       style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
+        width: '100%',
         backgroundColor: isDark ? 'rgba(31, 41, 55, 0.98)' : 'rgba(255, 255, 255, 0.98)',
         borderTopWidth: 0.5,
         borderTopColor: isDark ? '#374151' : '#E0E0E0',
-        paddingBottom: insets.bottom > 0 ? insets.bottom : 12,
-        height: (insets.bottom > 0 ? insets.bottom : 12) + 48,
-        zIndex: 1000,
+        paddingBottom: insets.bottom,
+        minHeight: 48,
         flexDirection: 'row',
         alignItems: 'center',
         paddingHorizontal: 16
@@ -59,7 +57,15 @@ export function SearchNavigationBar({
 
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', flexDirection: 'row' }}>
         <Text style={{ fontSize: 15, fontWeight: '400', color: textColor }}>
-          {t('search.resultOrdinal', { index: displayIndex, total: displayTotal })}
+          {hasSearched && displayTotal === 0 && !isLoading
+            ? t('search.noResults', { defaultValue: 'Không tìm thấy tin nhắn' })
+            : hasSearched
+              ? t('search.resultOrdinal', {
+                  index: displayIndex,
+                  total: displayTotal,
+                  defaultValue: `Kết quả ${displayIndex} trên ${displayTotal}`
+                })
+              : null}
         </Text>
         {isLoading && <ActivityIndicator size='small' color='#8A8F94' style={{ marginLeft: 8 }} />}
       </View>

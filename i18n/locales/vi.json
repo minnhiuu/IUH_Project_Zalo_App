@@ -757,5 +757,12 @@
       "fullNameRequired": "Họ tên không được để trống",
       "dobInvalid": "Ngày sinh phải là ngày trong quá khứ hoặc hiện tại"
     }
+  },
+  "search": {
+    "resultOrdinal": "Kết quả {{index}} trên {{total}}",
+    "noResults": "Không tìm thấy tin nhắn",
+    "from": "Từ:",
+    "youWithName": "Bạn ({{name}})",
+    "noSenderResults": "Không tìm thấy người gửi"
   }
 }

@@ -18,6 +18,7 @@ interface SearchSectionProps<T> {
   headerExtra?: React.ReactNode
   emptyComponent?: React.ReactNode
   showWhenEmpty?: boolean
+  isLoading?: boolean
 }
 
 const getItemKey = (item: unknown, index: number) => {
@@ -39,11 +40,12 @@ export function SearchSection<T>({
   scrollEnabled = false,
   headerExtra,
   emptyComponent,
-  showWhenEmpty = false
+  showWhenEmpty = false,
+  isLoading = false
 }: SearchSectionProps<T>) {
   const { t } = useTranslation()
 
-  if (items.length === 0 && !showWhenEmpty) return null
+  if (items.length === 0 && !showWhenEmpty && !isLoading) return null
 
   if (onSeeMore || items.length < 10) {
     return (
@@ -59,7 +61,14 @@ export function SearchSection<T>({
           ? items.map((item, index) => (
               <React.Fragment key={getItemKey(item, index)}>{renderItem(item)}</React.Fragment>
             ))
-          : emptyComponent}
+          : isLoading
+            ? (
+              <View className='pb-2'>
+                <SearchResultSkeleton />
+                <SearchResultSkeleton />
+              </View>
+            )
+            : emptyComponent}
 
         {onSeeMore && items.length > 0 && (
           <TouchableOpacity

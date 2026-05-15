@@ -58,7 +58,7 @@ export function SearchFilePreview({
           text={fileName}
           highlight={searchQuery}
           className='text-foreground font-medium text-sm'
-          highlightClassName='bg-[#FFF066] dark:bg-[#FFD700] text-black px-0.5 rounded-sm font-semibold'
+          highlightClassName='text-primary font-medium'
         />
         {!!fileSize && <Text className='text-muted-foreground text-xs mt-1'>{fileSize}</Text>}
       </View>
@@ -148,7 +148,7 @@ export function MessageGroupResult({
                 text={preview}
                 highlight={searchQuery}
                 className='text-muted-foreground text-sm'
-                highlightClassName='bg-[#FFF066] dark:bg-[#FFD700] text-black px-0.5 rounded-sm font-medium'
+                highlightClassName='text-primary font-medium'
               />
               <SearchLinkPreview preview={preview} searchQuery={searchQuery} />
             </>
@@ -157,7 +157,7 @@ export function MessageGroupResult({
               text={preview}
               highlight={searchQuery}
               className='text-muted-foreground text-sm'
-              highlightClassName='bg-[#FFF066] dark:bg-[#FFD700] text-black px-0.5 rounded-sm font-medium'
+              highlightClassName='text-primary font-medium'
             />
           )}
         </TouchableOpacity>
@@ -168,7 +168,7 @@ export function MessageGroupResult({
           className='flex-row items-center mt-2 self-start'
         >
           <Text className='text-sm'>
-            <Text className='text-primary font-semibold'>{matchCount}</Text>
+            <Text className='text-primary font-medium'>{matchCount}</Text>
             <Text className='text-foreground'> {t('search.matchingResults')}</Text>
           </Text>
           <Ionicons name='chevron-forward' size={18} color='#99A' />

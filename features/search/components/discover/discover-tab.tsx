@@ -15,6 +15,7 @@ interface DiscoverTabProps {
   isFetchingNextPage?: boolean
   preview?: boolean
   onSeeMore?: () => void
+  isLoading?: boolean
 }
 
 export function DiscoverTab({
@@ -25,7 +26,8 @@ export function DiscoverTab({
   hasNextPage,
   isFetchingNextPage,
   preview = false,
-  onSeeMore
+  onSeeMore,
+  isLoading = false
 }: DiscoverTabProps) {
   const { t } = useTranslation()
 
@@ -48,6 +50,7 @@ export function DiscoverTab({
         }
       }}
       isFetchingNextPage={!preview && isFetchingNextPage}
+      isLoading={isLoading}
       onSeeMore={preview ? onSeeMore : undefined}
       scrollEnabled={!preview}
     />

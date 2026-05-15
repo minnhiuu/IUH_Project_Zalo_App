@@ -60,6 +60,7 @@
     "youWithName": "Bạn ({{name}})",
     "noSenderResults": "Không tìm thấy người gửi",
     "unknownConversation": "Cuộc trò chuyện",
-    "noFilteredResults": "Không tìm thấy kết quả với bộ lọc đang chọn"
+    "noFilteredResults": "Không tìm thấy kết quả với bộ lọc đang chọn",
+    "friendLabel": "Bạn bè"
   }
 }

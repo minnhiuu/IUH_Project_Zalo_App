@@ -87,7 +87,18 @@ export function DiscoverItem({ item, searchQuery, onPress }: DiscoverItemProps) 
 
   const mutualFriendsCount = item.mutualFriendsCount ?? 0
   const sharedGroupsCount = item.sharedGroupsCount ?? 0
+
+  const getRelationshipLabel = () => {
+    if (friendshipStatus === FriendStatus.ACCEPTED) return t('search.friendLabel')
+    // If backend provides a label that we know is "Friend" in Vietnamese, translate it
+    if (item.relationshipLabel === 'Bạn bè') return t('search.friendLabel')
+    // Avoid duplicating mutual friends if it's already in the relationshipLabel
+    if (item.relationshipLabel?.includes('bạn chung') && mutualFriendsCount > 0) return null
+    return item.relationshipLabel
+  }
+
   const socialLabels = [
+    getRelationshipLabel(),
     mutualFriendsCount > 0 ? t('friend.mutualFriends', { count: mutualFriendsCount }) : null,
     sharedGroupsCount > 0 ? t('search.sharedGroups', { count: sharedGroupsCount }) : null
   ].filter(Boolean)

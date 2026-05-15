@@ -12,7 +12,8 @@ import {
   Dimensions,
   BackHandler,
   DeviceEventEmitter,
-  TextInput
+  TextInput,
+  Keyboard
 } from 'react-native'
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
@@ -63,6 +64,21 @@ import { userApi } from '@/features/users/api/user.api'
 
 export default function ChatScreen() {
   const router = useRouter()
+  const [keyboardHeight, setKeyboardHeight] = useState(0)
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow', (e) => {
+      setKeyboardHeight(e.endCoordinates.height)
+    })
+    const hideSub = Keyboard.addListener(Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide', () => {
+      setKeyboardHeight(0)
+    })
+    return () => {
+      showSub.remove()
+      hideSub.remove()
+    }
+  }, [])
+
   const { t } = useTranslation()
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
@@ -119,14 +135,26 @@ export default function ChatScreen() {
 
   const scrollToMessage = useCallback(
     (messageId: string, animated: boolean = true) => {
-      const index = messages.findIndex((m) => m.id === messageId)
+      const index = messages.findIndex((m) => m.id === messageId || m.clientMessageId === messageId)
       if (index === -1) return
-      try {
-        flatListRef.current?.scrollToIndex({ index, animated, viewPosition: 0.5 })
-      } catch {}
+
+      // Set highlight immediately to ensure visual feedback
       setHighlightedMessageId(messageId)
       setHighlightBackgroundMessageId(messageId)
       setTimeout(() => setHighlightBackgroundMessageId(null), 3000)
+
+      // Use a small delay to ensure the list has finished rendering new items
+      requestAnimationFrame(() => {
+        try {
+          flatListRef.current?.scrollToIndex({
+            index,
+            animated,
+            viewPosition: 0.15 // Bring the message closer to the top of the screen for better visibility
+          })
+        } catch (e) {
+          console.warn('[ChatScreen] scrollToIndex failed:', e)
+        }
+      })
     },
     [messages]
   )
@@ -274,6 +302,9 @@ export default function ChatScreen() {
               currentMessageId: data.messageId
             })
             consumedJumpTargetRef.current = null
+            setHighlightedMessageId(data.messageId)
+            setHighlightBackgroundMessageId(data.messageId)
+            setTimeout(() => setHighlightBackgroundMessageId(null), 3000)
             setActiveAroundMessageId(data.messageId)
           }
         }
@@ -321,18 +352,20 @@ export default function ChatScreen() {
     })
   }, [isGroupConversation])
 
-  const handleSelectSearchSender = useCallback((sender: ConversationSearchResponse) => {
-    setSelectedSearchSender(sender)
-    setIsSenderPickerOpen(false)
-    setSenderSearchQuery('')
-    setInternalSearchQuery('')
-    setNavigationData(null)
-    setHighlightedMessageId(null)
-    lastAutoSearchQueryRef.current = null
-    requestAnimationFrame(() => {
-      searchInputRef.current?.focus()
-    })
-  }, [])
+  const handleSelectSearchSender = useCallback(
+    (sender: ConversationSearchResponse) => {
+      setSelectedSearchSender(sender)
+      setIsSenderPickerOpen(false)
+      setSenderSearchQuery('')
+      setNavigationData(null)
+      setHighlightedMessageId(null)
+
+      lastAutoSearchQueryRef.current = null
+
+      Keyboard.dismiss()
+    },
+    [conversationId, internalSearchQuery, navigateSearch]
+  )
 
   const handleSenderLabelPress = useCallback(() => {
     setIsSenderPickerOpen(true)
@@ -342,21 +375,24 @@ export default function ChatScreen() {
     })
   }, [])
 
-  const handleSearchKeyPress = useCallback((key: string) => {
-    if (key !== 'Backspace' || isSenderPickerOpen || internalSearchQuery.length > 0 || !selectedSearchSender) {
-      return
-    }
+  const handleSearchKeyPress = useCallback(
+    (key: string) => {
+      if (key !== 'Backspace' || isSenderPickerOpen || internalSearchQuery.length > 0 || !selectedSearchSender) {
+        return
+      }
 
-    setSelectedSearchSender(null)
-    setSenderSearchQuery('')
-    setIsSenderPickerOpen(false)
-    setNavigationData(null)
-    setHighlightedMessageId(null)
-    lastAutoSearchQueryRef.current = null
-    requestAnimationFrame(() => {
-      searchInputRef.current?.focus()
-    })
-  }, [internalSearchQuery, isSenderPickerOpen, selectedSearchSender])
+      setSelectedSearchSender(null)
+      setSenderSearchQuery('')
+      setIsSenderPickerOpen(false)
+      setNavigationData(null)
+      setHighlightedMessageId(null)
+      lastAutoSearchQueryRef.current = null
+      requestAnimationFrame(() => {
+        searchInputRef.current?.focus()
+      })
+    },
+    [internalSearchQuery, isSenderPickerOpen, selectedSearchSender]
+  )
 
   // React to isSearchMode param change (if user enters from menu again)
   useEffect(() => {
@@ -375,8 +411,8 @@ export default function ChatScreen() {
     const trimmedQuery = debouncedSearchQuery.trim()
     const searchKey = `${conversationId}:${selectedSearchSenderId || ''}:${trimmedQuery}`
 
-    if (!isSearchMode || isSenderPickerOpen || !trimmedQuery) {
-      if (!trimmedQuery) {
+    if (!isSearchMode || isSenderPickerOpen || (!trimmedQuery && !selectedSearchSenderId)) {
+      if (!trimmedQuery && !selectedSearchSenderId) {
         lastAutoSearchQueryRef.current = null
         setNavigationData(null)
         setHighlightedMessageId(null)
@@ -414,6 +450,9 @@ export default function ChatScreen() {
             currentMessageId: data.messageId
           })
           consumedJumpTargetRef.current = null
+          setHighlightedMessageId(data.messageId)
+          setHighlightBackgroundMessageId(data.messageId)
+          setTimeout(() => setHighlightBackgroundMessageId(null), 3000)
           setActiveAroundMessageId(data.messageId)
         }
       }
@@ -455,7 +494,8 @@ export default function ChatScreen() {
   // Initialize navigation data if jumped from search
   useEffect(() => {
     const keyword = params.searchKeyword?.trim()
-    const initKey = keyword && routeAroundMessageId && conversationId ? `${conversationId}:${routeAroundMessageId}:${keyword}` : null
+    const initKey =
+      keyword && routeAroundMessageId && conversationId ? `${conversationId}:${routeAroundMessageId}:${keyword}` : null
 
     if (keyword && routeAroundMessageId && conversationId && initializedSearchJumpRef.current !== initKey) {
       initializedSearchJumpRef.current = initKey
@@ -661,7 +701,7 @@ export default function ChatScreen() {
     (replyMessageId: string) => {
       const targetIndex = messages.findIndex((m) => m.id === replyMessageId || m.clientMessageId === replyMessageId)
       if (targetIndex >= 0) {
-        flatListRef.current?.scrollToIndex({ index: targetIndex, animated: true, viewPosition: 0.5 })
+        scrollToMessage(replyMessageId)
         return
       }
       if (hasNextPage && !isFetchingNextPage) fetchNextPage()
@@ -977,7 +1017,10 @@ export default function ChatScreen() {
         </View>
       )}
 
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
         {isLoading && visibleMessages.length === 0 && !isSearchMode ? (
           <View style={{ flex: 1 }}>
             <MessageListSkeleton includePinned />
@@ -998,6 +1041,19 @@ export default function ChatScreen() {
             onScroll={handleScroll}
             onEndReached={() => {
               if (hasNextPage && !isFetchingNextPage) fetchNextPage()
+            }}
+            onScrollToIndexFailed={(info) => {
+              const offset = info.averageItemLength * info.index
+              flatListRef.current?.scrollToOffset({ offset, animated: false })
+              setTimeout(() => {
+                try {
+                  flatListRef.current?.scrollToIndex({
+                    index: info.index,
+                    animated: true,
+                    viewPosition: 0.5
+                  })
+                } catch {}
+              }, 100)
             }}
             onEndReachedThreshold={0.3}
             ListFooterComponent={
@@ -1048,8 +1104,8 @@ export default function ChatScreen() {
                     onBusinessCardPress={handleBusinessCardPress}
                     onBusinessCardMessagePress={handleBusinessCardMessagePress}
                     onScrollToMessage={scrollToMessage}
-                    isHighlighted={item.id === highlightedMessageId}
-                    showHighlightBackground={item.id === highlightBackgroundMessageId}
+                    isHighlighted={item.id === highlightedMessageId || (!!item.clientMessageId && item.clientMessageId === highlightedMessageId)}
+                    showHighlightBackground={item.id === highlightBackgroundMessageId || (!!item.clientMessageId && item.clientMessageId === highlightBackgroundMessageId)}
                     onPin={handlePinMessage}
                     highlightKeyword={item.id === highlightedMessageId ? internalSearchQuery || searchKeyword : null}
                     onOpenMessageOptions={() => {
@@ -1086,6 +1142,20 @@ export default function ChatScreen() {
             onClearAttachments={handleClearPendingAttachments}
             isUploading={isUploading}
             onSendBusinessCards={handleSendBusinessCards}
+          />
+        )}
+
+        {isSearchMode && (
+          <SearchNavigationBar
+            index={navigationData?.index || 0}
+            total={navigationData?.total || 0}
+            onPrev={() => handleSearchNavigation('PREVIOUS')}
+            onNext={() => handleSearchNavigation('NEXT')}
+            onSenderPress={isGroupConversation ? handleOpenSenderPicker : undefined}
+            isSenderActive={!!selectedSearchSender}
+            isLoading={isSearchNavigationPending}
+            isDark={isDark}
+            hasSearched={!!navigationData}
           />
         )}
       </KeyboardAvoidingView>
@@ -1179,19 +1249,6 @@ export default function ChatScreen() {
           </Pressable>
         </Pressable>
       </Modal>
-
-      {isSearchMode && (
-        <SearchNavigationBar
-          index={navigationData?.index || 0}
-          total={navigationData?.total || 0}
-          onPrev={() => handleSearchNavigation('PREVIOUS')}
-          onNext={() => handleSearchNavigation('NEXT')}
-          onSenderPress={isGroupConversation ? handleOpenSenderPicker : undefined}
-          isSenderActive={!!selectedSearchSender}
-          isLoading={isSearchNavigationPending}
-          isDark={isDark}
-        />
-      )}
     </View>
   )
 }

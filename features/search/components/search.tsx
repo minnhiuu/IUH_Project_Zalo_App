@@ -87,11 +87,7 @@ export function Search() {
     isFetchingNextPage: isFetchingNextMessagesPage,
     isFetching: isFetchingMessages,
     isLoading: isLoadingMessages
-  } = useInfiniteSearchMessageGroups(
-    debouncedQuery,
-    shouldSearchMessages ? messageFilters : [],
-    shouldSearchMessages
-  )
+  } = useInfiniteSearchMessageGroups(debouncedQuery, shouldSearchMessages ? messageFilters : [], shouldSearchMessages)
 
   const { data: recentItems = [], refetch: refetchItems } = useRecentSearchItems()
   const { data: recentQueriesData = [], refetch: refetchQueries } = useRecentSearchQueries()
@@ -135,7 +131,7 @@ export function Search() {
     const isSelfPhone = myProfile?.phoneNumber === trimmedQuery
 
     addRecentSearch.mutate({
-      ...(isSelfPhone ? { id: myProfile.id } : {}),
+      id: isSelfPhone ? myProfile.id : trimmedQuery,
       name: trimmedQuery,
       type: SearchType.Keyword
     })
@@ -194,6 +190,15 @@ export function Search() {
   const onItemPress = (
     item: UserSearchResponse | ConversationSearchResponse | MessageSearchResponse | MessageSearchGroupResponse
   ) => {
+    // Always save the keyword when an item is selected
+    if (debouncedQuery.trim()) {
+      addRecentSearch.mutate({
+        id: debouncedQuery.trim(),
+        name: debouncedQuery.trim(),
+        type: SearchType.Keyword
+      })
+    }
+
     if ('fullName' in item) {
       const rank = userSearchResults?.pages.flatMap((page) => page.data).findIndex((user) => user.id === item.id) ?? -1
       searchApi
@@ -219,6 +224,13 @@ export function Search() {
       const conversationId = toRouteParam(item.conversationId)
       if (!conversationId) return
 
+      addRecentSearch.mutate({
+        id: conversationId,
+        name: item.title || '',
+        avatar: item.avatar || null,
+        type: item.isGroup ? SearchType.Group : SearchType.User
+      })
+
       router.push({
         pathname: '/chat/[id]',
         params: routeParams({
@@ -243,6 +255,13 @@ export function Search() {
         return
       }
 
+      addRecentSearch.mutate({
+        id: conversationId || recipientId || '',
+        name: item.name,
+        avatar: item.avatar || null,
+        type: item.group ? SearchType.Group : SearchType.User
+      })
+
       router.push({
         pathname: '/chat/[id]',
         params: routeParams({
@@ -258,6 +277,13 @@ export function Search() {
       const conversationId = toRouteParam(item.conversationId)
       const messageId = toRouteParam(item.messageId)
       if (!conversationId || !messageId) return
+
+      addRecentSearch.mutate({
+        id: conversationId,
+        name: item.conversationName || item.senderName || '',
+        avatar: item.conversationAvatar || item.senderAvatar || null,
+        type: item.isGroup ? SearchType.Group : SearchType.User
+      })
 
       router.push({
         pathname: '/chat/[id]',
@@ -404,26 +430,25 @@ export function Search() {
         keyboardShouldPersistTaps='handled'
         onScrollBeginDrag={() => Keyboard.dismiss()}
       >
-        {(isLoadingAll || isSearchingAll) && normalizedQuery && renderLoading()}
+        {isLoadingAll && normalizedQuery && renderLoading()}
         {debouncedQuery && (
           <>
-            {!isSearchingAll && (
-              <>
-                <AllTab
-                  userResults={userSearchResults}
-                  contactResults={contactSearchResults}
-                  messageResults={messageSearchResults}
-                  searchQuery={debouncedQuery}
-                  setActiveTab={setActiveTab}
-                  onItemPress={onItemPress}
-                  onMessageMatchResultsPress={openMessageMatchResults}
-                  messageFilters={messageFilters}
-                  onMessageFiltersChange={setMessageFilters}
-                />
+            <AllTab
+              userResults={userSearchResults}
+              contactResults={contactSearchResults}
+              messageResults={messageSearchResults}
+              searchQuery={debouncedQuery}
+              setActiveTab={setActiveTab}
+              onItemPress={onItemPress}
+              onMessageMatchResultsPress={openMessageMatchResults}
+              messageFilters={messageFilters}
+              onMessageFiltersChange={setMessageFilters}
+              isSearchingUsers={isSearchingUsers}
+              isSearchingContacts={isSearchingContacts}
+              isSearchingMessages={isSearchingMessages}
+            />
 
-                {!hasResults && renderEmptyState()}
-              </>
-            )}
+            {!isSearchingAll && !hasResults && renderEmptyState()}
           </>
         )}
       </ScrollView>

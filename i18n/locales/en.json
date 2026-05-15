@@ -741,5 +741,12 @@
       "fullNameRequired": "Full name is required",
       "dobInvalid": "Date of birth must be in the past or present"
     }
+  },
+  "search": {
+    "resultOrdinal": "Result {{index}} of {{total}}",
+    "noResults": "No messages found",
+    "from": "From:",
+    "youWithName": "You ({{name}})",
+    "noSenderResults": "No senders found"
   }
 }

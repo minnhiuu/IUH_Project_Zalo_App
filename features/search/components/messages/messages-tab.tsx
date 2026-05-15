@@ -20,6 +20,7 @@ interface MessagesTabProps {
   onSeeMore?: () => void
   filters?: MessageSearchFilter[]
   onFiltersChange?: (filters: MessageSearchFilter[]) => void
+  isLoading?: boolean
 }
 
 export function MessagesTab({
@@ -33,7 +34,8 @@ export function MessagesTab({
   preview = false,
   onSeeMore,
   filters = [],
-  onFiltersChange
+  onFiltersChange,
+  isLoading = false
 }: MessagesTabProps) {
   const { t } = useTranslation()
 
@@ -83,10 +85,11 @@ export function MessagesTab({
           }
         }}
         isFetchingNextPage={!preview && isFetchingNextPage}
+        isLoading={isLoading}
         onSeeMore={preview ? onSeeMore : undefined}
         scrollEnabled={!preview}
         headerExtra={filterHeader}
-        showWhenEmpty={hasActiveFilters && !!onFiltersChange}
+        showWhenEmpty={(hasActiveFilters && !!onFiltersChange) || isLoading}
         emptyComponent={emptyComponent}
       />
     </View>

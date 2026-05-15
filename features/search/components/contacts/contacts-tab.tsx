@@ -15,6 +15,7 @@ interface ContactsTabProps {
   isFetchingNextPage?: boolean
   preview?: boolean
   onSeeMore?: () => void
+  isLoading?: boolean
 }
 
 export function ContactsTab({
@@ -25,7 +26,8 @@ export function ContactsTab({
   hasNextPage,
   isFetchingNextPage,
   preview = false,
-  onSeeMore
+  onSeeMore,
+  isLoading = false
 }: ContactsTabProps) {
   const { t } = useTranslation()
 
@@ -47,6 +49,7 @@ export function ContactsTab({
         }
       }}
       isFetchingNextPage={!preview && isFetchingNextPage}
+      isLoading={isLoading}
       onSeeMore={preview ? onSeeMore : undefined}
       scrollEnabled={!preview}
     />
