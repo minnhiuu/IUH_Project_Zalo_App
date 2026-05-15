@@ -14,8 +14,10 @@ TaskManager.defineTask<Notifications.NotificationTaskPayload>(BACKGROUND_NOTIFIC
   const payload = data as any
   console.log('[BGNotification] Received background payload:', JSON.stringify(payload, null, 2))
 
-  if (payload.notification) {
-    console.log('[BGNotification] System notification detected, skipping.')
+  // If the OS already handled a visible notification, we might want to skip displaying another one via Notifee.
+  // However, for data-only messages, payload.notification will be undefined.
+  if (payload.notification?.title || payload.notification?.body) {
+    console.log('[BGNotification] System notification with content detected, skipping Notifee to avoid duplicates.')
     return BackgroundNotificationResult.NoData
   }
 

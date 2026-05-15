@@ -19,14 +19,6 @@ type NotifeeModule = typeof import('@notifee/react-native')
 type NotificationSubscription = { remove: () => void }
 type AppNotification = Parameters<Parameters<NotificationsModule['addNotificationReceivedListener']>[0]>[0]
 
-function resolveFcmNotificationId(data: Record<string, string>) {
-  if (isChatNotification(data.type) && data.conversationId) {
-    return `CHAT_${data.conversationId}`
-  }
-
-  const stableId = data.notificationId || data.id || data.referenceId || data.requestId
-  return stableId ? `${data.type || 'NOTIFICATION'}_${stableId}` : undefined
-}
 
 function resolveNotificationRecordId(data?: Record<string, unknown>) {
   return String(data?.notificationId || data?.id || data?.referenceId || data?.requestId || '')
@@ -52,8 +44,6 @@ async function registerNotificationCategories(Notifications: NotificationsModule
   ])
 }
 
-// Global set to track processed FCM notification IDs and prevent duplicates
-const processedFcmNotifications = new Set<string>()
 
 let notificationHandlerRegistered = false
 
@@ -85,18 +75,7 @@ async function setupNotificationHandler(Notifications: NotificationsModule) {
       const customBody = data?.customBody || data?.body
 
       if (!title && !body && customTitle) {
-        // 1. Deduplication check
-        const notiId = resolveFcmNotificationId(data) || Math.random().toString()
-        if (processedFcmNotifications.has(notiId)) {
-          return { shouldPlaySound: false, shouldSetBadge: false, shouldShowBanner: false, shouldShowList: false }
-        }
-        processedFcmNotifications.add(notiId)
-        if (processedFcmNotifications.size > 50) {
-          const first = processedFcmNotifications.values().next().value
-          if (first) processedFcmNotifications.delete(first)
-        }
-
-        console.log('[FCM] Received payload:', JSON.stringify(data))
+        console.log('[FCM] Received data-only payload:', JSON.stringify(data))
         await displayChatNotification(data)
 
         return {

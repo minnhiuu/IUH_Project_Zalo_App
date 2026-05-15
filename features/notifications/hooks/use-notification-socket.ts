@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback, useSyncExternalStore } from 'react'
 import { Client } from '@stomp/stompjs'
 import { useQueryClient } from '@tanstack/react-query'
+import { AppState } from 'react-native'
 import { useAuthStore } from '@/store'
 import { getAccessToken } from '@/lib/http'
 import apiConfig from '@/config/apiConfig'
@@ -67,7 +68,21 @@ const connectSingleton = async (user: any, queryClient: any) => {
             return
           }
 
-          // 2. Invalidate caches. OS notifications are owned by FCM/Notifee, not WebSocket.
+          // 2. Display local notification if not silent
+          if (!('action' in data) && !data.silent) {
+            import('@/tasks/notifee-background-handler').then(({ displayChatNotification }) => {
+              displayChatNotification({
+                ...data.payload,
+                title: data.title,
+                body: data.body,
+                type: data.type,
+                notificationId: data.id,
+                referenceId: data.referenceId
+              } as any).catch((err) => console.error('[NotificationSocket] Error displaying notification:', err))
+            })
+          }
+
+          // 3. Invalidate caches.
           queryClient.invalidateQueries({ queryKey: notificationKeys.all })
         } catch (error) {
           console.error('[NotificationSocket] Error handling notification:', error)
@@ -100,6 +115,35 @@ export const useNotificationSocket = () => {
   const user = useAuthStore((s) => s.user)
   const queryClient = useQueryClient()
   const connected = useSyncExternalStore(subscribe, getConnected, getConnected)
+
+  const userRef = useRef(user)
+  const queryClientRef = useRef(queryClient)
+
+  useEffect(() => {
+    userRef.current = user
+  }, [user])
+
+  useEffect(() => {
+    queryClientRef.current = queryClient
+  }, [queryClient])
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      if (nextState === 'active') {
+        const currentUser = userRef.current
+        if (currentUser) {
+          void connectSingleton(currentUser, queryClientRef.current)
+        }
+        return
+      }
+
+      if (nextState === 'inactive' || nextState === 'background') {
+        disconnectSingleton()
+      }
+    })
+
+    return () => subscription.remove()
+  }, [])
 
   useEffect(() => {
     if (user) {
