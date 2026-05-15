@@ -1,24 +1,23 @@
-import { PageResponse } from '@/types/common.types'
-import { InfiniteData } from '@tanstack/react-query'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
+import { InfiniteData } from '@tanstack/react-query'
+import { PageResponse } from '@/types/common.types'
 import { SearchSection } from '../core/search-sections'
-import { DiscoverItem } from './discover-item'
-import { UserSearchResponse } from '../../schemas'
+import { MessageSearchResponse } from '../../schemas'
+import { FileSearchResult } from './file-item'
 
-interface DiscoverTabProps {
-  searchResults: InfiniteData<PageResponse<UserSearchResponse[]>> | undefined
+interface FilesTabProps {
+  searchResults: InfiniteData<PageResponse<MessageSearchResponse[]>> | undefined
   searchQuery: string
-  onItemPress: (item: UserSearchResponse) => void
+  onItemPress: (item: MessageSearchResponse) => void
   fetchNextPage?: () => void
   hasNextPage?: boolean
   isFetchingNextPage?: boolean
   preview?: boolean
   onSeeMore?: () => void
-  isLoading?: boolean
 }
 
-export function DiscoverTab({
+export function FilesTab({
   searchResults,
   searchQuery,
   onItemPress,
@@ -26,31 +25,28 @@ export function DiscoverTab({
   hasNextPage,
   isFetchingNextPage,
   preview = false,
-  onSeeMore,
-  isLoading = false
-}: DiscoverTabProps) {
+  onSeeMore
+}: FilesTabProps) {
   const { t } = useTranslation()
 
   const allItems = searchResults?.pages ? searchResults.pages.flatMap((page) => page.data) : []
-  const items = preview ? allItems.slice(0, 5) : allItems
-
+  const items = preview ? allItems.slice(0, 3) : allItems
   const totalCount = searchResults?.pages?.[0]?.totalItems || items.length
 
   return (
     <SearchSection
-      title={t('search.sections.discover')}
+      title={t('search.sections.files')}
       count={totalCount > 99 ? '99+' : totalCount}
       items={items}
       searchQuery={searchQuery}
+      renderItem={(item) => <FileSearchResult item={item} searchQuery={searchQuery} onPress={onItemPress} />}
       onItemPress={onItemPress}
-      renderItem={(item) => <DiscoverItem item={item} searchQuery={searchQuery} onPress={() => onItemPress(item)} />}
       onEndReached={() => {
         if (!preview && hasNextPage && fetchNextPage) {
           fetchNextPage()
         }
       }}
       isFetchingNextPage={!preview && isFetchingNextPage}
-      isLoading={isLoading}
       onSeeMore={preview ? onSeeMore : undefined}
       scrollEnabled={!preview}
     />

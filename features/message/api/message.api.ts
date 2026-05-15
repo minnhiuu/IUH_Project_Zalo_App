@@ -1,7 +1,7 @@
 import http from '@/lib/http'
 import { getAccessToken } from '@/lib/http'
 import { API_ENDPOINTS } from '@/config/apiConfig'
-import type { ApiResponse, PageResponse } from '@/types/common.types'
+import type { ApiResponse, CursorPageResponse, PageResponse } from '@/types/common.types'
 import type {
   MessageSendRequest,
   MessageResponse,
@@ -10,6 +10,7 @@ import type {
   GroupConversationCreateRequest,
   LeaveGroupRequest,
   SearchMemberResponse,
+  ConversationParticipantResponse,
   GroupMemberListItemResponse,
   AdminMemberResponse,
   GroupSettings,
@@ -59,6 +60,19 @@ export const messageApi = {
     http.get<ApiResponse<PageResponse<MessageResponse[]>>>(
       `${API_ENDPOINTS.MESSAGE.MESSAGES(conversationId)}?page=${page}&size=${size}`
     ),
+
+  getMessagesV2: (
+    conversationId: string,
+    params?: { cursor?: string | null; limit?: number; direction?: 'OLDER' | 'NEWER'; aroundMessageId?: string | null }
+  ) =>
+    http.get<ApiResponse<CursorPageResponse<MessageResponse>>>(API_ENDPOINTS.MESSAGE.MESSAGES_V2(conversationId), {
+      params: {
+        cursor: params?.cursor || undefined,
+        limit: params?.limit ?? 20,
+        direction: params?.direction ?? 'OLDER',
+        aroundMessageId: params?.aroundMessageId || undefined
+      }
+    }),
 
   sendMessage: (request: MessageSendRequest) => {
     const { conversationId, ...body } = request
@@ -161,6 +175,18 @@ export const messageApi = {
 
   addMembersToGroup: (conversationId: string, memberIds: string[]) =>
     http.post<ApiResponse<ConversationResponse>>(API_ENDPOINTS.MESSAGE.ADD_MEMBERS(conversationId), { memberIds }),
+
+  getConversationParticipants: (conversationId: string, params?: { query?: string; page?: number; size?: number }) =>
+    http.get<ApiResponse<PageResponse<ConversationParticipantResponse[]>>>(
+      API_ENDPOINTS.MESSAGE.PARTICIPANTS(conversationId),
+      {
+        params: {
+          query: params?.query,
+          page: params?.page ?? 0,
+          size: params?.size ?? 20
+        }
+      }
+    ),
 
   getGroupMembers: (conversationId: string, params?: { query?: string; page?: number; size?: number }) =>
     http.get<ApiResponse<PageResponse<GroupMemberListItemResponse[]>>>(API_ENDPOINTS.MESSAGE.GROUP_MEMBERS(conversationId), {

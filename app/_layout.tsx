@@ -1,6 +1,4 @@
 import '../global.css'
-import { registerNotifeeBackgroundHandler } from '@/tasks/notifee-background-handler'
-import '@/tasks/background-notification-task'
 
 // Must be called at module level, outside any React component
 import i18n from '@/i18n'
@@ -20,6 +18,7 @@ import Toast from 'react-native-toast-message'
 import { I18nextProvider } from 'react-i18next'
 import { useEffect } from 'react'
 import { View, Text, ActivityIndicator } from 'react-native'
+import Constants from 'expo-constants'
 
 import { GluestackProvider } from '@/components/ui/gluestack-ui-provider'
 import { useAuthStore } from '@/store'
@@ -27,7 +26,13 @@ import { getAccessToken, getRefreshToken, setUnauthorizedHandler } from '@/lib/h
 import { ThemeProvider, useTheme } from '@/context'
 import { storage } from '@/utils/storageUtils'
 
-registerNotifeeBackgroundHandler()
+const isExpoGo = Constants.appOwnership === 'expo'
+
+if (!isExpoGo) {
+  const { registerNotifeeBackgroundHandler } = require('@/tasks/notifee-background-handler')
+  require('@/tasks/background-notification-task')
+  registerNotifeeBackgroundHandler()
+}
 
 // Create a client for React Query
 const queryClient = new QueryClient({

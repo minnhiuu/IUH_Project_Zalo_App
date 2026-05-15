@@ -95,15 +95,31 @@ export function registerNotifeeBackgroundHandler() {
   })
 }
 
+const processedNotifications = new Set<string>()
+
 /**
  * Display the backend-rendered push payload. Backend owns chat aggregation;
  * Android only reuses a stable local notification id so later pushes replace the same conversation.
  */
 export async function displayChatNotification(rawData: Record<string, string>) {
   const data = toNotificationData(rawData)
+  const type = data.type || ''
+
+  // 1. Deduplication check (prevent duplicate from Socket + FCM)
+  const notiId = resolveNotificationId(data, type)
+  if (notiId) {
+    if (processedNotifications.has(notiId)) {
+      console.log('[BGNotification] Skipping duplicate:', notiId)
+      return
+    }
+    processedNotifications.add(notiId)
+    if (processedNotifications.size > 100) {
+      const first = processedNotifications.values().next().value
+      if (first) processedNotifications.delete(first)
+    }
+  }
   const title = data.customTitle || data.title || ''
   const body = normalizeBody(data.customBody || data.body || '')
-  const type = data.type || ''
 
   if (!title && !body) return
 

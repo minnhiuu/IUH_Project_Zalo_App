@@ -20,7 +20,12 @@
       "discover": "Khám phá",
       "contacts": "Liên hệ",
       "messages": "Tin nhắn",
+      "files": "File",
       "seeMore": "Xem thêm"
+    },
+    "filters": {
+      "link": "Link",
+      "file": "File"
     },
     "recent": {
       "contacts": "Liên hệ gần đây",
@@ -45,6 +50,17 @@
       "nameRequired": "Tên không được để trống"
     },
     "findByPhone": "Tìm bạn qua số điện thoại:",
-    "phoneNumber": "Số điện thoại:"
+    "phoneNumber": "Số điện thoại:",
+    "sharedGroups": "{{count}} gr chung",
+    "matchingResults": "kết quả phù hợp",
+    "resultOrdinal": "Kết quả thứ {{index}}/{{total}}",
+    "chatMessagePlaceholder": "Tìm tin nhắn văn bản",
+    "fromLabel": "Từ:",
+    "chooseSenderPlaceholder": "Chọn người gửi",
+    "youWithName": "Bạn ({{name}})",
+    "noSenderResults": "Không tìm thấy người gửi",
+    "unknownConversation": "Cuộc trò chuyện",
+    "noFilteredResults": "Không tìm thấy kết quả với bộ lọc đang chọn",
+    "friendLabel": "Bạn bè"
   }
 }

@@ -337,6 +337,14 @@
       "onlyMe": "Chỉ mình tôi",
       "allowViewAndComment": "Cho phép xem và bình luận",
       "blockAndHide": "Chặn và ẩn",
+      "nameSearchVisibility": "Tìm tôi bằng tên",
+      "phoneSearchVisibility": "Tìm tôi bằng số điện thoại",
+      "searchVisibility": {
+        "public": "Mọi người",
+        "friendsOfFriends": "Bạn của bạn bè",
+        "friendsOnly": "Chỉ bạn bè",
+        "none": "Không ai"
+      },
       "manageFriendSources": "Quản lý nguồn tìm kiếm và kết bạn",
       "friendSourceByPhone": "Số điện thoại",
       "friendSourceByQr": "Mã QR",
@@ -749,5 +757,12 @@
       "fullNameRequired": "Họ tên không được để trống",
       "dobInvalid": "Ngày sinh phải là ngày trong quá khứ hoặc hiện tại"
     }
+  },
+  "search": {
+    "resultOrdinal": "Kết quả {{index}} trên {{total}}",
+    "noResults": "Không tìm thấy tin nhắn",
+    "from": "Từ:",
+    "youWithName": "Bạn ({{name}})",
+    "noSenderResults": "Không tìm thấy người gửi"
   }
 }

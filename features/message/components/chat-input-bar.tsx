@@ -1,5 +1,5 @@
 import React, { useMemo, useRef, useState } from 'react'
-import { View, TouchableOpacity, TextInput, Alert, Linking, ScrollView, Image, Modal, FlatList, Switch, Pressable } from 'react-native'
+import { View, TouchableOpacity, TextInput, Alert, Linking, ScrollView, Image, Modal, FlatList, Switch, Pressable, Platform, Keyboard } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -104,6 +104,16 @@ export function ChatInputBar({
   const [businessCardQuery, setBusinessCardQuery] = useState('')
   const [selectedBusinessCardIds, setSelectedBusinessCardIds] = useState<string[]>([])
   const [includePhone, setIncludePhone] = useState(true)
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
+  React.useEffect(() => {
+    const showSub = Keyboard.addListener('keyboardDidShow', () => setIsKeyboardVisible(true))
+    const hideSub = Keyboard.addListener('keyboardDidHide', () => setIsKeyboardVisible(false))
+    return () => {
+      showSub.remove()
+      hideSub.remove()
+    }
+  }, [])
+
   const { data: friends = [] } = useMyFriends(0, 300, showBusinessCardModal)
   const friendListRef = useRef<FlatList<any>>(null)
 
@@ -380,7 +390,7 @@ export function ChatInputBar({
   const cardModalSubText = isDark ? '#9AA3AF' : '#6B7280'
 
   return (
-    <SafeAreaView edges={['bottom']} style={{ backgroundColor: isDark ? '#15181D' : '#fff' }}>
+    <View style={{ backgroundColor: isDark ? '#15181D' : '#fff', paddingBottom: insets.bottom }}>
       {/* Reply preview bar */}
       {replyTo && (
         <View
@@ -802,18 +812,17 @@ export function ChatInputBar({
             </View>
           )}
 
-          <View
+          <SafeAreaView
             style={{
               position: 'absolute',
+              bottom: 0,
               left: 0,
               right: 0,
-              bottom: 0,
               backgroundColor: cardModalPanel,
               borderTopWidth: 1,
               borderTopColor: cardModalBorder,
               paddingHorizontal: 12,
-              paddingTop: 8,
-              paddingBottom: Math.max(insets.bottom, 10)
+              paddingTop: 8
             }}
           >
             {selectedFriends.length > 0 && (
@@ -873,9 +882,9 @@ export function ChatInputBar({
                 <Ionicons name='send' size={24} color='#FFFFFF' />
               </TouchableOpacity>
             </View>
-          </View>
+          </SafeAreaView>
         </SafeAreaView>
       </Modal>
-    </SafeAreaView>
+    </View>
   )
 }

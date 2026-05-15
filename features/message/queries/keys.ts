@@ -5,11 +5,16 @@ export const messageKeys = {
   conversationList: (page: number = 0, size: number = 20) =>
     [...messageKeys.conversations(), 'list', page, size] as const,
 
-  messages: (conversationId: string) => [...messageKeys.all, 'chat', conversationId] as const,
+  messages: (conversationId: string, aroundMessageId?: string | null) =>
+    aroundMessageId
+      ? ([...messageKeys.all, 'chat', conversationId, 'around', aroundMessageId] as const)
+      : ([...messageKeys.all, 'chat', conversationId] as const),
   messageList: (conversationId: string, page: number = 0, size: number = 20) =>
     [...messageKeys.messages(conversationId), page, size] as const,
 
   pins: (conversationId: string) => [...messageKeys.all, 'pins', conversationId] as const,
+  participants: (conversationId: string, query: string) =>
+    [...messageKeys.all, 'participants', conversationId, query] as const,
   groupMembers: (conversationId: string, query: string) =>
     [...messageKeys.all, 'group-members', conversationId, query] as const,
   groupAdmins: (conversationId: string) => [...messageKeys.all, 'group-admins', conversationId] as const,
