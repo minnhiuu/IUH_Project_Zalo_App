@@ -15,9 +15,21 @@ interface SearchSectionProps<T> {
   onEndReached?: () => void
   isFetchingNextPage?: boolean
   scrollEnabled?: boolean
+  headerExtra?: React.ReactNode
+  emptyComponent?: React.ReactNode
+  showWhenEmpty?: boolean
+  isLoading?: boolean
 }
 
-export function SearchSection<T extends { id: string }>({
+const getItemKey = (item: unknown, index: number) => {
+  if (item && typeof item === 'object') {
+    const record = item as Record<string, unknown>
+    return String(record.id ?? record.messageId ?? record.conversationId ?? index)
+  }
+  return String(index)
+}
+
+export function SearchSection<T>({
   title,
   count,
   items,
@@ -25,11 +37,15 @@ export function SearchSection<T extends { id: string }>({
   renderItem,
   onEndReached,
   isFetchingNextPage,
-  scrollEnabled = false
+  scrollEnabled = false,
+  headerExtra,
+  emptyComponent,
+  showWhenEmpty = false,
+  isLoading = false
 }: SearchSectionProps<T>) {
   const { t } = useTranslation()
 
-  if (items.length === 0) return null
+  if (items.length === 0 && !showWhenEmpty && !isLoading) return null
 
   if (onSeeMore || items.length < 10) {
     return (
@@ -39,12 +55,22 @@ export function SearchSection<T extends { id: string }>({
             {title} {count !== undefined && <Text className='text-muted-foreground font-normal'>({count})</Text>}
           </Text>
         </View>
+        {headerExtra}
 
-        {items.map((item) => (
-          <React.Fragment key={item.id}>{renderItem(item)}</React.Fragment>
-        ))}
+        {items.length > 0
+          ? items.map((item, index) => (
+              <React.Fragment key={getItemKey(item, index)}>{renderItem(item)}</React.Fragment>
+            ))
+          : isLoading
+            ? (
+              <View className='pb-2'>
+                <SearchResultSkeleton />
+                <SearchResultSkeleton />
+              </View>
+            )
+            : emptyComponent}
 
-        {onSeeMore && (
+        {onSeeMore && items.length > 0 && (
           <TouchableOpacity
             onPress={onSeeMore}
             className='py-4 flex-row items-center justify-center border-t border-divider'
@@ -64,23 +90,28 @@ export function SearchSection<T extends { id: string }>({
           {title} {count !== undefined && <Text className='text-muted-foreground font-normal'>({count})</Text>}
         </Text>
       </View>
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <>{renderItem(item)}</>}
-        onEndReached={onEndReached}
-        onEndReachedThreshold={0.8}
-        ListFooterComponent={
-          isFetchingNextPage ? (
-            <View className='pb-10'>
-              <SearchResultSkeleton />
-              <SearchResultSkeleton />
-              <SearchResultSkeleton />
-            </View>
-          ) : null
-        }
-        scrollEnabled={scrollEnabled}
-      />
+      {headerExtra}
+      {items.length > 0 ? (
+        <FlatList
+          data={items}
+          keyExtractor={getItemKey}
+          renderItem={({ item }) => <>{renderItem(item)}</>}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.8}
+          ListFooterComponent={
+            isFetchingNextPage ? (
+              <View className='pb-10'>
+                <SearchResultSkeleton />
+                <SearchResultSkeleton />
+                <SearchResultSkeleton />
+              </View>
+            ) : null
+          }
+          scrollEnabled={scrollEnabled}
+        />
+      ) : (
+        emptyComponent
+      )}
     </View>
   )
 }

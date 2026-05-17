@@ -1,5 +1,6 @@
 export type AppLanguage = 'VI' | 'EN'
 export type SettingScope = 'EVERYONE' | 'FRIENDS' | 'FRIENDS_AND_CONTACTED' | 'ONLY_ME' | 'OFF'
+export type SearchVisibility = 'PUBLIC' | 'FRIENDS_OF_FRIENDS' | 'FRIENDS_ONLY' | 'NONE'
 export type SettingsThemeMode = 'LIGHT' | 'DARK' | 'SYSTEM'
 export type ChatFontSize = 'SMALL' | 'MEDIUM' | 'LARGE'
 export type AudioQuality = 'LOW' | 'HIGH' | 'AUTOMATIC'
@@ -17,6 +18,8 @@ export interface DoNotDisturbSettings {
   dndEnabled: boolean
   dndStartTime: string
   dndEndTime: string
+  dndTimezone: string
+  activeDays: string[]
 }
 
 export interface NotificationSettings {
@@ -59,6 +62,8 @@ export interface PrivacySettings {
   blockUnknownUsers: boolean
   friendSourceByPhone: boolean
   friendSourceByQr: boolean
+  nameSearchVisibility: SearchVisibility
+  phoneSearchVisibility: SearchVisibility
   utilityPermissions: string[]
   blockedUserIds: string[]
 }

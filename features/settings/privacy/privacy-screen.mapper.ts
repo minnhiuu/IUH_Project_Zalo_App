@@ -8,6 +8,8 @@ export const PRIVACY_SETTINGS_SCREEN_FIELD_MAP = {
   allowCalls: 'allowCallsPrivacy',
   allowViewAndComment: 'allowViewAndCommentOnJournal',
   blockAndHide: ['blockUnknownUsers', 'blockedUserIds'],
+  nameSearchVisibility: 'nameSearchVisibility',
+  phoneSearchVisibility: 'phoneSearchVisibility',
   manageFriendSources: ['friendSourceByPhone', 'friendSourceByQr'],
   utilities: 'utilityPermissions'
 } as const
@@ -16,12 +18,23 @@ const SCOPE_LABEL_KEYS: Record<PrivacySettings['birthdayVisibility'], string> = 
   EVERYONE: 'settings.privacy.everyone',
   FRIENDS: 'settings.privacy.friends',
   FRIENDS_AND_CONTACTED: 'settings.privacy.friendsAndContacted',
-  ONLY_ME: 'settings.privacy.onlyMe'
+  ONLY_ME: 'settings.privacy.onlyMe',
+  OFF: 'settings.privacy.off'
 }
 
 export const getScopeLabelKey = (scope: PrivacySettings['birthdayVisibility']) => SCOPE_LABEL_KEYS[scope]
 
 export const getBooleanLabelKey = (value: boolean) => (value ? 'settings.privacy.on' : 'settings.privacy.off')
+
+const SEARCH_VISIBILITY_LABEL_KEYS: Record<PrivacySettings['phoneSearchVisibility'], string> = {
+  PUBLIC: 'settings.privacy.searchVisibility.public',
+  FRIENDS_OF_FRIENDS: 'settings.privacy.searchVisibility.friendsOfFriends',
+  FRIENDS_ONLY: 'settings.privacy.searchVisibility.friendsOnly',
+  NONE: 'settings.privacy.searchVisibility.none'
+}
+
+export const getSearchVisibilityLabelKey = (visibility: PrivacySettings['phoneSearchVisibility']) =>
+  SEARCH_VISIBILITY_LABEL_KEYS[visibility] ?? SEARCH_VISIBILITY_LABEL_KEYS.PUBLIC
 
 export interface PrivacyScreenValueKeys {
   birthday: string
@@ -30,6 +43,8 @@ export interface PrivacyScreenValueKeys {
   allowMessaging: string
   allowCalls: string
   allowViewAndComment: string
+  nameSearchVisibility: string
+  phoneSearchVisibility: string
 }
 
 export const mapPrivacySettingsToScreenValueKeys = (
@@ -41,7 +56,9 @@ export const mapPrivacySettingsToScreenValueKeys = (
     showSeenStatus: 'settings.privacy.off',
     allowMessaging: 'settings.privacy.everyone',
     allowCalls: 'settings.privacy.everyone',
-    allowViewAndComment: 'settings.privacy.everyone'
+    allowViewAndComment: 'settings.privacy.everyone',
+    nameSearchVisibility: 'settings.privacy.searchVisibility.public',
+    phoneSearchVisibility: 'settings.privacy.searchVisibility.public'
   }
 
   if (!settings) return fallback
@@ -52,7 +69,11 @@ export const mapPrivacySettingsToScreenValueKeys = (
     showSeenStatus: getBooleanLabelKey(settings.showSeenStatus),
     allowMessaging: getScopeLabelKey(settings.allowMessaging),
     allowCalls: getScopeLabelKey(settings.allowCallsPrivacy),
-    allowViewAndComment: getScopeLabelKey(settings.allowViewAndCommentOnJournal)
+    allowViewAndComment: getScopeLabelKey(settings.allowViewAndCommentOnJournal),
+    nameSearchVisibility: getSearchVisibilityLabelKey(
+      settings.nameSearchVisibility === 'NONE' ? 'PUBLIC' : settings.nameSearchVisibility
+    ),
+    phoneSearchVisibility: getSearchVisibilityLabelKey(settings.phoneSearchVisibility)
   }
 }
 

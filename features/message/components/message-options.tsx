@@ -256,6 +256,20 @@ export default function MessageOptionsScreen() {
     )
   }
 
+  const openChatSearch = () => {
+    const targetConversationId = conversationId || id
+    if (!targetConversationId) return
+    router.replace({
+      pathname: '/chat/[id]' as any,
+      params: {
+        id: targetConversationId,
+        conversationId: targetConversationId,
+        name,
+        isSearchMode: 'true'
+      }
+    })
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: bg }}>
       <LinearGradient colors={headerGradient}>
@@ -356,7 +370,16 @@ export default function MessageOptionsScreen() {
                   { icon: 'brush-outline' as const, label: t('message.groupOptions.changeWallpaper') },
                   { icon: 'notifications-outline' as const, label: t('message.groupOptions.muteNotifications') }
                 , ...(canManageGroup ? [{ icon: 'person-add-outline' as const, label: t('message.groupOptions.addMember') }] : [])].map((action) => (
-                  <TouchableOpacity key={action.label} style={{ width: canManageGroup ? '25%' : '33.333%', alignItems: 'center' }} activeOpacity={0.72}>
+                  <TouchableOpacity
+                    key={action.label}
+                    style={{ width: canManageGroup ? '25%' : '33.333%', alignItems: 'center' }}
+                    activeOpacity={0.72}
+                    onPress={() => {
+                      if (action.icon === 'search-outline') {
+                        openChatSearch()
+                      }
+                    }}
+                  >
                     <View
                       style={{
                         width: 46,
@@ -618,6 +641,9 @@ export default function MessageOptionsScreen() {
                 activeOpacity={0.7}
                 onPress={() => {
                   if (action.key === 'mute') setMuteNotification((v) => !v)
+                  if (action.key === 'search') {
+                    openChatSearch()
+                  }
                 }}
               >
                 <View

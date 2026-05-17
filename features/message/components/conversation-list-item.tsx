@@ -125,63 +125,34 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
   const hasUnread = (conversation.unreadCount ?? 0) > 0
-  const rawConversation = conversation as any
-
-  const rawLastMessage =
-    rawConversation.lastMessage ??
-    rawConversation.lastMessageContent ??
-    rawConversation.latestMessage?.content ??
-    rawConversation.latestMessage
-
-  const lastMessageContent =
-    typeof rawLastMessage === 'string'
-      ? rawLastMessage
-      : typeof rawLastMessage?.content === 'string'
-        ? rawLastMessage.content
-        : typeof rawLastMessage?.text === 'string'
-          ? rawLastMessage.text
-          : typeof rawConversation.latestMessage?.message === 'string'
-            ? rawConversation.latestMessage.message
-          : ''
-
-  const lastMessageType =
-    conversation.lastMessageType ?? rawConversation.latestMessage?.type ?? rawLastMessage?.type ?? null
-
-  const lastMessageTime =
-    conversation.lastMessageTime ||
-    rawConversation.lastMessageAt ||
-    rawConversation.lastMessageCreatedAt ||
-    rawConversation.latestMessage?.createdAt ||
-    rawConversation.updatedAt ||
-    null
-
-  const incomingSenderName =
-    rawConversation.lastMessageSenderName ||
-    rawConversation.latestMessage?.senderName ||
-    (!conversation.isGroup ? conversation.name || '' : '')
+  const lastMsg = conversation.lastMessage
+  const lastMsgObj = typeof lastMsg === 'object' ? lastMsg : null
+  const lastMsgContent = typeof lastMsg === 'string' ? lastMsg : lastMsgObj?.content
+  const lastMsgStatus = conversation.lastMessageStatus ?? lastMsgObj?.status
+  const isFromMe = conversation.isLastMessageFromMe ?? lastMsgObj?.isFromMe
 
   const preview = formatPreview(
     {
-      content: lastMessageContent,
-      isFromMe: conversation.isLastMessageFromMe,
-      senderName:
-        conversation.isLastMessageFromMe
-          ? ''
-          : incomingSenderName,
-      type: lastMessageType,
-      status: conversation.lastMessageStatus
+      content: lastMsgContent,
+      isFromMe: !!isFromMe,
+      isGroup: conversation.isGroup,
+      senderName: lastMsgObj?.senderName ?? null,
+      type: conversation.lastMessageType ?? lastMsgObj?.type,
+      status: lastMsgStatus
     },
     {
       you: t('message.you'),
       user: '',
       type: {
         image: t('message.messageType.image', { defaultValue: '[Hình ảnh]' }),
+        video: t('message.messageType.video', { defaultValue: '[Video]' }),
         file: t('message.messageType.file', { defaultValue: '[File]' })
       }
     }
   )
 
-  const isRevoked = conversation.lastMessageStatus === MessageStatus.REVOKED
+  const lastMsgTime = conversation.lastMessageTime ?? lastMsgObj?.timestamp ?? null
+  const isRevoked = lastMsgStatus === MessageStatus.REVOKED
 
   const formatTime = (timeValue: string | number | Date | null | undefined) => {
     if (!timeValue) return ''
@@ -251,7 +222,7 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
             {conversation.name || t('message.user', { defaultValue: 'User' })}
           </Text>
           <Text style={{ fontSize: 15, color: '#6B7280', marginLeft: 8, marginTop: 1 }}>
-            {formatTime(lastMessageTime)}
+            {formatTime(lastMsgTime)}
           </Text>
         </View>
 

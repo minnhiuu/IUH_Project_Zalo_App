@@ -1,5 +1,16 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { View, TouchableOpacity, Alert, Clipboard, Modal, Pressable, Animated, ScrollView, ActivityIndicator, TextInput } from 'react-native'
+import {
+  View,
+  TouchableOpacity,
+  Alert,
+  Clipboard,
+  Modal,
+  Pressable,
+  Animated,
+  ScrollView,
+  ActivityIndicator,
+  TextInput
+} from 'react-native'
 import { Image as ExpoImage } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
 import * as FileSystem from 'expo-file-system/legacy'
@@ -46,6 +57,8 @@ interface MessageBubbleProps {
   onReplyMessagePress?: (messageId: string) => void
   onScrollToMessage?: (messageId: string) => void
   isHighlighted?: boolean
+  showHighlightBackground?: boolean
+  highlightKeyword?: string | null
 }
 
 export function MessageBubble({
@@ -68,7 +81,9 @@ export function MessageBubble({
   onOpenMessageOptions,
   onReplyMessagePress,
   onScrollToMessage,
-  isHighlighted = false
+  isHighlighted = false,
+  showHighlightBackground = false,
+  highlightKeyword = null
 }: MessageBubbleProps) {
   const { t } = useTranslation()
   const router = useRouter()
@@ -82,7 +97,10 @@ export function MessageBubble({
   const { mutate: removeReactionsMutate } = useRemoveAllMyReactions()
   const [groupLinkPreviewOpen, setGroupLinkPreviewOpen] = useState(false)
   const [activeGroupLinkToken, setActiveGroupLinkToken] = useState<string | null>(null)
-  const [activeGroupLinkPayload, setActiveGroupLinkPayload] = useState<{ groupName?: string; groupAvatar?: string | null } | null>(null)
+  const [activeGroupLinkPayload, setActiveGroupLinkPayload] = useState<{
+    groupName?: string
+    groupAvatar?: string | null
+  } | null>(null)
   const [joinQuestionOpen, setJoinQuestionOpen] = useState(false)
   const [joinAnswer, setJoinAnswer] = useState('')
   const queryClient = useQueryClient()
@@ -92,17 +110,61 @@ export function MessageBubble({
     groupLinkPreviewOpen && !!activeGroupLinkToken
   )
 
-  // Highlight animation
-  const highlightAnim = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    if (isHighlighted) {
-      Animated.sequence([
-        Animated.timing(highlightAnim, { toValue: 1, duration: 200, useNativeDriver: false }),
-        Animated.delay(700),
-        Animated.timing(highlightAnim, { toValue: 0, duration: 400, useNativeDriver: false })
-      ]).start()
-    }
-  }, [isHighlighted])
+  const removeAccents = useCallback((value: string) => {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+  }, [])
+
+  const renderHighlightedText = useCallback(
+    (content: string | null | undefined, keyword: string | null | undefined, style: any) => {
+      const value = content || ''
+      const normalizedKeyword = keyword ? removeAccents(keyword.trim()) : ''
+      if (!value || !normalizedKeyword) {
+        return <Text style={style}>{value}</Text>
+      }
+
+      const normalizedContent = removeAccents(value)
+      const parts: React.ReactNode[] = []
+      let lastIndex = 0
+      let matchIndex = normalizedContent.indexOf(normalizedKeyword)
+
+      if (matchIndex === -1) {
+        return <Text style={style}>{value}</Text>
+      }
+
+      while (matchIndex !== -1) {
+        if (matchIndex > lastIndex) {
+          parts.push(value.substring(lastIndex, matchIndex))
+        }
+
+        const endIndex = matchIndex + normalizedKeyword.length
+        parts.push(
+          <Text
+            key={`${matchIndex}-${endIndex}`}
+            style={{
+              backgroundColor: isDark ? 'rgba(234,179,8,0.55)' : '#FDE68A',
+              color: isDark ? '#FFFFFF' : '#111827',
+              borderRadius: 2
+            }}
+          >
+            {value.substring(matchIndex, endIndex)}
+          </Text>
+        )
+
+        lastIndex = endIndex
+        matchIndex = normalizedContent.indexOf(normalizedKeyword, lastIndex)
+      }
+
+      if (lastIndex < value.length) {
+        parts.push(value.substring(lastIndex))
+      }
+
+      return <Text style={style}>{parts}</Text>
+    },
+    [isDark, removeAccents]
+  )
 
   const getReplyAttachmentUrl = (replyMessageId: string): string | null => {
     const conversationId = message.conversationId
@@ -175,24 +237,26 @@ export function MessageBubble({
       return ''
     })()
 
-    const targetAvatars: Array<{ id: string; avatar: string | null; name: string }> =
-      (Array.isArray(meta.targetIds) ? meta.targetIds : []).map((id: string, index: number) => ({
-        id,
-        avatar:
-          (Array.isArray(payload.targetAvatars) ? payload.targetAvatars[index] : undefined) ||
-          members?.find((m) => m.userId === id)?.avatar ||
-          null,
-        name:
-          members?.find((m) => m.userId === id)?.fullName ||
-          (Array.isArray(payload.targetNames) ? payload.targetNames[index] : undefined) ||
-          'User'
-      }))
+    const targetAvatars: Array<{ id: string; avatar: string | null; name: string }> = (
+      Array.isArray(meta.targetIds) ? meta.targetIds : []
+    ).map((id: string, index: number) => ({
+      id,
+      avatar:
+        (Array.isArray(payload.targetAvatars) ? payload.targetAvatars[index] : undefined) ||
+        members?.find((m) => m.userId === id)?.avatar ||
+        null,
+      name:
+        members?.find((m) => m.userId === id)?.fullName ||
+        (Array.isArray(payload.targetNames) ? payload.targetNames[index] : undefined) ||
+        'User'
+    }))
 
     const action = String(meta.action || '').toUpperCase()
     const isActorMe = String(message.senderId || '') === String(currentUserId || '')
     const firstTargetId = String(targetIds[0] || '')
     const firstTargetName =
-      (firstTargetId && resolveDisplayName(firstTargetId, members?.find((m) => m.userId === firstTargetId)?.fullName)) ||
+      (firstTargetId &&
+        resolveDisplayName(firstTargetId, members?.find((m) => m.userId === firstTargetId)?.fullName)) ||
       (typeof payload.targetName === 'string' ? String(payload.targetName) : '') ||
       targetNamesRaw[0] ||
       t('message.user', { defaultValue: 'Người dùng' })
@@ -207,7 +271,10 @@ export function MessageBubble({
       } else if (action === 'UPDATE_NAME') {
         const oldName = String(payload.oldName || '').trim()
         const newName = String(payload.newName || '').trim()
-        systemText = oldName && newName ? `${actorName} đã đổi tên nhóm từ ${oldName} thành ${newName}` : `${actorName} đã đổi tên nhóm`
+        systemText =
+          oldName && newName
+            ? `${actorName} đã đổi tên nhóm từ ${oldName} thành ${newName}`
+            : `${actorName} đã đổi tên nhóm`
       } else if (action === 'GROUP_CREATED' || action === 'CREATE_GROUP') {
         if (isActorMe) {
           systemText = `${t('message.you', { defaultValue: 'Bạn' })} đã tạo nhóm`
@@ -271,19 +338,22 @@ export function MessageBubble({
             : `${actorName} đã chuyển quyền trưởng nhóm cho ${transferTarget}`
         }
       } else if (action === 'UPDATE_SETTINGS' && setting === 'memberCanSendMessages') {
-        systemText = settingValue === false
-          ? (isActorMe
+        systemText =
+          settingValue === false
+            ? isActorMe
               ? `${t('message.you', { defaultValue: 'Bạn' })} chỉ cho phép trưởng/phó nhóm gửi tin nhắn trong nhóm`
-              : `${actorName} chỉ cho phép trưởng/phó nhóm gửi tin nhắn trong nhóm`)
-          : (isActorMe
+              : `${actorName} chỉ cho phép trưởng/phó nhóm gửi tin nhắn trong nhóm`
+            : isActorMe
               ? `${t('message.you', { defaultValue: 'Bạn' })} cho phép tất cả thành viên gửi tin nhắn trong nhóm`
-              : `${actorName} cho phép tất cả thành viên gửi tin nhắn trong nhóm`)
+              : `${actorName} cho phép tất cả thành viên gửi tin nhắn trong nhóm`
       } else if (action === 'UPDATE_SETTINGS' && setting === 'membershipApprovalEnabled') {
-        systemText = settingValue === true
-          ? 'Hình thức tham gia nhóm được thay đổi thành "Cần phê duyệt".'
-          : 'Hình thức tham gia nhóm được thay đổi thành "Không cần phê duyệt".'
+        systemText =
+          settingValue === true
+            ? 'Hình thức tham gia nhóm được thay đổi thành "Cần phê duyệt".'
+            : 'Hình thức tham gia nhóm được thay đổi thành "Không cần phê duyệt".'
       } else if (action === 'UPDATE_SETTINGS' && setting === 'joinByLinkEnabled') {
-        systemText = settingValue === true ? 'Đã cho phép tham gia nhóm bằng link mời' : 'Đã tắt tham gia nhóm bằng link mời'
+        systemText =
+          settingValue === true ? 'Đã cho phép tham gia nhóm bằng link mời' : 'Đã tắt tham gia nhóm bằng link mời'
       } else if (action === 'JOIN_BY_LINK') {
         systemText = isActorMe
           ? `${t('message.you', { defaultValue: 'Bạn' })} đã tham gia nhóm bằng link`
@@ -314,9 +384,7 @@ export function MessageBubble({
       } else if (action === 'DISBAND_GROUP') {
         systemText = 'Nhóm đã bị giải tán'
       } else if (action === 'LEAVE_GROUP' || message.type === MessageType.LEAVE) {
-        systemText = isActorMe
-          ? `${t('message.you', { defaultValue: 'Bạn' })} đã rời nhóm`
-          : `${actorName} đã rời nhóm`
+        systemText = isActorMe ? `${t('message.you', { defaultValue: 'Bạn' })} đã rời nhóm` : `${actorName} đã rời nhóm`
       } else if (message.type === MessageType.JOIN) {
         systemText = `${actorName} đã tham gia nhóm`
       } else {
@@ -398,9 +466,7 @@ export function MessageBubble({
                 action === 'BLOCK_MEMBER' ||
                 systemText.startsWith(targetNamesCompact)
               const prefix = useTargetAsPrefix ? targetNamesCompact : actorName
-              const normalized = systemText.startsWith(`${prefix} `)
-                ? systemText.slice(prefix.length + 1)
-                : systemText
+              const normalized = systemText.startsWith(`${prefix} `) ? systemText.slice(prefix.length + 1) : systemText
 
               return (
                 <>
@@ -601,7 +667,10 @@ export function MessageBubble({
     try {
       const { status } = await MediaLibrary.requestPermissionsAsync()
       if (status !== 'granted') {
-        Alert.alert(t('common.error'), t('message.actions.downloadPermissionDenied', { defaultValue: 'Cần quyền truy cập thư viện để tải xuống.' }))
+        Alert.alert(
+          t('common.error'),
+          t('message.actions.downloadPermissionDenied', { defaultValue: 'Cần quyền truy cập thư viện để tải xuống.' })
+        )
         return
       }
 
@@ -615,7 +684,8 @@ export function MessageBubble({
       const fileUri = attachment.url
       if (!fileUri) return
 
-      const fileName = attachment.originalFileName || attachment.fileName || (message.type === 'IMAGE' ? 'image.jpg' : 'video.mp4')
+      const fileName =
+        attachment.originalFileName || attachment.fileName || (message.type === 'IMAGE' ? 'image.jpg' : 'video.mp4')
       const localUri = FileSystem.documentDirectory + fileName
 
       const result = await FileSystem.downloadAsync(fileUri, localUri)
@@ -687,12 +757,7 @@ export function MessageBubble({
   }
 
   const extractJoinedConversationId = (response: any): string | null => {
-    return (
-      response?.id ||
-      response?.data?.id ||
-      response?.data?.data?.id ||
-      null
-    )
+    return response?.id || response?.data?.id || response?.data?.data?.id || null
   }
 
   const submitJoinByLink = (answer?: string) => {
@@ -776,11 +841,7 @@ export function MessageBubble({
 
   const renderBubbleContent = () => {
     if (isRevoked) {
-      return (
-        <Text style={{ fontSize: 14, color: textColor, fontStyle: 'italic' }}>
-          {t('message.messageRevoked')}
-        </Text>
-      )
+      return <Text style={{ fontSize: 14, color: textColor, fontStyle: 'italic' }}>{t('message.messageRevoked')}</Text>
     }
 
     if ((message.type === MessageType.IMAGE || message.type === MessageType.VIDEO) && message.attachments?.length) {
@@ -814,9 +875,13 @@ export function MessageBubble({
         return (
           <View>
             {mediaContent}
-            <Text style={{ fontSize: 15, color: textColor, lineHeight: 21, paddingHorizontal: 12, paddingVertical: 10 }}>
-              {caption}
-            </Text>
+            {renderHighlightedText(caption, highlightKeyword, {
+              fontSize: 15,
+              color: textColor,
+              lineHeight: 21,
+              paddingHorizontal: 12,
+              paddingVertical: 10
+            })}
           </View>
         )
       }
@@ -837,67 +902,87 @@ export function MessageBubble({
 
     const groupLink = parseGroupLinkContent(message.content)
     if (groupLink) {
-      const name = groupLink.groupName || t('message.groupLink.defaultGroupName', { defaultValue: 'Nhóm' })
+      const participantNames =
+        members?.map((member) => member.fullName).filter((name): name is string => !!name?.trim()) ?? []
+      const participantTitle = participantNames.join(', ')
+      const name =
+        groupLink.groupName || participantTitle || t('message.groupLink.defaultGroupName', { defaultValue: 'Nhóm' })
       return (
-        <TouchableOpacity activeOpacity={0.9} onPress={() => openGroupLinkPreview(message.content)} onLongPress={openSheet}>
-        <View style={{ minWidth: 236, maxWidth: 276 }}>
-          <Text style={{ fontSize: 14, color: textColor, marginBottom: 8, lineHeight: 18 }}>
-            {t('message.groupLink.openToJoin', { defaultValue: 'Truy cập link để tham gia nhóm' })}
-          </Text>
+        <TouchableOpacity
+          activeOpacity={0.9}
+          onPress={() => openGroupLinkPreview(message.content)}
+          onLongPress={openSheet}
+        >
+          <View style={{ minWidth: 236, maxWidth: 276 }}>
+            <Text style={{ fontSize: 14, color: textColor, marginBottom: 8, lineHeight: 18 }}>
+              {t('message.groupLink.openToJoin', { defaultValue: 'Truy cập link để tham gia nhóm' })}
+            </Text>
 
-          <View
-            style={{
-              borderRadius: 12,
-              overflow: 'hidden',
-              backgroundColor: isDark ? '#1D4FA7' : '#1E63D0',
-              borderWidth: 1,
-              borderColor: isDark ? '#2D69C8' : '#2D76E5'
-            }}
-          >
             <View
               style={{
-                paddingHorizontal: 12,
-                paddingVertical: 12,
-                flexDirection: 'row',
-                alignItems: 'center',
-                minHeight: 92
+                borderRadius: 12,
+                overflow: 'hidden',
+                backgroundColor: isDark ? '#1D4FA7' : '#1E63D0',
+                borderWidth: 1,
+                borderColor: isDark ? '#2D69C8' : '#2D76E5'
               }}
             >
               <View
                 style={{
-                  width: 50,
-                  height: 50,
-                  borderRadius: 25,
-                  backgroundColor: '#E8ECF2',
+                  paddingHorizontal: 12,
+                  paddingVertical: 12,
+                  flexDirection: 'row',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  overflow: 'hidden'
+                  minHeight: 92
                 }}
               >
-                {groupLink.groupAvatar ? (
-                  <ExpoImage source={{ uri: groupLink.groupAvatar }} style={{ width: '100%', height: '100%' }} contentFit='cover' />
-                ) : (
-                  <Ionicons name='people' size={22} color='#9AA2AE' />
-                )}
+                <View
+                  style={{
+                    width: 50,
+                    height: 50,
+                    borderRadius: 25,
+                    backgroundColor: '#E8ECF2',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    overflow: 'hidden'
+                  }}
+                >
+                  {groupLink.groupAvatar ? (
+                    <ExpoImage
+                      source={{ uri: groupLink.groupAvatar }}
+                      style={{ width: '100%', height: '100%' }}
+                      contentFit='cover'
+                    />
+                  ) : (
+                    <Ionicons name='people' size={22} color='#9AA2AE' />
+                  )}
+                </View>
+
+                <View style={{ marginLeft: 10, flex: 1 }}>
+                  <Text style={{ fontSize: 13, color: '#CFE0FF', marginBottom: 2 }}>
+                    {t('message.groupLink.groupLabel', { defaultValue: 'Nhóm' })}
+                  </Text>
+                  <Text style={{ fontSize: 15, fontWeight: '700', color: '#FFFFFF' }} numberOfLines={1}>
+                    {name}
+                  </Text>
+                </View>
               </View>
 
-              <View style={{ marginLeft: 10, flex: 1 }}>
-                <Text style={{ fontSize: 13, color: '#CFE0FF', marginBottom: 2 }}>
-                  {t('message.groupLink.groupLabel', { defaultValue: 'Nhóm' })}
-                </Text>
-                <Text style={{ fontSize: 15, fontWeight: '700', color: '#FFFFFF' }} numberOfLines={1}>
-                  {name}
+              <View
+                style={{
+                  borderTopWidth: 1,
+                  borderTopColor: 'rgba(255,255,255,0.22)',
+                  backgroundColor: 'rgba(0,0,0,0.08)'
+                }}
+              >
+                <Text
+                  style={{ textAlign: 'center', paddingVertical: 9, color: '#D6E6FF', fontSize: 13, fontWeight: '700' }}
+                >
+                  {t('message.groupLink.viewInfo', { defaultValue: 'Xem thông tin' })}
                 </Text>
               </View>
-            </View>
-
-            <View style={{ borderTopWidth: 1, borderTopColor: 'rgba(255,255,255,0.22)', backgroundColor: 'rgba(0,0,0,0.08)' }}>
-              <Text style={{ textAlign: 'center', paddingVertical: 9, color: '#D6E6FF', fontSize: 13, fontWeight: '700' }}>
-                {t('message.groupLink.viewInfo', { defaultValue: 'Xem thông tin' })}
-              </Text>
             </View>
           </View>
-        </View>
         </TouchableOpacity>
       )
     }
@@ -916,7 +1001,7 @@ export function MessageBubble({
         <View style={{ gap: 4 }}>
           {message.attachments.map((att, i) => (
             <View key={i}>
-              <FileBadge attachment={att} isDark={isDark} />
+              <FileBadge attachment={att} isDark={isDark} highlightKeyword={highlightKeyword} />
               {isSending && (
                 <View
                   style={{
@@ -936,20 +1021,17 @@ export function MessageBubble({
               )}
             </View>
           ))}
-          {shouldRenderContent && (
-              <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>
-                {message.content}
-              </Text>
-            )}
+          {shouldRenderContent &&
+            renderHighlightedText(message.content, highlightKeyword, {
+              fontSize: 15,
+              color: textColor,
+              lineHeight: 21
+            })}
         </View>
       )
     }
 
-    return (
-      <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>
-        {message.content}
-      </Text>
-    )
+    return renderHighlightedText(message.content, highlightKeyword, { fontSize: 15, color: textColor, lineHeight: 21 })
   }
 
   const reactions = message.reactions || {}
@@ -964,10 +1046,7 @@ export function MessageBubble({
 
   const isBusinessCardMessage = !isRevoked && !!parseBusinessCardContent(message.content)
 
-  const hasRealCaption =
-    hasMediaContent &&
-    !!message.content &&
-    !MEDIA_PLACEHOLDERS.includes(message.content)
+  const hasRealCaption = hasMediaContent && !!message.content && !MEDIA_PLACEHOLDERS.includes(message.content)
 
   const mediaBubbleBg = hasRealCaption ? bubbleBg : 'transparent'
 
@@ -981,8 +1060,16 @@ export function MessageBubble({
         flexDirection: 'row',
         justifyContent: isOwn ? 'flex-end' : 'flex-start',
         paddingHorizontal: 12,
-        marginBottom: 4,
-        alignItems: 'flex-start'
+        paddingVertical: isHighlighted ? 6 : 0,
+        marginBottom: isHighlighted ? 0 : 4,
+        marginHorizontal: 4,
+        alignItems: 'flex-start',
+        borderRadius: 4,
+        backgroundColor: showHighlightBackground
+          ? isDark
+            ? 'rgba(0,104,255,0.22)'
+            : 'rgba(0,104,255,0.12)'
+          : 'transparent'
       }}
     >
       {!isOwn && (
@@ -1012,28 +1099,31 @@ export function MessageBubble({
           </Text>
         )}
 
-          <View style={{ alignSelf: isOwn ? 'flex-end' : 'flex-start', minWidth: '55%', paddingBottom: 14 }}>
-            <Animated.View style={{
-              borderRadius: 16,
-              backgroundColor: highlightAnim.interpolate({
-                inputRange: [0, 1],
-                outputRange: ['transparent', 'rgba(0,104,255,0.18)']
-              })
-            }}>
+        <View style={{ alignSelf: isOwn ? 'flex-end' : 'flex-start', minWidth: '55%', paddingBottom: 14 }}>
+          <View
+            style={{
+              borderRadius: 18,
+              borderTopRightRadius: isOwn ? 6 : 18,
+              borderTopLeftRadius: isOwn ? 18 : 6,
+              borderWidth: isHighlighted ? 2 : 0,
+              borderColor: isHighlighted ? '#0068FF' : 'transparent',
+              shadowColor: isHighlighted ? '#0068FF' : 'transparent',
+              shadowOpacity: isHighlighted ? 0.35 : 0,
+              shadowRadius: isHighlighted ? 5 : 0,
+              shadowOffset: { width: 0, height: 0 },
+              elevation: isHighlighted ? 3 : 0
+            }}
+          >
             <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
               <View
                 style={{
-                  backgroundColor: isBusinessCardMessage
-                    ? 'transparent'
-                    : hasMediaContent
-                      ? mediaBubbleBg
-                      : bubbleBg,
+                  backgroundColor: isBusinessCardMessage ? 'transparent' : hasMediaContent ? mediaBubbleBg : bubbleBg,
                   borderRadius: isBusinessCardMessage ? 0 : 16,
                   borderTopRightRadius: isBusinessCardMessage ? 0 : isOwn ? 4 : 16,
                   borderTopLeftRadius: isBusinessCardMessage ? 0 : isOwn ? 16 : 4,
                   paddingHorizontal: isBusinessCardMessage
                     ? 0
-                    : (hasMediaContent && !hasRealCaption)
+                    : hasMediaContent && !hasRealCaption
                       ? 0
                       : hasMediaContent
                         ? 0
@@ -1041,7 +1131,7 @@ export function MessageBubble({
                   paddingVertical: isBusinessCardMessage ? 0 : hasMediaContent ? 0 : 10,
                   borderWidth: isBusinessCardMessage
                     ? 0
-                    : (!isOwn && !isDark && !isRevoked && !(hasMediaContent && !hasRealCaption))
+                    : !isOwn && !isDark && !isRevoked && !(hasMediaContent && !hasRealCaption)
                       ? 0.5
                       : 0,
                   borderColor: '#E5E7EB',
@@ -1053,75 +1143,102 @@ export function MessageBubble({
                     activeOpacity={0.75}
                     onPress={() => onScrollToMessage?.(message.replyTo!.messageId)}
                   >
-                  <View
-                    style={{
-                      borderLeftWidth: 3,
-                      borderLeftColor: '#0068FF',
-                      backgroundColor: isOwn
-                        ? isDark
-                          ? 'rgba(0,0,0,0.15)'
-                          : 'rgba(0,80,200,0.1)'
-                        : isDark
-                          ? 'rgba(255,255,255,0.08)'
-                          : 'rgba(0,0,0,0.04)',
-                      borderRadius: 6,
-                      paddingHorizontal: 10,
-                      paddingVertical: 6,
-                      marginBottom: 6,
-                      marginHorizontal: hasMediaContent ? 6 : 0,
-                      marginTop: hasMediaContent ? 4 : 0,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 8
-                    }}
-                  >
-                    {(message.replyTo.type === 'IMAGE' || message.replyTo.type === 'VIDEO') ? (() => {
-                      const replyImgUrl = getReplyAttachmentUrl(message.replyTo.messageId)
-                      return replyImgUrl ? (
-                        <View style={{ width: 40, height: 40, borderRadius: 5, overflow: 'hidden', backgroundColor: '#111', flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}>
-                          <ExpoImage
-                            source={{ uri: replyImgUrl }}
-                            style={{ width: '100%', height: '100%' }}
-                            contentFit='cover'
-                            cachePolicy='memory-disk'
-                          />
-                          {message.replyTo.type === 'VIDEO' && (
-                            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-                              <Ionicons name='play-circle' size={20} color='rgba(255,255,255,0.9)' />
-                            </View>
-                          )}
-                        </View>
-                      ) : null
-                    })() : null}
-                    <View style={{ flex: 1 }}>
-                      <Text style={{ fontSize: 13, fontWeight: '600', color: '#0068FF' }} numberOfLines={1}>
-                        {message.replyTo.senderName || 'User'}
-                      </Text>
-                      <Text style={{ fontSize: 13, color: isDark ? '#aaa' : '#666' }} numberOfLines={2}>
-                        {message.replyTo.type === 'IMAGE' ? '📷 Hình ảnh' : message.replyTo.type === 'VIDEO' ? '🎬 Video' : message.replyTo.content}
-                      </Text>
+                    <View
+                      style={{
+                        borderLeftWidth: 3,
+                        borderLeftColor: '#0068FF',
+                        backgroundColor: isOwn
+                          ? isDark
+                            ? 'rgba(0,0,0,0.15)'
+                            : 'rgba(0,80,200,0.1)'
+                          : isDark
+                            ? 'rgba(255,255,255,0.08)'
+                            : 'rgba(0,0,0,0.04)',
+                        borderRadius: 6,
+                        paddingHorizontal: 10,
+                        paddingVertical: 6,
+                        marginBottom: 6,
+                        marginHorizontal: hasMediaContent ? 6 : 0,
+                        marginTop: hasMediaContent ? 4 : 0,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 8
+                      }}
+                    >
+                      {message.replyTo.type === 'IMAGE' || message.replyTo.type === 'VIDEO'
+                        ? (() => {
+                            const replyImgUrl = getReplyAttachmentUrl(message.replyTo.messageId)
+                            return replyImgUrl ? (
+                              <View
+                                style={{
+                                  width: 40,
+                                  height: 40,
+                                  borderRadius: 5,
+                                  overflow: 'hidden',
+                                  backgroundColor: '#111',
+                                  flexShrink: 0,
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
+                                <ExpoImage
+                                  source={{ uri: replyImgUrl }}
+                                  style={{ width: '100%', height: '100%' }}
+                                  contentFit='cover'
+                                  cachePolicy='memory-disk'
+                                />
+                                {message.replyTo.type === 'VIDEO' && (
+                                  <View
+                                    style={{
+                                      position: 'absolute',
+                                      top: 0,
+                                      left: 0,
+                                      right: 0,
+                                      bottom: 0,
+                                      alignItems: 'center',
+                                      justifyContent: 'center'
+                                    }}
+                                  >
+                                    <Ionicons name='play-circle' size={20} color='rgba(255,255,255,0.9)' />
+                                  </View>
+                                )}
+                              </View>
+                            ) : null
+                          })()
+                        : null}
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 13, fontWeight: '600', color: '#0068FF' }} numberOfLines={1}>
+                          {message.replyTo.senderName || 'User'}
+                        </Text>
+                        <Text style={{ fontSize: 13, color: isDark ? '#aaa' : '#666' }} numberOfLines={2}>
+                          {message.replyTo.type === 'IMAGE'
+                            ? '📷 Hình ảnh'
+                            : message.replyTo.type === 'VIDEO'
+                              ? '🎬 Video'
+                              : message.replyTo.content}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
                   </TouchableOpacity>
                 )}
                 {renderBubbleContent()}
               </View>
             </TouchableOpacity>
-            </Animated.View>
-
-            <MessageReactionBar
-              messageId={message.id}
-              conversationId={message.conversationId || ''}
-              isOwn={isOwn}
-              isDark={isDark}
-              isRevoked={isRevoked}
-              reactions={reactions}
-              members={members}
-              currentUserId={currentUserId}
-              currentUserName={currentUser?.fullName}
-              currentUserAvatar={currentUser?.avatar ?? undefined}
-            />
           </View>
+
+          <MessageReactionBar
+            messageId={message.id}
+            conversationId={message.conversationId || ''}
+            isOwn={isOwn}
+            isDark={isDark}
+            isRevoked={isRevoked}
+            reactions={reactions}
+            members={members}
+            currentUserId={currentUserId}
+            currentUserName={currentUser?.fullName}
+            currentUserAvatar={currentUser?.avatar ?? undefined}
+          />
+        </View>
 
         {(showTime || !!deliveryStatusLabel) && (
           <View
@@ -1139,11 +1256,16 @@ export function MessageBubble({
             )}
           </View>
         )}
-
       </View>
 
       {/* Zalo-style action modal */}
-      <Modal visible={showActions} transparent statusBarTranslucent animationType='none' onRequestClose={() => closeSheet()}>
+      <Modal
+        visible={showActions}
+        transparent
+        statusBarTranslucent
+        animationType='none'
+        onRequestClose={() => closeSheet()}
+      >
         <Animated.View
           style={{
             position: 'absolute',
@@ -1160,41 +1282,45 @@ export function MessageBubble({
           <View style={{ flex: 1, justifyContent: 'flex-end' }}>
             {/* Selected message preview */}
             {!hasMediaContent && (
-            <View
-              style={{
-                alignSelf: 'flex-end',
-                maxWidth: '75%',
-                marginHorizontal: 16,
-                marginBottom: 8
-              }}
-            >
               <View
                 style={{
-                  backgroundColor: isOwn ? (isDark ? '#004BA0' : '#D5E9FF') : isDark ? '#2A2F36' : '#FFFFFF',
-                  borderRadius: 16,
-                  borderTopRightRadius: isOwn ? 4 : 16,
-                  borderTopLeftRadius: isOwn ? 16 : 4,
-                  overflow: 'hidden',
-                  elevation: 4,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 4
+                  alignSelf: 'flex-end',
+                  maxWidth: '75%',
+                  marginHorizontal: 16,
+                  marginBottom: 8
                 }}
               >
-                <View style={{ paddingHorizontal: 12, paddingVertical: 8 }}>
-                  <Text style={{ fontSize: 15, color: isDark ? '#E8EAED' : '#111827', lineHeight: 21 }}>
-                    {message.content}
-                  </Text>
+                <View
+                  style={{
+                    backgroundColor: isOwn ? (isDark ? '#004BA0' : '#D5E9FF') : isDark ? '#2A2F36' : '#FFFFFF',
+                    borderRadius: 16,
+                    borderTopRightRadius: isOwn ? 4 : 16,
+                    borderTopLeftRadius: isOwn ? 16 : 4,
+                    overflow: 'hidden',
+                    elevation: 4,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 4
+                  }}
+                >
+                  <View style={{ paddingHorizontal: 12, paddingVertical: 8 }}>
+                    <Text style={{ fontSize: 15, color: isDark ? '#E8EAED' : '#111827', lineHeight: 21 }}>
+                      {message.content}
+                    </Text>
+                  </View>
+                </View>
+                <View
+                  style={{ flexDirection: 'row', alignSelf: 'flex-end', marginTop: 2, marginHorizontal: 4, gap: 6 }}
+                >
+                  <Text style={{ fontSize: 11, color: timeColor }}>{formatTime(message.createdAt)}</Text>
+                  {!!getDeliveryStatusLabel() && (
+                    <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>
+                      {getDeliveryStatusLabel()}
+                    </Text>
+                  )}
                 </View>
               </View>
-              <View style={{ flexDirection: 'row', alignSelf: 'flex-end', marginTop: 2, marginHorizontal: 4, gap: 6 }}>
-                <Text style={{ fontSize: 11, color: timeColor }}>{formatTime(message.createdAt)}</Text>
-                {!!getDeliveryStatusLabel() && (
-                  <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>{getDeliveryStatusLabel()}</Text>
-                )}
-              </View>
-            </View>
             )}
 
             {/* Emoji reaction bar */}
@@ -1368,7 +1494,9 @@ export function MessageBubble({
                   style={{ marginTop: 1, fontSize: 17, fontWeight: '700', color: isDark ? '#EAF1FC' : '#111827' }}
                   numberOfLines={1}
                 >
-                  {activeGroupLinkPayload?.groupName || joinPreview?.groupName || t('message.groupLink.defaultGroupName', { defaultValue: 'Nhóm' })}
+                  {activeGroupLinkPayload?.groupName ||
+                    joinPreview?.groupName ||
+                    t('message.groupLink.defaultGroupName', { defaultValue: 'Nhóm' })}
                 </Text>
               </View>
             </View>
@@ -1425,7 +1553,8 @@ export function MessageBubble({
                 ) : (
                   <Text style={{ fontSize: 13, fontWeight: '700', color: '#fff' }}>
                     {(() => {
-                      const effectivePendingRequest = !!joinPreview?.membershipApprovalEnabled && !!joinPreview?.hasPendingRequest
+                      const effectivePendingRequest =
+                        !!joinPreview?.membershipApprovalEnabled && !!joinPreview?.hasPendingRequest
                       return joinPreview?.isAlreadyMember
                         ? t('message.groupLink.openGroup', { defaultValue: 'Vào nhóm' })
                         : effectivePendingRequest
@@ -1469,7 +1598,8 @@ export function MessageBubble({
               {t('message.groupLink.sendRequest', { defaultValue: 'Gửi yêu cầu' })}
             </Text>
             <Text style={{ marginTop: 8, fontSize: 14, color: isDark ? '#C8D4E6' : '#374151' }}>
-              {joinPreview?.joinQuestion || t('message.groupLink.approvalHint', { defaultValue: 'Nhóm này đang bật duyệt thành viên.' })}
+              {joinPreview?.joinQuestion ||
+                t('message.groupLink.approvalHint', { defaultValue: 'Nhóm này đang bật duyệt thành viên.' })}
             </Text>
 
             <TextInput
@@ -1517,7 +1647,9 @@ export function MessageBubble({
                   if (!joinAnswer.trim()) {
                     Alert.alert(
                       t('message.groupLink.joinFailedTitle', { defaultValue: 'Không thể vào nhóm' }),
-                      t('message.groupLink.answerRequired', { defaultValue: 'Vui lòng nhập câu trả lời để gửi yêu cầu.' })
+                      t('message.groupLink.answerRequired', {
+                        defaultValue: 'Vui lòng nhập câu trả lời để gửi yêu cầu.'
+                      })
                     )
                     return
                   }
@@ -1547,7 +1679,6 @@ export function MessageBubble({
           </Pressable>
         </Pressable>
       </Modal>
-
     </View>
   )
 }
@@ -1561,7 +1692,13 @@ type ActionItem = {
   textColor?: string
 }
 
-function buildActionRows(message: MessageResponse, isOwn: boolean, isDark: boolean, isPinned: boolean, t: (k: string, o?: any) => string): ActionItem[][] {
+function buildActionRows(
+  message: MessageResponse,
+  isOwn: boolean,
+  isDark: boolean,
+  isPinned: boolean,
+  t: (k: string, o?: any) => string
+): ActionItem[][] {
   const blue = '#0068FF'
   const orange = '#FF8C00'
   const red = '#EF4444'

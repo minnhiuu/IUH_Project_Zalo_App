@@ -9,11 +9,9 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
-      "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "Ứng dụng cần quyền truy cập thư viện ảnh để gửi ảnh và video trong trò chuyện.",
-        "NSPhotoLibraryAddUsageDescription": "Ứng dụng cần quyền lưu ảnh và video khi bạn tải tệp về thiết bị."
-      }
+      "bundleIdentifier": "com.bondhubapp",
+      "googleServicesFile": "./GoogleService-Info.plist",
+      "supportsTablet": true
     },
     "android": {
       "package": "com.bondhubapp",
@@ -28,6 +26,7 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
+      "softwareKeyboardLayoutMode": "resize",
       "predictiveBackGestureEnabled": false
     },
     "web": {
@@ -64,7 +63,8 @@
           "microphonePermission": "Ứng dụng cần quyền microphone để quay video có âm thanh."
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-asset"
     ],
     "experiments": {
       "typedRoutes": true,

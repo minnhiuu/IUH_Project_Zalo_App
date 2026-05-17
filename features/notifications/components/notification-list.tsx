@@ -3,6 +3,7 @@ import { View, FlatList, ActivityIndicator } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
+import { useTheme } from '@/context'
 import { useMyNotificationsQuery } from '../queries/use-queries'
 import { useMarkAsReadMutation } from '../queries/use-mutation'
 import { NotificationItem } from './notification-item'
@@ -16,6 +17,7 @@ export type NotificationFilter = 'all' | 'unread'
 
 interface NotificationListProps {
   filter: NotificationFilter
+  highlightNotificationId?: string | null
 }
 
 interface Section {
@@ -39,8 +41,9 @@ function NotificationSkeleton() {
   )
 }
 
-export function NotificationList({ filter }: NotificationListProps) {
+export function NotificationList({ filter, highlightNotificationId }: NotificationListProps) {
   const { t } = useTranslation()
+  const { colors } = useTheme()
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useMyNotificationsQuery(10, filter)
   const { mutate: markAsRead } = useMarkAsReadMutation()
 
@@ -87,9 +90,9 @@ export function NotificationList({ filter }: NotificationListProps) {
       contentContainerStyle={{ paddingBottom: 20 }}
       ListEmptyComponent={
         <View className='flex-1 items-center justify-center pt-20 px-8'>
-          <Ionicons name='notifications-off-outline' size={64} color='#D1D5DB' />
-          <Text className='text-lg font-bold text-gray-400 mt-4 text-center'>{t('notification.empty.title')}</Text>
-          <Text className='text-sm text-gray-400 mt-2 text-center leading-5'>
+          <Ionicons name='notifications-off-outline' size={64} color={colors.textSecondary} />
+          <Text className='text-lg font-bold mt-4 text-center' style={{ color: colors.textSecondary }}>{t('notification.empty.title')}</Text>
+          <Text className='text-sm mt-2 text-center leading-5' style={{ color: colors.textSecondary }}>
             {t('notification.empty.description')}
           </Text>
         </View>
@@ -98,12 +101,18 @@ export function NotificationList({ filter }: NotificationListProps) {
         if (item.itemType === 'header') {
           return (
             <View className='px-4 pt-4 pb-1.5'>
-              <Text className='text-base font-bold text-gray-900'>{item.title}</Text>
+              <Text className='text-base font-bold' style={{ color: colors.text }}>{item.title}</Text>
             </View>
           )
         }
         const notification = item as NotificationGroupResponse
-        return <NotificationItem notification={notification} onMarkAsRead={(id) => markAsRead(id)} />
+        return (
+          <NotificationItem
+            notification={notification}
+            highlighted={notification.id === highlightNotificationId}
+            onMarkAsRead={(id) => markAsRead(id)}
+          />
+        )
       }}
       onEndReached={() => {
         if (hasNextPage && !isFetchingNextPage) fetchNextPage()
@@ -112,7 +121,7 @@ export function NotificationList({ filter }: NotificationListProps) {
       ListFooterComponent={
         isFetchingNextPage ? (
           <View className='py-4 items-center'>
-            <ActivityIndicator size='small' color='#0068FF' />
+            <ActivityIndicator size='small' color={colors.tint} />
           </View>
         ) : null
       }

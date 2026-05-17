@@ -124,6 +124,30 @@ export default function PrivacyScreen() {
       <SectionLabel blue title={t('settings.privacy.sections.searchAndFriend')} />
       <SettingsCard marginTop={0}>
         <ActionRow
+          icon='search-outline'
+          title={t('settings.privacy.nameSearchVisibility')}
+          rightComponent={
+            <View className='flex-row items-center gap-1'>
+              <Text className='text-sm text-muted-foreground'>{t(valueKeys.nameSearchVisibility)}</Text>
+              <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+            </View>
+          }
+          onPress={() => router.push('/settings/privacy/name-search-visibility' as any)}
+        />
+        <SettingsDivider inset={56} />
+        <ActionRow
+          icon='call-outline'
+          title={t('settings.privacy.phoneSearchVisibility')}
+          rightComponent={
+            <View className='flex-row items-center gap-1'>
+              <Text className='text-sm text-muted-foreground'>{t(valueKeys.phoneSearchVisibility)}</Text>
+              <Ionicons name='chevron-forward' size={20} className='text-icon-secondary' />
+            </View>
+          }
+          onPress={() => router.push('/settings/privacy/phone-search-visibility' as any)}
+        />
+        <SettingsDivider inset={56} />
+        <ActionRow
           icon='people-outline'
           title={t('settings.privacy.manageFriendSources')}
           rightComponent={

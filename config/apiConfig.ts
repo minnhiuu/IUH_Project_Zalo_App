@@ -88,6 +88,7 @@ export const API_ENDPOINTS = {
     GROUPS: '/messages/conversations/groups',
     GROUP_INVITES: (conversationId: string) => `/messages/conversations/groups/${conversationId}/invites`,
     MESSAGES: (conversationId: string) => `/messages/conversations/${conversationId}/messages`,
+    MESSAGES_V2: (conversationId: string) => `/messages/v2/conversations/${conversationId}/messages`,
     SEND: (conversationId: string) => `/messages/conversations/${conversationId}/messages`,
     PARTNER_CONVERSATION: (partnerId: string) => `/messages/conversations/partner/${partnerId}`,
     MARK_READ: (conversationId: string) => `/messages/conversations/${conversationId}/read`,
@@ -111,6 +112,7 @@ export const API_ENDPOINTS = {
     FRIENDS_DIRECTORY: '/messages/conversations/friends-directory',
     SEARCH_MEMBERS: '/messages/conversations/search-members',
     ADD_MEMBERS: (conversationId: string) => `/messages/conversations/${conversationId}/members`,
+    PARTICIPANTS: (conversationId: string) => `/messages/conversations/${conversationId}/participants`,
     GROUP_MEMBERS: (conversationId: string) => `/messages/conversations/${conversationId}/group-members`,
     REMOVE_MEMBER: (conversationId: string, targetUserId: string) =>
       `/messages/conversations/${conversationId}/members/${targetUserId}`,

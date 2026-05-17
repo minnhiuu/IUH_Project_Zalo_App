@@ -1,49 +1,51 @@
 import * as TaskManager from 'expo-task-manager'
 import * as Notifications from 'expo-notifications'
+import { BackgroundNotificationResult } from 'expo-notifications/build/BackgroundNotificationTasksModule.types'
+import { displayChatNotification } from './notifee-background-handler'
 
 export const BACKGROUND_NOTIFICATION_TASK = 'BACKGROUND-NOTIFICATION-TASK'
 
-TaskManager.defineTask(BACKGROUND_NOTIFICATION_TASK, async ({ data, error }: TaskManager.TaskManagerTaskBody) => {
+TaskManager.defineTask<Notifications.NotificationTaskPayload>(BACKGROUND_NOTIFICATION_TASK, async ({ data, error }) => {
   if (error) {
     console.error('[BGNotification] Task error:', error)
-    return
+    return BackgroundNotificationResult.Failed
   }
 
   const payload = data as any
   console.log('[BGNotification] Received background payload:', JSON.stringify(payload, null, 2))
 
-  // 1. Kiểm tra xem hệ thống đã hiển thị thông báo chưa
-  // Nếu có khối 'notification' (mặc định cho Web) -> Bỏ qua
-  if (payload.notification) {
-    console.log('[BGNotification] System notification detected, skipping.')
-    return
+  // If the OS already handled a visible notification, we might want to skip displaying another one via Notifee.
+  // However, for data-only messages, payload.notification will be undefined.
+  if (payload.notification?.title || payload.notification?.body) {
+    console.log('[BGNotification] System notification with content detected, skipping Notifee to avoid duplicates.')
+    return BackgroundNotificationResult.NoData
   }
 
-  // 2. Xử lý Data-only (Gửi từ Java cho Android/iOS)
-  const remoteData = (payload.data || payload || {}) as Record<string, string>
+  let remoteData = (payload.data || payload || {}) as Record<string, string>
+  if (typeof remoteData.dataString === 'string') {
+    try {
+      remoteData = JSON.parse(remoteData.dataString) as Record<string, string>
+    } catch (parseError) {
+      console.error('[BGNotification] Failed to parse dataString:', parseError)
+      return BackgroundNotificationResult.Failed
+    }
+  }
+
+  const type = remoteData.type || ''
   const title = remoteData.customTitle || remoteData.title || ''
   const body = remoteData.customBody || remoteData.body || ''
 
   if (!title && !body) {
     console.log('[BGNotification] No content in data-only message, skipping.')
-    return
+    return BackgroundNotificationResult.NoData
   }
 
-  // Tự tạo Local Notification để hiện được cả Avatar và 3 Nút bấm
-  await Notifications.scheduleNotificationAsync({
-    content: {
-      title: title || 'Thông báo mới',
-      body: body,
-      data: remoteData as unknown as Record<string, unknown>,
-      categoryIdentifier: remoteData.categoryIdentifier || 'friend_request',
-      // @ts-ignore
-      channelId: 'friend_requests',
-      sound: 'default',
-      // PHỤC HỒI ICON: Đưa avatar vào attachments để hiện thumbnail bên phải
-      attachments: remoteData.actorAvatar ? [{ identifier: 'avatar', url: remoteData.actorAvatar, type: 'image' }] : []
-    },
-    trigger: null
-  })
+  console.log(`[BGNotification] Showing ${type} notification via notifee...`)
+
+  await displayChatNotification(remoteData)
+  return BackgroundNotificationResult.NewData
 })
 
-Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch(() => {})
+Notifications.registerTaskAsync(BACKGROUND_NOTIFICATION_TASK).catch((error) => {
+  console.error('[BGNotification] Failed to register background task:', error)
+})
