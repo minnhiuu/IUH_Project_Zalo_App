@@ -22,7 +22,19 @@ interface ConversationListItemProps {
   onLongPress?: (layout: LayoutRectangle) => void
 }
 
-function AvatarCell({ uri, label, size, left, top }: { uri?: string | null; label: string; size: number; left: number; top: number }) {
+function AvatarCell({
+  uri,
+  label,
+  size,
+  left,
+  top
+}: {
+  uri?: string | null
+  label: string
+  size: number
+  left: number
+  top: number
+}) {
   return (
     <View
       style={{
@@ -33,20 +45,11 @@ function AvatarCell({ uri, label, size, left, top }: { uri?: string | null; labe
         height: size,
         borderRadius: size / 2,
         overflow: 'hidden',
-        backgroundColor: '#E5E7EB',
-        borderWidth: 1,
-        borderColor: '#FFFFFF',
         alignItems: 'center',
         justifyContent: 'center'
       }}
     >
-      {uri ? (
-        <ExpoImage source={{ uri }} style={{ width: '100%', height: '100%' }} contentFit='cover' />
-      ) : (
-        <Text style={{ fontSize: 10, fontWeight: '700', color: '#475569' }} numberOfLines={1}>
-          {(label || 'U').slice(0, 2).toUpperCase()}
-        </Text>
-      )}
+      <UserAvatar source={uri} name={label} size='xs' />
     </View>
   )
 }
@@ -62,19 +65,21 @@ function GroupConversationAvatar({ conversation }: { conversation: ConversationR
   }
 
   if (count < 3) {
-    return <UserAvatar source={visible[0]?.avatar || conversation.avatar} name={conversation.name || 'Group'} size='xl' />
+    return (
+      <UserAvatar source={visible[0]?.avatar || conversation.avatar} name={conversation.name || 'Group'} size='xl' />
+    )
   }
 
   const threePos = [
-    { left: 6, top: 4, size: 23 },
-    { left: 24, top: 4, size: 23 },
-    { left: 15, top: 24, size: 23 }
+    { left: 13, top: 2, size: 26 },
+    { left: 1, top: 24, size: 26 },
+    { left: 25, top: 24, size: 26 }
   ]
   const fourPos = [
-    { left: 4, top: 4, size: 21 },
-    { left: 27, top: 4, size: 21 },
-    { left: 4, top: 27, size: 21 },
-    { left: 27, top: 27, size: 21 }
+    { left: 1, top: 1, size: 25 },
+    { left: 26, top: 1, size: 25 },
+    { left: 1, top: 26, size: 25 },
+    { left: 26, top: 26, size: 25 }
   ]
 
   const layout = count === 3 ? threePos : fourPos
@@ -86,7 +91,7 @@ function GroupConversationAvatar({ conversation }: { conversation: ConversationR
         width: 52,
         height: 52,
         borderRadius: 26,
-        backgroundColor: '#F1F5F9',
+        backgroundColor: 'transparent',
         overflow: 'hidden',
         position: 'relative'
       }}
@@ -127,7 +132,7 @@ function GroupConversationAvatar({ conversation }: { conversation: ConversationR
 
 export function ConversationListItem({ conversation, onPress, onLongPress }: ConversationListItemProps) {
   const containerRef = useRef<any>(null)
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const { user: currentUser } = useAuthStore()
   const colorScheme = useColorScheme() ?? 'light'
   const isDark = colorScheme === 'dark'
@@ -158,19 +163,20 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
         ? rawLastMessage.content
         : typeof rawLastMessage?.text === 'string'
           ? rawLastMessage.text
-        : typeof rawLastMessage?.message === 'string'
-          ? rawLastMessage.message
-        : typeof rawConversation.lastMessageMessage === 'string'
-          ? rawConversation.lastMessageMessage
-        : typeof rawConversation.latestMessage?.message === 'string'
-          ? rawConversation.latestMessage.message
-        : ''
+          : typeof rawLastMessage?.message === 'string'
+            ? rawLastMessage.message
+            : typeof rawConversation.lastMessageMessage === 'string'
+              ? rawConversation.lastMessageMessage
+              : typeof rawConversation.latestMessage?.message === 'string'
+                ? rawConversation.latestMessage.message
+                : ''
 
   const lastMessageType =
     conversation.lastMessageType ?? rawConversation.latestMessage?.type ?? rawLastMessage?.type ?? null
 
   const lastMessageTime =
     conversation.lastMessageTime ||
+    rawConversation.lastMessage?.timestamp ||
     rawConversation.lastMessageAt ||
     rawConversation.lastMessageCreatedAt ||
     rawConversation.latestMessage?.createdAt ||
@@ -187,23 +193,30 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
 
   // Calculate system text if applicable
   let systemText = null
-  if (lastMessageType === 'SYSTEM' || lastMessageType === 'JOIN' || lastMessageType === 'LEAVE' || lastMessageType === 'CALL') {
-     const msgObj = (rawConversation.latestMessage || {
-        content: lastMessageContent,
-        type: lastMessageType,
-        senderId: rawConversation.lastMessageSenderId || rawConversation.latestMessage?.senderId,
-        senderName: rawConversation.lastMessageSenderName || rawConversation.latestMessage?.senderName,
-        metadata: rawConversation.lastMessageMetadata || 
-                  rawConversation.latestMessage?.metadata || 
-                  rawConversation.metadata || 
-                  rawConversation.lastMessage?.metadata,
-        payload: rawConversation.lastMessagePayload || 
-                 rawConversation.latestMessage?.payload || 
-                 rawConversation.payload || 
-                 rawConversation.lastMessage?.payload
-     }) as any
-     
-     systemText = getSystemMessageText(msgObj, currentUser?.id, t, conversation.members || [])
+  if (
+    lastMessageType === 'SYSTEM' ||
+    lastMessageType === 'JOIN' ||
+    lastMessageType === 'LEAVE' ||
+    lastMessageType === 'CALL'
+  ) {
+    const msgObj = (rawConversation.latestMessage || {
+      content: lastMessageContent,
+      type: lastMessageType,
+      senderId: rawConversation.lastMessageSenderId || rawConversation.latestMessage?.senderId,
+      senderName: rawConversation.lastMessageSenderName || rawConversation.latestMessage?.senderName,
+      metadata:
+        rawConversation.lastMessageMetadata ||
+        rawConversation.latestMessage?.metadata ||
+        rawConversation.metadata ||
+        rawConversation.lastMessage?.metadata,
+      payload:
+        rawConversation.lastMessagePayload ||
+        rawConversation.latestMessage?.payload ||
+        rawConversation.payload ||
+        rawConversation.lastMessage?.payload
+    }) as any
+
+    systemText = getSystemMessageText(msgObj, currentUser?.id, t, conversation.members || [])
   }
 
   const preview = formatPreview(
@@ -235,16 +248,43 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
     try {
       const date = parseMessageDate(timeValue)
       if (!date) return ''
+      
+      const lang = i18n.language?.startsWith('en') ? 'en' : 'vi'
       const now = new Date()
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const yesterday = new Date(today)
+      yesterday.setDate(yesterday.getDate() - 1)
+      
+      const checkDate = new Date(date.getFullYear(), date.getMonth(), date.getDate())
       const diffMs = now.getTime() - date.getTime()
       const diffSec = Math.floor(diffMs / 1000)
-      const diffMin = Math.floor(diffMs / 60000)
-      const diffHour = Math.floor(diffMs / 3600000)
-
-      if (diffSec < 60) return `${Math.max(diffSec, 1)} giây`
-      if (diffMin < 60) return `${diffMin} phút`
-      if (diffHour < 24) return `${diffHour} giờ`
-      return date.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })
+      
+      if (diffSec < 60) return lang === 'vi' ? 'Vài giây' : 'Few sec'
+      
+      const diffMin = Math.floor(diffSec / 60)
+      if (diffMin < 60) {
+        return lang === 'vi' ? `${diffMin} phút` : `${diffMin} min${diffMin > 1 ? 's' : ''}`
+      }
+      
+      const diffHour = Math.floor(diffMin / 60)
+      if (diffHour < 24 && checkDate.getTime() === today.getTime()) {
+        return lang === 'vi' ? `${diffHour} giờ` : `${diffHour} hour${diffHour > 1 ? 's' : ''}`
+      }
+      
+      if (checkDate.getTime() === yesterday.getTime()) {
+        return lang === 'vi' ? 'Hôm qua' : 'Yesterday'
+      }
+      
+      const diffDays = Math.floor(diffHour / 24)
+      if (diffDays < 7) {
+        return lang === 'vi' ? `${diffDays} ngày` : `${diffDays} day${diffDays > 1 ? 's' : ''}`
+      }
+      
+      if (date.getFullYear() === now.getFullYear()) {
+         return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}`
+      }
+      
+      return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear()}`
     } catch {
       return ''
     }
@@ -272,10 +312,16 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
         {conversation.isGroup && !conversation.avatar ? (
           <GroupConversationAvatar conversation={conversation} />
         ) : (
-          <UserAvatar source={conversation.avatar} name={conversation.name || ''} size='xl' />
+          <UserAvatar 
+            source={conversation.avatar} 
+            name={conversation.name || ''} 
+            size='xl'
+            showOnline={!conversation.isGroup && conversation.status === 'ONLINE'}
+            isOnline={true}
+          />
         )}
       </View>
- 
+
       {/* Content */}
       <View style={{ flex: 1, justifyContent: 'center' }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
@@ -291,13 +337,11 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
             {conversation.name || t('message.user', { defaultValue: 'User' })}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
-            {isPinned && <Ionicons name="pin" size={12} color="#94A3B8" style={{ marginRight: 4 }} />}
-            <Text style={{ fontSize: 13, color: '#94A3B8' }}>
-              {formatTime(lastMessageTime ?? lastMsgTime)}
-            </Text>
+            {isPinned && <Ionicons name='pin' size={12} color='#94A3B8' style={{ marginRight: 4 }} />}
+            <Text style={{ fontSize: 13, color: '#94A3B8' }}>{formatTime(lastMessageTime ?? lastMsgTime)}</Text>
           </View>
         </View>
- 
+
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Text
             numberOfLines={1}
@@ -325,8 +369,10 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
               }}
             >
               <Text style={{ fontSize: 10, fontWeight: '700', color: '#FFFFFF' }}>
-                {(conversation.unreadCount ?? 0) > 0 
-                  ? ((conversation.unreadCount ?? 0) > 99 ? '99+' : conversation.unreadCount) 
+                {(conversation.unreadCount ?? 0) > 0
+                  ? (conversation.unreadCount ?? 0) > 99
+                    ? '99+'
+                    : conversation.unreadCount
                   : ''}
               </Text>
             </View>

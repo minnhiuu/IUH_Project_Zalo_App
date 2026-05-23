@@ -13,7 +13,6 @@ interface UserAvatarProps {
   role?: 'OWNER' | 'ADMIN' | 'MEMBER' | null
 }
 
-
 const sizeStyles: Record<AvatarSize, { container: string; text: string; online: string }> = {
   xxs: {
     container: 'w-4 h-4',
@@ -108,7 +107,6 @@ export function UserAvatar({
   const roleBorderWidth = role === 'OWNER' || role === 'ADMIN' ? 'border-[1.5px]' : ''
   const isDarkBg = role === 'OWNER' || role === 'ADMIN'
 
-
   return (
     <View className={`relative ${className || ''}`}>
       {hasImage ? (
@@ -152,9 +150,9 @@ export function UserAvatar({
           className={`
             absolute bottom-0 right-0
             ${sizeStyles[size].online}
-            ${isOnline ? 'bg-green-500' : 'bg-gray-400'}
             rounded-full border-white
           `}
+          style={{ backgroundColor: isOnline ? '#22C55E' : '#9CA3AF' }}
         />
       )}
     </View>
