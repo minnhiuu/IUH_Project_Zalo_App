@@ -153,6 +153,16 @@ export const useFcm = () => {
       } else if (actionId === Notifications.DEFAULT_ACTION_IDENTIFIER) {
         if (data.type === 'FRIEND_REQUEST') {
           router.push('/friend-requests')
+        } else if (data.type === 'NEW_DEVICE_LOGIN') {
+          router.push({
+            pathname: '/new-device-login',
+            params: {
+              deviceName: data.deviceName as string,
+              ipAddress: data.ipAddress as string,
+              loginTime: data.loginTime as string,
+              sessionId: data.sessionId as string || requestId || '',
+            }
+          })
         }
       }
 

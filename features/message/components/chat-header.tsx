@@ -108,12 +108,16 @@ export function ChatHeader({
           </TouchableOpacity>
 
           {/* Action Icons */}
-          <TouchableOpacity onPress={onCall} style={{ padding: 8 }}>
-            <Ionicons name='call-outline' size={24} color='#fff' />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={onVideoCall} style={{ padding: 8 }}>
-            <Ionicons name='videocam-outline' size={24} color='#fff' />
-          </TouchableOpacity>
+          {onCall && (
+            <TouchableOpacity onPress={onCall} style={{ padding: 8 }}>
+              <Ionicons name='call-outline' size={24} color='#fff' />
+            </TouchableOpacity>
+          )}
+          {onVideoCall && (
+            <TouchableOpacity onPress={onVideoCall} style={{ padding: 8 }}>
+              <Ionicons name='videocam-outline' size={24} color='#fff' />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity onPress={onMenu} style={{ padding: 8 }}>
             <Ionicons name='menu-outline' size={24} color='#fff' />
           </TouchableOpacity>

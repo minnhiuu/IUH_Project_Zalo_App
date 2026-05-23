@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
 import { Text, UserAvatar } from '@/components'
 import { useTheme } from '@/context/theme-context'
+import { useRouter } from 'expo-router'
 import type { NotificationGroupResponse } from '../schemas/notification.schema'
 import { friendApi } from '@/features/friend/api/friend.api'
 
@@ -83,10 +84,23 @@ export function NotificationItem({ notification, onMarkAsRead }: NotificationIte
   const [loading, setLoading] = useState(false)
 
   const badge = getBadgeConfig(notification.type)
+  const router = useRouter()
 
   const handlePress = () => {
     if (!notification.read) {
       onMarkAsRead(notification.id)
+    }
+
+    if (notification.type === 'NEW_DEVICE_LOGIN') {
+      router.push({
+        pathname: '/new-device-login',
+        params: {
+          deviceName: notification.payload?.deviceName as string,
+          ipAddress: notification.payload?.ipAddress as string,
+          loginTime: notification.lastModifiedAt,
+          sessionId: notification.payload.sessionId || '',
+        }
+      })
     }
   }
 

@@ -32,9 +32,18 @@ export const formatPreview = (
   }
 
   let displayContent = typeof data.content === 'string' ? data.content : ''
-  const businessCard = parseBusinessCardContent(displayContent)
-  if (businessCard) {
-    displayContent = `[Danh thiếp] ${businessCard.name}`
+  if (displayContent.startsWith('[GROUP_CALL]::')) {
+    try {
+      const payload = JSON.parse(displayContent.slice('[GROUP_CALL]::'.length))
+      displayContent = payload.status === 'active' ? 'Cuộc gọi nhóm đang diễn ra...' : 'Cuộc gọi nhóm đã kết thúc'
+    } catch {
+      displayContent = 'Cuộc gọi nhóm'
+    }
+  } else {
+    const businessCard = parseBusinessCardContent(displayContent)
+    if (businessCard) {
+      displayContent = `[Danh thiếp] ${businessCard.name}`
+    }
   }
 
   const groupLink = parseGroupLinkContent(displayContent)

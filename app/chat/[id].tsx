@@ -169,6 +169,25 @@ export default function ChatScreen() {
   // Flatten pages into message list (reversed for inverted FlatList)
   const messages: MessageResponse[] = messagesData?.pages.flatMap((page) => page.data) ?? []
 
+  const activeGroupCall = useMemo(() => {
+    const latestGroupCallMsg = messages.find((m) => m.content?.startsWith('[GROUP_CALL]::'))
+    if (!latestGroupCallMsg) return null
+    try {
+      const payload = JSON.parse(latestGroupCallMsg.content!.slice('[GROUP_CALL]::'.length))
+      if (payload.status === 'active') {
+        return {
+          roomId: payload.roomId,
+          callKind: payload.callKind,
+          callerName: payload.callerName,
+          messageId: latestGroupCallMsg.id
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return null
+  }, [messages])
+
   const scrollToMessage = useCallback((messageId: string) => {
     const index = messages.findIndex((m) => m.id === messageId || m.clientMessageId === messageId)
     if (index >= 0) {
@@ -662,6 +681,34 @@ export default function ChatScreen() {
 
   const chatBg = isDark ? '#0D1117' : '#E8ECEF'
 
+  const handleVoiceCall = useCallback(() => {
+    Alert.alert(
+      t('message.call.voiceTitle', { defaultValue: 'Cuộc gọi thoại' }),
+      t('message.call.voiceBody', { defaultValue: 'Chức năng gọi thoại đang được phát triển.' })
+    )
+  }, [t])
+
+  const handleVideoCall = useCallback(() => {
+    Alert.alert(
+      t('message.call.videoTitle', { defaultValue: 'Cuộc gọi video' }),
+      t('message.call.videoBody', { defaultValue: 'Chức năng gọi video đang được phát triển.' })
+    )
+  }, [t])
+
+  const handleJoinGroupCall = useCallback((roomId: string, callKind: 'voice' | 'video') => {
+    Alert.alert(
+      t('message.call.joinTitle', { defaultValue: 'Tham gia cuộc gọi nhóm' }),
+      t('message.call.joinBody', { defaultValue: 'Chức năng tham gia cuộc gọi nhóm đang được phát triển.' })
+    )
+  }, [t])
+
+  const handleRecall = useCallback((receiverId: string) => {
+    Alert.alert(
+      t('message.call.recallTitle', { defaultValue: 'Gọi lại' }),
+      t('message.call.recallBody', { defaultValue: 'Chức năng thực hiện cuộc gọi đang được phát triển.' })
+    )
+  }, [t])
+
   return (
     <View style={{ flex: 1, backgroundColor: chatBg }}>
       <ChatHeader
@@ -671,6 +718,8 @@ export default function ChatScreen() {
         subtitle={groupSubtitle}
         lastSeenAt={lastSeenAt}
         userId={isGroupConversation ? undefined : partnerId}
+        onCall={handleVoiceCall}
+        onVideoCall={handleVideoCall}
         onProfilePress={() => {
           if (!isGroupConversation && partnerId) router.push(`/other-profile/${partnerId}` as any)
         }}
@@ -838,6 +887,9 @@ export default function ChatScreen() {
                     message={item}
                     isOwn={isOwn}
                     isPinned={!!item.id && pinnedMessageIds.has(item.id)}
+                    activeGroupCallId={activeGroupCall?.roomId}
+                    onJoinGroupCall={handleJoinGroupCall}
+                    onRecall={handleRecall}
                     isLatestOwnMessage={
                       !!latestOwnMessageKey &&
                       (item.id === latestOwnMessageKey || item.clientMessageId === latestOwnMessageKey)
@@ -845,6 +897,7 @@ export default function ChatScreen() {
                     showTime={showTime}
                     showAvatar={showAvatar}
                     showSenderName={isGroupConversation && showAvatar}
+                    isGroupConversation={isGroupConversation}
                     members={effectiveMembers}
                     onAvatarPress={(userId: string) => router.push(`/user-profile/${userId}` as any)}
                     onReply={handleReply}

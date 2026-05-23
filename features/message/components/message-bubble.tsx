@@ -23,6 +23,7 @@ import { messageKeys } from '../queries/keys'
 import { parseBusinessCardContent, parseGroupLinkContent, parseGroupLinkToken } from '../utils'
 import { GroupLinkCard } from './group/group-link-card'
 import { BusinessCardMessage } from './business-card-message'
+import { CallMessage } from './call-message'
 
 interface MessageBubbleProps {
   message: MessageResponse
@@ -32,6 +33,7 @@ interface MessageBubbleProps {
   showTime?: boolean
   showAvatar?: boolean
   showSenderName?: boolean
+  isGroupConversation?: boolean
   members?: ConversationMemberResponse[] | null
   onAvatarPress?: (userId: string) => void
   onBusinessCardPress?: (userId: string) => void
@@ -45,6 +47,9 @@ interface MessageBubbleProps {
   onReplyMessagePress?: (messageId: string) => void
   onScrollToMessage?: (messageId: string) => void
   isHighlighted?: boolean
+  activeGroupCallId?: string | null
+  onJoinGroupCall?: (roomId: string, callKind: 'voice' | 'video') => void
+  onRecall?: (receiverId: string) => void
 }
 
 export function MessageBubble({
@@ -55,6 +60,7 @@ export function MessageBubble({
   showTime = true,
   showAvatar = true,
   showSenderName = false,
+  isGroupConversation = false,
   members,
   onAvatarPress,
   onBusinessCardPress,
@@ -67,7 +73,10 @@ export function MessageBubble({
   onOpenMessageOptions,
   onReplyMessagePress,
   onScrollToMessage,
-  isHighlighted = false
+  isHighlighted = false,
+  activeGroupCallId,
+  onJoinGroupCall,
+  onRecall
 }: MessageBubbleProps) {
   const { t } = useTranslation()
   const router = useRouter()
@@ -121,6 +130,31 @@ export function MessageBubble({
   const emojiScale = useRef(new Animated.Value(0)).current
 
   const isRevoked = message.status === MessageStatus.REVOKED
+
+  const isGroupCall = message.content?.startsWith('[GROUP_CALL]::')
+  if (isGroupCall) {
+    try {
+      const payload = JSON.parse(message.content!.slice('[GROUP_CALL]::'.length))
+      if (payload.status === 'ended') {
+        return null // Hide ended call messages from timeline to prevent duplicate "Ended" cards
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  if (message.type === MessageType.CALL || isGroupCall) {
+    return (
+      <CallMessage
+        message={message}
+        isOwn={isOwn}
+        activeGroupCallId={activeGroupCallId}
+        onAvatarPress={onAvatarPress}
+        onJoinGroupCall={onJoinGroupCall}
+        onRecall={onRecall}
+      />
+    )
+  }
 
   if (message.type === MessageType.SYSTEM || message.type === MessageType.JOIN || message.type === MessageType.LEAVE) {
     const meta = (message.metadata || {}) as Record<string, any>
@@ -889,7 +923,7 @@ export function MessageBubble({
                 source={message.senderAvatar} 
                 name={message.senderName || ''} 
                 size='sm' 
-                role={members?.find(m => m.userId === message.senderId)?.role as 'OWNER' | 'ADMIN' | 'MEMBER' | undefined}
+                role={isGroupConversation ? members?.find((m) => m.userId === message.senderId)?.role as 'OWNER' | 'ADMIN' | 'MEMBER' | undefined : undefined}
               />
             </TouchableOpacity>
           )}
@@ -903,7 +937,7 @@ export function MessageBubble({
           </Text>
         )}
 
-          <View style={{ alignSelf: isOwn ? 'flex-end' : 'flex-start', minWidth: '55%', paddingBottom: needReactionSpace ? 14 : 0 }}>
+          <View style={{ alignSelf: isOwn ? 'flex-end' : 'flex-start', minWidth: isOwn ? '55%' : undefined, paddingBottom: needReactionSpace ? 14 : 0 }}>
             <Animated.View style={{
               borderRadius: 16,
               backgroundColor: highlightAnim.interpolate({
