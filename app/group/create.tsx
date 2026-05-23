@@ -232,7 +232,8 @@ export default function CreateGroupScreen() {
               await sendMessageMutation.mutateAsync({
                 conversationId: strangerConvId,
                 // Send canonical plain URL so both app and web classify it as join link.
-                content: joinLinkUrl
+                content: joinLinkUrl,
+                isForwarded: false
               })
             } catch (err) {
               console.error(`Failed to invite stranger ${strangerId}:`, err)
@@ -558,5 +559,14 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84
+  },
+  emptyWrap: {
+    paddingVertical: 40,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  emptyText: {
+    fontSize: 15,
+    textAlign: 'center'
   }
 })

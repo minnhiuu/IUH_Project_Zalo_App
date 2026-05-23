@@ -9,7 +9,7 @@ import vi from './locales/vi.json'
 const authI18n = i18n.createInstance()
 
 authI18n.use(initReactI18next).init({
-  compatibilityJSON: 'v3',
+  compatibilityJSON: 'v3' as any,
   fallbackLng: 'en',
   lng: getLocales()[0]?.languageCode || 'vi',
   debug: false,

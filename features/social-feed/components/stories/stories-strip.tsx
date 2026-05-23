@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { View, Text, TouchableOpacity, Image, ScrollView } from 'react-native'
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native'
 import { Plus } from 'lucide-react-native'
 import apiConfig from '@/config/apiConfig'
 import type { StoryGroup } from '../../types/story'
+import { Image as ExpoImage } from 'expo-image'
 
 interface StoriesStripProps {
   stories?: StoryGroup[]
@@ -70,10 +71,11 @@ function StoryCard({
       activeOpacity={0.7}
     >
       {image && (
-        <Image
+        <ExpoImage
           source={{ uri: image }}
-          className='w-full h-full'
-          resizeMode='cover'
+          style={{ width: '100%', height: '100%' }}
+          contentFit='cover'
+          cachePolicy='memory-disk'
         />
       )}
       <View className='absolute inset-0 bg-black/35' />
@@ -81,7 +83,12 @@ function StoryCard({
       <View className='absolute inset-0 items-center justify-center px-2'>
         <View className='w-12 h-12 rounded-full border-2 border-blue-500 p-[2px] overflow-hidden items-center justify-center'>
           {displayAvatar ? (
-            <Image source={{ uri: displayAvatar }} className='w-full h-full rounded-full' resizeMode='cover' />
+            <ExpoImage
+              source={{ uri: displayAvatar }}
+              style={{ width: '100%', height: '100%', borderRadius: 9999 }}
+              contentFit='cover'
+              cachePolicy='memory-disk'
+            />
           ) : (
             <View className='w-full h-full rounded-full bg-blue-500 items-center justify-center'>
               <Text className='text-white font-bold text-sm'>
@@ -141,10 +148,11 @@ function StoryCreateCard({
       activeOpacity={0.7}
     >
       {showAvatarBackground ? (
-        <Image
+        <ExpoImage
           source={{ uri: resolvedCurrentUserAvatar as string }}
-          className='absolute inset-0 w-full h-full'
-          resizeMode='cover'
+          style={{ position: 'absolute', width: '100%', height: '100%' }}
+          contentFit='cover'
+          cachePolicy='memory-disk'
           onError={() => {
             if (__DEV__) {
               console.warn('[AvatarDebug][StoriesStrip] create-card image load failed', {
@@ -167,12 +175,15 @@ function StoryCreateCard({
 
       <View className='absolute inset-0 bg-black/30' />
 
-      <View className='absolute bottom-4 items-center' style={{ left: 0, right: 0 }}>
+      <View className='absolute bottom-12 items-center' style={{ left: 0, right: 0 }}>
         <View className='w-11 h-11 rounded-full border-[3px] border-white items-center justify-center bg-blue-500'>
           <Plus size={22} color='white' />
         </View>
-        <Text className='mt-2 text-center text-white text-[13px] font-semibold'>Tạo mới</Text>
       </View>
+
+      <Text className='absolute bottom-3 left-2 right-2 text-center text-white text-[13px] font-semibold'>
+        Thêm khoảnh khắc
+      </Text>
     </TouchableOpacity>
   )
 }
@@ -184,6 +195,24 @@ export function StoriesStrip({
   currentUserName,
   currentUserAvatar
 }: StoriesStripProps) {
+  // Prefetch story media
+  useEffect(() => {
+    stories.forEach((group) => {
+      group.stories.forEach((story) => {
+        const rawStory = story as typeof story & { mediaUrl?: string | null }
+        const mediaUrl = story.media?.[0]?.url || rawStory.mediaUrl
+        if (mediaUrl) {
+          const absoluteUrl = toAbsoluteMediaUri(mediaUrl)
+          if (absoluteUrl) {
+            void ExpoImage.prefetch(absoluteUrl).catch(() => {
+              // Silently handle prefetch errors
+            })
+          }
+        }
+      })
+    })
+  }, [stories])
+
   return (
     <View className='bg-white rounded-3xl border border-zinc-200 px-4 py-4'>
       <View className='mb-3 flex-row items-center'>

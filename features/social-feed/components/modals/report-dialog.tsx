@@ -74,11 +74,10 @@ export function ReportDialog({
                     <TouchableOpacity
                       key={reason.id}
                       onPress={() => setSelectedReason(reason.id)}
-                      className={`flex-row items-center gap-4 p-4 rounded-lg mb-2 ${
-                        selectedReason === reason.id
+                      className={`flex-row items-center gap-4 p-4 rounded-lg mb-2 ${selectedReason === reason.id
                           ? 'bg-red-500/20 border border-red-500'
                           : 'bg-zinc-900 border border-zinc-800'
-                      }`}
+                        }`}
                     >
                       <Icon
                         size={24}
@@ -87,11 +86,10 @@ export function ReportDialog({
                         }
                       />
                       <Text
-                        className={`text-sm font-medium ${
-                          selectedReason === reason.id
+                        className={`text-sm font-medium ${selectedReason === reason.id
                             ? 'text-red-500'
                             : 'text-zinc-300'
-                        }`}
+                          }`}
                       >
                         {reason.label}
                       </Text>
@@ -115,9 +113,8 @@ export function ReportDialog({
               <TouchableOpacity
                 disabled={!selectedReason}
                 onPress={handleSubmit}
-                className={`flex-1 py-3 rounded-lg ${
-                  selectedReason ? 'bg-red-600' : 'bg-red-600/50'
-                }`}
+                className={`flex-1 py-3 rounded-lg ${selectedReason ? 'bg-red-600' : 'bg-red-600/50'
+                  }`}
               >
                 <Text className='text-white text-center font-semibold'>Tiếp</Text>
               </TouchableOpacity>

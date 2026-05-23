@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useMemo } from 'react'
 import { View, TouchableOpacity, Alert, Share } from 'react-native'
 import * as WebBrowser from 'expo-web-browser'
 import { File, Paths } from 'expo-file-system'
@@ -16,10 +16,67 @@ export function getFileInfo(fileName: string): { badgeColor: string; label: stri
   return { badgeColor: '#6B7280', label: ext.toUpperCase() || 'FILE' }
 }
 
-export function FileBadge({ attachment, isDark }: { attachment: AttachmentInfo; isDark: boolean }) {
+export function FileBadge({
+  attachment,
+  isDark,
+  highlightKeyword
+}: {
+  attachment: AttachmentInfo
+  isDark: boolean
+  highlightKeyword?: string | null
+}) {
   const fileName = attachment.originalFileName || attachment.fileName || 'file'
   const ext = (fileName.split('.').pop() || '').toLowerCase()
   const [isHandlingFile, setIsHandlingFile] = useState(false)
+
+  const removeAccents = useCallback((value: string) => {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+  }, [])
+
+  const renderedFileName = useMemo(() => {
+    const value = fileName
+    const normalizedKeyword = highlightKeyword ? removeAccents(highlightKeyword.trim()) : ''
+    if (!value || !normalizedKeyword) return fileName
+
+    const normalizedContent = removeAccents(value)
+    const parts: React.ReactNode[] = []
+    let lastIndex = 0
+    let matchIndex = normalizedContent.indexOf(normalizedKeyword)
+
+    if (matchIndex === -1) return fileName
+
+    while (matchIndex !== -1) {
+      if (matchIndex > lastIndex) {
+        parts.push(value.substring(lastIndex, matchIndex))
+      }
+
+      const endIndex = matchIndex + normalizedKeyword.length
+      parts.push(
+        <Text
+          key={`${matchIndex}-${endIndex}`}
+          style={{
+            backgroundColor: isDark ? 'rgba(234,179,8,0.55)' : '#FDE68A',
+            color: isDark ? '#FFFFFF' : '#111827',
+            borderRadius: 2
+          }}
+        >
+          {value.substring(matchIndex, endIndex)}
+        </Text>
+      )
+
+      lastIndex = endIndex
+      matchIndex = normalizedContent.indexOf(normalizedKeyword, lastIndex)
+    }
+
+    if (lastIndex < value.length) {
+      parts.push(value.substring(lastIndex))
+    }
+
+    return parts
+  }, [fileName, highlightKeyword, isDark, removeAccents])
 
   const { badgeColor, label } = getFileInfo(fileName)
 
@@ -83,7 +140,7 @@ export function FileBadge({ attachment, isDark }: { attachment: AttachmentInfo; 
           style={{ fontSize: 13, fontWeight: '500', color: isDark ? '#E8EAED' : '#111827' }}
           numberOfLines={2}
         >
-          {fileName}
+          {renderedFileName}
         </Text>
         {!!sizeMB && (
           <Text style={{ fontSize: 11, color: isDark ? '#888' : '#6B7280', marginTop: 2 }}>{sizeMB}</Text>

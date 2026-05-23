@@ -3,3 +3,6 @@ export * from './auth'
 export * from './users'
 export * from './friend'
 export * from './settings'
+
+export type { UserSummaryResponse } from './users'
+

@@ -234,8 +234,19 @@ export default function StoryCaptureScreen() {
   ) => {
     try {
       setIsUploading(true)
-      const uploadResponse = await fileApi.upload(uri, type)
-      const uploadedMediaKey = uploadResponse.data?.data?.key
+      console.log('[StoryUpload] start', {
+        type,
+        visibility: visibilityValue,
+        uri
+      })
+      const uploadResults = await fileApi.uploadBatchWithPresigned([{ uri, type }])
+      const uploadedMediaKey = uploadResults[0]?.key
+
+      console.log('[StoryUpload] success', {
+        type,
+        key: uploadedMediaKey,
+        count: uploadResults.length
+      })
 
       if (!uploadedMediaKey) {
         throw new Error('Missing uploaded media key')

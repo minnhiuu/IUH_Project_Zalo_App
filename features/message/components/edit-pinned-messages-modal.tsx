@@ -36,7 +36,7 @@ export function EditPinnedMessagesModal({
   onItemPress
 }: EditPinnedMessagesModalProps) {
   const { t } = useTranslation()
-  const { colorScheme } = useColorScheme()
+  const colorScheme = useColorScheme() ?? 'light'
   const isDark = colorScheme === 'dark'
   const insets = useSafeAreaInsets()
 

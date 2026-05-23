@@ -137,7 +137,7 @@ export function ConversationContextMenu({
               top: anchorLayout.y, 
               left: anchorLayout.x,
               width: anchorLayout.width,
-              backgroundColor: colors.card,
+              backgroundColor: colors.background,
               borderRadius: 12,
               shadowColor: '#000',
               shadowOffset: { width: 0, height: 10 },

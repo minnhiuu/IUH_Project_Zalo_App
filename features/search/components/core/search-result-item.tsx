@@ -1,5 +1,6 @@
 import { UserAvatar } from '@/components/common/user-avatar'
 import { UserResponse, UserSummaryResponse } from '@/features/users'
+import { ConversationSearchResponse, UserSearchResponse } from '../../schemas'
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
@@ -14,6 +15,7 @@ export interface ContactItemType {
 }
 
 export type SearchResultItemData = UserResponse | ContactItemType | UserSummaryResponse
+export type SearchPersonResultItemData = SearchResultItemData | UserSearchResponse | ConversationSearchResponse
 
 export function HighlightText({
   text,
@@ -28,7 +30,26 @@ export function HighlightText({
 }) {
   if (!highlight.trim()) return <Text className={className}>{text}</Text>
 
-  const parts = text.split(new RegExp(`(${highlight})`, 'gi'))
+  if (text.includes('<em>') && text.includes('</em>')) {
+    const parts = text.split(/(<em>.*?<\/em>)/gi)
+    return (
+      <Text className={className}>
+        {parts.map((part, i) => {
+          const match = part.match(/^<em>(.*?)<\/em>$/i)
+          return match ? (
+            <Text key={i} className={highlightClassName}>
+              {match[1]}
+            </Text>
+          ) : (
+            part
+          )
+        })}
+      </Text>
+    )
+  }
+
+  const escapedHighlight = highlight.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const parts = text.split(new RegExp(`(${escapedHighlight})`, 'gi'))
   return (
     <Text className={className}>
       {parts.map((part, i) =>
@@ -49,6 +70,8 @@ export interface BaseSearchResultItemProps<T> {
   onPress: (item: T) => void
   avatar?: string | null
   avatarName?: string
+  alignAvatarTop?: boolean
+  compact?: boolean
   action?: React.ReactNode
   children?: React.ReactNode
 }
@@ -58,13 +81,23 @@ export function BaseSearchResultItem<T>({
   onPress,
   avatar,
   avatarName,
+  alignAvatarTop = false,
+  compact = false,
   action,
   children
 }: BaseSearchResultItemProps<T>) {
   return (
-    <TouchableOpacity className='flex-row items-center bg-background pl-4' onPress={() => onPress(item)}>
-      <UserAvatar size='lg' source={avatar} name={avatarName} className='mr-4' />
-      <View className='flex-1 flex-row items-center pr-4 py-5 border-b border-divider'>
+    <TouchableOpacity
+      className={`flex-row bg-background pl-4 ${alignAvatarTop ? 'items-start' : 'items-center'}`}
+      onPress={() => onPress(item)}
+    >
+      <UserAvatar
+        size='lg'
+        source={avatar}
+        name={avatarName}
+        className={`mr-4 ${alignAvatarTop ? (compact ? 'mt-3' : 'mt-5') : ''}`}
+      />
+      <View className={`flex-1 flex-row items-center pr-4 border-b border-divider ${compact ? 'py-3' : 'py-5'}`}>
         <View className='flex-1 justify-center'>{children}</View>
         {action}
       </View>
@@ -72,22 +105,24 @@ export function BaseSearchResultItem<T>({
   )
 }
 
-export interface SearchResultItemProps<T extends SearchResultItemData> {
+export interface SearchResultItemProps<T extends SearchPersonResultItemData> {
   item: T
   searchQuery: string
   onPress: (item: T) => void
   action?: React.ReactNode
+  subtitle?: React.ReactNode
 }
 
-export function SearchResultItem<T extends SearchResultItemData>({
+export function SearchResultItem<T extends SearchPersonResultItemData>({
   item,
   searchQuery,
   onPress,
-  action
+  action,
+  subtitle
 }: SearchResultItemProps<T>) {
   const { isDark } = useTheme()
 
-  const getAvatar = (item: SearchResultItemData) => {
+  const getAvatar = (item: SearchPersonResultItemData) => {
     if ('avatar' in item) {
       return item.avatar || undefined
     }
@@ -95,6 +130,7 @@ export function SearchResultItem<T extends SearchResultItemData>({
   }
 
   const avatar = getAvatar(item)
+  const title = 'fullName' in item ? item.fullName : 'name' in item ? item.name : ''
 
   const defaultAction = (
     <TouchableOpacity
@@ -118,16 +154,17 @@ export function SearchResultItem<T extends SearchResultItemData>({
       item={item}
       onPress={onPress}
       avatar={avatar}
-      avatarName={item.fullName}
-      action={action || defaultAction}
+      avatarName={title}
+      action={action !== undefined ? action : defaultAction}
     >
       <View>
-        <HighlightText text={item.fullName || ''} highlight={searchQuery} />
+        <HighlightText text={title} highlight={searchQuery} />
         {'phoneNumber' in item && item.phoneNumber && (
           <Text className='text-xs text-muted-foreground mt-1'>
             {t('search.phoneNumber')} <Text className='text-primary'>{item.phoneNumber}</Text>
           </Text>
         )}
+        {subtitle}
       </View>
     </BaseSearchResultItem>
   )

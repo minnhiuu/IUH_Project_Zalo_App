@@ -1,10 +1,13 @@
 import '../global.css'
-import '@/tasks/background-notification-task'
+
+// Must be called at module level, outside any React component
 import i18n from '@/i18n'
+// Load feature-level i18n bundles (side-effect: registers translations)
 import '@/features/friend/i18n'
-import '@/features/message/i18n'
 import '@/features/search/i18n'
+import '@/features/message/i18n'
 import { SEMANTIC } from '@/constants/theme'
+import { notificationToastConfig } from '@/features/notifications/components/notification-toast'
 
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -17,7 +20,8 @@ import type { ToastConfigParams } from 'react-native-toast-message'
 import { I18nextProvider } from 'react-i18next'
 import { useEffect } from 'react'
 import { View, Text, ActivityIndicator, Dimensions } from 'react-native'
-import { useFcm } from '@/hooks'
+import Constants from 'expo-constants'
+import { useFcm } from '@/features/notifications'
 
 import { GluestackProvider } from '@/components/ui/gluestack-ui-provider'
 import { useAuthStore } from '@/store'
@@ -42,6 +46,19 @@ const toastConfig = {
   centered: ({ text1, text2, props }: ToastConfigParams<{ variant?: CenteredToastVariant }>) => (
     <CenteredToast title={text1} message={text2 || text1 || ''} variant={props?.variant || 'none'} />
   )
+}
+
+const combinedToastConfig = {
+  ...toastConfig,
+  ...notificationToastConfig
+}
+
+const isExpoGo = Constants.appOwnership === 'expo'
+
+if (!isExpoGo) {
+  const { registerNotifeeBackgroundHandler } = require('@/tasks/notifee-background-handler')
+  require('@/tasks/background-notification-task')
+  registerNotifeeBackgroundHandler()
 }
 
 // Create a client for React Query
@@ -85,9 +102,6 @@ function SimpleLoadingScreen() {
  */
 function AuthGuard({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isInitialized, setInitialized, loginSuccess, logoutSuccess } = useAuthStore()
-
-  // Khởi động FCM: xin quyền, lấy token, register device lên server
-  useFcm()
   const segments = useSegments()
   const router = useRouter()
 
@@ -247,15 +261,15 @@ function ThemeAwareProviders() {
               <Stack.Screen name='message-options' />
               <Stack.Screen name='media-storage' />
               <Stack.Screen
-              name='story/capture'
-              options={{
-                presentation: 'fullScreenModal',
-                animation: 'slide_from_bottom',
-                gestureEnabled: false,
-                fullScreenGestureEnabled: false
-              }}
-            />
-            <Stack.Screen
+                name='story/capture'
+                options={{
+                  presentation: 'fullScreenModal',
+                  animation: 'slide_from_bottom',
+                  gestureEnabled: false,
+                  fullScreenGestureEnabled: false
+                }}
+              />
+              <Stack.Screen
                 name='chat/[id]'
                 options={{
                   animation: 'slide_from_right'
@@ -272,7 +286,7 @@ function ThemeAwareProviders() {
             </Stack>
           </AuthGuard>
           <StatusBar style={isDark ? 'light' : 'dark'} />
-          <Toast config={toastConfig} position='top' topOffset={Math.round(Dimensions.get('window').height * 0.42)} />
+          <Toast config={combinedToastConfig} position='top' topOffset={Math.round(Dimensions.get('window').height * 0.42)} />
         </NavigationThemeProvider>
       </GluestackProvider>
     </View>

@@ -1,10 +1,11 @@
 import { Ionicons } from '@expo/vector-icons'
-import { Tabs } from 'expo-router'
 import React from 'react'
 import { StatusBar, Platform } from 'react-native'
+import { Tabs } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from '@/context'
-import { useChatWebSocket } from '@/features/message/hooks'
+import { useChatWebSocket } from '@/features/message/hooks/use-chat-websocket'
+import { useFcm, useNotificationSocket } from '@/features/notifications'
 
 const TAB_CONFIG = {
   messages: {
@@ -43,8 +44,10 @@ export default function TabLayout() {
   const { t } = useTranslation()
   const { colors, isDark } = useTheme()
 
-  // Initialize WebSocket connection for real-time messaging
+  // Initialize Global WebSocket Connections
+  useFcm()
   useChatWebSocket()
+  useNotificationSocket()
 
   return (
     <>

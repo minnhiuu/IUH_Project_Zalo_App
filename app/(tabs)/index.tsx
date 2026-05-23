@@ -1,10 +1,10 @@
 import { Ionicons } from '@expo/vector-icons'
 import { View, FlatList, TouchableOpacity, Image, ActivityIndicator } from 'react-native'
 import { useTranslation } from 'react-i18next'
-import { useRouter } from 'expo-router'
+import { useLocalSearchParams, useRouter } from 'expo-router'
 import { ActionSheet, ConfirmDialog, Header, type ActionSheetOption } from '@/components/ui'
 import { Text } from '@/components/ui/text'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NotificationPanel, useNotificationStateQuery } from '@/features/notifications'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { Colors } from '@/constants/theme'
@@ -28,9 +28,15 @@ import type { LayoutRectangle } from 'react-native'
 export default function MessagesScreen() {
   const { t } = useTranslation()
   const router = useRouter()
+  const params = useLocalSearchParams<{
+    openNotifications?: string
+    highlightNotificationId?: string
+    timestamp?: string
+  }>()
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
   const [notificationVisible, setNotificationVisible] = useState(false)
+  const [highlightNotificationId, setHighlightNotificationId] = useState<string | null>(null)
   const { data: notificationState } = useNotificationStateQuery()
   const currentUserId = useAuthStore((s) => s.user?.id)
   const [selectedConversation, setSelectedConversation] = useState<ConversationResponse | null>(null)
@@ -49,6 +55,13 @@ export default function MessagesScreen() {
   const { mutate: toggleMute } = useToggleMuteConversation()
 
   const { data: conversations = [], isLoading } = useConversations()
+
+  useEffect(() => {
+    if (params.openNotifications === '1') {
+      setHighlightNotificationId(params.highlightNotificationId || null)
+      setNotificationVisible(true)
+    }
+  }, [params.openNotifications, params.highlightNotificationId, params.timestamp])
 
   const handleConversationAction = (action: string, conversation: ConversationResponse) => {
     switch (action) {
@@ -132,12 +145,19 @@ export default function MessagesScreen() {
         onAddPress={() => setShowQuickMenu(true)}
         showBellButton
         bellUnreadCount={notificationState?.unreadCount ?? 0}
-        onBellPress={() => setNotificationVisible(true)}
+        onBellPress={() => {
+          setHighlightNotificationId(null)
+          setNotificationVisible(true)
+        }}
       />
 
       <QuickCreateMenu visible={showQuickMenu} onClose={() => setShowQuickMenu(false)} actions={quickActions} />
 
-      <NotificationPanel visible={notificationVisible} onClose={() => setNotificationVisible(false)} />
+      <NotificationPanel
+        visible={notificationVisible}
+        highlightNotificationId={highlightNotificationId}
+        onClose={() => setNotificationVisible(false)}
+      />
 
       {/* Conversations List */}
       {isLoading ? (

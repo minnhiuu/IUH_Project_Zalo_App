@@ -239,7 +239,7 @@ export function CallMessage({
         <View style={styles.privateBody}>
           <View style={[styles.arrowWrapper, { backgroundColor: isDark ? '#2A2F36' : '#F3F4F6' }]}>
             <Ionicons
-              name={isOutgoing ? 'arrow-up-forward' : 'arrow-down-backward'}
+              name={(isOutgoing ? 'arrow-up-forward' : 'arrow-down-backward') as any}
               size={13}
               color={iconColor}
             />

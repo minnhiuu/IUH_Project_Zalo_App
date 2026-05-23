@@ -1,43 +1,60 @@
-import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { BaseSearchResultItem, HighlightText } from '../core/search-result-item'
-
-export interface MessageItem {
-  id: string
-  senderName: string
-  time: string
-  lastMessage: string
-  matchCount: string
-}
+import { MessageSearchResponse } from '../../schemas'
+import { SearchFilePreview, SearchLinkPreview, formatFileSize } from './message-group-item'
+import { resolveMessageResultTitle, resolveMessageResultAvatar } from '../../utils/message-result-display'
+import { formatSearchTime } from '../../utils/format-search-time'
 
 export function MessageSearchResult({
   item,
   searchQuery,
-  onPress
+  onPress,
+  compact = false
 }: {
-  item: MessageItem
+  item: MessageSearchResponse
   searchQuery: string
-  onPress: (item: MessageItem) => void
+  onPress: (item: MessageSearchResponse) => void
+  compact?: boolean
 }) {
+  const title = resolveMessageResultTitle(item)
+  const content = item.displayHighlights || item.displayContent || ''
+  const time = formatSearchTime(item.createdAt)
+  const previewType = item.type?.toUpperCase()
+  const isFile = previewType === 'FILE' || (item.hasAttachment && !item.hasLink)
+  const isLink = previewType === 'LINK' || item.hasLink
+  const fileSize = formatFileSize(item.size)
+
   return (
-    <BaseSearchResultItem item={item} onPress={onPress} avatarName={item.senderName}>
+    <BaseSearchResultItem
+      item={item}
+      onPress={onPress}
+      avatar={resolveMessageResultAvatar(item)}
+      avatarName={title}
+      alignAvatarTop
+      compact={compact}
+    >
       <View className='flex-row justify-between items-center mb-1'>
-        <Text className='text-foreground font-medium'>{item.senderName}</Text>
-        <Text className='text-muted-foreground text-xs'>{item.time}</Text>
+        <Text className='text-foreground font-medium flex-1 pr-3' numberOfLines={1}>
+          {title}
+        </Text>
+        <Text className='text-muted-foreground text-xs'>{time}</Text>
       </View>
 
       <HighlightText
-        text={item.lastMessage}
+        text={content}
         highlight={searchQuery}
-        className='text-muted-foreground text-xs line-clamp-2'
+        className='text-muted-foreground text-sm'
         highlightClassName='text-primary font-medium'
       />
 
-      <TouchableOpacity className='flex-row items-center mt-1'>
-        <Text className='text-muted-foreground text-xs'>{item.matchCount} matching results</Text>
-        <Ionicons name='chevron-forward' size={12} color='#99A' />
-      </TouchableOpacity>
+      {isLink && <SearchLinkPreview preview={content} searchQuery={searchQuery} />}
+
+      {!compact && (
+        <TouchableOpacity className='flex-row items-center mt-1'>
+          <Text className='text-muted-foreground text-xs'>{item.conversationName || item.senderName}</Text>
+        </TouchableOpacity>
+      )}
     </BaseSearchResultItem>
   )
 }

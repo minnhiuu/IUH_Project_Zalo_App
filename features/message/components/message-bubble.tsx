@@ -1,7 +1,20 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
-import { View, TouchableOpacity, Alert, Clipboard, Modal, Pressable, Animated, ScrollView, ActivityIndicator, TextInput } from 'react-native'
+import {
+  View,
+  TouchableOpacity,
+  Alert,
+  Clipboard,
+  Modal,
+  Pressable,
+  Animated,
+  ScrollView,
+  ActivityIndicator,
+  TextInput
+} from 'react-native'
 import { Image as ExpoImage } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
+import * as FileSystem from 'expo-file-system/legacy'
+import * as MediaLibrary from 'expo-media-library'
 import { useRouter } from 'expo-router'
 import { Text } from '@/components/ui/text'
 import { UserAvatar } from '@/components/common/user-avatar'
@@ -24,6 +37,7 @@ import { parseBusinessCardContent, parseGroupLinkContent, parseGroupLinkToken } 
 import { GroupLinkCard } from './group/group-link-card'
 import { BusinessCardMessage } from './business-card-message'
 import { CallMessage } from './call-message'
+import Toast from 'react-native-toast-message'
 
 interface MessageBubbleProps {
   message: MessageResponse
@@ -50,6 +64,8 @@ interface MessageBubbleProps {
   activeGroupCallId?: string | null
   onJoinGroupCall?: (roomId: string, callKind: 'voice' | 'video') => void
   onRecall?: (receiverId: string) => void
+  showHighlightBackground?: boolean
+  highlightKeyword?: string | null
 }
 
 export function MessageBubble({
@@ -76,7 +92,9 @@ export function MessageBubble({
   isHighlighted = false,
   activeGroupCallId,
   onJoinGroupCall,
-  onRecall
+  onRecall,
+  showHighlightBackground = false,
+  highlightKeyword = null
 }: MessageBubbleProps) {
   const { t } = useTranslation()
   const router = useRouter()
@@ -90,28 +108,84 @@ export function MessageBubble({
   const { mutate: removeReactionsMutate } = useRemoveAllMyReactions()
   const [groupLinkPreviewOpen, setGroupLinkPreviewOpen] = useState(false)
   const [activeGroupLinkToken, setActiveGroupLinkToken] = useState<string | null>(null)
-  const [activeGroupLinkPayload, setActiveGroupLinkPayload] = useState<{ groupName?: string; groupAvatar?: string | null } | null>(null)
+  const [activeGroupLinkPayload, setActiveGroupLinkPayload] = useState<{
+    groupName?: string
+    groupAvatar?: string | null
+  } | null>(null)
   const [joinQuestionOpen, setJoinQuestionOpen] = useState(false)
   const [joinAnswer, setJoinAnswer] = useState('')
   const [showSeenMembersModal, setShowSeenMembersModal] = useState(false)
   const queryClient = useQueryClient()
+  const highlightAnim = useRef(new Animated.Value(isHighlighted ? 1 : 0)).current
   const { mutate: joinByLink, isPending: isJoiningByLink } = useJoinGroupByLink()
   const { data: joinPreview, isLoading: isJoinPreviewLoading } = useJoinPreview(
     activeGroupLinkToken || '',
     groupLinkPreviewOpen && !!activeGroupLinkToken
   )
 
-  // Highlight animation
-  const highlightAnim = useRef(new Animated.Value(0)).current
   useEffect(() => {
-    if (isHighlighted) {
-      Animated.sequence([
-        Animated.timing(highlightAnim, { toValue: 1, duration: 200, useNativeDriver: false }),
-        Animated.delay(700),
-        Animated.timing(highlightAnim, { toValue: 0, duration: 400, useNativeDriver: false })
-      ]).start()
-    }
+    Animated.timing(highlightAnim, {
+      toValue: isHighlighted ? 1 : 0,
+      duration: 500,
+      useNativeDriver: false
+    }).start()
   }, [isHighlighted])
+
+  const removeAccents = useCallback((value: string) => {
+    return value
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+  }, [])
+
+  const renderHighlightedText = useCallback(
+    (content: string | null | undefined, keyword: string | null | undefined, style: any) => {
+      const value = content || ''
+      const normalizedKeyword = keyword ? removeAccents(keyword.trim()) : ''
+      if (!value || !normalizedKeyword) {
+        return <Text style={style}>{value}</Text>
+      }
+
+      const normalizedContent = removeAccents(value)
+      const parts: React.ReactNode[] = []
+      let lastIndex = 0
+      let matchIndex = normalizedContent.indexOf(normalizedKeyword)
+
+      if (matchIndex === -1) {
+        return <Text style={style}>{value}</Text>
+      }
+
+      while (matchIndex !== -1) {
+        if (matchIndex > lastIndex) {
+          parts.push(value.substring(lastIndex, matchIndex))
+        }
+
+        const endIndex = matchIndex + normalizedKeyword.length
+        parts.push(
+          <Text
+            key={`${matchIndex}-${endIndex}`}
+            style={{
+              backgroundColor: isDark ? 'rgba(234,179,8,0.55)' : '#FDE68A',
+              color: isDark ? '#FFFFFF' : '#111827',
+              borderRadius: 2
+            }}
+          >
+            {value.substring(matchIndex, endIndex)}
+          </Text>
+        )
+
+        lastIndex = endIndex
+        matchIndex = normalizedContent.indexOf(normalizedKeyword, lastIndex)
+      }
+
+      if (lastIndex < value.length) {
+        parts.push(value.substring(lastIndex))
+      }
+
+      return <Text style={style}>{parts}</Text>
+    },
+    [isDark, removeAccents]
+  )
 
   const getReplyAttachmentUrl = (replyMessageId: string): string | null => {
     const conversationId = message.conversationId
@@ -136,11 +210,9 @@ export function MessageBubble({
     try {
       const payload = JSON.parse(message.content!.slice('[GROUP_CALL]::'.length))
       if (payload.status === 'ended') {
-        return null // Hide ended call messages from timeline to prevent duplicate "Ended" cards
+        return null
       }
-    } catch {
-      // ignore
-    }
+    } catch {}
   }
 
   if (message.type === MessageType.CALL || isGroupCall) {
@@ -209,8 +281,10 @@ export function MessageBubble({
       return ''
     })()
 
-    const targetAvatars: Array<{ id: string; avatar: string | null; name: string }> =
-      (Array.isArray(meta.targetIds) ? meta.targetIds : []).map((id: string, index: number) => ({
+    const targetAvatars: Array<{ id: string; avatar: string | null; name: string }> = (
+      Array.isArray(meta.targetIds) ? meta.targetIds : []
+    )
+      .map((id: string, index: number) => ({
         id,
         avatar:
           (Array.isArray(payload.targetAvatars) ? payload.targetAvatars[index] : undefined) ||
@@ -227,7 +301,8 @@ export function MessageBubble({
     const isActorMe = String(message.senderId || '') === String(currentUserId || '')
     const firstTargetId = String(targetIds[0] || '')
     const firstTargetName =
-      (firstTargetId && resolveDisplayName(firstTargetId, members?.find((m) => m.userId === firstTargetId)?.fullName)) ||
+      (firstTargetId &&
+        resolveDisplayName(firstTargetId, members?.find((m) => m.userId === firstTargetId)?.fullName)) ||
       (typeof payload.targetName === 'string' ? String(payload.targetName) : '') ||
       targetNamesRaw[0] ||
       t('message.system.unknownMember', { defaultValue: 'một thành viên' })
@@ -242,7 +317,10 @@ export function MessageBubble({
       } else if (action === 'UPDATE_NAME') {
         const oldName = String(payload.oldName || '').trim()
         const newName = String(payload.newName || '').trim()
-        systemText = oldName && newName ? `${actorName} đã đổi tên nhóm từ ${oldName} thành ${newName}` : `${actorName} đã đổi tên nhóm`
+        systemText =
+          oldName && newName
+            ? `${actorName} đã đổi tên nhóm từ ${oldName} thành ${newName}`
+            : `${actorName} đã đổi tên nhóm`
       } else if (action === 'GROUP_CREATED' || action === 'CREATE_GROUP') {
         if (isActorMe) {
           systemText = `${t('message.you', { defaultValue: 'Bạn' })} đã tạo nhóm`
@@ -258,7 +336,8 @@ export function MessageBubble({
           systemText = `${targetNamesCompact} đã được ${actorName} thêm vào nhóm`
         }
       } else if (action === 'REMOVE_MEMBER') {
-        const removeTargetName = firstTargetName || t('message.system.unknownMember', { defaultValue: 'một thành viên' })
+        const removeTargetName =
+          firstTargetName || t('message.system.unknownMember', { defaultValue: 'một thành viên' })
         if (isFirstTargetMe) {
           systemText = `${t('message.you', { defaultValue: 'Bạn' })} đã bị xóa khỏi nhóm`
         } else if (isActorMe) {
@@ -308,19 +387,22 @@ export function MessageBubble({
             : `${actorName} đã chuyển quyền trưởng nhóm cho ${transferTarget}`
         }
       } else if (action === 'UPDATE_SETTINGS' && setting === 'memberCanSendMessages') {
-        systemText = settingValue === false
-          ? (isActorMe
+        systemText =
+          settingValue === false
+            ? isActorMe
               ? `${t('message.you', { defaultValue: 'Bạn' })} chỉ cho phép trưởng/phó nhóm gửi tin nhắn trong nhóm`
-              : `${actorName} chỉ cho phép trưởng/phó nhóm gửi tin nhắn trong nhóm`)
-          : (isActorMe
+              : `${actorName} chỉ cho phép trưởng/phó nhóm gửi tin nhắn trong nhóm`
+            : isActorMe
               ? `${t('message.you', { defaultValue: 'Bạn' })} cho phép tất cả thành viên gửi tin nhắn trong nhóm`
-              : `${actorName} cho phép tất cả thành viên gửi tin nhắn trong nhóm`)
+              : `${actorName} cho phép tất cả thành viên gửi tin nhắn trong nhóm`
       } else if (action === 'UPDATE_SETTINGS' && setting === 'membershipApprovalEnabled') {
-        systemText = settingValue === true
-          ? 'Hình thức tham gia nhóm được thay đổi thành "Cần phê duyệt".'
-          : 'Hình thức tham gia nhóm được thay đổi thành "Không cần phê duyệt".'
+        systemText =
+          settingValue === true
+            ? 'Hình thức tham gia nhóm được thay đổi thành "Cần phê duyệt".'
+            : 'Hình thức tham gia nhóm được thay đổi thành "Không cần phê duyệt".'
       } else if (action === 'UPDATE_SETTINGS' && setting === 'joinByLinkEnabled') {
-        systemText = settingValue === true ? 'Đã cho phép tham gia nhóm bằng link mời' : 'Đã tắt tham gia nhóm bằng link mời'
+        systemText =
+          settingValue === true ? 'Đã cho phép tham gia nhóm bằng link mời' : 'Đã tắt tham gia nhóm bằng link mời'
       } else if (action === 'JOIN_BY_LINK') {
         systemText = isActorMe
           ? `${t('message.you', { defaultValue: 'Bạn' })} đã tham gia nhóm bằng link`
@@ -351,9 +433,7 @@ export function MessageBubble({
       } else if (action === 'DISBAND_GROUP') {
         systemText = 'Nhóm đã bị giải tán'
       } else if (action === 'LEAVE_GROUP' || message.type === MessageType.LEAVE) {
-        systemText = isActorMe
-          ? `${t('message.you', { defaultValue: 'Bạn' })} đã rời nhóm`
-          : `${actorName} đã rời nhóm`
+        systemText = isActorMe ? `${t('message.you', { defaultValue: 'Bạn' })} đã rời nhóm` : `${actorName} đã rời nhóm`
       } else if (message.type === MessageType.JOIN) {
         systemText = `${actorName} đã tham gia nhóm`
       } else {
@@ -361,7 +441,6 @@ export function MessageBubble({
       }
     }
 
-    // Keep transfer-owner wording consistent even when backend sends generic content.
     if (action === 'TRANSFER_OWNER' && !isFirstTargetMe) {
       const transferTarget = transferTargetName || firstTargetName
       systemText = isActorMe
@@ -375,7 +454,13 @@ export function MessageBubble({
 
     const leadingAvatarItems = targetAvatars.length
       ? targetAvatars.slice(0, 3)
-      : [{ id: message.senderId || 'actor', avatar: message.senderAvatar || null, name: actorName }]
+      : [
+          {
+            id: message.senderId || 'actor',
+            avatar: isActorMe ? currentUser?.avatar || null : message.senderAvatar || null,
+            name: isActorMe ? currentUser?.fullName || actorName : actorName
+          }
+        ]
 
     const showPencil =
       action === 'UPDATE_AVATAR' ||
@@ -427,7 +512,24 @@ export function MessageBubble({
             numberOfLines={2}
           >
             {(() => {
-              return systemText
+              const useTargetAsPrefix =
+                action === 'ADD_MEMBERS' ||
+                action === 'PROMOTE_ADMIN' ||
+                action === 'DEMOTE_ADMIN' ||
+                action === 'REMOVE_MEMBER' ||
+                action === 'BLOCK_MEMBER' ||
+                systemText.startsWith(targetNamesCompact)
+              const prefix = useTargetAsPrefix ? targetNamesCompact : actorName
+              const normalized = systemText.startsWith(`${prefix} `) ? systemText.slice(prefix.length + 1) : systemText
+
+              return (
+                <>
+                  <Text style={{ fontWeight: '700', fontSize: 10, color: isDark ? '#E0E8F4' : '#475569' }}>
+                    {`${prefix} `}
+                  </Text>
+                  {normalized}
+                </>
+              )
             })()}
           </Text>
         </View>
@@ -470,7 +572,7 @@ export function MessageBubble({
     if (!shouldShowDeliveryStatus) return null
 
     const readers = members?.filter((m) => m.lastReadMessageId === message.id && m.userId !== currentUserId) || []
-    
+
     if (readers.length > 0) {
       const maxAvatars = 5
       const visibleReaders = readers.slice(0, maxAvatars)
@@ -513,27 +615,49 @@ export function MessageBubble({
 
     let label = ''
     if (message.id?.startsWith('temp-')) {
-      label = t('message.status.sending', { defaultValue: 'Dang gui' })
+      label = t('message.status.sending', { defaultValue: 'Đang gửi...' })
     } else {
       const rawStatus = String((message as any).deliveryStatus || message.status || '').toUpperCase()
       if (!rawStatus) {
-        label = t('message.status.sent', { defaultValue: 'Da gui' })
+        label = t('message.status.sent', { defaultValue: 'Đã gửi' })
       } else if (rawStatus.includes('READ') || rawStatus.includes('SEEN')) {
         label = t('message.status.seen', { defaultValue: 'Đã xem' })
       } else if (rawStatus.includes('RECEIVED') || rawStatus.includes('DELIVERED')) {
         label = t('message.status.received', { defaultValue: 'Đã nhận' })
       } else if (rawStatus.includes('SENDING')) {
-        label = t('message.status.sending', { defaultValue: 'Dang gui' })
+        label = t('message.status.sending', { defaultValue: 'Đang gửi...' })
       } else {
-        label = t('message.status.sent', { defaultValue: 'Da gui' })
+        label = t('message.status.sent', { defaultValue: 'Đã gửi' })
       }
     }
 
-    return (
-      <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>
-        {label}
-      </Text>
-    )
+    return <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>{label}</Text>
+  }
+
+  const getDeliveryStatusLabel = () => {
+    if (message.id?.startsWith('temp-')) {
+      return t('message.status.sending', { defaultValue: 'Đang gửi...' })
+    }
+
+    const rawStatus = String((message as any).deliveryStatus || message.status || '').toUpperCase()
+    if (!rawStatus) {
+      return t('message.status.sent', { defaultValue: 'Đã gửi' })
+    }
+
+    if (
+      rawStatus.includes('RECEIVED') ||
+      rawStatus.includes('DELIVERED') ||
+      rawStatus.includes('READ') ||
+      rawStatus.includes('SEEN')
+    ) {
+      return t('message.status.received', { defaultValue: 'Đã nhận' })
+    }
+
+    if (rawStatus.includes('SENDING')) {
+      return t('message.status.sending', { defaultValue: 'Đang gửi...' })
+    }
+
+    return t('message.status.sent', { defaultValue: 'Đã gửi' })
   }
 
   const openSheet = useCallback(() => {
@@ -593,10 +717,10 @@ export function MessageBubble({
         case 'revoke':
           closeSheet(() => {
             Alert.alert(
-              t('message.actions.revoke', { defaultValue: 'Thu hoi' }),
-              t('message.actions.revokeConfirm', { defaultValue: 'Thu hoi tin nhan nay?' }),
+              t('message.actions.revoke', { defaultValue: 'Thu hồi' }),
+              t('message.actions.revokeConfirm', { defaultValue: 'Thu hồi tin nhắn này?' }),
               [
-                { text: t('message.actions.cancel', { defaultValue: 'Huy' }), style: 'cancel' },
+                { text: t('message.actions.cancel', { defaultValue: 'Hủy' }), style: 'cancel' },
                 { text: 'OK', onPress: () => onRevoke?.(message.id), style: 'destructive' }
               ]
             )
@@ -605,10 +729,10 @@ export function MessageBubble({
         case 'delete':
           closeSheet(() => {
             Alert.alert(
-              t('message.actions.delete', { defaultValue: 'Xoa o phia toi' }),
-              t('message.actions.deleteConfirm', { defaultValue: 'Xoa tin nhan phia ban?' }),
+              t('message.actions.delete', { defaultValue: 'Xóa ở phía tôi' }),
+              t('message.actions.deleteConfirm', { defaultValue: 'Xóa tin nhắn phía bạn?' }),
               [
-                { text: t('message.actions.cancel', { defaultValue: 'Huy' }), style: 'cancel' },
+                { text: t('message.actions.cancel', { defaultValue: 'Hủy' }), style: 'cancel' },
                 { text: 'OK', onPress: () => onDeleteForMe?.(message.id), style: 'destructive' }
               ]
             )
@@ -626,13 +750,16 @@ export function MessageBubble({
           }
           closeSheet(() => {
             Alert.alert(
-              t('message.actions.comingSoonTitle', { defaultValue: 'Thong bao' }),
-              t('message.actions.comingSoon', { defaultValue: 'Chuc nang dang duoc phat trien.' })
+              t('message.actions.comingSoonTitle', { defaultValue: 'Thông báo' }),
+              t('message.actions.comingSoon', { defaultValue: 'Chức năng đang được phát triển.' })
             )
           })
           break
         case 'pin':
           closeSheet(() => onPin?.(message))
+          break
+        case 'download':
+          closeSheet(() => handleDownload())
           break
         case 'reminder':
         case 'select':
@@ -642,8 +769,8 @@ export function MessageBubble({
         case 'save':
           closeSheet(() => {
             Alert.alert(
-              t('message.actions.comingSoonTitle', { defaultValue: 'Thong bao' }),
-              t('message.actions.comingSoon', { defaultValue: 'Chuc nang dang duoc phat trien.' })
+              t('message.actions.comingSoonTitle', { defaultValue: 'Thông báo' }),
+              t('message.actions.comingSoon', { defaultValue: 'Chức năng đang được phát triển.' })
             )
           })
           break
@@ -651,6 +778,52 @@ export function MessageBubble({
     },
     [closeSheet, message, onReply, onForward, onRevoke, onDeleteForMe, onPin, onOpenMessageOptions, t]
   )
+
+  const handleDownload = async () => {
+    if (!message.attachments?.length) return
+
+    try {
+      const { status } = await MediaLibrary.requestPermissionsAsync()
+      if (status !== 'granted') {
+        Alert.alert(
+          t('common.error'),
+          t('message.actions.downloadPermissionDenied', { defaultValue: 'Cần quyền truy cập thư viện để tải xuống.' })
+        )
+        return
+      }
+
+      Toast.show({
+        type: 'info',
+        text1: t('message.actions.downloading', { defaultValue: 'Đang tải xuống...' }),
+        position: 'bottom'
+      })
+
+      const attachment = message.attachments[0]
+      const fileUri = attachment.url
+      if (!fileUri) return
+
+      const fileName =
+        attachment.originalFileName || attachment.fileName || (message.type === 'IMAGE' ? 'image.jpg' : 'video.mp4')
+      const localUri = FileSystem.documentDirectory + fileName
+
+      const result = await FileSystem.downloadAsync(fileUri, localUri)
+      if (result.status === 200) {
+        await MediaLibrary.saveToLibraryAsync(result.uri)
+        Toast.show({
+          type: 'success',
+          text1: t('message.actions.downloadSuccess', { defaultValue: 'Đã lưu vào thư viện.' }),
+          position: 'bottom'
+        })
+      }
+    } catch (error) {
+      console.error('Download error:', error)
+      Toast.show({
+        type: 'error',
+        text1: t('message.actions.downloadFailed', { defaultValue: 'Tải xuống thất bại.' }),
+        position: 'bottom'
+      })
+    }
+  }
 
   const handleEmojiReaction = useCallback(
     (emoji: string) => {
@@ -702,12 +875,7 @@ export function MessageBubble({
   }
 
   const extractJoinedConversationId = (response: any): string | null => {
-    return (
-      response?.id ||
-      response?.data?.id ||
-      response?.data?.data?.id ||
-      null
-    )
+    return response?.id || response?.data?.id || response?.data?.data?.id || null
   }
 
   const submitJoinByLink = (answer?: string) => {
@@ -791,27 +959,51 @@ export function MessageBubble({
 
   const renderBubbleContent = () => {
     if (isRevoked) {
-      return (
-        <Text style={{ fontSize: 14, color: textColor, fontStyle: 'italic' }}>
-          {t('message.messageRevoked')}
-        </Text>
-      )
+      return <Text style={{ fontSize: 14, color: textColor, fontStyle: 'italic' }}>{t('message.messageRevoked')}</Text>
     }
 
     if ((message.type === MessageType.IMAGE || message.type === MessageType.VIDEO) && message.attachments?.length) {
       const MEDIA_PLACEHOLDERS = ['[Hình ảnh]', '[Image]', '[Video]', '[IMAGE]', '[VIDEO]']
       const caption = message.content && !MEDIA_PLACEHOLDERS.includes(message.content) ? message.content : null
+      const isSending = message.id?.startsWith('temp-')
+
+      const mediaContent = (
+        <View>
+          <MessageMediaContent attachments={message.attachments} onLongPress={openSheet} />
+          {isSending && (
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <ActivityIndicator size='small' color='#fff' />
+            </View>
+          )}
+        </View>
+      )
+
       if (caption) {
         return (
           <View>
-            <MessageMediaContent attachments={message.attachments} onLongPress={openSheet} />
-            <Text style={{ fontSize: 15, color: textColor, lineHeight: 21, paddingHorizontal: 12, paddingVertical: 10 }}>
-              {caption}
-            </Text>
+            {mediaContent}
+            {renderHighlightedText(caption, highlightKeyword, {
+              fontSize: 15,
+              color: textColor,
+              lineHeight: 21,
+              paddingHorizontal: 12,
+              paddingVertical: 10
+            })}
           </View>
         )
       }
-      return <MessageMediaContent attachments={message.attachments} onLongPress={openSheet} />
+      return mediaContent
     }
 
     const businessCard = parseBusinessCardContent(message.content)
@@ -847,25 +1039,43 @@ export function MessageBubble({
         message.content !== '[File]' &&
         !attachmentNames.includes(message.content)
 
+      const isSending = message.id?.startsWith('temp-')
+
       return (
         <View style={{ gap: 4 }}>
           {message.attachments.map((att, i) => (
-            <FileBadge key={i} attachment={att} isDark={isDark} />
+            <View key={i}>
+              <FileBadge attachment={att} isDark={isDark} highlightKeyword={highlightKeyword} />
+              {isSending && (
+                <View
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(255,255,255,0.4)',
+                    borderRadius: 12,
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <ActivityIndicator size='small' color='#0068FF' />
+                </View>
+              )}
+            </View>
           ))}
-          {shouldRenderContent && (
-              <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>
-                {message.content}
-              </Text>
-            )}
+          {shouldRenderContent &&
+            renderHighlightedText(message.content, highlightKeyword, {
+              fontSize: 15,
+              color: textColor,
+              lineHeight: 21
+            })}
         </View>
       )
     }
 
-    return (
-      <Text style={{ fontSize: 15, color: textColor, lineHeight: 21 }}>
-        {message.content}
-      </Text>
-    )
+    return renderHighlightedText(message.content, highlightKeyword, { fontSize: 15, color: textColor, lineHeight: 21 })
   }
 
   const reactions = message.reactions || {}
@@ -880,20 +1090,21 @@ export function MessageBubble({
 
   const isBusinessCardMessage = !isRevoked && !!parseBusinessCardContent(message.content)
 
-  const hasRealCaption =
-    hasMediaContent &&
-    !!message.content &&
-    !MEDIA_PLACEHOLDERS.includes(message.content)
+  const hasRealCaption = hasMediaContent && !!message.content && !MEDIA_PLACEHOLDERS.includes(message.content)
 
   const mediaBubbleBg = hasRealCaption ? bubbleBg : 'transparent'
 
-  const showEmptyReactionBtn = hasMediaContent || isBusinessCardMessage || message.type === MessageType.FILE || !!parseGroupLinkContent(message.content)
+  const showEmptyReactionBtn =
+    hasMediaContent ||
+    isBusinessCardMessage ||
+    message.type === MessageType.FILE ||
+    !!parseGroupLinkContent(message.content)
   const hasReactions = Object.keys(reactions).length > 0
   const needReactionSpace = showEmptyReactionBtn || hasReactions
 
-  const actionRows = buildActionRows(isOwn, isDark, isPinned, t)
+  const actionRows = buildActionRows(message, isOwn, isDark, isPinned, t)
   const deliveryStatusNode = renderDeliveryStatus()
-  const incomingLeftSlotWidth = 36
+  const incomingLeftSlotWidth = 44
 
   return (
     <View
@@ -901,8 +1112,16 @@ export function MessageBubble({
         flexDirection: 'row',
         justifyContent: isOwn ? 'flex-end' : 'flex-start',
         paddingHorizontal: 12,
-        marginBottom: 4,
-        alignItems: 'flex-start'
+        paddingVertical: isHighlighted ? 6 : 0,
+        marginBottom: isHighlighted ? 0 : 4,
+        marginHorizontal: 4,
+        alignItems: 'flex-start',
+        borderRadius: 4,
+        backgroundColor: showHighlightBackground
+          ? isDark
+            ? 'rgba(0,104,255,0.22)'
+            : 'rgba(0,104,255,0.12)'
+          : 'transparent'
       }}
     >
       {!isOwn && (
@@ -919,11 +1138,19 @@ export function MessageBubble({
               onPress={() => message.senderId && onAvatarPress?.(message.senderId)}
               style={{ marginRight: 4 }}
             >
-              <UserAvatar 
-                source={message.senderAvatar} 
-                name={message.senderName || ''} 
-                size='sm' 
-                role={isGroupConversation ? members?.find((m) => m.userId === message.senderId)?.role as 'OWNER' | 'ADMIN' | 'MEMBER' | undefined : undefined}
+              <UserAvatar
+                source={message.senderAvatar}
+                name={message.senderName || ''}
+                size='sm'
+                role={
+                  isGroupConversation
+                    ? (members?.find((m) => m.userId === message.senderId)?.role as
+                        | 'OWNER'
+                        | 'ADMIN'
+                        | 'MEMBER'
+                        | undefined)
+                    : undefined
+                }
               />
             </TouchableOpacity>
           )}
@@ -937,8 +1164,15 @@ export function MessageBubble({
           </Text>
         )}
 
-          <View style={{ alignSelf: isOwn ? 'flex-end' : 'flex-start', minWidth: isOwn ? '55%' : undefined, paddingBottom: needReactionSpace ? 14 : 0 }}>
-            <Animated.View style={{
+        <View
+          style={{
+            alignSelf: isOwn ? 'flex-end' : 'flex-start',
+            minWidth: isOwn ? '55%' : undefined,
+            paddingBottom: needReactionSpace ? 14 : 0
+          }}
+        >
+          <Animated.View
+            style={{
               borderRadius: 16,
               backgroundColor: highlightAnim.interpolate({
                 inputRange: [0, 1],
@@ -953,27 +1187,26 @@ export function MessageBubble({
                 outputRange: [0, 1.5]
               }),
               borderColor: isDark ? '#36A7FF' : '#0068FF',
-              transform: [{
-                scale: highlightAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [1, 1.02]
-                })
-              }]
-            }}>
+              transform: [
+                {
+                  scale: highlightAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [1, 1.02]
+                  })
+                }
+              ]
+            }}
+          >
             <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
               <View
                 style={{
-                  backgroundColor: isBusinessCardMessage
-                    ? 'transparent'
-                    : hasMediaContent
-                      ? mediaBubbleBg
-                      : bubbleBg,
+                  backgroundColor: isBusinessCardMessage ? 'transparent' : hasMediaContent ? mediaBubbleBg : bubbleBg,
                   borderRadius: isBusinessCardMessage ? 0 : 16,
                   borderTopRightRadius: isBusinessCardMessage ? 0 : isOwn ? 4 : 16,
                   borderTopLeftRadius: isBusinessCardMessage ? 0 : isOwn ? 16 : 4,
                   paddingHorizontal: isBusinessCardMessage
                     ? 0
-                    : (hasMediaContent && !hasRealCaption)
+                    : hasMediaContent && !hasRealCaption
                       ? 0
                       : hasMediaContent
                         ? 0
@@ -981,7 +1214,7 @@ export function MessageBubble({
                   paddingVertical: isBusinessCardMessage ? 0 : hasMediaContent ? 0 : 10,
                   borderWidth: isBusinessCardMessage
                     ? 0
-                    : (!isOwn && !isDark && !isRevoked && !(hasMediaContent && !hasRealCaption))
+                    : !isOwn && !isDark && !isRevoked && !(hasMediaContent && !hasRealCaption)
                       ? 0.5
                       : 0,
                   borderColor: '#E5E7EB',
@@ -993,69 +1226,103 @@ export function MessageBubble({
                     activeOpacity={0.75}
                     onPress={() => onScrollToMessage?.(message.replyTo!.messageId)}
                   >
-                  <View
-                    style={{
-                      borderLeftWidth: 2,
-                      borderLeftColor: '#0068FF',
-                      backgroundColor: 'transparent',
-                      paddingLeft: 10,
-                      paddingVertical: 2,
-                      marginBottom: 4,
-                      marginTop: 4,
-                      marginHorizontal: hasMediaContent ? 6 : 0,
-                      flexDirection: 'row',
-                      alignItems: 'center',
-                      gap: 8
-                    }}
-                  >
-                    {(message.replyTo.type === 'IMAGE' || message.replyTo.type === 'VIDEO') ? (() => {
-                      const replyImgUrl = getReplyAttachmentUrl(message.replyTo.messageId)
-                      return replyImgUrl ? (
-                        <View style={{ width: 36, height: 36, borderRadius: 4, overflow: 'hidden', backgroundColor: '#111', flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}>
-                          <ExpoImage
-                            source={{ uri: replyImgUrl }}
-                            style={{ width: '100%', height: '100%' }}
-                            contentFit='cover'
-                            cachePolicy='memory-disk'
-                          />
-                          {message.replyTo.type === 'VIDEO' && (
-                            <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center' }}>
-                              <Ionicons name='play-circle' size={16} color='rgba(255,255,255,0.9)' />
-                            </View>
-                          )}
-                        </View>
-                      ) : null
-                    })() : null}
-                    <View style={{ flexShrink: 1, justifyContent: 'center' }}>
-                      <Text style={{ fontSize: 14, fontWeight: '500', color: isDark ? '#E8EAED' : '#111827' }} numberOfLines={1}>
-                        {message.replyTo.senderName || 'User'}
-                      </Text>
-                      <Text style={{ fontSize: 13, color: isDark ? '#A9B7CC' : '#6B7280', marginTop: 1 }} numberOfLines={1}>
-                        {message.replyTo.type === 'IMAGE' ? '[Hình ảnh]' : message.replyTo.type === 'VIDEO' ? '[Video]' : message.replyTo.content}
-                      </Text>
+                    <View
+                      style={{
+                        borderLeftWidth: 3,
+                        borderLeftColor: '#0068FF',
+                        backgroundColor: isOwn
+                          ? isDark
+                            ? 'rgba(0,0,0,0.15)'
+                            : 'rgba(0,80,200,0.1)'
+                          : isDark
+                            ? 'rgba(255,255,255,0.08)'
+                            : 'rgba(0,0,0,0.04)',
+                        borderRadius: 6,
+                        paddingHorizontal: 10,
+                        paddingVertical: 6,
+                        marginBottom: 6,
+                        marginHorizontal: hasMediaContent ? 6 : 0,
+                        marginTop: hasMediaContent ? 4 : 0,
+                        flexDirection: 'row',
+                        alignItems: 'center',
+                        gap: 8
+                      }}
+                    >
+                      {message.replyTo.type === 'IMAGE' || message.replyTo.type === 'VIDEO'
+                        ? (() => {
+                            const replyImgUrl = getReplyAttachmentUrl(message.replyTo.messageId)
+                            return replyImgUrl ? (
+                              <View
+                                style={{
+                                  width: 40,
+                                  height: 40,
+                                  borderRadius: 5,
+                                  overflow: 'hidden',
+                                  backgroundColor: '#111',
+                                  flexShrink: 0,
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
+                                <ExpoImage
+                                  source={{ uri: replyImgUrl }}
+                                  style={{ width: '100%', height: '100%' }}
+                                  contentFit='cover'
+                                  cachePolicy='memory-disk'
+                                />
+                                {message.replyTo.type === 'VIDEO' && (
+                                  <View
+                                    style={{
+                                      position: 'absolute',
+                                      top: 0,
+                                      left: 0,
+                                      right: 0,
+                                      bottom: 0,
+                                      alignItems: 'center',
+                                      justifyContent: 'center'
+                                    }}
+                                  >
+                                    <Ionicons name='play-circle' size={20} color='rgba(255,255,255,0.9)' />
+                                  </View>
+                                )}
+                              </View>
+                            ) : null
+                          })()
+                        : null}
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontSize: 13, fontWeight: '600', color: '#0068FF' }} numberOfLines={1}>
+                          {message.replyTo.senderName || 'User'}
+                        </Text>
+                        <Text style={{ fontSize: 13, color: isDark ? '#aaa' : '#666' }} numberOfLines={2}>
+                          {message.replyTo.type === 'IMAGE'
+                            ? '📷 Hình ảnh'
+                            : message.replyTo.type === 'VIDEO'
+                              ? '🎬 Video'
+                              : message.replyTo.content}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
                   </TouchableOpacity>
                 )}
                 {renderBubbleContent()}
               </View>
             </TouchableOpacity>
-            </Animated.View>
+          </Animated.View>
 
-            <MessageReactionBar
-              messageId={message.id}
-              conversationId={message.conversationId || ''}
-              isOwn={isOwn}
-              isDark={isDark}
-              isRevoked={isRevoked}
-              reactions={reactions}
-              members={members}
-              currentUserId={currentUserId}
-              currentUserName={currentUser?.fullName}
-              currentUserAvatar={currentUser?.avatar ?? undefined}
-              showEmptyButton={showEmptyReactionBtn}
-            />
-          </View>
+          <MessageReactionBar
+            messageId={message.id}
+            conversationId={message.conversationId || ''}
+            isOwn={isOwn}
+            isDark={isDark}
+            isRevoked={isRevoked}
+            reactions={reactions}
+            members={members}
+            currentUserId={currentUserId}
+            currentUserName={currentUser?.fullName}
+            currentUserAvatar={currentUser?.avatar ?? undefined}
+            showEmptyButton={showEmptyReactionBtn}
+          />
+        </View>
 
         {(showTime || !!deliveryStatusNode || isPinned) && (
           <View
@@ -1072,11 +1339,16 @@ export function MessageBubble({
             {!!deliveryStatusNode && deliveryStatusNode}
           </View>
         )}
-
       </View>
 
       {/* Zalo-style action modal */}
-      <Modal visible={showActions} transparent statusBarTranslucent animationType='none' onRequestClose={() => closeSheet()}>
+      <Modal
+        visible={showActions}
+        transparent
+        statusBarTranslucent
+        animationType='none'
+        onRequestClose={() => closeSheet()}
+      >
         <Animated.View
           style={{
             position: 'absolute',
@@ -1093,52 +1365,65 @@ export function MessageBubble({
           <View style={{ flex: 1, justifyContent: 'flex-end' }}>
             {/* Selected message preview */}
             {!hasMediaContent && (
-            <View
-              style={{
-                alignSelf: 'flex-end',
-                maxWidth: '75%',
-                marginHorizontal: 16,
-                marginBottom: 8
-              }}
-            >
               <View
                 style={{
-                  backgroundColor: isOwn ? (isDark ? '#004BA0' : '#D5E9FF') : isDark ? '#2A2F36' : '#FFFFFF',
-                  borderRadius: 16,
-                  borderTopRightRadius: isOwn ? 4 : 16,
-                  borderTopLeftRadius: isOwn ? 16 : 4,
-                  overflow: 'hidden',
-                  elevation: 4,
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 2 },
-                  shadowOpacity: 0.15,
-                  shadowRadius: 4
+                  alignSelf: isOwn ? 'flex-end' : 'flex-start',
+                  maxWidth: '75%',
+                  marginHorizontal: 16,
+                  marginBottom: 8
                 }}
               >
-                <View style={{ paddingHorizontal: 12, paddingVertical: 8 }}>
-                  <Text style={{ fontSize: 15, color: isDark ? '#E8EAED' : '#111827', lineHeight: 21 }}>
-                    {message.content}
-                  </Text>
+                <View
+                  style={{
+                    backgroundColor: isOwn ? (isDark ? '#004BA0' : '#D5E9FF') : isDark ? '#2A2F36' : '#FFFFFF',
+                    borderRadius: 16,
+                    borderTopRightRadius: isOwn ? 4 : 16,
+                    borderTopLeftRadius: isOwn ? 16 : 4,
+                    overflow: 'hidden',
+                    elevation: 4,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.15,
+                    shadowRadius: 4
+                  }}
+                >
+                  <View style={{ paddingHorizontal: 12, paddingVertical: 8 }}>
+                    <Text style={{ fontSize: 15, color: isDark ? '#E8EAED' : '#111827', lineHeight: 21 }}>
+                      {message.content}
+                    </Text>
+                  </View>
+                </View>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignSelf: isOwn ? 'flex-end' : 'flex-start',
+                    marginTop: 2,
+                    marginHorizontal: 4,
+                    gap: 6
+                  }}
+                >
+                  <Text style={{ fontSize: 11, color: timeColor }}>{formatTime(message.createdAt)}</Text>
+                  {!!getDeliveryStatusLabel() && (
+                    <Text style={{ fontSize: 11, color: '#2563EB', fontWeight: '500' }}>
+                      {getDeliveryStatusLabel()}
+                    </Text>
+                  )}
                 </View>
               </View>
-              <View style={{ flexDirection: 'row', alignSelf: 'flex-end', marginTop: 2, marginHorizontal: 4, gap: 6 }}>
-                <Text style={{ fontSize: 11, color: timeColor }}>{formatTime(message.createdAt)}</Text>
-                {!!deliveryStatusNode && deliveryStatusNode}
-              </View>
-            </View>
             )}
 
             {/* Emoji reaction bar */}
             <Animated.View
               style={{
-                alignSelf: 'flex-end',
+                alignSelf: isOwn ? 'flex-end' : 'flex-start',
                 flexDirection: 'row',
                 backgroundColor: isDark ? '#1E2732' : '#FFFFFF',
                 borderRadius: 28,
                 paddingHorizontal: 10,
                 paddingVertical: 8,
                 marginBottom: 12,
-                marginRight: 16,
+                marginLeft: isOwn ? 0 : 16,
+                marginRight: isOwn ? 16 : 0,
                 gap: 4,
                 elevation: 8,
                 shadowColor: '#000',
@@ -1196,7 +1481,7 @@ export function MessageBubble({
 
           <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
             {actionRows.map((row, rowIdx) => (
-              <View key={rowIdx} style={{ flexDirection: 'row', paddingHorizontal: 4 }}>
+              <View key={rowIdx} style={{ flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 4 }}>
                 {row.map((item) => (
                   <TouchableOpacity
                     key={item.key}
@@ -1299,7 +1584,9 @@ export function MessageBubble({
                   style={{ marginTop: 1, fontSize: 17, fontWeight: '700', color: isDark ? '#EAF1FC' : '#111827' }}
                   numberOfLines={1}
                 >
-                  {activeGroupLinkPayload?.groupName || joinPreview?.groupName || t('message.groupLink.defaultGroupName', { defaultValue: 'Nhóm' })}
+                  {activeGroupLinkPayload?.groupName ||
+                    joinPreview?.groupName ||
+                    t('message.groupLink.defaultGroupName', { defaultValue: 'Nhóm' })}
                 </Text>
               </View>
             </View>
@@ -1356,7 +1643,8 @@ export function MessageBubble({
                 ) : (
                   <Text style={{ fontSize: 13, fontWeight: '700', color: '#fff' }}>
                     {(() => {
-                      const effectivePendingRequest = !!joinPreview?.membershipApprovalEnabled && !!joinPreview?.hasPendingRequest
+                      const effectivePendingRequest =
+                        !!joinPreview?.membershipApprovalEnabled && !!joinPreview?.hasPendingRequest
                       return joinPreview?.isAlreadyMember
                         ? t('message.groupLink.openGroup', { defaultValue: 'Vào nhóm' })
                         : effectivePendingRequest
@@ -1400,7 +1688,8 @@ export function MessageBubble({
               {t('message.groupLink.sendRequest', { defaultValue: 'Gửi yêu cầu' })}
             </Text>
             <Text style={{ marginTop: 8, fontSize: 14, color: isDark ? '#C8D4E6' : '#374151' }}>
-              {joinPreview?.joinQuestion || t('message.groupLink.approvalHint', { defaultValue: 'Nhóm này đang bật duyệt thành viên.' })}
+              {joinPreview?.joinQuestion ||
+                t('message.groupLink.approvalHint', { defaultValue: 'Nhóm này đang bật duyệt thành viên.' })}
             </Text>
 
             <TextInput
@@ -1448,7 +1737,9 @@ export function MessageBubble({
                   if (!joinAnswer.trim()) {
                     Alert.alert(
                       t('message.groupLink.joinFailedTitle', { defaultValue: 'Không thể vào nhóm' }),
-                      t('message.groupLink.answerRequired', { defaultValue: 'Vui lòng nhập câu trả lời để gửi yêu cầu.' })
+                      t('message.groupLink.answerRequired', {
+                        defaultValue: 'Vui lòng nhập câu trả lời để gửi yêu cầu.'
+                      })
                     )
                     return
                   }
@@ -1478,7 +1769,6 @@ export function MessageBubble({
           </Pressable>
         </Pressable>
       </Modal>
-
       <SeenMembersModal
         visible={showSeenMembersModal}
         onClose={() => setShowSeenMembersModal(false)}
@@ -1498,7 +1788,13 @@ type ActionItem = {
   textColor?: string
 }
 
-function buildActionRows(isOwn: boolean, isDark: boolean, isPinned: boolean, t: (k: string, o?: any) => string): ActionItem[][] {
+function buildActionRows(
+  message: MessageResponse,
+  isOwn: boolean,
+  isDark: boolean,
+  isPinned: boolean,
+  t: (k: string, o?: any) => string
+): ActionItem[][] {
   const blue = '#0068FF'
   const orange = '#FF8C00'
   const red = '#EF4444'
@@ -1591,16 +1887,26 @@ function buildActionRows(isOwn: boolean, isDark: boolean, isPinned: boolean, t: 
   ]
 
   // Row 4
-  const row4: ActionItem[] = [
-    {
-      key: 'delete',
-      icon: 'trash-outline',
-      label: t('message.actions.delete', { defaultValue: 'Xóa ở phía tôi' }),
-      iconColor: red,
-      bgColor: isDark ? '#3B1C1C' : '#FFE4E6',
-      textColor: red
-    }
-  ]
+  const row4: ActionItem[] = []
+
+  // If it's an image or video, we add Download button before Delete
+  if (message.type === MessageType.IMAGE || message.type === MessageType.VIDEO) {
+    row4.push({
+      key: 'download',
+      icon: 'download-outline',
+      label: t('message.actions.download', { defaultValue: 'Tải về' }),
+      iconColor: '#10B981'
+    })
+  }
+
+  row4.push({
+    key: 'delete',
+    icon: 'trash-outline',
+    label: t('message.actions.delete', { defaultValue: 'Xóa ở phía tôi' }),
+    iconColor: red,
+    bgColor: isDark ? '#3B1C1C' : '#FFE4E6',
+    textColor: red
+  })
 
   const safeRow1 = isOwn ? row1 : row1.filter((item) => item.key !== 'revoke')
 

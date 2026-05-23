@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { Modal, View, Text, TouchableOpacity, Image, Pressable, Animated } from 'react-native'
-import { Video, ResizeMode, type AVPlaybackStatus } from 'expo-av'
+import { Modal, View, Text, TouchableOpacity, Pressable, Animated, ActivityIndicator } from 'react-native'
+import { Audio, Video, ResizeMode, type AVPlaybackStatus } from 'expo-av'
+import { Image as ExpoImage } from 'expo-image'
 import { X } from 'lucide-react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { UserAvatar } from '@/components/common/user-avatar'
 import { useRecordStoryViewMutation } from '../../queries/use-mutations'
+import apiConfig from '@/config/apiConfig'
 import type { ReactionType } from '../../types/reaction'
 import type { StoryGroup } from '../../types/story'
 
@@ -26,8 +28,31 @@ const STORY_REACTIONS: Array<{ type: ReactionType; emoji: string }> = [
   { type: 'ANGRY', emoji: '😡' }
 ]
 
+const toAbsoluteMediaUri = (uri?: string | null) => {
+  if (!uri) return null
+  const normalizedUri = uri.trim()
+  if (!normalizedUri) return null
+
+  if (
+    normalizedUri.startsWith('http://') ||
+    normalizedUri.startsWith('https://') ||
+    normalizedUri.startsWith('data:') ||
+    normalizedUri.startsWith('file:')
+  ) {
+    return normalizedUri
+  }
+
+  const baseOrigin = apiConfig.apiUrl.replace(/\/api\/?$/, '')
+  if (normalizedUri.startsWith('/')) {
+    return `${baseOrigin}${normalizedUri}`
+  }
+
+  return `${baseOrigin}/${normalizedUri}`
+}
+
 export function StoryViewerModal({ visible, groups, initialGroupIndex, onClose }: StoryViewerModalProps) {
   const insets = useSafeAreaInsets()
+  const videoRef = useRef<Video | null>(null)
   const lastVideoProgressUpdateRef = useRef(0)
   const viewedStoryIdsRef = useRef(new Set<string>())
   const prefetchedUrlsRef = useRef(new Set<string>())
@@ -38,6 +63,7 @@ export function StoryViewerModal({ visible, groups, initialGroupIndex, onClose }
   const [groupIndex, setGroupIndex] = useState(initialGroupIndex)
   const [storyIndex, setStoryIndex] = useState(0)
   const [storyReactions, setStoryReactions] = useState<Record<string, ReactionType | null>>({})
+  const [isMediaReady, setIsMediaReady] = useState(false)
 
   const recordViewMutation = useRecordStoryViewMutation()
 
@@ -52,12 +78,17 @@ export function StoryViewerModal({ visible, groups, initialGroupIndex, onClose }
     currentStory?.media?.[0] ??
     (rawCurrentStory?.mediaUrl
       ? {
-          url: rawCurrentStory.mediaUrl,
-          type: (rawCurrentStory.mediaType ?? '').toUpperCase() === 'VIDEO' ? 'VIDEO' : 'IMAGE'
-        }
+        url: rawCurrentStory.mediaUrl,
+        type: (rawCurrentStory.mediaType ?? '').toUpperCase() === 'VIDEO' ? 'VIDEO' : 'IMAGE'
+      }
       : null)
   const isVideoStory = currentMedia?.type === 'VIDEO'
-  const currentMediaUrl = currentMedia?.url ?? null
+  const normalizeMediaUrl = (url?: string | null) => {
+    const absoluteUrl = toAbsoluteMediaUri(url)
+    return absoluteUrl ? encodeURI(absoluteUrl) : null
+  }
+
+  const currentMediaUrl = normalizeMediaUrl(currentMedia?.url ?? null)
   const progressTop = Math.max(insets.top + 12, 20)
   const headerTop = progressTop + 20
   const reactionBarBottom = Math.max(insets.bottom + 8, 16)
@@ -127,11 +158,31 @@ export function StoryViewerModal({ visible, groups, initialGroupIndex, onClose }
   }, [visible, currentStory?.id])
 
   useEffect(() => {
+    if (!visible || !isVideoStory) return
+
+    const activateAudioSession = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: false,
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: false,
+          shouldDuckAndroid: true,
+          playThroughEarpieceAndroid: false
+        })
+      } catch {
+        // Ignore if the audio session cannot be activated.
+      }
+    }
+
+    void activateAudioSession()
+  }, [visible, isVideoStory])
+
+  useEffect(() => {
     if (!visible || !currentStory) return
 
     resetProgress()
 
-    if (isVideoStory) {
+    if (isVideoStory || !isMediaReady) {
       return
     }
 
@@ -150,15 +201,20 @@ export function StoryViewerModal({ visible, groups, initialGroupIndex, onClose }
     return () => {
       stopImageProgressAnimation()
     }
-  }, [visible, groupIndex, storyIndex, isVideoStory, currentStory?.id])
+  }, [visible, groupIndex, storyIndex, isVideoStory, currentStory?.id, isMediaReady])
+
+  useEffect(() => {
+    if (!visible) return
+    setIsMediaReady(false)
+  }, [visible, currentStory?.id, currentMediaUrl])
 
   useEffect(() => {
     if (!visible || !currentStory) return
 
-    const currentUrl = currentMedia?.url || null
+    const currentUrl = normalizeMediaUrl(currentMedia?.url || null)
     const nextStory = currentStories[storyIndex + 1]
     const nextRawStory = nextStory as typeof nextStory & { mediaUrl?: string | null }
-    const nextUrl = nextStory?.media?.[0]?.url || nextRawStory?.mediaUrl || null
+    const nextUrl = normalizeMediaUrl(nextStory?.media?.[0]?.url || nextRawStory?.mediaUrl || null)
 
     const prefetchTargets = [currentUrl, nextUrl].filter((url): url is string => Boolean(url))
     prefetchTargets.forEach((url) => {
@@ -167,7 +223,7 @@ export function StoryViewerModal({ visible, groups, initialGroupIndex, onClose }
       }
 
       prefetchedUrlsRef.current.add(url)
-      void Image.prefetch(url).catch(() => {
+      void ExpoImage.prefetch(url).catch(() => {
         // Keep silent to avoid unhandled promise logs when a candidate URL is not previewable.
       })
     })
@@ -257,6 +313,7 @@ export function StoryViewerModal({ visible, groups, initialGroupIndex, onClose }
           {currentMedia && currentMediaUrl ? (
             currentMedia.type === 'VIDEO' ? (
               <Video
+                ref={videoRef}
                 source={{ uri: currentMediaUrl }}
                 className='absolute inset-0'
                 style={{ width: '100%', height: '100%' }}
@@ -265,17 +322,34 @@ export function StoryViewerModal({ visible, groups, initialGroupIndex, onClose }
                 useNativeControls={false}
                 resizeMode={ResizeMode.COVER}
                 onPlaybackStatusUpdate={handleVideoStatusUpdate}
+                onLoadStart={() => setIsMediaReady(false)}
+                onLoad={() => {
+                  setIsMediaReady(true)
+                  void videoRef.current?.playAsync().catch(() => {
+                    // Ignore playback start errors; handled by status updates.
+                  })
+                }}
+                onError={() => setIsMediaReady(false)}
               />
             ) : (
-              <Image
+              <ExpoImage
                 source={{ uri: currentMediaUrl }}
                 className='absolute inset-0'
                 style={{ width: '100%', height: '100%' }}
-                resizeMode='cover'
+                contentFit='cover'
+                cachePolicy='memory-disk'
+                onLoadStart={() => setIsMediaReady(false)}
+                onLoadEnd={() => setIsMediaReady(true)}
               />
             )
           ) : (
             <View className='absolute inset-0 bg-black' />
+          )}
+
+          {!isMediaReady && (
+            <View className='absolute inset-0 items-center justify-center'>
+              <ActivityIndicator size='large' color='#ffffff' />
+            </View>
           )}
 
           <View className='absolute inset-0 bg-black/28' />

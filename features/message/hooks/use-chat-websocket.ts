@@ -1,21 +1,33 @@
-import { useEffect, useState, useCallback, useSyncExternalStore } from 'react'
+import { useEffect, useState, useCallback, useSyncExternalStore, useRef } from 'react'
+import { AppState, AppStateStatus } from 'react-native'
 import { Client } from '@stomp/stompjs'
 import { useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query'
 import { messageKeys } from '../queries/keys'
 import { messageApi } from '../api/message.api'
 import { useSendMessage, useRevokeMessage, useDeleteMessageForMe } from '../queries/use-mutations'
 import { useAuthStore } from '@/store'
-import { getAccessToken } from '@/lib/http'
+import { getAccessToken, clearTokens } from '@/lib/http'
+import { storage } from '@/utils/storageUtils'
+import { jwtDecode } from 'jwt-decode'
 import apiConfig from '@/config/apiConfig'
 import { normalizeDateTime, parseMessageDate } from '../utils/date-utils'
 import { parseBusinessCardContent, serializeBusinessCard } from '../utils/business-card'
 import { MessageStatus, MessageType } from '../schemas'
-import type { MessageResponse, ConversationResponse, MessageSendRequest, ReplyMetadataResponse,  AttachmentInfo } from '../schemas'
+import type {
+  MessageResponse,
+  ConversationResponse,
+  MessageSendRequest,
+  ReplyMetadataResponse,
+  AttachmentInfo
+} from '../schemas'
+import type { PresignFileRequest, PresignedUploadResponse } from '../api/message.api'
+import * as FileSystem from 'expo-file-system/legacy'
 
 // ────────── Singleton state ──────────
 let singletonClient: Client | null = null
 let singletonConnected = false
 let singletonUserId: string | null = null
+let isConnecting = false
 const listeners = new Set<() => void>()
 
 const notifyListeners = () => listeners.forEach((l) => l())
@@ -33,10 +45,13 @@ const getWsUrl = () => {
 }
 
 const connectSingleton = async (user: any, queryClient: QueryClient) => {
+  if (isConnecting) return
   // Already connected for this user
   if (singletonClient?.active && singletonUserId === user.id) return
+
   // Disconnect previous if switching users
   if (singletonClient?.active && singletonUserId !== user.id) {
+    console.log('[useChatWebSocket] Switching user, deactivating old connection...')
     singletonClient.deactivate()
     singletonClient = null
   }
@@ -44,19 +59,25 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
   const token = await getAccessToken()
   if (!token) return
 
+  console.log('[useChatWebSocket] Initializing new WebSocket connection...')
+  isConnecting = true
   singletonUserId = user.id
 
   const client = new Client({
     brokerURL: getWsUrl(),
     reconnectDelay: 5000,
+    heartbeatIncoming: 10000,
+    heartbeatOutgoing: 10000,
     connectHeaders: {
       Authorization: `Bearer ${token}`
     },
     forceBinaryWSFrames: true,
     appendMissingNULLonIncoming: true,
     onConnect: () => {
+      isConnecting = false
       singletonConnected = true
       notifyListeners()
+      console.log('[useChatWebSocket] WebSocket Connected & Subscribed.')
 
       // ────────── /queue/messages ──────────
       client.subscribe('/user/queue/messages', (payload) => {
@@ -144,9 +165,9 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
           const idx = conversations.findIndex((c) => c.id === conversationId)
 
           if (idx >= 0) {
-            const updated: ConversationResponse = {
+            const updated: any = {
               ...conversations[idx],
-              lastMessage: (typeof msg.content === 'string' && msg.content) ? msg.content : (typeof msg.message === 'string' && msg.message ? msg.message : (msg.type === MessageType.IMAGE ? '[Hình ảnh]' : msg.type === MessageType.FILE ? '[Tệp]' : (msg.content || ''))),
+              lastMessage: (typeof msg.content === 'string' && msg.content) ? msg.content : (msg.type === MessageType.IMAGE ? '[Hình ảnh]' : msg.type === MessageType.FILE ? '[Tệp]' : (msg.content || '')),
               lastMessageTime: msg.createdAt || new Date().toISOString(),
               isLastMessageFromMe: isOwnMessage,
               lastMessageType: msg.type,
@@ -239,9 +260,9 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
                 data: page.data.map((m: MessageResponse) =>
                   m.id === event.messageId
                     ? {
-                        ...m,
-                        reactions: event.reactions && Object.keys(event.reactions).length ? event.reactions : undefined
-                      }
+                      ...m,
+                      reactions: event.reactions && Object.keys(event.reactions).length ? event.reactions : undefined
+                    }
                     : m
                 )
               }))
@@ -276,14 +297,14 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
               const nextConversations =
                 existingIdx >= 0
                   ? [
-                      {
-                        ...conversations[existingIdx],
-                        ...newConv,
-                        // Keep members from cache if update payload is partial.
-                        members: Array.isArray(newConv.members) ? newConv.members : conversations[existingIdx].members
-                      },
-                      ...conversations.filter((_, i) => i !== existingIdx)
-                    ]
+                    {
+                      ...conversations[existingIdx],
+                      ...newConv,
+                      // Keep members from cache if update payload is partial.
+                      members: Array.isArray(newConv.members) ? newConv.members : conversations[existingIdx].members
+                    },
+                    ...conversations.filter((_, i) => i !== existingIdx)
+                  ]
                   : [newConv, ...conversations]
 
               const newList = nextConversations.sort(
@@ -323,6 +344,35 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
         }
       })
 
+      // ────────── /queue/session (FORCE_LOGOUT) ──────────
+      client.subscribe('/user/queue/session', async (payload) => {
+        try {
+          const event = JSON.parse(payload.body)
+          if (event?.type !== 'FORCE_LOGOUT') return
+
+          let mySessionId: string | null = null
+          try {
+            const token = await getAccessToken()
+            if (token) {
+              const decoded = jwtDecode<{ sessionId?: string }>(token)
+              mySessionId = decoded.sessionId ?? null
+            }
+          } catch {
+            mySessionId = null // safe fallback → force logout
+          }
+
+          if (mySessionId === null || mySessionId === event.sessionId) {
+            await clearTokens()
+            await storage.remove('user_data')
+            useAuthStore.getState().logoutSuccess()
+            queryClient.clear()
+            disconnectSingleton(user)
+          }
+        } catch (error) {
+          console.error('[Socket] Error handling session event:', error)
+        }
+      })
+
       // Announce presence
       client.publish({
         destination: '/app/user.addUser',
@@ -330,10 +380,22 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
       })
     },
     onDisconnect: () => {
+      isConnecting = false
       singletonConnected = false
       notifyListeners()
     },
-    debug: __DEV__ ? (msg) => console.log('[STOMP]', msg) : undefined
+    onStompError: (frame) => {
+      isConnecting = false
+      console.error('[useChatWebSocket] STOMP Error:', frame.headers['message'])
+    },
+    onWebSocketClose: () => {
+      isConnecting = false
+    },
+    debug: __DEV__ ? (msg) => {
+      if (msg.includes('MESSAGE') || msg.includes('CONNECT')) {
+        console.log('[STOMP]', msg)
+      }
+    } : undefined
   })
 
   client.activate()
@@ -341,6 +403,7 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
 }
 
 const disconnectSingleton = (user: any) => {
+  isConnecting = false
   if (singletonClient) {
     if (singletonClient.connected && user) {
       singletonClient.publish({
@@ -366,13 +429,61 @@ export const useChatWebSocket = () => {
   const deleteMsgMutation = useDeleteMessageForMe()
   const [isUploading, setIsUploading] = useState(false)
 
+  const getFileNameFromUri = useCallback((uri: string, fallbackName: string) => {
+    const nameFromPath = uri.split('/').pop()?.split('?')[0]
+    return nameFromPath && nameFromPath.length > 0 ? nameFromPath : fallbackName
+  }, [])
+
+  const appState = useRef(AppState.currentState)
+  const isPresenceOffline = useRef(false)
+
   useEffect(() => {
+    // 1. Initial connection logic
     if (user) {
       connectSingleton(user, queryClient)
     } else {
       disconnectSingleton(user)
     }
-    // Don't disconnect on unmount — singleton stays alive
+
+    // 2. AppState listener for Online/Offline management
+    // NOTE: Android freezes JS (including setTimeout) when app is in background.
+    // So we MUST send presence updates IMMEDIATELY - no timers allowed here.
+    const handleAppStateChange = (nextAppState: AppStateStatus) => {
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+        // App came to FOREGROUND -> set ONLINE
+        console.log('[Socket] App foregrounded!')
+        if (user) {
+          connectSingleton(user, queryClient)
+          if (singletonClient?.connected && isPresenceOffline.current) {
+            console.log('[Socket] Sending user.addUser (ONLINE)')
+            singletonClient.publish({
+              destination: '/app/user.addUser',
+              body: JSON.stringify(user)
+            })
+            isPresenceOffline.current = false
+          }
+        }
+      } else if (appState.current === 'active' && nextAppState.match(/inactive|background/)) {
+        // App went to BACKGROUND -> set OFFLINE IMMEDIATELY
+        // Must be immediate - Android freezes JS timers in background.
+        console.log('[Socket] App backgrounded! Sending OFFLINE immediately...')
+        if (singletonClient?.connected && user) {
+          singletonClient.publish({
+            destination: '/app/user.disconnectUser',
+            body: JSON.stringify(user)
+          })
+          isPresenceOffline.current = true
+          console.log('[Socket] Sent user.disconnectUser (OFFLINE)')
+        }
+      }
+      appState.current = nextAppState
+    }
+
+    const subscription = AppState.addEventListener('change', handleAppStateChange)
+
+    return () => {
+      subscription.remove()
+    }
   }, [user, queryClient])
 
   // ────────── sendMessage ──────────
@@ -456,7 +567,7 @@ export const useChatWebSocket = () => {
         return oldData
       })
     },
-    [user, queryClient, sendMsgMutation]
+    [getFileNameFromUri, user, queryClient, sendMsgMutation]
   )
 
   // ────────── revokeMessage ──────────
@@ -509,70 +620,38 @@ export const useChatWebSocket = () => {
     ) => {
       if (!singletonClient?.connected || !fileAssets.length) return
 
-      setIsUploading(true)
-      try {
-        const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+      // B1. Detect type: Chỉ gộp khi TOÀN BỘ là ảnh hoặc TOÀN BỘ là video
+      const allImages = fileAssets.every((asset) => asset.mimeType?.startsWith('image/'))
+      const allVideos = fileAssets.every((asset) => asset.mimeType?.startsWith('video/'))
+      const isMedia = allImages || allVideos
 
-        const uploadSingleWithRetry = async (uri: string, mimeType: string, fileName: string): Promise<AttachmentInfo> => {
-          const maxAttempts = 3
-          let lastError: unknown = null
+      const now = new Date().toISOString()
+      const clientMessageId = `temp-${Date.now()}`
 
-          for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-            try {
-              const res = await messageApi.uploadFile(uri, mimeType, fileName)
-              return res.data.data as AttachmentInfo
-            } catch (error) {
-              lastError = error
-              const message = String((error as any)?.message || '')
-              const status = Number((error as any)?.response?.status || 0)
-              const isRetryable = status === 401 || status === 429 || status >= 500 || message.includes('Network Error')
+      const imageCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('image/')).length
+      const videoCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('video/')).length
+      
+      // Prepare optimistic attachments
+      const optimisticAttachments: AttachmentInfo[] = fileAssets.map((asset, index) => ({
+        key: `temp-${index}`,
+        url: asset.uri,
+        fileName: asset.fileName || `file-${index}`,
+        originalFileName: asset.fileName || `file-${index}`,
+        contentType: asset.mimeType,
+        size: 0
+      }))
 
-              if (!isRetryable || attempt === maxAttempts) {
-                break
-              }
-
-              await wait(250 * attempt)
-            }
-          }
-
-          throw lastError
-        }
-
-        // Mobile network + gateway is less stable with multiple parallel multipart uploads.
-        // Upload sequentially to reduce fallback/circuit-breaker spikes.
-        const uploaded: AttachmentInfo[] = []
-        for (const { uri, mimeType, fileName } of fileAssets) {
-          const attachment = await uploadSingleWithRetry(uri, mimeType, fileName)
-          uploaded.push(attachment)
-        }
-
-        const areAllImages = fileAssets.every((asset) => asset.mimeType?.startsWith('image/'))
-        const areAllVideos = fileAssets.every((asset) => asset.mimeType?.startsWith('video/'))
-        const isImage = areAllImages
-        const isVideo = areAllVideos
-        const type = isImage ? MessageType.IMAGE : isVideo ? MessageType.VIDEO : MessageType.FILE
-        const finalContent = content.trim() || (isImage ? '[Hình ảnh]' : isVideo ? '[Video]' : '[Tệp tin]')
-
-        const clientMessageId = `temp-${Date.now()}`
-        const request: MessageSendRequest = {
-          conversationId,
-          content: finalContent,
-          clientMessageId,
-          attachments: uploaded,
-          replyTo: replyTo
-            ? { messageId: replyTo.messageId, senderId: replyTo.senderId, content: replyTo.content, type: replyTo.type }
-            : undefined,
-          isForwarded: false
-        }
-        sendMsgMutation.mutate(request)
-
-        const now = new Date().toISOString()
+      // Optimistic UI logic
+      if (isMedia) {
+        // IMAGE / VIDEO: Gộp chung 1 bubble
+        const optimisticType = allVideos ? MessageType.VIDEO : MessageType.IMAGE
+        const optimisticContent = content.trim() || (allVideos ? '[Video]' : '[Hình ảnh]')
         const optimisticMsg: MessageResponse = {
           id: clientMessageId,
           clientMessageId,
           senderId: user?.id || '',
-          content: finalContent,
-          type,
+          content: optimisticContent,
+          type: optimisticType,
           status: MessageStatus.NORMAL,
           createdAt: now,
           lastModifiedAt: now,
@@ -581,7 +660,7 @@ export const useChatWebSocket = () => {
           senderAvatar: null,
           replyTo: replyTo ?? null,
           isForwarded: false,
-          attachments: uploaded
+          attachments: optimisticAttachments
         }
 
         queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
@@ -592,32 +671,123 @@ export const useChatWebSocket = () => {
             pages: [{ ...firstPage, data: [optimisticMsg, ...firstPage.data] }, ...oldData.pages.slice(1)]
           }
         })
-
-        queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
-          if (!oldData) return oldData
-          const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
-          const idx = conversations.findIndex((c) => c.id === conversationId)
-          if (idx >= 0) {
-            const updated: ConversationResponse = {
-              ...conversations[idx],
-              lastMessage: finalContent,
-              lastMessageTime: now,
-              isLastMessageFromMe: true,
-              lastMessageType: type,
-              lastMessageStatus: MessageStatus.NORMAL
-            }
-            const newList = [updated, ...conversations.filter((_, i) => i !== idx)]
-            return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
+      } else {
+        // FILE / MIX: Mỗi file 1 bubble riêng
+        fileAssets.forEach((asset, index) => {
+          const individualId = `${clientMessageId}-${index}`
+          const individualOptimistic: MessageResponse = {
+            id: individualId,
+            clientMessageId: individualId,
+            senderId: user?.id || '',
+            content: asset.fileName || '[Tệp tin]',
+            type: MessageType.FILE,
+            status: MessageStatus.NORMAL,
+            createdAt: now,
+            lastModifiedAt: now,
+            conversationId,
+            senderName: user?.fullName ?? null,
+            senderAvatar: null,
+            replyTo: replyTo ?? null,
+            isForwarded: false,
+            attachments: [optimisticAttachments[index]]
           }
-          return oldData
+
+          queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
+            if (!oldData) return oldData
+            const firstPage = oldData.pages[0]
+            return {
+              ...oldData,
+              pages: [{ ...firstPage, data: [individualOptimistic, ...firstPage.data] }, ...oldData.pages.slice(1)]
+            }
+          })
         })
+      }
+
+      setIsUploading(true)
+      try {
+        // B2. Prepare presignRequests cho toàn bộ files (Chỉ gọi 1 lần ngoài loop)
+        const presignRequests: PresignFileRequest[] = await Promise.all(
+          fileAssets.map(async (asset, index) => {
+            const fallbackName = `upload-${index + 1}`
+            const fileName = asset.fileName || getFileNameFromUri(asset.uri, fallbackName)
+            const info = await FileSystem.getInfoAsync(asset.uri)
+            const size = (info as { size?: number }).size ?? 0
+            return { folder: 'chat', fileName, contentType: asset.mimeType, size }
+          })
+        )
+
+        // B3. Call API ONLY ONCE
+        const presignResponse = await messageApi.presignBatch(presignRequests)
+        const presignedList = presignResponse.data?.data ?? []
+        const resolvedPresigned = presignRequests.map((_, index) => presignedList[index])
+
+        // B4. Upload toàn bộ files lên S3 (Tuần tự)
+        for (const [index, presigned] of resolvedPresigned.entries()) {
+          if (!presigned) continue
+          await FileSystem.uploadAsync(presigned.presignedUrl, fileAssets[index].uri, {
+            httpMethod: 'PUT',
+            uploadType: FileSystem.FileSystemUploadType.BINARY_CONTENT,
+            headers: { 'Content-Type': presigned.contentType }
+          })
+        }
+
+        const uploaded: AttachmentInfo[] = resolvedPresigned.map((entry, index) => {
+          const resolved = entry as PresignedUploadResponse
+          return {
+            key: resolved.key,
+            url: resolved.publicUrl,
+            fileName: resolved.originalFileName || presignRequests[index].fileName,
+            originalFileName: resolved.originalFileName || presignRequests[index].fileName,
+            contentType: resolved.contentType,
+            size: resolved.size
+          }
+        })
+
+        // B5. Final Mutations
+        if (isMedia) {
+          // B5A. IMAGE / VIDEO: Gửi 1 message duy nhất
+          const finalContent = content.trim() || (allVideos ? '[Video]' : '[Hình ảnh]')
+          sendMsgMutation.mutate({
+            conversationId,
+            content: finalContent,
+            clientMessageId,
+            attachments: uploaded,
+            replyTo: replyTo ? { messageId: replyTo.messageId, senderId: replyTo.senderId, content: replyTo.content, type: replyTo.type } : undefined,
+            isForwarded: false
+          })
+        } else {
+          // B5B. FILE / MIX: Mỗi file 1 message riêng
+          for (let i = 0; i < uploaded.length; i++) {
+            const attachment = uploaded[i]
+            const individualId = `${clientMessageId}-${i}`
+            sendMsgMutation.mutate({
+              conversationId,
+              content: attachment.fileName || '[Tệp tin]',
+              clientMessageId: individualId,
+              attachments: [attachment],
+              replyTo: replyTo ? { messageId: replyTo.messageId, senderId: replyTo.senderId, content: replyTo.content, type: replyTo.type } : undefined,
+              isForwarded: false
+            })
+          }
+        }
       } catch (err) {
-        console.error('[sendFileMessage] upload failed:', err)
+        console.error('[sendFileMessage] Luồng gửi thất bại:', err)
+        // Cleanup optimistic messages
+        queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
+          if (!oldData) return oldData
+          return {
+            ...oldData,
+            pages: oldData.pages.map(page => ({
+              ...page,
+              data: page.data.filter((m: MessageResponse) => !m.id?.startsWith(clientMessageId))
+            }))
+          }
+        })
       } finally {
         setIsUploading(false)
       }
     },
-    [user, queryClient, sendMsgMutation]
+    [getFileNameFromUri, user, queryClient, sendMsgMutation]
   )
 
   return { connected, sendMessage, revokeMessage, deleteMessageForMe, sendFileMessage, isUploading }

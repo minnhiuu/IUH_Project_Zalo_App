@@ -3,26 +3,39 @@ import { useTranslation } from 'react-i18next'
 import { ContactsTab } from '../contacts/contacts-tab'
 import { DiscoverTab } from '../discover/discover-tab'
 import { MessagesTab } from '../messages/messages-tab'
+import { MessageSearchFilter } from '../../schemas'
 
 interface AllTabProps {
-  searchResults: any
-  mockContacts: any[]
+  userResults: any
+  contactResults: any
+  messageResults: any
   searchQuery: string
-  mockMessages: any[]
   setActiveTab: (tab: any) => void
   onItemPress: (item: any) => void
+  onMessageMatchResultsPress?: (item: any) => void
+  messageFilters?: MessageSearchFilter[]
+  onMessageFiltersChange?: (filters: MessageSearchFilter[]) => void
+  isSearchingUsers?: boolean
+  isSearchingContacts?: boolean
+  isSearchingMessages?: boolean
 }
 
 export function AllTab({
-  searchResults,
+  userResults,
+  contactResults,
+  messageResults,
   searchQuery,
-  mockMessages,
-  mockContacts,
   setActiveTab,
-  onItemPress
+  onItemPress,
+  onMessageMatchResultsPress,
+  messageFilters,
+  onMessageFiltersChange,
+  isSearchingUsers,
+  isSearchingContacts,
+  isSearchingMessages
 }: AllTabProps) {
   const { t } = useTranslation()
-  const phoneMatchItem = searchResults?.pages?.flatMap((page: any) => page.data)?.find((item: any) => item.phoneNumber)
+  const phoneMatchItem = userResults?.pages?.flatMap((page: any) => page.data)?.find((item: any) => item.phoneNumber)
 
   return (
     <>
@@ -32,27 +45,33 @@ export function AllTab({
         </View>
       )}
       <ContactsTab
-        mockContacts={mockContacts}
+        searchResults={contactResults}
         searchQuery={searchQuery}
         onItemPress={onItemPress}
         preview={true}
         onSeeMore={() => setActiveTab('contacts')}
+        isLoading={isSearchingContacts}
       />
 
       <MessagesTab
-        mockMessages={mockMessages}
+        searchResults={messageResults}
         searchQuery={searchQuery}
         onItemPress={onItemPress}
+        onMatchResultsPress={onMessageMatchResultsPress}
         preview={true}
         onSeeMore={() => setActiveTab('messages')}
+        filters={messageFilters}
+        onFiltersChange={onMessageFiltersChange}
+        isLoading={isSearchingMessages}
       />
 
       <DiscoverTab
-        searchResults={searchResults}
+        searchResults={userResults}
         searchQuery={searchQuery}
         onItemPress={onItemPress}
         preview={true}
         onSeeMore={() => setActiveTab('discover')}
+        isLoading={isSearchingUsers}
       />
     </>
   )

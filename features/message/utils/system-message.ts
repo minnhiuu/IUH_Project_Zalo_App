@@ -252,4 +252,5 @@ export function getSystemMessageText(
       
       return safeT('messages.system.default', { defaultValue: '[Thông báo]' })
   }
+  return ''
 }

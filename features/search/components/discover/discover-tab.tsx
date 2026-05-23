@@ -1,20 +1,21 @@
-import { UserSummaryResponse } from '@/features/users'
 import { PageResponse } from '@/types/common.types'
 import { InfiniteData } from '@tanstack/react-query'
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { SearchSection } from '../core/search-sections'
 import { DiscoverItem } from './discover-item'
+import { UserSearchResponse } from '../../schemas'
 
 interface DiscoverTabProps {
-  searchResults: InfiniteData<PageResponse<UserSummaryResponse[]>> | undefined
+  searchResults: InfiniteData<PageResponse<UserSearchResponse[]>> | undefined
   searchQuery: string
-  onItemPress: (item: UserSummaryResponse) => void
+  onItemPress: (item: UserSearchResponse) => void
   fetchNextPage?: () => void
   hasNextPage?: boolean
   isFetchingNextPage?: boolean
   preview?: boolean
   onSeeMore?: () => void
+  isLoading?: boolean
 }
 
 export function DiscoverTab({
@@ -25,7 +26,8 @@ export function DiscoverTab({
   hasNextPage,
   isFetchingNextPage,
   preview = false,
-  onSeeMore
+  onSeeMore,
+  isLoading = false
 }: DiscoverTabProps) {
   const { t } = useTranslation()
 
@@ -48,6 +50,7 @@ export function DiscoverTab({
         }
       }}
       isFetchingNextPage={!preview && isFetchingNextPage}
+      isLoading={isLoading}
       onSeeMore={preview ? onSeeMore : undefined}
       scrollEnabled={!preview}
     />

@@ -126,7 +126,7 @@ function GroupConversationAvatar({ conversation }: { conversation: ConversationR
 }
 
 export function ConversationListItem({ conversation, onPress, onLongPress }: ConversationListItemProps) {
-  const containerRef = useRef<TouchableOpacity>(null)
+  const containerRef = useRef<any>(null)
   const { t } = useTranslation()
   const { user: currentUser } = useAuthStore()
   const colorScheme = useColorScheme() ?? 'light'
@@ -139,7 +139,7 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
   const handleLongPress = () => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     if (onLongPress && containerRef.current) {
-      containerRef.current.measureInWindow((x, y, width, height) => {
+      containerRef.current.measureInWindow((x: number, y: number, width: number, height: number) => {
         onLongPress({ x, y, width, height })
       })
     }
@@ -182,6 +182,9 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
     rawConversation.latestMessage?.senderName ||
     (!conversation.isGroup ? conversation.name || '' : '')
 
+  const lastMsgStatus = conversation.lastMessageStatus ?? rawLastMessage?.status
+  const isFromMe = conversation.isLastMessageFromMe ?? rawLastMessage?.isFromMe
+
   // Calculate system text if applicable
   let systemText = null
   if (lastMessageType === 'SYSTEM' || lastMessageType === 'JOIN' || lastMessageType === 'LEAVE' || lastMessageType === 'CALL') {
@@ -206,26 +209,26 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
   const preview = formatPreview(
     {
       content: lastMessageContent,
-      isFromMe: conversation.isLastMessageFromMe,
-      senderName:
-        conversation.isLastMessageFromMe
-          ? ''
-          : incomingSenderName,
+      isFromMe: conversation.isLastMessageFromMe ?? isFromMe,
+      isGroup: conversation.isGroup,
+      senderName: conversation.isLastMessageFromMe ? '' : incomingSenderName,
       type: lastMessageType,
-      status: conversation.lastMessageStatus,
+      status: lastMsgStatus,
       systemText
     },
     {
       you: t('messages.you'),
       user: t('messages.user'),
       type: {
-        image: t('messages.messageType.image', { defaultValue: '[Hình ảnh]' }),
-        file: t('messages.messageType.file', { defaultValue: '[File]' })
+        image: t('message.messageType.image', { defaultValue: '[Hình ảnh]' }),
+        video: t('message.messageType.video', { defaultValue: '[Video]' }),
+        file: t('message.messageType.file', { defaultValue: '[File]' })
       }
     }
   )
 
-  const isRevoked = conversation.lastMessageStatus === MessageStatus.REVOKED
+  const lastMsgTime = lastMessageTime
+  const isRevoked = lastMsgStatus === MessageStatus.REVOKED
 
   const formatTime = (timeValue: string | number | Date | null | undefined) => {
     if (!timeValue) return ''
@@ -285,12 +288,12 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
             }}
             numberOfLines={1}
           >
-            {conversation.name || t('messages.user', { defaultValue: 'User' })}
+            {conversation.name || t('message.user', { defaultValue: 'User' })}
           </Text>
           <View style={{ flexDirection: 'row', alignItems: 'center', marginLeft: 8 }}>
             {isPinned && <Ionicons name="pin" size={12} color="#94A3B8" style={{ marginRight: 4 }} />}
             <Text style={{ fontSize: 13, color: '#94A3B8' }}>
-              {formatTime(lastMessageTime)}
+              {formatTime(lastMessageTime ?? lastMsgTime)}
             </Text>
           </View>
         </View>

@@ -13,7 +13,7 @@ const Divider = React.forwardRef<React.ComponentRef<typeof View>, IDividerProps>
   { className, orientation = 'horizontal', style, ...props },
   ref
 ) {
-  const dividerStyle = {
+  const dividerStyle: any = {
     backgroundColor: '#e5e7eb',
     ...(orientation === 'vertical' ? { width: 1, height: '100%' } : { height: 1, width: '100%' })
   }

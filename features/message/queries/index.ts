@@ -9,6 +9,7 @@ export {
 	useMediaMessages,
 	useFriendsDirectory,
 	useSearchMembersInfinite,
+	useConversationParticipants,
 	useGroupMembersInfinite,
 	useGroupAdminsInfinite,
 	useAdminCandidatesInfinite,

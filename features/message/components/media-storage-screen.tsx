@@ -1,5 +1,5 @@
 // Helper để lấy fallback tiếng Việt cho từng giá trị time filter
-function getTimeLabel(value: string, t: (k: string, d?: string) => string): string {
+function getTimeLabel(value: string, t: any): string {
   switch (value) {
     case 'yesterday': return t('message.storage.yesterday', 'Yesterday')
     case 'lastWeek': return t('message.storage.lastWeek', 'Last week')
@@ -246,7 +246,7 @@ function SharedFilterBar({
         >
           <Ionicons name='calendar-outline' size={13} color={filter.timeFilter ? '#fff' : (isDark ? '#B0B8C1' : '#374151')} />
             <Text style={{ fontSize: 13, color: filter.timeFilter ? '#fff' : (isDark ? '#B0B8C1' : '#374151') }}>
-              {activeTime ? String(t(activeTime.label, getTimeLabel(activeTime.value, t))) : t('message.storage.time', 'Time')}
+              {activeTime ? String(t(activeTime.label, getTimeLabel(activeTime.value || '', t))) : t('message.storage.time', 'Time')}
             </Text>
           {filter.timeFilter
             ? <TouchableOpacity onPress={() => clearFilter('timeFilter')} hitSlop={8}><Ionicons name='close' size={13} color='#fff' /></TouchableOpacity>
@@ -283,7 +283,7 @@ function SharedFilterBar({
               }}
               style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 11, borderBottomWidth: 0.5, borderBottomColor: borderColor }}
             >
-              <Text style={{ flex: 1, fontSize: 14, color: filter.timeFilter === opt.value ? chipActive : (isDark ? '#DFE2E7' : '#111827') }}>{String(t(opt.label, getTimeLabel(opt.value, t)))}</Text>
+              <Text style={{ flex: 1, fontSize: 14, color: filter.timeFilter === opt.value ? chipActive : (isDark ? '#DFE2E7' : '#111827') }}>{String(t(opt.label, getTimeLabel(opt.value || '', t)))}</Text>
               {filter.timeFilter === opt.value && opt.value !== 'custom' && <Ionicons name='checkmark' size={16} color={chipActive} />}
             </TouchableOpacity>
           ))}
