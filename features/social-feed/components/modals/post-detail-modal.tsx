@@ -11,23 +11,14 @@ interface PostDetailModalProps {
   onClose: () => void
 }
 
-export function PostDetailModal({
-  visible,
-  post,
-  onClose
-}: PostDetailModalProps) {
+export function PostDetailModal({ visible, post, onClose }: PostDetailModalProps) {
   const [showReactionPicker, setShowReactionPicker] = useState(false)
   const [commentText, setCommentText] = useState('')
 
   if (!post) return null
 
   return (
-    <Modal
-      visible={visible}
-      animationType='slide'
-      onRequestClose={onClose}
-      transparent={false}
-    >
+    <Modal visible={visible} animationType='slide' onRequestClose={onClose} transparent={false}>
       <View className='flex-1 bg-black'>
         {/* Header */}
         <View className='flex-row items-center justify-between p-4 border-b border-zinc-800'>
@@ -44,9 +35,7 @@ export function PostDetailModal({
 
           {/* Comments Section */}
           <View className='border-t border-zinc-800 p-4'>
-            <Text className='text-white font-bold text-base mb-4'>
-              Bình luận ({post.comments})
-            </Text>
+            <Text className='text-white font-bold text-base mb-4'>Bình luận ({post.comments})</Text>
 
             {/* Comment Input */}
             <View className='bg-zinc-900 rounded-lg p-3 flex-row items-center gap-3 mb-4'>
@@ -71,12 +60,8 @@ export function PostDetailModal({
                 <View className='flex-row gap-3'>
                   <View className='w-8 h-8 rounded-full bg-blue-500' />
                   <View className='flex-1'>
-                    <Text className='text-white text-sm font-semibold'>
-                      Bạn {i}
-                    </Text>
-                    <Text className='text-zinc-300 text-sm mt-1'>
-                      Bình luận số {i}
-                    </Text>
+                    <Text className='text-white text-sm font-semibold'>Bạn {i}</Text>
+                    <Text className='text-zinc-300 text-sm mt-1'>Bình luận số {i}</Text>
                     <View className='flex-row gap-4 mt-2'>
                       <TouchableOpacity>
                         <Text className='text-zinc-500 text-xs'>Thích</Text>

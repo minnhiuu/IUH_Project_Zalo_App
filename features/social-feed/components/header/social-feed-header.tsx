@@ -7,11 +7,7 @@ interface SocialFeedHeaderProps {
   onPostPress?: () => void
 }
 
-export function SocialFeedHeader({
-  onSearchPress,
-  onNotificationsPress,
-  onPostPress
-}: SocialFeedHeaderProps) {
+export function SocialFeedHeader({ onSearchPress, onNotificationsPress, onPostPress }: SocialFeedHeaderProps) {
   return (
     <View className='bg-blue-500 px-4 py-3'>
       {/* Status bar */}
@@ -41,19 +37,11 @@ export function SocialFeedHeader({
           <Text className='text-gray-500 text-sm flex-1'>Tìm kiếm</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={onPostPress}
-          className='p-2 rounded-full'
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity onPress={onPostPress} className='p-2 rounded-full' activeOpacity={0.7}>
           <Edit size={20} color='white' />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={onNotificationsPress}
-          className='relative p-2 rounded-full'
-          activeOpacity={0.7}
-        >
+        <TouchableOpacity onPress={onNotificationsPress} className='relative p-2 rounded-full' activeOpacity={0.7}>
           <Bell size={20} color='white' />
           <View className='absolute top-0 right-0 w-5 h-5 bg-red-500 rounded-full items-center justify-center'>
             <Text className='text-white text-xs font-bold'>4</Text>

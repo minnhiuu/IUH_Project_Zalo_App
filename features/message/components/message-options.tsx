@@ -15,7 +15,14 @@ import { BlockUserModal } from '@/features/users/components/block-user-modal'
 import { useUnfriend } from '@/features/friend/queries/use-mutations'
 import { HEADER } from '@/constants/theme'
 import { MessageType } from '@/features/message/schemas'
-import { useConversations, useMediaMessages, useClearConversationHistory, useDisbandGroup, useLeaveGroup, useUpdateGroupName } from '@/features/message/queries'
+import {
+  useConversations,
+  useMediaMessages,
+  useClearConversationHistory,
+  useDisbandGroup,
+  useLeaveGroup,
+  useUpdateGroupName
+} from '@/features/message/queries'
 import Toast from 'react-native-toast-message'
 
 const DIVIDER_COLOR_LIGHT = '#F0F0F0'
@@ -60,10 +67,21 @@ function MenuItemRow({ icon, label, onPress, destructive, isDark, showChevron = 
 export default function MessageOptionsScreen() {
   const { t } = useTranslation()
   const router = useRouter()
-  const { id, name, isFriend: isFriendString, conversationId } = useLocalSearchParams<{ id: string; name: string; isFriend: string; conversationId?: string }>()
+  const {
+    id,
+    name,
+    isFriend: isFriendString,
+    conversationId
+  } = useLocalSearchParams<{ id: string; name: string; isFriend: string; conversationId?: string }>()
   const { isDark } = useTheme()
   const [blockModalVisible, setBlockModalVisible] = useState(false)
-  const { data: recentMedia = [] } = useMediaMessages(conversationId ?? '', ['IMAGE', 'VIDEO'], 0, 100, !!conversationId)
+  const { data: recentMedia = [] } = useMediaMessages(
+    conversationId ?? '',
+    ['IMAGE', 'VIDEO'],
+    0,
+    100,
+    !!conversationId
+  )
   const [isBestFriend, setIsBestFriend] = useState(false)
   const [pinChat, setPinChat] = useState(false)
   const [muteNotification, setMuteNotification] = useState(false)
@@ -368,8 +386,11 @@ export default function MessageOptionsScreen() {
                 {[
                   { icon: 'search-outline' as const, label: t('message.groupOptions.searchMessages') },
                   { icon: 'brush-outline' as const, label: t('message.groupOptions.changeWallpaper') },
-                  { icon: 'notifications-outline' as const, label: t('message.groupOptions.muteNotifications') }
-                , ...(canManageGroup ? [{ icon: 'person-add-outline' as const, label: t('message.groupOptions.addMember') }] : [])].map((action) => (
+                  { icon: 'notifications-outline' as const, label: t('message.groupOptions.muteNotifications') },
+                  ...(canManageGroup
+                    ? [{ icon: 'person-add-outline' as const, label: t('message.groupOptions.addMember') }]
+                    : [])
+                ].map((action) => (
                   <TouchableOpacity
                     key={action.label}
                     style={{ width: canManageGroup ? '25%' : '33.333%', alignItems: 'center' }}
@@ -404,7 +425,12 @@ export default function MessageOptionsScreen() {
             <View style={{ height: 9, backgroundColor: groupPalette.section }} />
 
             <View style={{ backgroundColor: groupPalette.card }}>
-              <MenuItemRow icon='information-circle-outline' label={t('message.groupOptions.addDescription')} onPress={() => {}} isDark={isDark} />
+              <MenuItemRow
+                icon='information-circle-outline'
+                label={t('message.groupOptions.addDescription')}
+                onPress={() => {}}
+                isDark={isDark}
+              />
             </View>
 
             <View style={{ marginTop: 8, backgroundColor: groupPalette.card, paddingBottom: 8 }}>
@@ -443,9 +469,18 @@ export default function MessageOptionsScreen() {
                         activeOpacity={url ? 0.8 : 1}
                         onPress={() => {
                           if (!conversationId) return
-                          router.push({ pathname: '/media-storage' as any, params: { conversationId, name: groupName } })
+                          router.push({
+                            pathname: '/media-storage' as any,
+                            params: { conversationId, name: groupName }
+                          })
                         }}
-                        style={{ flex: 1, aspectRatio: 1, borderRadius: 8, overflow: 'hidden', backgroundColor: isDark ? '#2A2F36' : '#ECEFF3' }}
+                        style={{
+                          flex: 1,
+                          aspectRatio: 1,
+                          borderRadius: 8,
+                          overflow: 'hidden',
+                          backgroundColor: isDark ? '#2A2F36' : '#ECEFF3'
+                        }}
                       >
                         {url ? (
                           <>
@@ -468,7 +503,14 @@ export default function MessageOptionsScreen() {
                               />
                             )}
                             {item?.isVideo && (
-                              <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
+                              <View
+                                style={{
+                                  position: 'absolute',
+                                  inset: 0,
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
                                 <Ionicons name='play-circle' size={22} color='rgba(255,255,255,0.9)' />
                               </View>
                             )}
@@ -479,9 +521,24 @@ export default function MessageOptionsScreen() {
                   })}
                 </View>
               </View>
-              <MenuItemRow icon='calendar-outline' label={t('message.groupOptions.groupCalendar')} onPress={() => {}} isDark={isDark} />
-              <MenuItemRow icon='attach-outline' label={t('message.groupOptions.pinnedMessages')} onPress={() => {}} isDark={isDark} />
-              <MenuItemRow icon='bar-chart-outline' label={t('message.groupOptions.polls')} onPress={() => {}} isDark={isDark} />
+              <MenuItemRow
+                icon='calendar-outline'
+                label={t('message.groupOptions.groupCalendar')}
+                onPress={() => {}}
+                isDark={isDark}
+              />
+              <MenuItemRow
+                icon='attach-outline'
+                label={t('message.groupOptions.pinnedMessages')}
+                onPress={() => {}}
+                isDark={isDark}
+              />
+              <MenuItemRow
+                icon='bar-chart-outline'
+                label={t('message.groupOptions.polls')}
+                onPress={() => {}}
+                isDark={isDark}
+              />
             </View>
 
             <View style={{ marginTop: 8, backgroundColor: groupPalette.card }}>
@@ -589,13 +646,33 @@ export default function MessageOptionsScreen() {
                   />
                 }
               />
-              <MenuItemRow icon='person-circle-outline' label={t('message.groupOptions.personalSettings')} onPress={() => {}} isDark={isDark} />
+              <MenuItemRow
+                icon='person-circle-outline'
+                label={t('message.groupOptions.personalSettings')}
+                onPress={() => {}}
+                isDark={isDark}
+              />
             </View>
 
             <View style={{ marginTop: 8, backgroundColor: groupPalette.card }}>
-              <MenuItemRow icon='warning-outline' label={t('message.groupOptions.report')} onPress={() => {}} isDark={isDark} />
-              <MenuItemRow icon='pie-chart-outline' label={t('message.groupOptions.storage')} onPress={() => {}} isDark={isDark} />
-              <MenuItemRow icon='trash-outline' label={t('message.groupOptions.clearHistory')} onPress={onClearHistory} isDark={isDark} />
+              <MenuItemRow
+                icon='warning-outline'
+                label={t('message.groupOptions.report')}
+                onPress={() => {}}
+                isDark={isDark}
+              />
+              <MenuItemRow
+                icon='pie-chart-outline'
+                label={t('message.groupOptions.storage')}
+                onPress={() => {}}
+                isDark={isDark}
+              />
+              <MenuItemRow
+                icon='trash-outline'
+                label={t('message.groupOptions.clearHistory')}
+                onPress={onClearHistory}
+                isDark={isDark}
+              />
               {myGroupRole === 'OWNER' ? (
                 <MenuItemRow
                   icon='alert-circle-outline'
@@ -605,237 +682,264 @@ export default function MessageOptionsScreen() {
                   isDark={isDark}
                 />
               ) : null}
-              <MenuItemRow icon='log-out-outline' label={t('message.groupOptions.leaveGroup')} onPress={onLeaveGroup} destructive isDark={isDark} />
+              <MenuItemRow
+                icon='log-out-outline'
+                label={t('message.groupOptions.leaveGroup')}
+                onPress={onLeaveGroup}
+                destructive
+                isDark={isDark}
+              />
             </View>
           </>
         ) : (
-        <>
-        <View style={{ backgroundColor: cardBg, paddingTop: 18, paddingBottom: 16, alignItems: 'center' }}>
-          <View
-            style={{
-              borderRadius: 56,
-              padding: 2,
-              backgroundColor: '#fff',
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 4 },
-              shadowOpacity: 0.2,
-              shadowRadius: 8,
-              elevation: 6
-            }}
-          >
-            <UserAvatar
-              source={userProfile?.avatar || null}
-              name={(name as string) || userProfile?.fullName || ''}
-              size='3xl'
-            />
-          </View>
-          <Text style={{ marginTop: 14, fontSize: 22, fontWeight: '700', color: isDark ? '#F8FAFC' : '#111827' }}>
-            {(name as string) || userProfile?.fullName || ''}
-          </Text>
-
-          <View style={{ flexDirection: 'row', marginTop: 18, paddingHorizontal: 10 }}>
-            {quickActions.map((action) => (
-              <TouchableOpacity
-                key={action.key}
-                style={{ width: '25%', alignItems: 'center' }}
-                activeOpacity={0.7}
-                onPress={() => {
-                  if (action.key === 'mute') setMuteNotification((v) => !v)
-                  if (action.key === 'search') {
-                    openChatSearch()
-                  }
+          <>
+            <View style={{ backgroundColor: cardBg, paddingTop: 18, paddingBottom: 16, alignItems: 'center' }}>
+              <View
+                style={{
+                  borderRadius: 56,
+                  padding: 2,
+                  backgroundColor: '#fff',
+                  shadowColor: '#000',
+                  shadowOffset: { width: 0, height: 4 },
+                  shadowOpacity: 0.2,
+                  shadowRadius: 8,
+                  elevation: 6
                 }}
               >
-                <View
-                  style={{
-                    width: 60,
-                    height: 60,
-                    borderRadius: 30,
-                    backgroundColor: isDark ? '#2A2F36' : '#F3F4F6',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    marginBottom: 8
-                  }}
-                >
-                  <Ionicons name={action.icon} size={27} color={isDark ? '#D0D6DD' : '#111827'} />
-                </View>
-                <Text
-                  style={{ fontSize: 14, textAlign: 'center', color: isDark ? '#D0D6DD' : '#1F2937', lineHeight: 18 }}
-                >
-                  {action.label}
+                <UserAvatar
+                  source={userProfile?.avatar || null}
+                  name={(name as string) || userProfile?.fullName || ''}
+                  size='3xl'
+                />
+              </View>
+              <Text style={{ marginTop: 14, fontSize: 22, fontWeight: '700', color: isDark ? '#F8FAFC' : '#111827' }}>
+                {(name as string) || userProfile?.fullName || ''}
+              </Text>
+
+              <View style={{ flexDirection: 'row', marginTop: 18, paddingHorizontal: 10 }}>
+                {quickActions.map((action) => (
+                  <TouchableOpacity
+                    key={action.key}
+                    style={{ width: '25%', alignItems: 'center' }}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      if (action.key === 'mute') setMuteNotification((v) => !v)
+                      if (action.key === 'search') {
+                        openChatSearch()
+                      }
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 60,
+                        height: 60,
+                        borderRadius: 30,
+                        backgroundColor: isDark ? '#2A2F36' : '#F3F4F6',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: 8
+                      }}
+                    >
+                      <Ionicons name={action.icon} size={27} color={isDark ? '#D0D6DD' : '#111827'} />
+                    </View>
+                    <Text
+                      style={{
+                        fontSize: 14,
+                        textAlign: 'center',
+                        color: isDark ? '#D0D6DD' : '#1F2937',
+                        lineHeight: 18
+                      }}
+                    >
+                      {action.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <View style={{ marginTop: 8, backgroundColor: cardBg }}>
+              <MenuItemRow
+                icon='create-outline'
+                label={t('profile.menu.changeNickname')}
+                onPress={() => {}}
+                isDark={isDark}
+              />
+              <MenuItemRow
+                icon='star-outline'
+                label={t('profile.menu.markAsBestFriend')}
+                onPress={() => {}}
+                isDark={isDark}
+                showChevron={false}
+                rightNode={
+                  <Switch
+                    value={isBestFriend}
+                    onValueChange={setIsBestFriend}
+                    trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
+                    thumbColor='#fff'
+                  />
+                }
+              />
+              <MenuItemRow
+                icon='time-outline'
+                label={t('profile.chatOptions.sharedJournal')}
+                onPress={() => {}}
+                isDark={isDark}
+              />
+            </View>
+
+            <View
+              style={{
+                marginTop: 10,
+                backgroundColor: cardBg,
+                paddingHorizontal: 20,
+                paddingTop: 16,
+                paddingBottom: 14
+              }}
+            >
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  if (!conversationId) return
+                  router.push({
+                    pathname: '/media-storage' as any,
+                    params: { conversationId, name }
+                  })
+                }}
+                style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}
+              >
+                <Ionicons
+                  name='images-outline'
+                  size={22}
+                  color={isDark ? '#D0D6DD' : '#6B7280'}
+                  style={{ marginRight: 14 }}
+                />
+                <Text style={{ flex: 1, fontSize: 18, color: isDark ? '#F1F5F9' : '#1F2937' }}>
+                  {t('profile.chatOptions.mediaFilesLinks')}
                 </Text>
+                <Ionicons name='chevron-forward' size={18} color={isDark ? '#3E444A' : '#C7C7CC'} />
               </TouchableOpacity>
-            ))}
-          </View>
-        </View>
 
-        <View style={{ marginTop: 8, backgroundColor: cardBg }}>
-          <MenuItemRow
-            icon='create-outline'
-            label={t('profile.menu.changeNickname')}
-            onPress={() => {}}
-            isDark={isDark}
-          />
-          <MenuItemRow
-            icon='star-outline'
-            label={t('profile.menu.markAsBestFriend')}
-            onPress={() => {}}
-            isDark={isDark}
-            showChevron={false}
-            rightNode={
-              <Switch
-                value={isBestFriend}
-                onValueChange={setIsBestFriend}
-                trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
-                thumbColor='#fff'
+              <View style={{ flexDirection: 'row', gap: 8 }}>
+                {Array.from({ length: 5 }).map((_, idx) => {
+                  const item = recentMediaItems[idx]
+                  const url = item?.url
+                  return (
+                    <TouchableOpacity
+                      key={idx}
+                      activeOpacity={url ? 0.8 : 1}
+                      onPress={() => {
+                        if (!conversationId) return
+                        router.push({ pathname: '/media-storage' as any, params: { conversationId, name } })
+                      }}
+                      style={{
+                        flex: 1,
+                        aspectRatio: 1,
+                        borderRadius: 8,
+                        overflow: 'hidden',
+                        backgroundColor: isDark ? '#2A2F36' : '#ECEFF3'
+                      }}
+                    >
+                      {url ? (
+                        <>
+                          {item?.isVideo ? (
+                            <Video
+                              source={{ uri: url }}
+                              style={{ width: '100%', height: '100%' }}
+                              resizeMode={ResizeMode.COVER}
+                              shouldPlay={false}
+                              isLooping={false}
+                              isMuted
+                              useNativeControls={false}
+                            />
+                          ) : (
+                            <ExpoImage
+                              source={{ uri: url }}
+                              style={{ width: '100%', height: '100%' }}
+                              contentFit='cover'
+                              cachePolicy='memory-disk'
+                            />
+                          )}
+                          {item?.isVideo && (
+                            <View
+                              style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}
+                            >
+                              <Ionicons name='play-circle' size={22} color='rgba(255,255,255,0.9)' />
+                            </View>
+                          )}
+                        </>
+                      ) : null}
+                    </TouchableOpacity>
+                  )
+                })}
+              </View>
+            </View>
+
+            <View style={{ marginTop: 10, backgroundColor: cardBg }}>
+              <MenuItemRow
+                icon='people-outline'
+                label={t('profile.chatOptions.createGroupWithUser', { name })}
+                onPress={() => {}}
+                isDark={isDark}
               />
-            }
-          />
-          <MenuItemRow
-            icon='time-outline'
-            label={t('profile.chatOptions.sharedJournal')}
-            onPress={() => {}}
-            isDark={isDark}
-          />
-        </View>
-
-        <View
-          style={{ marginTop: 10, backgroundColor: cardBg, paddingHorizontal: 20, paddingTop: 16, paddingBottom: 14 }}
-        >
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => {
-              if (!conversationId) return
-              router.push({
-                pathname: '/media-storage' as any,
-                params: { conversationId, name }
-              })
-            }}
-            style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 14 }}
-          >
-            <Ionicons
-              name='images-outline'
-              size={22}
-              color={isDark ? '#D0D6DD' : '#6B7280'}
-              style={{ marginRight: 14 }}
-            />
-            <Text style={{ flex: 1, fontSize: 18, color: isDark ? '#F1F5F9' : '#1F2937' }}>
-              {t('profile.chatOptions.mediaFilesLinks')}
-            </Text>
-            <Ionicons name='chevron-forward' size={18} color={isDark ? '#3E444A' : '#C7C7CC'} />
-          </TouchableOpacity>
-
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            {Array.from({ length: 5 }).map((_, idx) => {
-              const item = recentMediaItems[idx]
-              const url = item?.url
-              return (
-                <TouchableOpacity
-                  key={idx}
-                  activeOpacity={url ? 0.8 : 1}
-                  onPress={() => {
-                    if (!conversationId) return
-                    router.push({ pathname: '/media-storage' as any, params: { conversationId, name } })
-                  }}
-                  style={{ flex: 1, aspectRatio: 1, borderRadius: 8, overflow: 'hidden', backgroundColor: isDark ? '#2A2F36' : '#ECEFF3' }}
-                >
-                  {url ? (
-                    <>
-                      {item?.isVideo ? (
-                        <Video
-                          source={{ uri: url }}
-                          style={{ width: '100%', height: '100%' }}
-                          resizeMode={ResizeMode.COVER}
-                          shouldPlay={false}
-                          isLooping={false}
-                          isMuted
-                          useNativeControls={false}
-                        />
-                      ) : (
-                        <ExpoImage
-                          source={{ uri: url }}
-                          style={{ width: '100%', height: '100%' }}
-                          contentFit='cover'
-                          cachePolicy='memory-disk'
-                        />
-                      )}
-                      {item?.isVideo && (
-                        <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}>
-                          <Ionicons name='play-circle' size={22} color='rgba(255,255,255,0.9)' />
-                        </View>
-                      )}
-                    </>
-                  ) : null}
-                </TouchableOpacity>
-              )
-            })}
-          </View>
-        </View>
-
-        <View style={{ marginTop: 10, backgroundColor: cardBg }}>
-          <MenuItemRow
-            icon='people-outline'
-            label={t('profile.chatOptions.createGroupWithUser', { name })}
-            onPress={() => {}}
-            isDark={isDark}
-          />
-          <MenuItemRow
-            icon='person-add-outline'
-            label={t('profile.chatOptions.addUserToGroup', { name })}
-            onPress={() => {}}
-            isDark={isDark}
-          />
-          <MenuItemRow
-            icon='people-circle-outline'
-            label={t('profile.chatOptions.viewCommonGroups')}
-            onPress={() => {}}
-            isDark={isDark}
-          />
-        </View>
-
-        <View style={{ marginTop: 10, backgroundColor: cardBg }}>
-          <MenuItemRow
-            icon='pin-outline'
-            label={t('profile.chatOptions.pinConversation')}
-            onPress={() => setPinChat((v) => !v)}
-            isDark={isDark}
-            showChevron={false}
-            rightNode={
-              <Switch
-                value={pinChat}
-                onValueChange={setPinChat}
-                trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
-                thumbColor='#fff'
+              <MenuItemRow
+                icon='person-add-outline'
+                label={t('profile.chatOptions.addUserToGroup', { name })}
+                onPress={() => {}}
+                isDark={isDark}
               />
-            }
-          />
-          {!isOwner && (
-            <MenuItemRow
-              icon='ban-outline'
-              label={blockDetails ? t('settings.privacy.blockSettings') : t('settings.privacy.manageBlock')}
-              onPress={() => setBlockModalVisible(true)}
-              destructive
-              isDark={isDark}
-            />
-          )}
-          {isFriend && !isOwner && (
-            <MenuItemRow
-              icon='person-remove-outline'
-              label={t('profile.menu.unfriend')}
-              onPress={handleUnfriend}
-              destructive
-              isDark={isDark}
-            />
-          )}
-        </View>
-        </>
+              <MenuItemRow
+                icon='people-circle-outline'
+                label={t('profile.chatOptions.viewCommonGroups')}
+                onPress={() => {}}
+                isDark={isDark}
+              />
+            </View>
+
+            <View style={{ marginTop: 10, backgroundColor: cardBg }}>
+              <MenuItemRow
+                icon='pin-outline'
+                label={t('profile.chatOptions.pinConversation')}
+                onPress={() => setPinChat((v) => !v)}
+                isDark={isDark}
+                showChevron={false}
+                rightNode={
+                  <Switch
+                    value={pinChat}
+                    onValueChange={setPinChat}
+                    trackColor={{ false: '#D1D5DB', true: '#93C5FD' }}
+                    thumbColor='#fff'
+                  />
+                }
+              />
+              {!isOwner && (
+                <MenuItemRow
+                  icon='ban-outline'
+                  label={blockDetails ? t('settings.privacy.blockSettings') : t('settings.privacy.manageBlock')}
+                  onPress={() => setBlockModalVisible(true)}
+                  destructive
+                  isDark={isDark}
+                />
+              )}
+              {isFriend && !isOwner && (
+                <MenuItemRow
+                  icon='person-remove-outline'
+                  label={t('profile.menu.unfriend')}
+                  onPress={handleUnfriend}
+                  destructive
+                  isDark={isDark}
+                />
+              )}
+            </View>
+          </>
         )}
       </ScrollView>
 
       <Modal visible={renameVisible} transparent animationType='fade' onRequestClose={() => setRenameVisible(false)}>
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'center', paddingHorizontal: 20 }}>
           <View style={{ backgroundColor: isDark ? '#1E2530' : '#FFFFFF', borderRadius: 14, padding: 14 }}>
-            <Text style={{ fontSize: 16, fontWeight: '700', color: isDark ? '#EEF2F8' : '#111827' }}>{t('message.groupOptions.renameTitle')}</Text>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: isDark ? '#EEF2F8' : '#111827' }}>
+              {t('message.groupOptions.renameTitle')}
+            </Text>
             <TextInput
               value={renameValue}
               onChangeText={setRenameValue}
@@ -853,10 +957,14 @@ export default function MessageOptionsScreen() {
             />
             <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 14, gap: 10 }}>
               <TouchableOpacity onPress={() => setRenameVisible(false)}>
-                <Text style={{ color: isDark ? '#C8D1DE' : '#6B7280', fontSize: 14 }}>{t('message.groupOptions.cancel')}</Text>
+                <Text style={{ color: isDark ? '#C8D1DE' : '#6B7280', fontSize: 14 }}>
+                  {t('message.groupOptions.cancel')}
+                </Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={submitRenameGroup}>
-                <Text style={{ color: '#228BE6', fontSize: 14, fontWeight: '700' }}>{t('message.groupOptions.renameSave')}</Text>
+                <Text style={{ color: '#228BE6', fontSize: 14, fontWeight: '700' }}>
+                  {t('message.groupOptions.renameSave')}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>

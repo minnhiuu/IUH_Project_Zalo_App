@@ -167,7 +167,14 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
           if (idx >= 0) {
             const updated: ConversationResponse = {
               ...conversations[idx],
-              lastMessage: typeof msg.content === 'string' ? msg.content : (msg.type === 'IMAGE' ? '[Hình ảnh]' : msg.type === 'FILE' ? '[Tệp]' : ''),
+              lastMessage:
+                typeof msg.content === 'string'
+                  ? msg.content
+                  : msg.type === 'IMAGE'
+                    ? '[Hình ảnh]'
+                    : msg.type === 'FILE'
+                      ? '[Tệp]'
+                      : '',
               lastMessageTime: msg.createdAt || new Date().toISOString(),
               isLastMessageFromMe: isOwnMessage,
               lastMessageType: msg.type,
@@ -259,9 +266,9 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
                 data: page.data.map((m: MessageResponse) =>
                   m.id === event.messageId
                     ? {
-                      ...m,
-                      reactions: event.reactions && Object.keys(event.reactions).length ? event.reactions : undefined
-                    }
+                        ...m,
+                        reactions: event.reactions && Object.keys(event.reactions).length ? event.reactions : undefined
+                      }
                     : m
                 )
               }))
@@ -296,23 +303,21 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
               const nextConversations =
                 existingIdx >= 0
                   ? [
-                    {
-                      ...conversations[existingIdx],
-                      ...newConv,
-                      // Keep members from cache if update payload is partial.
-                      members: Array.isArray(newConv.members) ? newConv.members : conversations[existingIdx].members
-                    },
-                    ...conversations.filter((_, i) => i !== existingIdx)
-                  ]
+                      {
+                        ...conversations[existingIdx],
+                        ...newConv,
+                        // Keep members from cache if update payload is partial.
+                        members: Array.isArray(newConv.members) ? newConv.members : conversations[existingIdx].members
+                      },
+                      ...conversations.filter((_, i) => i !== existingIdx)
+                    ]
                   : [newConv, ...conversations]
 
-              const newList = nextConversations.sort(
-                (a: any, b: any) => {
-                  const bTime = parseMessageDate(b.lastMessageTime)?.getTime() || 0
-                  const aTime = parseMessageDate(a.lastMessageTime)?.getTime() || 0
-                  return bTime - aTime
-                }
-              )
+              const newList = nextConversations.sort((a: any, b: any) => {
+                const bTime = parseMessageDate(b.lastMessageTime)?.getTime() || 0
+                const aTime = parseMessageDate(a.lastMessageTime)?.getTime() || 0
+                return bTime - aTime
+              })
 
               // Match web behavior: update sidebars relying on join requests/member lists.
               queryClient.invalidateQueries({ queryKey: messageKeys.groupMembers(newConv.id, '') })
@@ -404,11 +409,13 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
     onWebSocketClose: () => {
       isConnecting = false
     },
-    debug: __DEV__ ? (msg) => {
-      if (msg.includes('MESSAGE') || msg.includes('CONNECT')) {
-        console.log('[STOMP]', msg)
-      }
-    } : undefined
+    debug: __DEV__
+      ? (msg) => {
+          if (msg.includes('MESSAGE') || msg.includes('CONNECT')) {
+            console.log('[STOMP]', msg)
+          }
+        }
+      : undefined
   })
 
   client.activate()
@@ -649,7 +656,7 @@ export const useChatWebSocket = () => {
 
       const imageCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('image/')).length
       const videoCount = fileAssets.filter((asset) => asset.mimeType?.startsWith('video/')).length
-      
+
       // Prepare optimistic attachments
       const optimisticAttachments: AttachmentInfo[] = fileAssets.map((asset, index) => ({
         key: `temp-${index}`,
@@ -771,7 +778,14 @@ export const useChatWebSocket = () => {
             content: finalContent,
             clientMessageId,
             attachments: uploaded,
-            replyTo: replyTo ? { messageId: replyTo.messageId, senderId: replyTo.senderId, content: replyTo.content, type: replyTo.type } : undefined,
+            replyTo: replyTo
+              ? {
+                  messageId: replyTo.messageId,
+                  senderId: replyTo.senderId,
+                  content: replyTo.content,
+                  type: replyTo.type
+                }
+              : undefined,
             isForwarded: false
           })
         } else {
@@ -784,7 +798,14 @@ export const useChatWebSocket = () => {
               content: attachment.fileName || '[Tệp tin]',
               clientMessageId: individualId,
               attachments: [attachment],
-              replyTo: replyTo ? { messageId: replyTo.messageId, senderId: replyTo.senderId, content: replyTo.content, type: replyTo.type } : undefined,
+              replyTo: replyTo
+                ? {
+                    messageId: replyTo.messageId,
+                    senderId: replyTo.senderId,
+                    content: replyTo.content,
+                    type: replyTo.type
+                  }
+                : undefined,
               isForwarded: false
             })
           }
@@ -796,7 +817,7 @@ export const useChatWebSocket = () => {
           if (!oldData) return oldData
           return {
             ...oldData,
-            pages: oldData.pages.map(page => ({
+            pages: oldData.pages.map((page) => ({
               ...page,
               data: page.data.filter((m: MessageResponse) => !m.id?.startsWith(clientMessageId))
             }))

@@ -57,9 +57,7 @@ export function ContactSuggestionItem({ suggestion, onPress }: ContactSuggestion
             backgroundColor: semanticColors.secondary
           }}
         >
-          <Text style={{ fontSize: 12, color: semanticColors.textSecondary }}>
-            {t('friend.status.accepted')}
-          </Text>
+          <Text style={{ fontSize: 12, color: semanticColors.textSecondary }}>{t('friend.status.accepted')}</Text>
         </View>
       )
     }
@@ -108,9 +106,7 @@ export function ContactSuggestionItem({ suggestion, onPress }: ContactSuggestion
         }}
       >
         <Ionicons name='person-add-outline' size={16} color={BRAND.blue} />
-        <Text style={{ fontSize: 13, fontWeight: '600', color: BRAND.blue }}>
-          {t('friend.actions.addFriend')}
-        </Text>
+        <Text style={{ fontSize: 13, fontWeight: '600', color: BRAND.blue }}>{t('friend.actions.addFriend')}</Text>
       </TouchableOpacity>
     )
   }
@@ -135,9 +131,7 @@ export function ContactSuggestionItem({ suggestion, onPress }: ContactSuggestion
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 2, gap: 4 }}>
           <Ionicons name='call-outline' size={12} color={semanticColors.textSecondary} />
-          <Text style={{ fontSize: 13, color: semanticColors.textSecondary }}>
-            {t('friend.contact.fromContacts')}
-          </Text>
+          <Text style={{ fontSize: 13, color: semanticColors.textSecondary }}>{t('friend.contact.fromContacts')}</Text>
         </View>
         {(suggestion.mutualFriendsCount ?? 0) > 0 && (
           <Text style={{ fontSize: 12, color: semanticColors.textSecondary, marginTop: 1 }}>

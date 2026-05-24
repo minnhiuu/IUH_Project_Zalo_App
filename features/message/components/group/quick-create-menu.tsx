@@ -51,7 +51,13 @@ export function QuickCreateMenu({ visible, onClose, actions }: QuickCreateMenuPr
                 onClose()
                 action.onPress()
               }}
-              style={[styles.item, index < actions.length - 1 && { borderBottomWidth: StyleSheet.hairlineWidth, borderBottomColor: palette.divider }]}
+              style={[
+                styles.item,
+                index < actions.length - 1 && {
+                  borderBottomWidth: StyleSheet.hairlineWidth,
+                  borderBottomColor: palette.divider
+                }
+              ]}
             >
               <Ionicons name={action.icon} size={24} color={palette.icon} />
               <Text style={[styles.itemLabel, { color: palette.text }]}>{action.label}</Text>

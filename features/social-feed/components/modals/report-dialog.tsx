@@ -14,14 +14,10 @@ const REPORT_REASONS = [
   { id: 'inappropriate', label: 'Nội dung không phù hợp', icon: Flag },
   { id: 'harassment', label: 'Qu騷rào', icon: Heart },
   { id: 'violence', label: 'Bạo lực', icon: AlertCircle },
-  { id: 'other', label: 'Khác', icon: ThumbsDown },
+  { id: 'other', label: 'Khác', icon: ThumbsDown }
 ]
 
-export function ReportDialog({
-  visible,
-  postId,
-  onClose
-}: ReportDialogProps) {
+export function ReportDialog({ visible, postId, onClose }: ReportDialogProps) {
   const [selectedReason, setSelectedReason] = useState<string | null>(null)
   const [step, setStep] = useState<'reason' | 'confirm'>('reason')
 
@@ -64,9 +60,7 @@ export function ReportDialog({
           <>
             <ScrollView className='flex-1' showsVerticalScrollIndicator={false}>
               <View className='p-4'>
-                <Text className='text-zinc-400 text-sm mb-4'>
-                  Tại sao bạn muốn báo cáo bài viết này?
-                </Text>
+                <Text className='text-zinc-400 text-sm mb-4'>Tại sao bạn muốn báo cáo bài viết này?</Text>
 
                 {REPORT_REASONS.map((reason) => {
                   const Icon = reason.icon
@@ -74,22 +68,17 @@ export function ReportDialog({
                     <TouchableOpacity
                       key={reason.id}
                       onPress={() => setSelectedReason(reason.id)}
-                      className={`flex-row items-center gap-4 p-4 rounded-lg mb-2 ${selectedReason === reason.id
+                      className={`flex-row items-center gap-4 p-4 rounded-lg mb-2 ${
+                        selectedReason === reason.id
                           ? 'bg-red-500/20 border border-red-500'
                           : 'bg-zinc-900 border border-zinc-800'
-                        }`}
+                      }`}
                     >
-                      <Icon
-                        size={24}
-                        color={
-                          selectedReason === reason.id ? '#ef4444' : '#71717a'
-                        }
-                      />
+                      <Icon size={24} color={selectedReason === reason.id ? '#ef4444' : '#71717a'} />
                       <Text
-                        className={`text-sm font-medium ${selectedReason === reason.id
-                            ? 'text-red-500'
-                            : 'text-zinc-300'
-                          }`}
+                        className={`text-sm font-medium ${
+                          selectedReason === reason.id ? 'text-red-500' : 'text-zinc-300'
+                        }`}
                       >
                         {reason.label}
                       </Text>
@@ -113,8 +102,7 @@ export function ReportDialog({
               <TouchableOpacity
                 disabled={!selectedReason}
                 onPress={handleSubmit}
-                className={`flex-1 py-3 rounded-lg ${selectedReason ? 'bg-red-600' : 'bg-red-600/50'
-                  }`}
+                className={`flex-1 py-3 rounded-lg ${selectedReason ? 'bg-red-600' : 'bg-red-600/50'}`}
               >
                 <Text className='text-white text-center font-semibold'>Tiếp</Text>
               </TouchableOpacity>
@@ -126,9 +114,7 @@ export function ReportDialog({
               <View className='w-16 h-16 rounded-full bg-green-500/20 items-center justify-center mb-4'>
                 <Text className='text-4xl'>✓</Text>
               </View>
-              <Text className='text-white font-bold text-xl text-center mb-2'>
-                Cảm ơn bạn
-              </Text>
+              <Text className='text-white font-bold text-xl text-center mb-2'>Cảm ơn bạn</Text>
               <Text className='text-zinc-400 text-center text-sm'>
                 Chúng tôi sẽ xem xét báo cáo của bạn trong thời gian sớm nhất
               </Text>

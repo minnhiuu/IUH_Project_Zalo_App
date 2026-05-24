@@ -226,8 +226,7 @@ http.interceptors.response.use(
       originalRequest?.url?.includes('/auth/refresh')
 
     const isFileUploadRequest =
-      originalRequest?.url?.includes('/files/upload') ||
-      originalRequest?.url?.includes('/api/files/upload')
+      originalRequest?.url?.includes('/files/upload') || originalRequest?.url?.includes('/api/files/upload')
 
     // Handle 401 - try to refresh token
     if (error.response?.status === 401 && !originalRequest._retry) {

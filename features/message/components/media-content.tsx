@@ -6,7 +6,13 @@ import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
 import type { AttachmentInfo } from '../schemas'
 
-export function MessageMediaContent({ attachments, onLongPress }: { attachments: AttachmentInfo[]; onLongPress?: () => void }) {
+export function MessageMediaContent({
+  attachments,
+  onLongPress
+}: {
+  attachments: AttachmentInfo[]
+  onLongPress?: () => void
+}) {
   const validAttachments = attachments.filter((attachment) => !!attachment.url)
   const [previewIndex, setPreviewIndex] = useState<number | null>(null)
 
@@ -307,12 +313,7 @@ function MediaPreviewModal({
   )
 }
 
-function calculateFittedDimensions(
-  originalWidth: number,
-  originalHeight: number,
-  maxWidth: number,
-  maxHeight: number
-) {
+function calculateFittedDimensions(originalWidth: number, originalHeight: number, maxWidth: number, maxHeight: number) {
   const widthRatio = maxWidth / originalWidth
   const heightRatio = maxHeight / originalHeight
   const ratio = Math.min(widthRatio, heightRatio, 1)

@@ -15,21 +15,9 @@ interface ReelsFeedProps {
   itemHeight?: number
 }
 
-export function ReelsFeed({
-  onReactionPress,
-  onCommentPress,
-  onSharePress,
-  itemHeight
-}: ReelsFeedProps) {
-  const {
-    data,
-    hasNextPage,
-    fetchNextPage,
-    isFetchingNextPage,
-    isLoading,
-    isError,
-    refetch
-  } = useInfiniteSocialReels(20)
+export function ReelsFeed({ onReactionPress, onCommentPress, onSharePress, itemHeight }: ReelsFeedProps) {
+  const { data, hasNextPage, fetchNextPage, isFetchingNextPage, isLoading, isError, refetch } =
+    useInfiniteSocialReels(20)
 
   const reelsRaw = useMemo(() => {
     const raw = data?.pages.flatMap((page) => page.posts) ?? []
@@ -65,23 +53,23 @@ export function ReelsFeed({
   const currentUserAvatarFromProfile = useMemo(() => {
     const profile = myProfile as
       | ({
-        avatar?: string | null
-        avatarUrl?: string | null
-        photoUrl?: string | null
-        profileAvatar?: string | null
-        imageUrl?: string | null
-      } & Record<string, unknown>)
+          avatar?: string | null
+          avatarUrl?: string | null
+          photoUrl?: string | null
+          profileAvatar?: string | null
+          imageUrl?: string | null
+        } & Record<string, unknown>)
       | null
       | undefined
 
     const profileById = myProfileById as
       | ({
-        avatar?: string | null
-        avatarUrl?: string | null
-        photoUrl?: string | null
-        profileAvatar?: string | null
-        imageUrl?: string | null
-      } & Record<string, unknown>)
+          avatar?: string | null
+          avatarUrl?: string | null
+          photoUrl?: string | null
+          profileAvatar?: string | null
+          imageUrl?: string | null
+        } & Record<string, unknown>)
       | null
       | undefined
 
@@ -181,10 +169,7 @@ export function ReelsFeed({
     return (
       <View className='flex-1 items-center justify-center'>
         <Text className='text-zinc-500 mb-4'>Failed to load reels</Text>
-        <TouchableOpacity
-          onPress={() => refetch()}
-          className='px-4 py-2 bg-blue-500 rounded-lg'
-        >
+        <TouchableOpacity onPress={() => refetch()} className='px-4 py-2 bg-blue-500 rounded-lg'>
           <Text className='text-white font-semibold'>Retry</Text>
         </TouchableOpacity>
       </View>

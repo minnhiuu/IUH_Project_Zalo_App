@@ -78,7 +78,6 @@ const uploadToPresignedUrl = async (presigned: PresignedUploadResponse, uri: str
     }
   })
 
-
   if (uploadResult.status < 200 || uploadResult.status >= 300) {
     throw new Error(`Upload failed with status ${uploadResult.status}`)
   }
@@ -86,30 +85,29 @@ const uploadToPresignedUrl = async (presigned: PresignedUploadResponse, uri: str
 
 export const fileApi = {
   upload: (uri: string, type: 'IMAGE' | 'VIDEO') => {
-    const formData = new FormData();
-    const fileName = uri.split('/').pop() || 'file';
-    const name = fileName.split('.').slice(0, -1).join('.') || 'file';
-    let ext = fileName.split('.').pop()?.toLowerCase() || (type === 'IMAGE' ? 'jpg' : 'mp4');
+    const formData = new FormData()
+    const fileName = uri.split('/').pop() || 'file'
+    const name = fileName.split('.').slice(0, -1).join('.') || 'file'
+    let ext = fileName.split('.').pop()?.toLowerCase() || (type === 'IMAGE' ? 'jpg' : 'mp4')
 
-    if (ext === 'jpeg') ext = 'jpg';
+    if (ext === 'jpeg') ext = 'jpg'
 
     formData.append('file', {
       uri,
       name: `${name}.${ext}`,
       type: type === 'IMAGE' ? `image/${ext}` : `video/${ext}`
-    } as any);
+    } as any)
 
     return axiosInstance.post<ApiResponse<FileUploadResponse>>('/files/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
-    });
+    })
   },
 
   uploadLikeWeb: async (uri: string, type: 'IMAGE' | 'VIDEO'): Promise<PresignedUploadResult> => {
     const response = await fileApi.upload(uri, type)
     const key = response.data?.data?.key
-
 
     if (!key) {
       throw new Error('Missing uploaded media key')
@@ -131,15 +129,11 @@ export const fileApi = {
   ): Promise<PresignedUploadResult[]> => {
     if (items.length === 0) return []
 
-    const presignRequests = await Promise.all(
-      items.map((item) => buildPresignRequest(item.uri, item.type, folder))
-    )
+    const presignRequests = await Promise.all(items.map((item) => buildPresignRequest(item.uri, item.type, folder)))
 
     const response = await fileApi.presignBatch(presignRequests)
     const presignedList = response.data?.data ?? []
-    const presignedByName = new Map(
-      presignedList.map((entry) => [entry.originalFileName, entry])
-    )
+    const presignedByName = new Map(presignedList.map((entry) => [entry.originalFileName, entry]))
 
     const resolvedPresigned = presignRequests.map((request, index) => {
       return presignedList[index] ?? presignedByName.get(request.fileName)
@@ -163,4 +157,4 @@ export const fileApi = {
   uploadWithPresigned: async (uri: string, type: 'IMAGE' | 'VIDEO', _folder = DEFAULT_FOLDER) => {
     return fileApi.uploadLikeWeb(uri, type)
   }
-};
+}

@@ -15,7 +15,9 @@ import type {
   AdminMemberResponse,
   GroupSettings,
   JoinGroupPreviewResponse,
-  JoinRequestResponse
+  JoinRequestResponse,
+  ReminderRequest,
+  ReminderResponse
 } from '../schemas'
 
 export type UploadFileResponse = {
@@ -45,11 +47,11 @@ export type PresignedUploadResponse = {
 }
 
 export const messageApi = {
-    createGroupConversation: (request: GroupConversationCreateRequest) =>
-      http.post<ApiResponse<ConversationResponse>>(API_ENDPOINTS.MESSAGE.GROUPS, request),
+  createGroupConversation: (request: GroupConversationCreateRequest) =>
+    http.post<ApiResponse<ConversationResponse>>(API_ENDPOINTS.MESSAGE.GROUPS, request),
 
-    sendGroupInvites: (conversationId: string, userIds: string[]) =>
-      http.post<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.GROUP_INVITES(conversationId), { userIds }),
+  sendGroupInvites: (conversationId: string, userIds: string[]) =>
+    http.post<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.GROUP_INVITES(conversationId), { userIds }),
 
   getConversations: (page: number = 0, size: number = 20) =>
     http.get<ApiResponse<PageResponse<ConversationResponse[]>>>(
@@ -120,11 +122,9 @@ export const messageApi = {
     }
     headers['Content-Type'] = 'multipart/form-data'
 
-    return http.post<ApiResponse<UploadFileResponse>>(
-      `${API_ENDPOINTS.FILE.UPLOAD}?folder=${folder}`,
-      formData,
-      { headers }
-    )
+    return http.post<ApiResponse<UploadFileResponse>>(`${API_ENDPOINTS.FILE.UPLOAD}?folder=${folder}`, formData, {
+      headers
+    })
   },
 
   presignBatch: (requests: PresignFileRequest[]) =>
@@ -152,9 +152,13 @@ export const messageApi = {
     const token = await getAccessToken()
     const headers: Record<string, string> = { 'Content-Type': 'multipart/form-data' }
     if (token) headers.Authorization = `Bearer ${token}`
-    return http.patch<ApiResponse<ConversationResponse>>(API_ENDPOINTS.MESSAGE.UPDATE_GROUP_AVATAR(conversationId), formData, {
-      headers
-    })
+    return http.patch<ApiResponse<ConversationResponse>>(
+      API_ENDPOINTS.MESSAGE.UPDATE_GROUP_AVATAR(conversationId),
+      formData,
+      {
+        headers
+      }
+    )
   },
 
   disbandGroup: (conversationId: string) =>
@@ -189,13 +193,16 @@ export const messageApi = {
     ),
 
   getGroupMembers: (conversationId: string, params?: { query?: string; page?: number; size?: number }) =>
-    http.get<ApiResponse<PageResponse<GroupMemberListItemResponse[]>>>(API_ENDPOINTS.MESSAGE.GROUP_MEMBERS(conversationId), {
-      params: {
-        query: params?.query,
-        page: params?.page ?? 0,
-        size: params?.size ?? 20
+    http.get<ApiResponse<PageResponse<GroupMemberListItemResponse[]>>>(
+      API_ENDPOINTS.MESSAGE.GROUP_MEMBERS(conversationId),
+      {
+        params: {
+          query: params?.query,
+          page: params?.page ?? 0,
+          size: params?.size ?? 20
+        }
       }
-    }),
+    ),
 
   removeMemberFromGroup: (conversationId: string, targetUserId: string, blockFromGroup = false) =>
     http.delete<ApiResponse<ConversationResponse>>(API_ENDPOINTS.MESSAGE.REMOVE_MEMBER(conversationId, targetUserId), {
@@ -222,7 +229,10 @@ export const messageApi = {
     }),
 
   updateGroupSettings: (conversationId: string, settings: Partial<GroupSettings>) =>
-    http.patch<ApiResponse<ConversationResponse>>(API_ENDPOINTS.MESSAGE.UPDATE_GROUP_SETTINGS(conversationId), settings),
+    http.patch<ApiResponse<ConversationResponse>>(
+      API_ENDPOINTS.MESSAGE.UPDATE_GROUP_SETTINGS(conversationId),
+      settings
+    ),
 
   refreshJoinLink: (conversationId: string) =>
     http.post<ApiResponse<string>>(API_ENDPOINTS.MESSAGE.REFRESH_JOIN_LINK(conversationId)),
@@ -250,6 +260,15 @@ export const messageApi = {
   rejectJoinRequest: (conversationId: string, requestId: string) =>
     http.post<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.REJECT_JOIN_REQUEST(conversationId, requestId)),
 
+  createReminder: (request: ReminderRequest) =>
+    http.post<ApiResponse<ReminderResponse>>(API_ENDPOINTS.MESSAGE.REMINDERS, request),
+
+  getRemindersByConversation: (conversationId: string) =>
+    http.get<ApiResponse<ReminderResponse[]>>(API_ENDPOINTS.MESSAGE.REMINDERS_BY_CONVERSATION(conversationId)),
+
+  deleteReminder: (reminderId: string) =>
+    http.delete<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.REMINDER_DELETE(reminderId)),
+
   cancelMyJoinRequest: (conversationId: string) =>
     http.delete<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.CANCEL_MY_JOIN_REQUEST(conversationId)),
 
@@ -265,11 +284,20 @@ export const messageApi = {
     }),
 
   getBlockCandidates: (conversationId: string, query?: string, page = 0, size = 20) =>
-    http.get<ApiResponse<PageResponse<SearchMemberResponse[]>>>(API_ENDPOINTS.MESSAGE.BLOCK_CANDIDATES(conversationId), {
-      params: { query, page, size }
-    }),
+    http.get<ApiResponse<PageResponse<SearchMemberResponse[]>>>(
+      API_ENDPOINTS.MESSAGE.BLOCK_CANDIDATES(conversationId),
+      {
+        params: { query, page, size }
+      }
+    ),
 
-  getMyGroupConversations: (params?: { query?: string; sort?: string; filter?: string; page?: number; size?: number }) =>
+  getMyGroupConversations: (params?: {
+    query?: string
+    sort?: string
+    filter?: string
+    page?: number
+    size?: number
+  }) =>
     http.get<ApiResponse<PageResponse<ConversationResponse[]>>>(API_ENDPOINTS.MESSAGE.MY_GROUPS, {
       params: {
         query: params?.query,
@@ -280,7 +308,12 @@ export const messageApi = {
       }
     }),
 
-  getMediaMessages: (conversationId: string, types: string[] = ['IMAGE', 'VIDEO'], page: number = 0, size: number = 50) =>
+  getMediaMessages: (
+    conversationId: string,
+    types: string[] = ['IMAGE', 'VIDEO'],
+    page: number = 0,
+    size: number = 50
+  ) =>
     http.get<ApiResponse<PageResponse<MessageResponse[]>>>(
       `${API_ENDPOINTS.MESSAGE.MEDIA(conversationId)}?types=${types.join(',')}&page=${page}&size=${size}`
     )

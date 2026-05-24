@@ -34,7 +34,9 @@ export const friendApi = {
     ),
 
   getMyFriends: (page: number = 0, size: number = 10) =>
-    http.get<ApiResponse<PageResponse<FriendResponse[]>>>(`${API_ENDPOINTS.FRIENDSHIP.MY_FRIENDS}?page=${page}&size=${size}`),
+    http.get<ApiResponse<PageResponse<FriendResponse[]>>>(
+      `${API_ENDPOINTS.FRIENDSHIP.MY_FRIENDS}?page=${page}&size=${size}`
+    ),
 
   unfriend: (friendId: string) => http.delete<ApiResponse<void>>(API_ENDPOINTS.FRIENDSHIP.UNFRIEND(friendId)),
 

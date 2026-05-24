@@ -59,7 +59,11 @@ export function parseGroupLinkContent(raw?: string | null): GroupLinkPayload | n
   if (!match) return null
 
   const full = match[0]
-  const normalizedUrl = full.startsWith('http') ? full : full.startsWith('/g/') ? `${getGroupLinkWebOrigin()}${full}` : `https://${full}`
+  const normalizedUrl = full.startsWith('http')
+    ? full
+    : full.startsWith('/g/')
+      ? `${getGroupLinkWebOrigin()}${full}`
+      : `https://${full}`
   return {
     url: normalizedUrl,
     groupName: undefined,

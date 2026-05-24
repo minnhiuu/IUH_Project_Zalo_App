@@ -20,7 +20,7 @@ import {
   useJoinRequestsInfinite,
   usePromoteToAdmin,
   useRejectJoinRequest,
-  useRemoveMemberFromGroup,
+  useRemoveMemberFromGroup
 } from '@/features/message/queries'
 
 type TabKey = 'all' | 'admins' | 'blocked'
@@ -53,10 +53,7 @@ export default function GroupMembersScreen() {
   const removeMember = useRemoveMemberFromGroup()
   const blockMember = useBlockMemberFromGroup()
 
-  const allMembers = useMemo(
-    () => groupMembersQ.data?.pages.flatMap((p) => p?.data || []) || [],
-    [groupMembersQ.data]
-  )
+  const allMembers = useMemo(() => groupMembersQ.data?.pages.flatMap((p) => p?.data || []) || [], [groupMembersQ.data])
 
   const pendingRequests = useMemo(
     () =>
@@ -69,7 +66,9 @@ export default function GroupMembersScreen() {
 
   const displayedMembers = useMemo(() => {
     if (activeTab === 'admins') {
-      return allMembers.filter((m) => String(m.role || '').toUpperCase() === 'OWNER' || String(m.role || '').toUpperCase() === 'ADMIN')
+      return allMembers.filter(
+        (m) => String(m.role || '').toUpperCase() === 'OWNER' || String(m.role || '').toUpperCase() === 'ADMIN'
+      )
     }
     if (activeTab === 'blocked') return []
     return allMembers
@@ -184,12 +183,18 @@ export default function GroupMembersScreen() {
 
       {isAdmin ? (
         <>
-          <View style={[styles.tabsRow, { backgroundColor: palette.card, borderBottomColor: palette.line }]}> 
+          <View style={[styles.tabsRow, { backgroundColor: palette.card, borderBottomColor: palette.line }]}>
             {tabs.map((tab) => {
               const active = tab.key === activeTab
               return (
                 <Pressable key={tab.key} style={styles.tabBtn} onPress={() => setActiveTab(tab.key)}>
-                  <Text style={{ color: active ? palette.text : palette.subText, fontSize: 14, fontWeight: active ? '700' : '600' }}>
+                  <Text
+                    style={{
+                      color: active ? palette.text : palette.subText,
+                      fontSize: 14,
+                      fontWeight: active ? '700' : '600'
+                    }}
+                  >
                     {tab.label}
                   </Text>
                   {active && <View style={[styles.tabUnderline, { backgroundColor: palette.text }]} />}
@@ -203,14 +208,19 @@ export default function GroupMembersScreen() {
               activeOpacity={0.78}
               onPress={() => {
                 if (!conversationId) return
-                router.push({ pathname: '/group/approval' as any, params: { conversationId, name: String(name || ''), canManage: 'true' } })
+                router.push({
+                  pathname: '/group/approval' as any,
+                  params: { conversationId, name: String(name || ''), canManage: 'true' }
+                })
               }}
               style={[styles.approveRow, { backgroundColor: palette.card, borderBottomColor: palette.line }]}
             >
               <View style={[styles.approveIcon, { backgroundColor: isDark ? '#273244' : '#F2F5F9' }]}>
                 <Ionicons name='person-add-outline' size={20} color={palette.text} />
               </View>
-              <Text style={{ fontSize: 15, color: palette.text, flex: 1 }}>{t('message.groupMembers.approveMembers')}</Text>
+              <Text style={{ fontSize: 15, color: palette.text, flex: 1 }}>
+                {t('message.groupMembers.approveMembers')}
+              </Text>
               <Text style={{ color: palette.subText, fontSize: 14 }}>
                 {pendingRequests.length > 0 ? `(${pendingRequests.length})` : ''}
               </Text>
@@ -228,7 +238,7 @@ export default function GroupMembersScreen() {
 
       <ScrollView style={{ flex: 1 }}>
         {isAdmin && (
-          <View style={[styles.membersHeaderRow, { backgroundColor: palette.card, borderTopColor: palette.line }]}> 
+          <View style={[styles.membersHeaderRow, { backgroundColor: palette.card, borderTopColor: palette.line }]}>
             <Text style={{ color: palette.primary, fontSize: 15, fontWeight: '600' }}>
               {t('message.groupMembers.membersTitle', { count: displayedMembers.length })}
             </Text>
@@ -249,10 +259,16 @@ export default function GroupMembersScreen() {
                 ? t('message.groupMembers.admin')
                 : currentUserId === item.userId
                   ? t('message.groupMembers.addedByYou')
-                  : t('message.groupMembers.addedByName', { name: conversation?.members?.find((m) => m.userId === currentUserId)?.fullName || t('message.you') })
+                  : t('message.groupMembers.addedByName', {
+                      name: conversation?.members?.find((m) => m.userId === currentUserId)?.fullName || t('message.you')
+                    })
 
             return (
-              <Pressable style={[styles.memberRow, { backgroundColor: palette.card }]} onLongPress={() => openMemberInfo(item)} delayLongPress={220}>
+              <Pressable
+                style={[styles.memberRow, { backgroundColor: palette.card }]}
+                onLongPress={() => openMemberInfo(item)}
+                delayLongPress={220}
+              >
                 <View style={{ position: 'relative' }}>
                   <UserAvatar source={item.avatar || undefined} name={item.fullName} size='xl' />
                   {isOwner && (
@@ -304,7 +320,7 @@ export default function GroupMembersScreen() {
       <Modal transparent visible={memberInfoOpen} animationType='fade' onRequestClose={closeMemberInfo}>
         <Pressable style={styles.sheetOverlay} onPress={closeMemberInfo}>
           <Pressable style={[styles.memberSheet, { backgroundColor: palette.card }]} onPress={() => {}}>
-            <View style={[styles.memberSheetHeader, { borderBottomColor: palette.line }]}> 
+            <View style={[styles.memberSheetHeader, { borderBottomColor: palette.line }]}>
               <Text style={{ fontSize: 16, fontWeight: '700', color: palette.text }}>
                 {t('message.groupMembers.memberInfoTitle', { defaultValue: 'Thông tin thành viên' })}
               </Text>
@@ -314,7 +330,11 @@ export default function GroupMembersScreen() {
             </View>
 
             <View style={styles.memberSheetProfileRow}>
-              <UserAvatar source={selectedMember?.avatar || undefined} name={selectedMember?.fullName || 'User'} size='xl' />
+              <UserAvatar
+                source={selectedMember?.avatar || undefined}
+                name={selectedMember?.fullName || 'User'}
+                size='xl'
+              />
               <Text style={{ marginLeft: 14, flex: 1, fontSize: 15, fontWeight: '700', color: palette.text }}>
                 {selectedMember?.fullName || t('message.user')}
               </Text>
@@ -336,7 +356,9 @@ export default function GroupMembersScreen() {
                 if (selectedMember?.userId) router.push(`/user-profile/${selectedMember.userId}` as any)
               }}
             >
-              <Text style={{ fontSize: 14, color: palette.text }}>{t('message.groupMembers.viewProfile', { defaultValue: 'Xem trang cá nhân' })}</Text>
+              <Text style={{ fontSize: 14, color: palette.text }}>
+                {t('message.groupMembers.viewProfile', { defaultValue: 'Xem trang cá nhân' })}
+              </Text>
             </TouchableOpacity>
 
             {canPromote && (
@@ -378,8 +400,19 @@ export default function GroupMembersScreen() {
 
       <Modal transparent visible={removeConfirmOpen} animationType='fade' onRequestClose={closeRemoveConfirm}>
         <Pressable style={styles.dialogOverlay} onPress={closeRemoveConfirm}>
-          <Pressable style={[styles.removeDialog, { backgroundColor: isDark ? '#2B2F36' : '#FDFDFE' }]} onPress={() => {}}>
-            <Text style={{ textAlign: 'center', fontSize: 20 / 1.2, fontWeight: '700', color: palette.text, paddingHorizontal: 14 }}>
+          <Pressable
+            style={[styles.removeDialog, { backgroundColor: isDark ? '#2B2F36' : '#FDFDFE' }]}
+            onPress={() => {}}
+          >
+            <Text
+              style={{
+                textAlign: 'center',
+                fontSize: 20 / 1.2,
+                fontWeight: '700',
+                color: palette.text,
+                paddingHorizontal: 14
+              }}
+            >
               {t('message.groupMembers.removeMemberQuestion', {
                 defaultValue: 'Xóa {{name}} khỏi nhóm?',
                 name: selectedMember?.fullName || ''
@@ -394,16 +427,24 @@ export default function GroupMembersScreen() {
               <Ionicons
                 name={blockOnRemove ? 'checkbox-outline' : 'square-outline'}
                 size={26}
-                color={blockOnRemove ? '#1E7BE9' : (isDark ? '#8B96A8' : '#B0B7C3')}
+                color={blockOnRemove ? '#1E7BE9' : isDark ? '#8B96A8' : '#B0B7C3'}
                 style={{ marginRight: 10 }}
               />
               <Text style={{ flex: 1, fontSize: 14, color: palette.subText }}>
-                {t('message.groupMembers.blockAfterRemove', { defaultValue: 'Chặn khỏi nhóm (không thể tham gia lại)' })}
+                {t('message.groupMembers.blockAfterRemove', {
+                  defaultValue: 'Chặn khỏi nhóm (không thể tham gia lại)'
+                })}
               </Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={[styles.dialogActionRow, { borderBottomColor: palette.line }]} activeOpacity={0.8} onPress={closeRemoveConfirm}>
-              <Text style={{ fontSize: 21 / 1.2, color: '#2A8AF7', fontWeight: '500' }}>{t('message.actions.cancel')}</Text>
+            <TouchableOpacity
+              style={[styles.dialogActionRow, { borderBottomColor: palette.line }]}
+              activeOpacity={0.8}
+              onPress={closeRemoveConfirm}
+            >
+              <Text style={{ fontSize: 21 / 1.2, color: '#2A8AF7', fontWeight: '500' }}>
+                {t('message.actions.cancel')}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity style={styles.dialogActionRow} activeOpacity={0.8} onPress={confirmRemoveMember}>

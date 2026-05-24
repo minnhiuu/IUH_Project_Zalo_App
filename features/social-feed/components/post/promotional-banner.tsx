@@ -13,9 +13,7 @@ export function PromotionalBanner({ onPress }: PromotionalBannerProps) {
     >
       <View className='flex-1'>
         <Text className='text-white text-2xl font-bold mb-1'>Cùng Zalo đón Tết</Text>
-        <Text className='text-white/90 text-sm'>
-          Khám phá những trải nghiệm Tết thú vị
-        </Text>
+        <Text className='text-white/90 text-sm'>Khám phá những trải nghiệm Tết thú vị</Text>
       </View>
       <View className='w-12 h-12 bg-white/20 rounded-full items-center justify-center'>
         <Text className='text-2xl'>🎉</Text>

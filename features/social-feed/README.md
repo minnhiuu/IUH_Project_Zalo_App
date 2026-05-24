@@ -5,7 +5,9 @@
 ## 📱 Screens & Components
 
 ### 1. **Social Feed Page** (`screens/social-feed-page.tsx`)
+
 Main feed screen hiển thị:
+
 - **Header**: Search bar + notifications + settings
 - **Tabs**: "Quan tâm" / "Khác" tab navigation
 - **Post Composer**: Launcher button để tạo bài viết
@@ -18,10 +20,12 @@ Main feed screen hiển thị:
 ### 2. **Components**
 
 #### Header
+
 - `SocialFeedHeader`: Top header với search, notifications badge, settings
 - `BottomNavigation`: Bottom tab bar với unread badges
 
 #### Posts
+
 - `PostCard`: Post display với reactions, comments, shares
 - `MediaSection`: Image/Video gallery support
 - `ReactionPicker`: 6 emoji reactions (👍 ❤️ 😂 😮 😢 😠)
@@ -30,14 +34,17 @@ Main feed screen hiển thị:
 - `QuickActions`: Quick action buttons
 
 #### Composer
+
 - `PostComposer`: Full-screen post creation
 - `PostComposerLauncher`: Button để mở composer
 - `VisibilityDropdown`: Public/Friends/Private selector
 
 #### Stories
+
 - `StoriesStrip`: Horizontal carousel
 
 #### Modals
+
 - `PostDetailModal`: Full post detail view
 - `CommentsModal`: Comments list + input
 - `ShareModal`: Share with caption & visibility
@@ -45,10 +52,12 @@ Main feed screen hiển thị:
 - `ReportDialog`: Report post workflow
 
 #### Comments
+
 - `CommentItem`: Individual comment
 - `CommentInput`: Comment composition
 
 #### Reels
+
 - `ReelCard`: Reel video card
 - `ReelsFeed`: Infinite reel feed
 
@@ -65,6 +74,7 @@ Main feed screen hiển thị:
 ## 📦 Data Layer
 
 ### API Endpoints
+
 ```
 POST /posts - Create post
 GET /recommendations/feed - Get feed posts (infinite)
@@ -77,12 +87,14 @@ DELETE /interactions/posts/{postId}/view - Track view
 ```
 
 ### React Query
+
 - **Keys**: Hierarchical key factory pattern
 - **Hooks**: useInfiniteSocialFeedPosts, useSocialFeedComments, etc.
 - **Mutations**: createPost, createComment, toggleReaction, etc.
 - **DTO Mapping**: Backend DTO → UI model normalization
 
 ### Types
+
 ```typescript
 interface SocialPost {
   id: string
@@ -110,6 +122,7 @@ interface SocialPost {
 - **Hook**: `useSocialText()` for component translations
 
 ### Translation Files
+
 - `i18n/social.keys.ts` - Key constants
 - `i18n/social.texts.ts` - Translation factory
 - `locales/en.json` - English strings
@@ -118,6 +131,7 @@ interface SocialPost {
 ## 🚀 Getting Started
 
 ### 1. Setup Providers
+
 ```typescript
 // In your app root
 import { QueryClientProvider } from '@tanstack/react-query'
@@ -142,6 +156,7 @@ export default function App() {
 ```
 
 ### 2. Use with React Navigation
+
 ```typescript
 import { NavigationContainer } from '@react-navigation/native'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
@@ -162,6 +177,7 @@ export function RootNavigator() {
 ```
 
 ### 3. Use Mock Data
+
 ```typescript
 import { MOCK_POSTS, MOCK_STORIES } from './features/social-feed'
 
@@ -241,16 +257,19 @@ features/social-feed/
 ## 📝 Usage Examples
 
 ### Display Feed
+
 ```typescript
 <SocialFeedPage />
 ```
 
 ### Use Post Query
+
 ```typescript
 const { data, fetchNextPage, hasNextPage } = useInfiniteSocialFeedPosts(20)
 ```
 
 ### Create Post
+
 ```typescript
 const { mutate: createPost } = useCreatePostMutation()
 
@@ -262,6 +281,7 @@ createPost({
 ```
 
 ### React to Post
+
 ```typescript
 const { mutate: toggleReaction } = useToggleReactionMutation()
 
@@ -272,6 +292,7 @@ toggleReaction({
 ```
 
 ### Get Translations
+
 ```typescript
 const { text } = useSocialText()
 
@@ -300,12 +321,15 @@ const { text } = useSocialText()
 ## 🐛 Troubleshooting
 
 **Issue**: Styles not applying
+
 - Solution: Clear cache: `npx expo prebuild --clean`
 
 **Issue**: i18n translations missing
+
 - Solution: Ensure i18n provider is at root level
 
 **Issue**: Images not loading
+
 - Solution: Use valid image URLs or local imports
 
 ## 📄 License

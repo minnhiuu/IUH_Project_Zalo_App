@@ -25,7 +25,7 @@ export const formatPreview = (
   const prefix = isRevoked ? '' : data.isFromMe ? text.you : data.isGroup ? data.senderName || text.user : ''
 
   let displayContent = typeof data.content === 'string' ? data.content : ''
-  
+
   if (displayContent) {
     const businessCard = parseBusinessCardContent(displayContent)
     if (businessCard) {

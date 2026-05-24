@@ -50,13 +50,18 @@ export function GroupChatIntro({ groupName, members, isDark = false, texts }: Gr
       <View style={[styles.compactCard, { backgroundColor: palette.card, borderColor: palette.cardBorder }]}>
         <View style={styles.compactAvatars}>
           {topMembers.map((member, index) => (
-            <View key={`${member.userId}-compact`} style={[styles.compactAvatar, { marginLeft: index === 0 ? 0 : -12 }]}>
+            <View
+              key={`${member.userId}-compact`}
+              style={[styles.compactAvatar, { marginLeft: index === 0 ? 0 : -12 }]}
+            >
               <UserAvatar source={member.avatar || undefined} name={member.fullName || 'User'} size='sm' />
             </View>
           ))}
         </View>
         <View style={{ flex: 1 }}>
-          <Text style={[styles.compactTitle, { color: palette.text }]} numberOfLines={1}>{groupName}</Text>
+          <Text style={[styles.compactTitle, { color: palette.text }]} numberOfLines={1}>
+            {groupName}
+          </Text>
           <Text style={[styles.compactSubtitle, { color: palette.subText }]}>
             {texts?.shareStory || 'Bat dau chia se nhung cau chuyen thu vi cung nhau'}
           </Text>
@@ -83,17 +88,17 @@ export function GroupChatIntro({ groupName, members, isDark = false, texts }: Gr
               <UserAvatar source={member.avatar || undefined} name={member.fullName || 'User'} size='sm' />
             </View>
           ))}
-          <View style={[styles.addMemberChip, { backgroundColor: palette.actionChip }]}> 
+          <View style={[styles.addMemberChip, { backgroundColor: palette.actionChip }]}>
             <Text style={{ fontSize: 16, color: '#2B87FF', fontWeight: '700' }}>👥+</Text>
           </View>
         </View>
 
-        <View style={[styles.waveChip, { backgroundColor: palette.chip }]}> 
+        <View style={[styles.waveChip, { backgroundColor: palette.chip }]}>
           <Text style={styles.waveEmoji}>👋</Text>
           <Text style={[styles.waveText, { color: palette.text }]}>{texts?.waveHello || 'Vay tay chao'}</Text>
         </View>
 
-        <View style={[styles.qrRow, { borderTopColor: palette.cardBorder }]}> 
+        <View style={[styles.qrRow, { borderTopColor: palette.cardBorder }]}>
           <Text style={[styles.qrText, { color: palette.qrText }]}>{texts?.qrJoin || 'Xem ma QR tham gia nhom'}</Text>
         </View>
       </View>

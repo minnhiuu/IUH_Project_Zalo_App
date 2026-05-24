@@ -20,11 +20,7 @@ export function GroupMemberPickerItem({ member, subtitle, selected, onPress }: G
   return (
     <Pressable style={styles.container} onPress={onPress}>
       <View
-        style={[
-          styles.checkbox,
-          { borderColor: isDark ? '#4E5866' : '#CBD2DB' },
-          selected && styles.checkboxSelected
-        ]}
+        style={[styles.checkbox, { borderColor: isDark ? '#4E5866' : '#CBD2DB' }, selected && styles.checkboxSelected]}
       >
         {selected && <Ionicons name='checkmark' size={16} color='#FFFFFF' />}
       </View>

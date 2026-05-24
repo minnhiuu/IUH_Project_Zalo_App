@@ -32,15 +32,15 @@ export function RootNavigator() {
           tabBarStyle: {
             backgroundColor: '#000000',
             borderTopColor: '#27272a',
-            borderTopWidth: 1,
+            borderTopWidth: 1
           },
           tabBarLabelStyle: {
             fontSize: 11,
             marginTop: 4,
-            fontWeight: '600',
+            fontWeight: '600'
           },
           tabBarActiveTintColor: '#3b82f6',
-          tabBarInactiveTintColor: '#71717a',
+          tabBarInactiveTintColor: '#71717a'
         }}
       >
         <Tab.Screen
@@ -48,7 +48,7 @@ export function RootNavigator() {
           component={MessagesScreen}
           options={{
             tabBarIcon: ({ color }) => <MessageCircle size={24} color={color} />,
-            tabBarLabel: 'Tin nhắn',
+            tabBarLabel: 'Tin nhắn'
           }}
         />
 
@@ -57,7 +57,7 @@ export function RootNavigator() {
           component={ContactsScreen}
           options={{
             tabBarIcon: ({ color }) => <Users size={24} color={color} />,
-            tabBarLabel: 'Danh bạ',
+            tabBarLabel: 'Danh bạ'
           }}
         />
 
@@ -66,7 +66,7 @@ export function RootNavigator() {
           component={ExploreScreen}
           options={{
             tabBarIcon: ({ color }) => <Grid3x3 size={24} color={color} />,
-            tabBarLabel: 'Khám phá',
+            tabBarLabel: 'Khám phá'
           }}
         />
 
@@ -76,7 +76,7 @@ export function RootNavigator() {
           options={{
             tabBarIcon: ({ color }) => <BookOpen size={24} color={color} />,
             tabBarLabel: 'Tường nhà',
-            tabBarBadge: 1,
+            tabBarBadge: 1
           }}
         />
 
@@ -85,7 +85,7 @@ export function RootNavigator() {
           component={ProfileScreen}
           options={{
             tabBarIcon: ({ color }) => <User size={24} color={color} />,
-            tabBarLabel: 'Cá nhân',
+            tabBarLabel: 'Cá nhân'
           }}
         />
       </Tab.Navigator>

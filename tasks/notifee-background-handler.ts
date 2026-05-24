@@ -1,4 +1,5 @@
-import notifee, {
+import Constants from 'expo-constants'
+import type {
   Event,
   EventType,
   AndroidCategory,
@@ -9,9 +10,27 @@ import notifee, {
   AndroidVisibility
 } from '@notifee/react-native'
 
+type NotifeeModule = typeof import('@notifee/react-native')
+
+let cachedNotifee: NotifeeModule | null = null
+
+const getNotifeeModule = (): NotifeeModule | null => {
+  if (cachedNotifee) return cachedNotifee
+  if (Constants.appOwnership === 'expo') return null
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    cachedNotifee = require('@notifee/react-native') as NotifeeModule
+    return cachedNotifee
+  } catch (error) {
+    console.warn('[Notifee] Native module not available:', error)
+    return null
+  }
+}
+
 const CHAT_NOTIFICATION_PREFIX = 'CHAT_'
 
-const isChatNotification = (type: string) => type === 'MESSAGE_DIRECT' || type === 'MESSAGE_GROUP'
+const isChatNotification = (type: string) =>
+  type === 'MESSAGE_DIRECT' || type === 'MESSAGE_GROUP' || type === 'REMINDER'
 
 const getChatNotificationId = (conversationId: string) => `${CHAT_NOTIFICATION_PREFIX}${conversationId}`
 
@@ -84,6 +103,11 @@ function getAndroidActions(type: string) {
  * Must be called outside any React component at the entry point.
  */
 export function registerNotifeeBackgroundHandler() {
+  const module = getNotifeeModule()
+  if (!module) return
+  const notifee = module.default
+  const { EventType } = module
+
   notifee.onBackgroundEvent(async ({ type, detail }: Event) => {
     const { notification } = detail
 
@@ -102,6 +126,16 @@ const processedNotifications = new Set<string>()
  * Android only reuses a stable local notification id so later pushes replace the same conversation.
  */
 export async function displayChatNotification(rawData: Record<string, string>) {
+  const module = getNotifeeModule()
+  if (!module) return
+  const notifee = module.default
+  const {
+    AndroidCategory,
+    AndroidImportance,
+    AndroidStyle,
+    AndroidVisibility
+  } = module
+
   const data = toNotificationData(rawData)
   const type = data.type || ''
 

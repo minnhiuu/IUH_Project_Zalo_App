@@ -46,21 +46,16 @@ function toAbsoluteMediaUri(uri?: string | null) {
   return `${baseOrigin}/${normalizedUri}`
 }
 
-function StoryCard({
-  group,
-  onPress
-}: {
-  group: StoryGroup
-  onPress?: () => void
-}) {
+function StoryCard({ group, onPress }: { group: StoryGroup; onPress?: () => void }) {
   const previewStory = group.stories[0] as (typeof group.stories)[number] & {
     mediaUrl?: string | null
     mediaType?: string | null
   }
   const image = previewStory?.media?.[0]?.url || previewStory?.mediaUrl || null
-  const displayName = group.authorName && group.authorName !== 'Unknown user'
-    ? group.authorName
-    : previewStory?.authorName || 'Người dùng'
+  const displayName =
+    group.authorName && group.authorName !== 'Unknown user'
+      ? group.authorName
+      : previewStory?.authorName || 'Người dùng'
   const displayAvatar = toAbsoluteMediaUri(group.authorAvatar || previewStory?.authorAvatar || null)
 
   return (
@@ -91,9 +86,7 @@ function StoryCard({
             />
           ) : (
             <View className='w-full h-full rounded-full bg-blue-500 items-center justify-center'>
-              <Text className='text-white font-bold text-sm'>
-                {displayName.charAt(0).toUpperCase()}
-              </Text>
+              <Text className='text-white font-bold text-sm'>{displayName.charAt(0).toUpperCase()}</Text>
             </View>
           )}
         </View>
@@ -222,11 +215,7 @@ export function StoriesStrip({
         <Text className='text-zinc-900 text-[22px] font-semibold'>Stories</Text>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ alignItems: 'center' }}
-      >
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ alignItems: 'center' }}>
         <StoryCreateCard
           onPress={onCreateStory}
           currentUserName={currentUserName}
@@ -242,9 +231,7 @@ export function StoriesStrip({
         ))}
       </ScrollView>
 
-      {stories.length === 0 && (
-        <Text className='text-zinc-500 text-xs mt-3'>Chưa có story nào từ bạn bè.</Text>
-      )}
+      {stories.length === 0 && <Text className='text-zinc-500 text-xs mt-3'>Chưa có story nào từ bạn bè.</Text>}
     </View>
   )
 }

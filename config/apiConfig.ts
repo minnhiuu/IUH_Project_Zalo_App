@@ -135,15 +135,17 @@ export const API_ENDPOINTS = {
       `/messages/conversations/${conversationId}/join-requests/${requestId}/approve`,
     REJECT_JOIN_REQUEST: (conversationId: string, requestId: string) =>
       `/messages/conversations/${conversationId}/join-requests/${requestId}/reject`,
-    CANCEL_MY_JOIN_REQUEST: (conversationId: string) =>
-      `/messages/conversations/${conversationId}/join-requests/me`,
+    CANCEL_MY_JOIN_REQUEST: (conversationId: string) => `/messages/conversations/${conversationId}/join-requests/me`,
     BLOCK_MEMBER: (conversationId: string, targetUserId: string) =>
       `/messages/conversations/${conversationId}/block/${targetUserId}`,
     UNBLOCK_MEMBER: (conversationId: string, targetUserId: string) =>
       `/messages/conversations/${conversationId}/block/${targetUserId}`,
     BLOCKED_MEMBERS: (conversationId: string) => `/messages/conversations/${conversationId}/blocked-members`,
     BLOCK_CANDIDATES: (conversationId: string) => `/messages/conversations/${conversationId}/block-candidates`,
-    MY_GROUPS: '/messages/conversations/groups/mine'
+    MY_GROUPS: '/messages/conversations/groups/mine',
+    REMINDERS: '/messages/api/v1/reminders',
+    REMINDERS_BY_CONVERSATION: (conversationId: string) => `/messages/api/v1/reminders/conversations/${conversationId}`,
+    REMINDER_DELETE: (reminderId: string) => `/messages/api/v1/reminders/${reminderId}`
   },
   FILE: {
     UPLOAD: '/files/upload',

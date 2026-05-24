@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import {
-  Modal,
-  View,
-  TouchableOpacity,
-  TouchableWithoutFeedback
-} from 'react-native'
+import { Modal, View, TouchableOpacity, TouchableWithoutFeedback } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useTranslation } from 'react-i18next'
@@ -81,7 +76,10 @@ export function NotificationPanel({ visible, onClose, highlightNotificationId }:
           <TouchableOpacity
             onPress={() => setFilter('all')}
             className='px-4 py-1.5 rounded-full'
-            style={{ backgroundColor: filter === 'all' ? (isDark ? 'rgba(0,104,255,0.2)' : 'rgba(0,104,255,0.1)') : 'transparent' }}
+            style={{
+              backgroundColor:
+                filter === 'all' ? (isDark ? 'rgba(0,104,255,0.2)' : 'rgba(0,104,255,0.1)') : 'transparent'
+            }}
           >
             <Text className='font-semibold' style={{ color: filter === 'all' ? colors.tint : colors.textSecondary }}>
               {t('notification.filter.all')}
@@ -90,7 +88,10 @@ export function NotificationPanel({ visible, onClose, highlightNotificationId }:
           <TouchableOpacity
             onPress={() => setFilter('unread')}
             className='px-4 py-1.5 rounded-full'
-            style={{ backgroundColor: filter === 'unread' ? (isDark ? 'rgba(0,104,255,0.2)' : 'rgba(0,104,255,0.1)') : 'transparent' }}
+            style={{
+              backgroundColor:
+                filter === 'unread' ? (isDark ? 'rgba(0,104,255,0.2)' : 'rgba(0,104,255,0.1)') : 'transparent'
+            }}
           >
             <Text className='font-semibold' style={{ color: filter === 'unread' ? colors.tint : colors.textSecondary }}>
               {t('notification.filter.unread')}
@@ -107,7 +108,9 @@ export function NotificationPanel({ visible, onClose, highlightNotificationId }:
       <BottomSheet visible={settingsVisible} onClose={() => setSettingsVisible(false)}>
         <View className='pt-2 pb-8' style={{ backgroundColor: colors.background }}>
           <View className='px-[20px] mb-3'>
-            <Text className='text-[18px] font-bold' style={{ color: colors.text }}>{t('notification.settings.title')}</Text>
+            <Text className='text-[18px] font-bold' style={{ color: colors.text }}>
+              {t('notification.settings.title')}
+            </Text>
           </View>
 
           <View className='mt-1'>
@@ -115,12 +118,17 @@ export function NotificationPanel({ visible, onClose, highlightNotificationId }:
               <View className='mr-4'>
                 <Ionicons name='checkmark-done-outline' size={24} color={colors.textSecondary} />
               </View>
-              <Text className='text-[16px] font-medium' style={{ color: colors.text }}>{t('notification.action.markAllRead')}</Text>
+              <Text className='text-[16px] font-medium' style={{ color: colors.text }}>
+                {t('notification.action.markAllRead')}
+              </Text>
             </TouchableOpacity>
 
             <View className='h-[8px]' style={{ backgroundColor: isDark ? colors.border : '#F4F5F7' }} />
 
-            <View className='py-[12px] px-[20px]' style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : '#F9FAFB' }}>
+            <View
+              className='py-[12px] px-[20px]'
+              style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.02)' : '#F9FAFB' }}
+            >
               <Text className='text-[14px] font-bold uppercase tracking-tight' style={{ color: colors.textSecondary }}>
                 {t('notification.settings.recent_activities_title')}
               </Text>
@@ -128,17 +136,23 @@ export function NotificationPanel({ visible, onClose, highlightNotificationId }:
 
             <TouchableOpacity className='flex-row items-center py-[14px] px-[20px]'>
               <View className='flex-1 flex-row justify-between items-center'>
-                <Text className='text-[16px]' style={{ color: colors.text }}>{t('notification.settings.notify_new')}</Text>
+                <Text className='text-[16px]' style={{ color: colors.text }}>
+                  {t('notification.settings.notify_new')}
+                </Text>
                 <Ionicons name='checkmark' size={20} color={colors.tint} />
               </View>
             </TouchableOpacity>
 
             <TouchableOpacity className='flex-row items-center py-[14px] px-[20px]'>
-              <Text className='text-[16px]' style={{ color: colors.text }}>{t('notification.settings.not_notify_new')}</Text>
+              <Text className='text-[16px]' style={{ color: colors.text }}>
+                {t('notification.settings.not_notify_new')}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity className='flex-row items-center py-[14px] px-[20px]'>
-              <Text className='text-[16px]' style={{ color: colors.text }}>{t('notification.settings.notify_new_except')}</Text>
+              <Text className='text-[16px]' style={{ color: colors.text }}>
+                {t('notification.settings.notify_new_except')}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

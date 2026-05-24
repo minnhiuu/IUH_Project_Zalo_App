@@ -14,9 +14,7 @@ export function StatusUpdateSection({ onPress }: StatusUpdateSectionProps) {
     >
       <View className='flex-row items-center gap-3'>
         <Clock size={20} color='#3b82f6' />
-        <Text className='flex-1 text-sm text-zinc-400'>
-          Cập nhật trạng thái 24 giờ
-        </Text>
+        <Text className='flex-1 text-sm text-zinc-400'>Cập nhật trạng thái 24 giờ</Text>
         <Text className='text-zinc-500'>+</Text>
       </View>
     </TouchableOpacity>

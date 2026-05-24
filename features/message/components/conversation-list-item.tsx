@@ -17,7 +17,19 @@ interface ConversationListItemProps {
   onLongPress?: () => void
 }
 
-function AvatarCell({ uri, label, size, left, top }: { uri?: string | null; label: string; size: number; left: number; top: number }) {
+function AvatarCell({
+  uri,
+  label,
+  size,
+  left,
+  top
+}: {
+  uri?: string | null
+  label: string
+  size: number
+  left: number
+  top: number
+}) {
   return (
     <View
       style={{
@@ -57,7 +69,9 @@ function GroupConversationAvatar({ conversation }: { conversation: ConversationR
   }
 
   if (count < 3) {
-    return <UserAvatar source={visible[0]?.avatar || conversation.avatar} name={conversation.name || 'Group'} size='xl' />
+    return (
+      <UserAvatar source={visible[0]?.avatar || conversation.avatar} name={conversation.name || 'Group'} size='xl' />
+    )
   }
 
   const threePos = [
@@ -221,9 +235,7 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
           >
             {conversation.name || t('message.user', { defaultValue: 'User' })}
           </Text>
-          <Text style={{ fontSize: 15, color: '#6B7280', marginLeft: 8, marginTop: 1 }}>
-            {formatTime(lastMsgTime)}
-          </Text>
+          <Text style={{ fontSize: 15, color: '#6B7280', marginLeft: 8, marginTop: 1 }}>{formatTime(lastMsgTime)}</Text>
         </View>
 
         <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 1 }}>

@@ -136,15 +136,10 @@ export function FileBadge({
         <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>{label}</Text>
       </View>
       <View style={{ flex: 1 }}>
-        <Text
-          style={{ fontSize: 13, fontWeight: '500', color: isDark ? '#E8EAED' : '#111827' }}
-          numberOfLines={2}
-        >
+        <Text style={{ fontSize: 13, fontWeight: '500', color: isDark ? '#E8EAED' : '#111827' }} numberOfLines={2}>
           {renderedFileName}
         </Text>
-        {!!sizeMB && (
-          <Text style={{ fontSize: 11, color: isDark ? '#888' : '#6B7280', marginTop: 2 }}>{sizeMB}</Text>
-        )}
+        {!!sizeMB && <Text style={{ fontSize: 11, color: isDark ? '#888' : '#6B7280', marginTop: 2 }}>{sizeMB}</Text>}
       </View>
       <TouchableOpacity
         onPress={saveAttachment}

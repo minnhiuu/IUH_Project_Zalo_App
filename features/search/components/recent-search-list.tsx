@@ -35,13 +35,17 @@ export function RecentSearchList({ searches, onSelect, onRemove, onClear }: Rece
     if (queries !== null) setShowQueries(queries)
   }
 
-  const contacts = Array.from(new Map(searches
-    .filter((item) => item.type === SearchType.User || item.type === SearchType.Group)
-    .map(item => [item.id, item])).values())
-    
-  const queries = Array.from(new Map(searches
-    .filter((item) => item.type === SearchType.Keyword)
-    .map(item => [item.id, item])).values())
+  const contacts = Array.from(
+    new Map(
+      searches
+        .filter((item) => item.type === SearchType.User || item.type === SearchType.Group)
+        .map((item) => [item.id, item])
+    ).values()
+  )
+
+  const queries = Array.from(
+    new Map(searches.filter((item) => item.type === SearchType.Keyword).map((item) => [item.id, item])).values()
+  )
 
   return (
     <ScrollView

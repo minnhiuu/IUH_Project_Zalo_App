@@ -33,15 +33,10 @@ export function SocialSidebar({ activeTab = 'feed', onTabChange }: SocialSidebar
               }`}
               activeOpacity={0.7}
             >
-              <Icon
-                size={20}
-                color={isActive ? '#3b82f6' : '#666'}
-              />
+              <Icon size={20} color={isActive ? '#3b82f6' : '#666'} />
               <Text
                 className={`text-base font-medium ${
-                  isActive
-                    ? 'text-blue-600 dark:text-blue-400'
-                    : 'text-zinc-700 dark:text-zinc-300'
+                  isActive ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-700 dark:text-zinc-300'
                 }`}
               >
                 {item.label}

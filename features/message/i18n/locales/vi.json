@@ -292,6 +292,14 @@
       "draw": "Vẽ hình",
       "font": "Kiểu chữ"
     },
+    "reminder": {
+      "createSuccess": "Đã tạo nhắc hẹn",
+      "createFailed": "Tạo nhắc hẹn thất bại",
+      "missingConversation": "Không tìm thấy cuộc trò chuyện.",
+      "defaultTitle": "Nhắc hẹn",
+      "placeholder": "???",
+      "openCalendar": "Mở lịch"
+    },
     "forward": {
       "title": "Chia sẻ",
       "selectedCount": "Đã chọn: {{count}}",

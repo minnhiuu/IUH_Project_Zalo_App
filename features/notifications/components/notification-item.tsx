@@ -16,7 +16,8 @@ interface NotificationItemProps {
   onMarkAsRead: (id: string) => void
 }
 
-const isChatNotification = (type?: string) => type === 'MESSAGE_DIRECT' || type === 'MESSAGE_GROUP'
+const isChatNotification = (type?: string) =>
+  type === 'MESSAGE_DIRECT' || type === 'MESSAGE_GROUP' || type === 'REMINDER'
 
 export function NotificationItem({ notification, highlighted = false, onMarkAsRead }: NotificationItemProps) {
   const { t, i18n } = useTranslation()
@@ -34,6 +35,8 @@ export function NotificationItem({ notification, highlighted = false, onMarkAsRe
 
     if (isChatNotification(notification.type)) {
       const conversationId = (notification.payload?.conversationId || notification.referenceId) as string | undefined
+      const reminderId = (notification.payload?.reminderId as string) || undefined
+      const messageId = (notification.payload?.messageId as string) || undefined
       if (conversationId) {
         router.push({
           pathname: '/chat/[id]' as any,
@@ -41,7 +44,15 @@ export function NotificationItem({ notification, highlighted = false, onMarkAsRe
             id: conversationId,
             conversationId,
             name: (notification.payload?.conversationName as string) || (notification.title as string) || '',
-            avatar: (notification.payload?.conversationAvatar as string) || (notification.payload?.actorAvatar as string) || ''
+            avatar:
+              (notification.payload?.conversationAvatar as string) ||
+              (notification.payload?.actorAvatar as string) ||
+              '',
+            aroundMessageId: messageId || undefined,
+            reminderId: reminderId || undefined,
+            reminderMessage: (notification.payload?.message as string) || (notification.body as string) || '',
+            reminderTitle: (notification.payload?.title as string) || (notification.title as string) || '',
+            reminderTriggeredAt: (notification.payload?.triggeredAt as string) || ''
           }
         })
       }
@@ -84,10 +95,14 @@ export function NotificationItem({ notification, highlighted = false, onMarkAsRe
   const currentLocale = i18n.language.split('-')[0]
   const displayBody = notification.translations?.[currentLocale]?.body || notification.body
   const itemBackground = highlighted
-    ? (isDark ? 'rgba(0,104,255,0.18)' : 'rgba(0,104,255,0.12)')
+    ? isDark
+      ? 'rgba(0,104,255,0.18)'
+      : 'rgba(0,104,255,0.12)'
     : notification.read
       ? colors.background
-      : (isDark ? 'rgba(0,104,255,0.05)' : 'rgba(0,104,255,0.03)')
+      : isDark
+        ? 'rgba(0,104,255,0.05)'
+        : 'rgba(0,104,255,0.03)'
 
   return (
     <TouchableOpacity
@@ -117,10 +132,17 @@ export function NotificationItem({ notification, highlighted = false, onMarkAsRe
       <View className='flex-1 pr-2'>
         <View className='flex-row justify-between items-start'>
           <View className='flex-1'>
-            <Text numberOfLines={3} className='text-[15px] leading-[20px]' style={{ color: colors.text, fontWeight: !notification.read ? '500' : '400' }}>
+            <Text
+              numberOfLines={3}
+              className='text-[15px] leading-[20px]'
+              style={{ color: colors.text, fontWeight: !notification.read ? '500' : '400' }}
+            >
               {renderHtmlText(displayBody, { fontSize: 15, color: colors.text })}
             </Text>
-            <Text className='text-[12px] mt-1' style={{ color: !notification.read ? colors.tint : colors.textSecondary }}>
+            <Text
+              className='text-[12px] mt-1'
+              style={{ color: !notification.read ? colors.tint : colors.textSecondary }}
+            >
               {getTimeAgo(notification.lastModifiedAt, t)}
             </Text>
           </View>

@@ -12,6 +12,20 @@ export enum MessageType {
   CALL = 'CALL'
 }
 
+export enum ReminderTarget {
+  ME = 'ME',
+  BOTH = 'BOTH'
+}
+
+export enum RepeatType {
+  NONE = 'NONE',
+  DAILY = 'DAILY',
+  WEEKLY = 'WEEKLY',
+  MULTIPLE_DAYS_WEEKLY = 'MULTIPLE_DAYS_WEEKLY',
+  MONTHLY = 'MONTHLY',
+  YEARLY = 'YEARLY'
+}
+
 export enum MessageStatus {
   NORMAL = 'NORMAL',
   REVOKED = 'REVOKED',
@@ -53,6 +67,31 @@ export const messageSendRequestSchema = z.object({
 })
 
 export type MessageSendRequest = z.infer<typeof messageSendRequestSchema>
+
+export type ReminderRequest = {
+  title: string
+  conversationId: string
+  messageId?: string | null
+  remindAt: string
+  remindFor: ReminderTarget
+  repeatType: RepeatType
+}
+
+export type ReminderResponse = {
+  id: string
+  title: string
+  conversationId: string
+  messageId?: string | null
+  creatorId: string
+  remindAt: string
+  nextRemindAt?: string | null
+  lastTriggeredAt?: string | null
+  remindFor: ReminderTarget
+  repeatType: RepeatType
+  status: string
+  createdAt?: string | null
+  updatedAt?: string | null
+}
 
 export type AttachmentInfo = {
   key: string

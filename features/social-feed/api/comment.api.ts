@@ -23,8 +23,7 @@ export const commentApi = {
   updateComment: (commentId: string, body: UpdateCommentRequest) =>
     axiosInstance.put<ApiResponse<BackendCommentResponse>>(`/comments/${commentId}`, body),
 
-  deleteComment: (commentId: string) =>
-    axiosInstance.delete<ApiResponse<void>>(`/comments/${commentId}`),
+  deleteComment: (commentId: string) => axiosInstance.delete<ApiResponse<void>>(`/comments/${commentId}`),
 
   toggleReaction: (body: ToggleReactionRequest) =>
     axiosInstance.post<ApiResponse<ReactionResponse>>('/reactions/toggle', body),

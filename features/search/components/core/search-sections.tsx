@@ -57,18 +57,16 @@ export function SearchSection<T>({
         </View>
         {headerExtra}
 
-        {items.length > 0
-          ? items.map((item, index) => (
-              <React.Fragment key={getItemKey(item, index)}>{renderItem(item)}</React.Fragment>
-            ))
-          : isLoading
-            ? (
-              <View className='pb-2'>
-                <SearchResultSkeleton />
-                <SearchResultSkeleton />
-              </View>
-            )
-            : emptyComponent}
+        {items.length > 0 ? (
+          items.map((item, index) => <React.Fragment key={getItemKey(item, index)}>{renderItem(item)}</React.Fragment>)
+        ) : isLoading ? (
+          <View className='pb-2'>
+            <SearchResultSkeleton />
+            <SearchResultSkeleton />
+          </View>
+        ) : (
+          emptyComponent
+        )}
 
         {onSeeMore && items.length > 0 && (
           <TouchableOpacity

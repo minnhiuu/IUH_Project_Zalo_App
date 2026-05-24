@@ -67,13 +67,15 @@ export function ChatHeader({
   const colorScheme = useColorScheme() ?? 'light'
   const isDark = colorScheme === 'dark'
 
-  const headerGradient = (isSearchMode
-    ? isDark
-      ? ['#1F2937', '#1F2937']
-      : ['#FFFFFF', '#FFFFFF']
-    : isDark
-      ? HEADER.gradientColorsDark
-      : HEADER.gradientColors) as any
+  const headerGradient = (
+    isSearchMode
+      ? isDark
+        ? ['#1F2937', '#1F2937']
+        : ['#FFFFFF', '#FFFFFF']
+      : isDark
+        ? HEADER.gradientColorsDark
+        : HEADER.gradientColors
+  ) as any
 
   const getStatusText = () => {
     if (subtitle) return subtitle
@@ -135,7 +137,7 @@ export function ChatHeader({
                         activeOpacity={0.7}
                         style={{
                           maxWidth: 160,
-                          marginLeft: 4,
+                          marginLeft: 4
                         }}
                       >
                         <Text style={{ fontSize: 17, color: '#0A84FF' }} numberOfLines={1}>
@@ -200,7 +202,13 @@ export function ChatHeader({
                     else if (userId) router.push(`/other-profile/${userId}` as any)
                   }}
                 >
-                  <UserAvatar source={avatar} name={name} size='sm' showOnline={isOnline !== undefined} isOnline={isOnline} />
+                  <UserAvatar
+                    source={avatar}
+                    name={name}
+                    size='sm'
+                    showOnline={isOnline !== undefined}
+                    isOnline={isOnline}
+                  />
                   <View style={{ marginLeft: 10, flex: 1 }}>
                     <Text style={{ fontSize: 17, fontWeight: '600', color: '#fff' }} numberOfLines={1}>
                       {name}

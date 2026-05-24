@@ -121,9 +121,7 @@ export default function CreateGroupScreen() {
   }, [displayMembers])
 
   const toggleMember = (memberId: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(memberId) ? prev.filter((id) => id !== memberId) : [...prev, memberId]
-    )
+    setSelectedIds((prev) => (prev.includes(memberId) ? prev.filter((id) => id !== memberId) : [...prev, memberId]))
   }
 
   const onPickAvatar = async () => {
@@ -209,15 +207,17 @@ export default function CreateGroupScreen() {
   const isSubmitDisabled = selectedIds.length < 2 || isBusy
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: palette.bg }]}> 
-      <View style={[styles.header, { borderBottomColor: palette.border }]}> 
+    <SafeAreaView style={[styles.container, { backgroundColor: palette.bg }]}>
+      <View style={[styles.header, { borderBottomColor: palette.border }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
           <Ionicons name='close' size={34} color={palette.text} />
         </TouchableOpacity>
 
         <View style={styles.headerTitleWrap}>
           <Text style={[styles.headerTitle, { color: palette.text }]}>{t('message.groupCreate.title')}</Text>
-          <Text style={[styles.headerSub, { color: palette.subText }]}>{t('message.groupCreate.selectedCount', { count: selectedIds.length })}</Text>
+          <Text style={[styles.headerSub, { color: palette.subText }]}>
+            {t('message.groupCreate.selectedCount', { count: selectedIds.length })}
+          </Text>
         </View>
       </View>
 
@@ -240,7 +240,7 @@ export default function CreateGroupScreen() {
         />
       </View>
 
-      <View style={[styles.searchRow, { backgroundColor: palette.searchBg }]}> 
+      <View style={[styles.searchRow, { backgroundColor: palette.searchBg }]}>
         <Ionicons name='search' size={24} color='#9CA3AF' />
         <TextInput
           value={search}
@@ -253,7 +253,7 @@ export default function CreateGroupScreen() {
       </View>
 
       {!search.trim() && (
-        <View style={[styles.tabRow, { borderBottomColor: palette.border }]}> 
+        <View style={[styles.tabRow, { borderBottomColor: palette.border }]}>
           {TABS.map((tab) => {
             const active = activeTab === tab
             return (
@@ -287,7 +287,7 @@ export default function CreateGroupScreen() {
         />
       )}
 
-      <View style={[styles.bottomBar, { backgroundColor: palette.bottomBar, borderTopColor: palette.border }]}> 
+      <View style={[styles.bottomBar, { backgroundColor: palette.bottomBar, borderTopColor: palette.border }]}>
         <TouchableOpacity
           activeOpacity={0.8}
           onPress={onSubmit}

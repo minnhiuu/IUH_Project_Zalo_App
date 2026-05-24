@@ -106,8 +106,7 @@ export function MessageReactionBar({
           flexDirection: 'row-reverse',
           alignItems: 'center',
           zIndex: 10,
-          gap: 4,
-          
+          gap: 4
         }}
       >
         {/* Like button */}

@@ -292,6 +292,14 @@
       "draw": "Draw",
       "font": "Font"
     },
+    "reminder": {
+      "createSuccess": "Reminder created",
+      "createFailed": "Failed to create reminder",
+      "missingConversation": "Conversation not found.",
+      "defaultTitle": "Reminder",
+      "placeholder": "???",
+      "openCalendar": "Open calendar"
+    },
     "forward": {
       "title": "Share",
       "selectedCount": "Selected: {{count}}",

@@ -51,6 +51,8 @@ import { useNavigateSearch } from '@/features/search/queries'
 import { SearchNavigationBar } from '@/features/search/components/messages/search-navigation-bar'
 import type { ConversationSearchResponse } from '@/features/search/schemas'
 import { useChatWebSocket } from '@/features/message/hooks'
+import { useQueryClient } from '@tanstack/react-query'
+import { injectReminderMessage } from '@/features/notifications/utils/reminder-message'
 import {
   MessageStatus,
   MessageType,
@@ -94,6 +96,10 @@ export default function ChatScreen() {
     aroundMessageId?: string
     searchKeyword?: string
     isSearchMode?: string
+    reminderId?: string
+    reminderMessage?: string
+    reminderTitle?: string
+    reminderTriggeredAt?: string
   }>()
 
   const user = useAuthStore((s) => s.user)
@@ -101,8 +107,13 @@ export default function ChatScreen() {
 
   const routeAroundMessageId = params.aroundMessageId
   const [activeAroundMessageId, setActiveAroundMessageId] = useState<string | null>(routeAroundMessageId || null)
+  const reminderId = params.reminderId || ''
+  const reminderMessage = params.reminderMessage || ''
+  const reminderTitle = params.reminderTitle || ''
+  const reminderTriggeredAt = params.reminderTriggeredAt || ''
   const searchKeyword = params.searchKeyword || null
   const consumedJumpTargetRef = useRef<string | null>(null)
+  const reminderHandledRef = useRef<string | null>(null)
 
   const isSearchMessageJump = !!routeAroundMessageId
   const directConversationId = params.conversationId || (isSearchMessageJump ? params.id : undefined)
@@ -124,6 +135,8 @@ export default function ChatScreen() {
     isLoading
   } = useInfiniteMessages(conversationId, 20, !!conversationId, activeAroundMessageId)
 
+  const queryClient = useQueryClient()
+
   const messages: MessageResponse[] = useMemo(() => {
     return messagesData?.pages.flatMap((page) => page.data) ?? []
   }, [messagesData])
@@ -132,6 +145,26 @@ export default function ChatScreen() {
     lastNonEmptyMessagesRef.current = messages
   }
   const visibleMessages = messages.length > 0 ? messages : lastNonEmptyMessagesRef.current
+
+  useEffect(() => {
+    if (!conversationId || !reminderId || !messagesData) return
+    if (reminderHandledRef.current === reminderId) return
+
+    const exists = messages.some((m) => m.id === reminderId || m.clientMessageId === reminderId)
+    if (!exists) {
+      injectReminderMessage(queryClient, {
+        conversationId,
+        reminderId,
+        message: reminderMessage,
+        title: reminderTitle,
+        triggeredAt: reminderTriggeredAt,
+        isTriggerMessage: !!reminderTriggeredAt
+      })
+    }
+
+    reminderHandledRef.current = reminderId
+    requestAnimationFrame(() => scrollToMessage(reminderId, false))
+  }, [conversationId, reminderId, reminderMessage, reminderTitle, reminderTriggeredAt, messagesData, messages, queryClient, scrollToMessage])
 
   const scrollToMessage = useCallback(
     (messageId: string, animated: boolean = true) => {
@@ -1017,10 +1050,7 @@ export default function ChatScreen() {
         </View>
       )}
 
-      <KeyboardAvoidingView
-        style={{ flex: 1 }}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {isLoading && visibleMessages.length === 0 && !isSearchMode ? (
           <View style={{ flex: 1 }}>
             <MessageListSkeleton includePinned />
@@ -1104,8 +1134,14 @@ export default function ChatScreen() {
                     onBusinessCardPress={handleBusinessCardPress}
                     onBusinessCardMessagePress={handleBusinessCardMessagePress}
                     onScrollToMessage={scrollToMessage}
-                    isHighlighted={item.id === highlightedMessageId || (!!item.clientMessageId && item.clientMessageId === highlightedMessageId)}
-                    showHighlightBackground={item.id === highlightBackgroundMessageId || (!!item.clientMessageId && item.clientMessageId === highlightBackgroundMessageId)}
+                    isHighlighted={
+                      item.id === highlightedMessageId ||
+                      (!!item.clientMessageId && item.clientMessageId === highlightedMessageId)
+                    }
+                    showHighlightBackground={
+                      item.id === highlightBackgroundMessageId ||
+                      (!!item.clientMessageId && item.clientMessageId === highlightBackgroundMessageId)
+                    }
                     onPin={handlePinMessage}
                     highlightKeyword={item.id === highlightedMessageId ? internalSearchQuery || searchKeyword : null}
                     onOpenMessageOptions={() => {

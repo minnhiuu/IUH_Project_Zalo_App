@@ -39,7 +39,10 @@ export default function TransferOwnerScreen() {
       { conversationId, targetUserId },
       {
         onSuccess: () => {
-          Toast.show({ type: 'success', text1: t('message.groupMembers.transferOwnerDone', { defaultValue: 'Đã chuyển quyền trưởng nhóm' }) })
+          Toast.show({
+            type: 'success',
+            text1: t('message.groupMembers.transferOwnerDone', { defaultValue: 'Đã chuyển quyền trưởng nhóm' })
+          })
           router.back()
         }
       }
@@ -97,7 +100,9 @@ export default function TransferOwnerScreen() {
             <TouchableOpacity onPress={() => router.back()} style={{ paddingRight: 10 }}>
               <Ionicons name='chevron-back' size={24} color='#fff' />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('message.groupMembers.selectNewOwner', { defaultValue: 'Chọn trưởng nhóm mới' })}</Text>
+            <Text style={styles.headerTitle}>
+              {t('message.groupMembers.selectNewOwner', { defaultValue: 'Chọn trưởng nhóm mới' })}
+            </Text>
             <Ionicons name='search-outline' size={24} color='#fff' />
           </View>
         </SafeAreaView>
