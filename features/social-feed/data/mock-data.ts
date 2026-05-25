@@ -1,4 +1,4 @@
-import type { SocialPost } from '../../types/post'
+import type { SocialPost } from '../types/post'
 
 export const MOCK_POSTS: SocialPost[] = []
 

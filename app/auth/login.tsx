@@ -12,7 +12,7 @@ export default function LoginScreen() {
           headerShown: false
         }}
       />
-      <LoginForm language='vi' />
+      <LoginForm />
     </View>
   )
 }

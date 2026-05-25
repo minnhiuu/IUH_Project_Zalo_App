@@ -55,7 +55,7 @@ export function parseGroupLinkContent(raw?: string | null): GroupLinkPayload | n
     }
   }
 
-  const match = content.match(/(?:(?:https?:\/\/)?[^\s/]+)?\/g\/([A-Za-z0-9]+)/i)
+  const match = content.match(/(?:(?:https?:\/\/)?[^\s/]+)?\/g\/([A-Za-z0-9_-]+)/i)
   if (!match) return null
 
   const full = match[0]
@@ -70,6 +70,6 @@ export function parseGroupLinkContent(raw?: string | null): GroupLinkPayload | n
 export function parseGroupLinkToken(raw?: string | null): string | null {
   const payload = parseGroupLinkContent(raw)
   if (!payload?.url) return null
-  const match = payload.url.match(/\/g\/([A-Za-z0-9]+)/i)
+  const match = payload.url.match(/\/g\/([A-Za-z0-9_-]+)/i)
   return match?.[1] || null
 }

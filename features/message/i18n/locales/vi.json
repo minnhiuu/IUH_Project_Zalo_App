@@ -65,6 +65,14 @@
       "title": "Tùy chọn",
       "clearHistory": "Xóa lịch sử chat",
       "deleteConversation": "Xóa hội thoại",
+      "markAsUnread": "Đánh dấu chưa đọc",
+      "markAsRead": "Đánh dấu đã đọc",
+      "pin": "Ghim",
+      "unpin": "Bỏ ghim",
+      "mute": "Tắt thông báo",
+      "unmute": "Bật thông báo",
+      "hide": "Ẩn",
+      "multiSelect": "Chọn nhiều",
       "cancel": "Hủy",
       "clearHistoryTitle": "Xóa lịch sử chat",
       "clearHistoryMessage": "Bạn có chắc muốn xóa lịch sử chat của cuộc trò chuyện này?",
@@ -336,6 +344,61 @@
       "pinFailDesc": "Không thể ghim tin nhắn",
       "unpinFailTitle": "Bỏ ghim thất bại",
       "unpinFailDesc": "Không thể bỏ ghim tin nhắn"
+    }
+  },
+  "messages": {
+    "you": "Bạn",
+    "user": "Người dùng",
+    "messageRevoked": "Tin nhắn đã được thu hồi",
+    "messageType": {
+      "image": "[Hình ảnh]",
+      "video": "[Video]",
+      "file": "[Tệp tin]"
+    },
+    "system": {
+      "default": "[Thông báo]",
+      "call": "[Cuộc gọi]",
+      "andOthers": "và {{count}} người khác",
+      "pin": {
+        "self": "Bạn đã ghim tin nhắn",
+        "actor": "{{actor}} đã ghim tin nhắn"
+      },
+      "unpin": {
+        "self": "Bạn đã bỏ ghim tin nhắn",
+        "actor": "{{actor}} đã bỏ ghim tin nhắn"
+      },
+      "add": {
+        "self": "Bạn đã thêm thành viên",
+        "actor": "{{actor}} đã thêm thành viên"
+      },
+      "remove": {
+        "self": "Bạn đã xóa thành viên",
+        "actor": "{{actor}} đã xóa thành viên"
+      },
+      "leave": {
+        "self": "Bạn đã rời nhóm",
+        "actor": "{{actor}} đã rời nhóm"
+      },
+      "revoke": {
+        "self": "Bạn đã thu hồi một tin nhắn",
+        "actor": "{{actor}} đã thu hồi một tin nhắn"
+      },
+      "join": {
+        "self": "Bạn đã tham gia nhóm",
+        "actor": "{{actor}} đã tham gia nhóm"
+      },
+      "update_group_name": {
+        "self": "Bạn đã đổi tên nhóm",
+        "actor": "{{actor}} đã đổi tên nhóm"
+      },
+      "update_avatar": {
+        "self": "Bạn đã thay đổi ảnh đại diện nhóm",
+        "actor": "{{actor}} đã thay đổi ảnh đại diện nhóm"
+      },
+      "create_group": {
+        "self": "Bạn đã tạo nhóm",
+        "actor": "{{actor}} đã tạo nhóm"
+      }
     }
   }
 }

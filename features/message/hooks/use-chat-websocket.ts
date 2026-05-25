@@ -159,15 +159,15 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
         }
 
         // Update conversations cache (move to top)
-        queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
+        queryClient.setQueriesData({ queryKey: [...messageKeys.conversations(), 'list'] }, (oldData: any) => {
           if (!oldData) return oldData
           const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
           const idx = conversations.findIndex((c) => c.id === conversationId)
 
           if (idx >= 0) {
-            const updated: ConversationResponse = {
+            const updated: any = {
               ...conversations[idx],
-              lastMessage: typeof msg.content === 'string' ? msg.content : (msg.type === 'IMAGE' ? '[Hình ảnh]' : msg.type === 'FILE' ? '[Tệp]' : ''),
+              lastMessage: (typeof msg.content === 'string' && msg.content) ? msg.content : (msg.type === MessageType.IMAGE ? '[Hình ảnh]' : msg.type === MessageType.FILE ? '[Tệp]' : (msg.content || '')),
               lastMessageTime: msg.createdAt || new Date().toISOString(),
               isLastMessageFromMe: isOwnMessage,
               lastMessageType: msg.type,
@@ -175,7 +175,8 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
                 msg.unreadCount !== undefined
                   ? msg.unreadCount
                   : (conversations[idx].unreadCount || 0) + (isOwnMessage ? 0 : 1),
-              lastMessageStatus: msg.status
+              lastMessageStatus: msg.status,
+              latestMessage: msg
             }
             const newList = [updated, ...conversations.filter((_, i) => i !== idx)]
             return Array.isArray(oldData) ? newList : { ...oldData, data: newList }
@@ -189,7 +190,7 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
       // ────────── /queue/presence ──────────
       client.subscribe('/user/queue/presence', (payload) => {
         const presence = JSON.parse(payload.body)
-        queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
+        queryClient.setQueriesData({ queryKey: [...messageKeys.conversations(), 'list'] }, (oldData: any) => {
           if (!oldData) return oldData
           const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
           const newList = conversations.map((conv: ConversationResponse) => {
@@ -207,7 +208,7 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
       // ────────── /queue/read-receipts ──────────
       client.subscribe('/user/queue/read-receipts', (payload) => {
         const receipt = JSON.parse(payload.body)
-        queryClient.setQueryData(messageKeys.conversationList(), (oldData: any) => {
+        queryClient.setQueriesData({ queryKey: [...messageKeys.conversations(), 'list'] }, (oldData: any) => {
           if (!oldData) return oldData
           const conversations: ConversationResponse[] = Array.isArray(oldData) ? oldData : (oldData?.data ?? [])
           const newList = conversations.map((conv: ConversationResponse) => {
@@ -554,13 +555,7 @@ export const useChatWebSocket = () => {
         if (idx >= 0) {
           const updated: ConversationResponse = {
             ...conversations[idx],
-            lastMessage:
-              content ||
-              (optimisticType === MessageType.IMAGE
-                ? '[Hình ảnh]'
-                : optimisticType === MessageType.FILE
-                  ? '[Tệp]'
-                  : content),
+            lastMessage: [MessageType.SYSTEM, MessageType.JOIN, MessageType.LEAVE].includes(optimisticType) ? content : (content || (optimisticType === MessageType.IMAGE ? '[Hình ảnh]' : optimisticType === MessageType.FILE ? '[Tệp]' : content)),
             lastMessageTime: now,
             isLastMessageFromMe: true,
             lastMessageType: optimisticType,

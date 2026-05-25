@@ -83,8 +83,8 @@ export function GroupChatIntro({ groupName, members, isDark = false, texts }: Gr
               <UserAvatar source={member.avatar || undefined} name={member.fullName || 'User'} size='sm' />
             </View>
           ))}
-          <View style={[styles.addMemberChip, { backgroundColor: palette.actionChip }]}> 
-            <Text style={{ fontSize: 16, color: '#2B87FF', fontWeight: '700' }}>👥+</Text>
+        <View style={[styles.addMemberChip, { backgroundColor: palette.actionChip }]}> 
+            <Text style={{ fontSize: 13, color: '#2B87FF', fontWeight: '700' }}>👥+</Text>
           </View>
         </View>
 
@@ -129,13 +129,13 @@ const styles = StyleSheet.create({
     borderRadius: 99
   },
   compactTitle: {
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: '700'
   },
   compactSubtitle: {
     marginTop: 2,
-    fontSize: 16,
-    lineHeight: 21
+    fontSize: 14,
+    lineHeight: 18
   },
   createdCard: {
     width: '100%',
@@ -144,14 +144,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden'
   },
   cameraCircle: {
-    width: 76,
-    height: 76,
-    borderRadius: 38,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     alignSelf: 'center',
-    marginTop: 18
+    marginTop: 16
   },
   createdHeaderRow: {
     flexDirection: 'row',
@@ -160,13 +160,13 @@ const styles = StyleSheet.create({
     marginTop: 8
   },
   createdTitle: {
-    fontSize: 19,
+    fontSize: 16,
     fontWeight: '700'
   },
   createdSubtitle: {
     marginTop: 4,
     textAlign: 'center',
-    fontSize: 17
+    fontSize: 14
   },
   createdAvatarsRow: {
     marginTop: 12,
@@ -181,9 +181,9 @@ const styles = StyleSheet.create({
   },
   addMemberChip: {
     marginLeft: -8,
-    width: 54,
-    height: 34,
-    borderRadius: 16,
+    width: 44,
+    height: 28,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -193,28 +193,28 @@ const styles = StyleSheet.create({
     marginTop: 12,
     alignSelf: 'center',
     borderRadius: 18,
-    paddingHorizontal: 16,
-    height: 42,
+    paddingHorizontal: 14,
+    height: 36,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     marginBottom: 12
   },
   waveEmoji: {
-    fontSize: 27 / 1.1
+    fontSize: 20
   },
   waveText: {
-    fontSize: 18,
+    fontSize: 15,
     fontWeight: '700'
   },
   qrRow: {
     borderTopWidth: 1,
-    height: 54,
+    height: 44,
     alignItems: 'center',
     justifyContent: 'center'
   },
   qrText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500'
   }
 })

@@ -1,17 +1,19 @@
 import { useEffect, useRef } from 'react'
 
 interface ViewTrackerRef {
-  ref: React.RefObject<HTMLDivElement>
+  ref: React.RefObject<any>
 }
 
 export function useViewTracker(postId: string): ViewTrackerRef {
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<any>(null)
 
   useEffect(() => {
     if (!ref.current) return
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
+    if (typeof IntersectionObserver === 'undefined') return
+
+    const observer = new (IntersectionObserver as any)(
+      ([entry]: any) => {
         if (entry.isIntersecting) {
           // Track view when post becomes visible
           // This would call an API endpoint

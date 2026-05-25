@@ -1,5 +1,19 @@
 import React, { useMemo, useRef, useState } from 'react'
-import { View, TouchableOpacity, TextInput, Alert, Linking, ScrollView, Image, Modal, FlatList, Switch, Pressable, Platform, Keyboard } from 'react-native'
+import {
+  View,
+  TouchableOpacity,
+  TextInput,
+  Alert,
+  Linking,
+  ScrollView,
+  Image,
+  Modal,
+  FlatList,
+  Switch,
+  Pressable,
+  Platform,
+  Keyboard
+} from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
 import { SafeAreaView } from 'react-native-safe-area-context'
@@ -21,9 +35,7 @@ export type BusinessCardAsset = {
   avatar?: string | null
   includePhone?: boolean
 }
-type FriendListRow =
-  | { type: 'header'; key: string; letter: string }
-  | { type: 'friend'; key: string; friend: any }
+type FriendListRow = { type: 'header'; key: string; letter: string } | { type: 'friend'; key: string; friend: any }
 
 const pickFirstText = (...values: any[]): string => {
   for (const value of values) {
@@ -39,7 +51,14 @@ const getFriendId = (friend: any): string =>
   pickFirstText(friend?.userId, friend?.id, friend?.user?.id, friend?.targetUserId)
 
 const getFriendName = (friend: any): string =>
-  pickFirstText(friend?.userName, friend?.fullName, friend?.displayName, friend?.name, friend?.user?.userName, friend?.user?.fullName)
+  pickFirstText(
+    friend?.userName,
+    friend?.fullName,
+    friend?.displayName,
+    friend?.name,
+    friend?.user?.userName,
+    friend?.user?.fullName
+  )
 
 const getFriendPhone = (friend: any): string =>
   pickFirstText(
@@ -322,8 +341,7 @@ export function ChatInputBar({
   }, [friendListRows])
 
   const selectedFriends = useMemo(
-    () =>
-      friends.filter((friend: any) => selectedBusinessCardIds.includes(getFriendId(friend))),
+    () => friends.filter((friend: any) => selectedBusinessCardIds.includes(getFriendId(friend))),
     [friends, selectedBusinessCardIds]
   )
 
@@ -416,10 +434,26 @@ export function ChatInputBar({
             }}
           >
             {(replyTo.type === 'IMAGE' || replyTo.type === 'VIDEO') && replyTo.attachments?.[0]?.url ? (
-              <View style={{ position: 'relative', width: 44, height: 44, borderRadius: 6, overflow: 'hidden', backgroundColor: '#111', flexShrink: 0 }}>
-                <Image source={{ uri: replyTo.attachments[0].url }} style={{ width: '100%', height: '100%' }} resizeMode='cover' />
+              <View
+                style={{
+                  position: 'relative',
+                  width: 44,
+                  height: 44,
+                  borderRadius: 6,
+                  overflow: 'hidden',
+                  backgroundColor: '#111',
+                  flexShrink: 0
+                }}
+              >
+                <Image
+                  source={{ uri: replyTo.attachments[0].url }}
+                  style={{ width: '100%', height: '100%' }}
+                  resizeMode='cover'
+                />
                 {replyTo.type === 'VIDEO' && (
-                  <View style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' } as any}>
+                  <View
+                    style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' } as any}
+                  >
                     <Ionicons name='play-circle' size={22} color='rgba(255,255,255,0.9)' />
                   </View>
                 )}
@@ -450,9 +484,20 @@ export function ChatInputBar({
             borderTopColor: colors.border
           }}
         >
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12, marginBottom: 8 }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              paddingHorizontal: 12,
+              marginBottom: 8
+            }}
+          >
             <Text style={{ fontSize: 13, color: colors.textSecondary }}>
-              {t('message.attachment.selectedCount', { defaultValue: '{{count}} tệp đã chọn', count: selectedAttachments.length })}
+              {t('message.attachment.selectedCount', {
+                defaultValue: '{{count}} tệp đã chọn',
+                count: selectedAttachments.length
+              })}
             </Text>
             <TouchableOpacity onPress={onClearAttachments} hitSlop={8}>
               <Text style={{ fontSize: 13, color: BRAND.blue, fontWeight: '600' }}>
@@ -461,7 +506,11 @@ export function ChatInputBar({
             </TouchableOpacity>
           </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 12, gap: 8 }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 12, gap: 8 }}
+          >
             {selectedAttachments.map((attachment, index) => {
               const isImage = attachment.mimeType.startsWith('image/')
               const isVideo = attachment.mimeType.startsWith('video/')
@@ -482,7 +531,11 @@ export function ChatInputBar({
                 >
                   {isImage || isVideo ? (
                     <>
-                      <Image source={{ uri: attachment.uri }} style={{ width: '100%', height: '100%' }} resizeMode='cover' />
+                      <Image
+                        source={{ uri: attachment.uri }}
+                        style={{ width: '100%', height: '100%' }}
+                        resizeMode='cover'
+                      />
                       {isVideo && (
                         <View
                           style={{
@@ -501,7 +554,9 @@ export function ChatInputBar({
                       )}
                     </>
                   ) : (
-                    <View style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, gap: 8 }}>
+                    <View
+                      style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, gap: 8 }}
+                    >
                       <Ionicons name='document-attach-outline' size={22} color={BRAND.blue} />
                       <Text style={{ flex: 1, fontSize: 12, color: colors.text }} numberOfLines={2}>
                         {attachment.fileName}
@@ -562,13 +617,18 @@ export function ChatInputBar({
             flex: 1,
             fontSize: isLocked ? 17 : 16,
             color: isLocked ? colors.textSecondary : colors.text,
+            textAlign: 'left',
+            textAlignVertical: 'center',
             maxHeight: 100,
-            minHeight: 48,
+            minHeight: 40,
             paddingHorizontal: 14,
-            paddingVertical: 8,
+            paddingTop: Platform.OS === 'ios' ? 10 : 6,
+            paddingBottom: Platform.OS === 'ios' ? 10 : 6,
             backgroundColor: isDark ? '#2A2F36' : '#F2F2F7',
-            borderRadius: 24,
-            marginHorizontal: 6
+            borderRadius: 20,
+            marginHorizontal: 6,
+            justifyContent: 'center',
+            alignSelf: 'center'
           }}
         />
 
@@ -715,7 +775,9 @@ export function ChatInputBar({
               <TextInput
                 value={businessCardQuery}
                 onChangeText={setBusinessCardQuery}
-                placeholder={t('message.businessCard.search', { defaultValue: 'Tìm liên hệ trong danh bạ máy và Zalo' })}
+                placeholder={t('message.businessCard.search', {
+                  defaultValue: 'Tìm liên hệ trong danh bạ máy và Zalo'
+                })}
                 placeholderTextColor={isDark ? '#7E8793' : '#9CA3AF'}
                 style={{ flex: 1, marginLeft: 8, fontSize: 16, color: cardModalText }}
               />
@@ -826,7 +888,11 @@ export function ChatInputBar({
             }}
           >
             {selectedFriends.length > 0 && (
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingBottom: 8 }}>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ gap: 8, paddingBottom: 8 }}
+              >
                 {selectedFriends.map((friend: any) => {
                   const userId = String(friend?.userId || '')
                   return (

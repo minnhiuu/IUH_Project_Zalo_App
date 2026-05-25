@@ -19,6 +19,7 @@ interface MessageReactionBarProps {
   currentUserId: string
   currentUserName?: string
   currentUserAvatar?: string
+  showEmptyButton?: boolean
 }
 
 export function MessageReactionBar({
@@ -31,7 +32,8 @@ export function MessageReactionBar({
   members,
   currentUserId,
   currentUserName,
-  currentUserAvatar
+  currentUserAvatar,
+  showEmptyButton = true
 }: MessageReactionBarProps) {
   const { mutate: toggleReactionMutate } = useToggleReaction()
   const { mutate: removeReactionsMutate } = useRemoveAllMyReactions()
@@ -111,33 +113,35 @@ export function MessageReactionBar({
         }}
       >
         {/* Like button */}
-        <TouchableOpacity
-          activeOpacity={0.7}
-          onPress={handleLikePress}
-          onLongPress={showEmojiPickerBar}
-          delayLongPress={250}
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 14,
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: isDark ? '#2A3340' : '#FFFFFF',
-            borderWidth: 1.5,
-            borderColor: isDark ? '#3A4450' : '#E5E7EB',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.1,
-            shadowRadius: 2,
-            elevation: 2
-          }}
-        >
-          {(localActive ?? !!myReaction) && (selectedEmoji ?? myReaction) ? (
-            <Text style={{ fontSize: 15, lineHeight: 18 }}>{selectedEmoji ?? myReaction}</Text>
-          ) : (
-            <Ionicons name='heart-outline' size={14} color={isDark ? '#8899A6' : '#6B7280'} />
-          )}
-        </TouchableOpacity>
+        {(showEmptyButton || hasReactionBadge || localActive) && (
+          <TouchableOpacity
+            activeOpacity={0.7}
+            onPress={handleLikePress}
+            onLongPress={showEmojiPickerBar}
+            delayLongPress={250}
+            style={{
+              width: 28,
+              height: 28,
+              borderRadius: 14,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: isDark ? '#2A3340' : '#FFFFFF',
+              borderWidth: 1.5,
+              borderColor: isDark ? '#3A4450' : '#E5E7EB',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.1,
+              shadowRadius: 2,
+              elevation: 2
+            }}
+          >
+            {(localActive ?? !!myReaction) && (selectedEmoji ?? myReaction) ? (
+              <Text style={{ fontSize: 15, lineHeight: 18 }}>{selectedEmoji ?? myReaction}</Text>
+            ) : (
+              <Ionicons name='heart-outline' size={14} color={isDark ? '#8899A6' : '#6B7280'} />
+            )}
+          </TouchableOpacity>
+        )}
 
         {/* Reaction badge */}
         {hasReactionBadge && (

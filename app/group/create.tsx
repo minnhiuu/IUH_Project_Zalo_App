@@ -2,12 +2,16 @@ import React, { useMemo, useState } from 'react'
 import {
   ActivityIndicator,
   FlatList,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
   SafeAreaView,
+  ScrollView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  View
+  View,
+  Keyboard
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
@@ -18,15 +22,20 @@ import Toast from 'react-native-toast-message'
 import { Text } from '@/components/ui/text'
 import { UserAvatar } from '@/components/common/user-avatar'
 import { useTheme } from '@/context'
+import { useContactSuggestions } from '@/features/friend/queries'
 import { GroupMemberPickerItem } from '@/features/message/components/group'
 import type { SearchMemberResponse } from '@/features/message/schemas'
 import {
   useConversations,
   useCreateGroupConversation,
   useFriendsDirectory,
+  useGenerateJoinLink,
+  useSendMessage,
   useSearchMembersInfinite,
   useUpdateGroupAvatar
 } from '@/features/message/queries'
+import { messageApi } from '@/features/message/api/message.api'
+import { buildGroupLinkUrl } from '@/features/message/utils'
 
 const TABS = ['recent', 'contacts'] as const
 
@@ -74,17 +83,58 @@ export default function CreateGroupScreen() {
   const [activeTab, setActiveTab] = useState<MemberTab>('recent')
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [avatarAsset, setAvatarAsset] = useState<ImagePicker.ImagePickerAsset | null>(null)
+  const [memberRegistry, setMemberRegistry] = useState<Map<string, SearchMemberResponse>>(new Map())
 
   const { data: directory = {}, isLoading: loadingDirectory } = useFriendsDirectory(null, true)
+  const { data: contacts = [], isLoading: loadingContacts } = useContactSuggestions(0, 100, true)
   const { data: conversations = [] } = useConversations(0, 40, true)
   const { data: searchData, isLoading: loadingSearch } = useSearchMembersInfinite(search.trim(), null, !!search.trim())
 
   const createGroupMutation = useCreateGroupConversation()
   const updateGroupAvatarMutation = useUpdateGroupAvatar()
+  const generateJoinLinkMutation = useGenerateJoinLink()
+  const sendMessageMutation = useSendMessage()
 
   const flatDirectory = useMemo(() => {
     return Object.values(directory).flat() as SearchMemberResponse[]
   }, [directory])
+
+  const mappedContacts = useMemo(() => {
+    return contacts.map(c => ({
+      userId: c.userId,
+      fullName: c.fullName,
+      avatar: c.avatar,
+      phoneNumber: c.phoneNumber
+    })) as SearchMemberResponse[]
+  }, [contacts])
+
+  const searchedMembers = useMemo(() => {
+    if (!searchData?.pages) return [] as SearchMemberResponse[]
+    return searchData.pages.flatMap((page) => page?.data ?? [])
+  }, [searchData])
+
+  // Update member registry whenever new members are loaded
+  useMemo(() => {
+    const newRegistry = new Map(memberRegistry)
+    let changed = false
+
+    const addBatch = (list: SearchMemberResponse[]) => {
+      list.forEach(m => {
+        if (!newRegistry.has(m.userId)) {
+          newRegistry.set(m.userId, m)
+          changed = true
+        }
+      })
+    }
+
+    addBatch(flatDirectory)
+    addBatch(mappedContacts)
+    addBatch(searchedMembers)
+
+    if (changed) {
+      setMemberRegistry(newRegistry)
+    }
+  }, [flatDirectory, mappedContacts, searchedMembers])
 
   const recentMemberIds = useMemo(() => {
     const ids = new Set<string>()
@@ -101,16 +151,11 @@ export default function CreateGroupScreen() {
     return base.length > 0 ? base : flatDirectory
   }, [flatDirectory, recentMemberIds])
 
-  const searchedMembers = useMemo(() => {
-    if (!searchData?.pages) return [] as SearchMemberResponse[]
-    return searchData.pages.flatMap((page) => page?.data ?? [])
-  }, [searchData])
-
   const displayMembers = useMemo(() => {
     if (search.trim()) return searchedMembers
     if (activeTab === 'recent') return recentMembers
-    return flatDirectory
-  }, [search, searchedMembers, activeTab, recentMembers, flatDirectory])
+    return mappedContacts
+  }, [search, searchedMembers, activeTab, recentMembers, mappedContacts])
 
   const uniqueMembers = useMemo(() => {
     const map = new Map<string, SearchMemberResponse>()
@@ -146,15 +191,21 @@ export default function CreateGroupScreen() {
   }
 
   const onSubmit = async () => {
-    if (selectedIds.length < 2 || createGroupMutation.isPending) return
+    if (selectedIds.length < 1 || createGroupMutation.isPending) return
 
     let createdConversationId = ''
     let createdConversationName = ''
     let createdConversationAvatar = ''
 
     try {
+      // Determine which selected users are strangers (not in friend directory)
+      const strangerIds = selectedIds.filter(id => !flatDirectory.some(m => m.userId === id))
+      // For group creation, we try to add everyone. 
+      // But the user wants to ALSO send a link to strangers in a 1-1 chat.
+
+      const defaultName = selectedUsers.slice(0, 3).map(u => u.fullName.split(' ').pop() || u.fullName).join(', ') + (selectedUsers.length > 3 ? '...' : '')
       const created = await createGroupMutation.mutateAsync({
-        name: groupName.trim() || ' ',
+        name: groupName.trim() || defaultName,
         isGroup: true,
         memberIds: selectedIds,
         avatar: null
@@ -162,8 +213,36 @@ export default function CreateGroupScreen() {
 
       const conversation = created.data.data
       createdConversationId = conversation.id
-      createdConversationName = conversation.name || groupName || t('message.groupCreate.defaultGroupName')
+      createdConversationName = conversation.name || groupName.trim() || defaultName
       createdConversationAvatar = conversation.avatar || ''
+
+      // If there are strangers, generate a link and send it to them via 1-1 chat
+      if (strangerIds.length > 0) {
+        try {
+          const linkRes = await generateJoinLinkMutation.mutateAsync(createdConversationId)
+          const joinLinkToken = linkRes.data.data
+          const joinLinkUrl = buildGroupLinkUrl(joinLinkToken)
+          
+          for (const strangerId of strangerIds) {
+            try {
+              // Get or create 1-1 conversation with stranger
+              const convRes = await messageApi.getOrCreateConversation(strangerId)
+              const strangerConvId = convRes.data.data.id
+
+              await sendMessageMutation.mutateAsync({
+                conversationId: strangerConvId,
+                // Send canonical plain URL so both app and web classify it as join link.
+                content: joinLinkUrl,
+                isForwarded: false
+              })
+            } catch (err) {
+              console.error(`Failed to invite stranger ${strangerId}:`, err)
+            }
+          }
+        } catch (err) {
+          console.error('Failed to generate join link or send invites:', err)
+        }
+      }
 
       Toast.show({ type: 'success', text1: t('message.groupCreate.success') })
       router.replace({
@@ -206,105 +285,142 @@ export default function CreateGroupScreen() {
   }
 
   const isBusy = createGroupMutation.isPending || updateGroupAvatarMutation.isPending
-  const isSubmitDisabled = selectedIds.length < 2 || isBusy
+  const isSubmitDisabled = selectedIds.length < 1 || isBusy
+
+  const selectedUsers = useMemo(() => {
+    return selectedIds
+      .map(id => memberRegistry.get(id))
+      .filter((u): u is SearchMemberResponse => !!u)
+  }, [selectedIds, memberRegistry])
+
+  const renderSelectedUser = ({ item }: { item: SearchMemberResponse }) => (
+    <View style={styles.selectedItem}>
+      <UserAvatar source={item.avatar || undefined} name={item.fullName} size='lg' />
+      <TouchableOpacity 
+        style={styles.removeSelectedBtn} 
+        onPress={() => toggleMember(item.userId)}
+      >
+        <Ionicons name='close-circle' size={20} color='rgba(0,0,0,0.3)' />
+      </TouchableOpacity>
+    </View>
+  )
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: palette.bg }]}> 
-      <View style={[styles.header, { borderBottomColor: palette.border }]}> 
-        <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
-          <Ionicons name='close' size={34} color={palette.text} />
-        </TouchableOpacity>
+    <SafeAreaView style={[styles.container, { backgroundColor: palette.bg }]}>
+      <KeyboardAvoidingView 
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+        style={{ flex: 1 }}
+      >
+        <View style={[styles.header, { borderBottomColor: palette.border }]}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.closeBtn}>
+            <Ionicons name='close' size={28} color={palette.text} />
+          </TouchableOpacity>
 
-        <View style={styles.headerTitleWrap}>
-          <Text style={[styles.headerTitle, { color: palette.text }]}>{t('message.groupCreate.title')}</Text>
-          <Text style={[styles.headerSub, { color: palette.subText }]}>{t('message.groupCreate.selectedCount', { count: selectedIds.length })}</Text>
+          <View style={styles.headerTitleWrap}>
+            <Text style={[styles.headerTitle, { color: palette.text }]}>{t('message.groupCreate.title')}</Text>
+            <Text style={[styles.headerSub, { color: palette.subText }]}>
+              {t('message.groupCreate.selectedCount', { count: selectedIds.length })}
+            </Text>
+          </View>
         </View>
-      </View>
 
-      <View style={styles.groupInfoRow}>
-        <Pressable style={[styles.avatarPlaceholder, { backgroundColor: palette.avatarBg }]} onPress={onPickAvatar}>
-          {avatarAsset?.uri ? (
-            <UserAvatar source={avatarAsset.uri} name={groupName || 'Group'} size='4xl' />
-          ) : (
-            <Ionicons name='camera' size={33} color='#969FA9' />
-          )}
-        </Pressable>
+        <View style={styles.groupInfoRow}>
+          <Pressable style={[styles.avatarPlaceholder, { backgroundColor: palette.avatarBg }]} onPress={onPickAvatar}>
+            {avatarAsset?.uri ? (
+              <UserAvatar source={avatarAsset.uri} name={groupName || 'Group'} size='2xl' />
+            ) : (
+              <Ionicons name='camera' size={24} color='#969FA9' />
+            )}
+          </Pressable>
 
-        <TextInput
-          value={groupName}
-          onChangeText={setGroupName}
-          placeholder={t('message.groupCreate.groupNamePlaceholder')}
-          placeholderTextColor='#9CA3AF'
-          style={[styles.groupNameInput, { color: palette.text }]}
-          maxLength={60}
-        />
-      </View>
-
-      <View style={[styles.searchRow, { backgroundColor: palette.searchBg }]}> 
-        <Ionicons name='search' size={24} color='#9CA3AF' />
-        <TextInput
-          value={search}
-          onChangeText={setSearch}
-          placeholder={t('message.groupCreate.searchPlaceholder')}
-          placeholderTextColor='#9CA3AF'
-          style={[styles.searchInput, { color: palette.searchText }]}
-        />
-        <Ionicons name='keypad-outline' size={24} color='#9CA3AF' />
-      </View>
-
-      {!search.trim() && (
-        <View style={[styles.tabRow, { borderBottomColor: palette.border }]}> 
-          {TABS.map((tab) => {
-            const active = activeTab === tab
-            return (
-              <Pressable key={tab} style={styles.tabButton} onPress={() => setActiveTab(tab)}>
-                <Text style={[styles.tabText, { color: active ? palette.tabActive : palette.tabInactive }]}>
-                  {tab === 'recent' ? t('message.groupCreate.tabs.recent') : t('message.groupCreate.tabs.contacts')}
-                </Text>
-                {active && <View style={[styles.tabUnderline, { backgroundColor: palette.primary }]} />}
-              </Pressable>
-            )
-          })}
+          <TextInput
+            value={groupName}
+            onChangeText={setGroupName}
+            placeholder={t('message.groupCreate.groupNamePlaceholder')}
+            placeholderTextColor='#9CA3AF'
+            style={[styles.groupNameInput, { color: palette.text }]}
+            maxLength={60}
+          />
         </View>
-      )}
 
-      {loadingDirectory || loadingSearch ? (
-        <View style={styles.loadingWrap}>
-          <ActivityIndicator color='#1977F3' />
+        <View style={[styles.searchRow, { backgroundColor: palette.searchBg }]}>
+          <Ionicons name='search' size={20} color='#9CA3AF' />
+          <TextInput
+            value={search}
+            onChangeText={setSearch}
+            placeholder={t('message.groupCreate.searchPlaceholder')}
+            placeholderTextColor='#9CA3AF'
+            style={[styles.searchInput, { color: palette.searchText }]}
+          />
+          <Ionicons name='keypad-outline' size={20} color='#9CA3AF' />
         </View>
-      ) : (
-        <FlatList
-          data={uniqueMembers}
-          keyExtractor={(item) => item.userId}
-          renderItem={renderMember}
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
-          ListEmptyComponent={
-            <View style={styles.emptyWrap}>
-              <Text style={[styles.emptyText, { color: palette.subText }]}>{t('message.groupCreate.empty')}</Text>
+
+        {!search.trim() && (
+          <View style={[styles.tabRow, { borderBottomColor: palette.border }]}>
+            {TABS.map((tab) => {
+              const active = activeTab === tab
+              return (
+                <Pressable key={tab} style={styles.tabButton} onPress={() => setActiveTab(tab)}>
+                  <Text style={[styles.tabText, { color: active ? palette.primary : palette.tabInactive }]}>
+                    {tab === 'recent' ? t('message.groupCreate.tabs.recent') : t('message.groupCreate.tabs.contacts')}
+                  </Text>
+                  {active && <View style={[styles.tabUnderline, { backgroundColor: palette.primary }]} />}
+                </Pressable>
+              )
+            })}
+          </View>
+        )}
+
+        <View style={{ flex: 1 }}>
+          {(loadingDirectory || loadingSearch || loadingContacts) ? (
+            <View style={styles.loadingWrap}>
+              <ActivityIndicator color='#1977F3' />
             </View>
-          }
-        />
-      )}
-
-      <View style={[styles.bottomBar, { backgroundColor: palette.bottomBar, borderTopColor: palette.border }]}> 
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={onSubmit}
-          disabled={isSubmitDisabled}
-          style={[
-            styles.submitButton,
-            { backgroundColor: isSubmitDisabled ? palette.primaryDisabled : palette.primary },
-            isSubmitDisabled && styles.submitButtonDisabled
-          ]}
-        >
-          {isBusy ? (
-            <ActivityIndicator color='#fff' />
           ) : (
-            <Text style={styles.submitText}>{t('message.groupCreate.createButton')}</Text>
+            <FlatList
+              data={uniqueMembers}
+              keyExtractor={(item) => item.userId}
+              renderItem={renderMember}
+              contentContainerStyle={styles.listContent}
+              showsVerticalScrollIndicator={false}
+              ListEmptyComponent={
+                <View style={styles.emptyWrap}>
+                  <Text style={[styles.emptyText, { color: palette.subText }]}>{t('message.groupCreate.empty')}</Text>
+                </View>
+              }
+            />
           )}
-        </TouchableOpacity>
-      </View>
+        </View>
+
+        <View style={[styles.footer, { backgroundColor: palette.bg }]}>
+          <View style={styles.selectedRow}>
+            <FlatList
+              horizontal
+              data={selectedUsers}
+              renderItem={renderSelectedUser}
+              keyExtractor={item => item.userId}
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.selectedListContent}
+            />
+            
+            <TouchableOpacity
+              activeOpacity={0.8}
+              onPress={onSubmit}
+              disabled={isSubmitDisabled}
+              style={[
+                styles.submitFab,
+                { backgroundColor: isSubmitDisabled ? palette.primaryDisabled : palette.primary }
+              ]}
+            >
+              {isBusy ? (
+                <ActivityIndicator color='#fff' />
+              ) : (
+                <Ionicons name='send' size={24} color='#fff' />
+              )}
+            </TouchableOpacity>
+          </View>
+        </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   )
 }
@@ -331,24 +447,24 @@ const styles = StyleSheet.create({
     marginLeft: 4
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '700'
   },
   headerSub: {
-    fontSize: 15,
+    fontSize: 13,
     marginTop: 1
   },
   groupInfoRow: {
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 8,
     gap: 12
   },
   avatarPlaceholder: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: '#E6EBEF',
     alignItems: 'center',
     justifyContent: 'center',
@@ -356,23 +472,23 @@ const styles = StyleSheet.create({
   },
   groupNameInput: {
     flex: 1,
-    height: 48,
-    fontSize: 18
+    height: 40,
+    fontSize: 16
   },
   searchRow: {
     marginHorizontal: 16,
     marginBottom: 4,
-    height: 46,
+    height: 38,
     borderRadius: 10,
     backgroundColor: '#F3F4F6',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 12
+    paddingHorizontal: 10
   },
   searchInput: {
     flex: 1,
-    fontSize: 17,
+    fontSize: 15,
     color: '#111827'
   },
   tabRow: {
@@ -405,38 +521,52 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   listContent: {
-    paddingBottom: 120
+    paddingBottom: 20
   },
-  emptyWrap: {
-    paddingTop: 60,
+  footer: {
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: '#E5E7EB',
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
+    paddingTop: 12,
+    paddingHorizontal: 16
+  },
+  selectedRow: {
+    flexDirection: 'row',
     alignItems: 'center'
   },
-  emptyText: {
-    color: '#6B7280',
-    fontSize: 16
+  selectedListContent: {
+    paddingRight: 16,
+    gap: 12
   },
-  bottomBar: {
+  selectedItem: {
+    position: 'relative'
+  },
+  removeSelectedBtn: {
     position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    padding: 16,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    paddingBottom: 18
+    top: -4,
+    right: -4,
+    backgroundColor: '#fff',
+    borderRadius: 10
   },
-  submitButton: {
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#1977F3',
+  submitFab: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84
+  },
+  emptyWrap: {
+    paddingVertical: 40,
     alignItems: 'center',
     justifyContent: 'center'
   },
-  submitButtonDisabled: {
-    backgroundColor: '#9FC4F8'
-  },
-  submitText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: '700'
+  emptyText: {
+    fontSize: 15,
+    textAlign: 'center'
   }
 })

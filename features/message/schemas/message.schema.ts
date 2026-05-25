@@ -128,6 +128,10 @@ export type ConversationResponse = {
   lastMessageType: MessageType | null
   unreadCount: number | null
   lastMessageStatus: MessageStatus | null
+  isPinned?: boolean
+  isMuted?: boolean
+  isHidden?: boolean
+  manuallyMarkedUnread?: boolean
   members: ConversationMemberResponse[] | null
   settings?: GroupSettings | null
   joinLinkToken?: string | null

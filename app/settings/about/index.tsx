@@ -14,7 +14,7 @@ export default function AboutScreen() {
       <SettingsCard marginTop={12}>
         <View className='px-4 py-10 items-center'>
           <Ionicons name='chatbubble-ellipses' size={64} color='#0068FF' />
-          <Text className='text-2xl font-bold text-gray-900 mt-4'>Zalo</Text>
+          <Text className='text-2xl font-bold text-gray-900 mt-4'>BondHub</Text>
           <Text className='text-base text-gray-500 mt-1'>{t('settings.about.version', { version: '1.0.0' })}</Text>
         </View>
       </SettingsCard>

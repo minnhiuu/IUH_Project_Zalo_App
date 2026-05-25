@@ -211,15 +211,29 @@ export function ChatHeader({
                   </View>
                 </TouchableOpacity>
 
-                <TouchableOpacity onPress={isGroup ? onSearchPress : onCall} style={{ padding: 8 }}>
-                  <Ionicons name={isGroup ? 'search-outline' : 'call-outline'} size={24} color='#fff' />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={onVideoCall} style={{ padding: 8 }}>
-                  <Ionicons name='videocam-outline' size={24} color='#fff' />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={onMenu} style={{ padding: 8 }}>
-                  <Ionicons name='menu-outline' size={24} color='#fff' />
-                </TouchableOpacity>
+                {isGroup ? (
+                  onSearchPress ? (
+                    <TouchableOpacity onPress={onSearchPress} style={{ padding: 8 }}>
+                      <Ionicons name='search-outline' size={24} color='#fff' />
+                    </TouchableOpacity>
+                  ) : null
+                ) : (
+                  onCall ? (
+                    <TouchableOpacity onPress={onCall} style={{ padding: 8 }}>
+                      <Ionicons name='call-outline' size={24} color='#fff' />
+                    </TouchableOpacity>
+                  ) : null
+                )}
+                {onVideoCall ? (
+                  <TouchableOpacity onPress={onVideoCall} style={{ padding: 8 }}>
+                    <Ionicons name='videocam-outline' size={24} color='#fff' />
+                  </TouchableOpacity>
+                ) : null}
+                {onMenu ? (
+                  <TouchableOpacity onPress={onMenu} style={{ padding: 8 }}>
+                    <Ionicons name='menu-outline' size={24} color='#fff' />
+                  </TouchableOpacity>
+                ) : null}
               </>
             )}
           </View>
