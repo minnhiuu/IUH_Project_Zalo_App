@@ -5,7 +5,6 @@ import { Text } from '@/components/ui/text'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { Colors } from '@/constants/theme'
 import { UserAvatar } from '@/components/common/user-avatar'
-import { useTranslation } from 'react-i18next'
 import type { MessageResponse } from '../schemas'
 import { useAuthStore } from '@/store'
 
@@ -23,7 +22,6 @@ interface CallMetadata {
   callerName: string
   receiverId: string
   receiverName: string
-  callKind?: 'voice' | 'video'
 }
 
 interface CallMessageProps {
@@ -35,12 +33,12 @@ interface CallMessageProps {
   onRecall?: (receiverId: string) => void
 }
 
-function formatDuration(seconds: number, t: any): string {
-  if (seconds < 60) return t('messages.call.secondsFormat', { seconds, defaultValue: `${seconds} giây` })
+function formatDuration(seconds: number): string {
+  if (seconds < 60) return `${seconds} giây`
   const minutes = Math.floor(seconds / 60)
   const remaining = seconds % 60
-  if (remaining === 0) return t('messages.call.minutesFormat', { minutes, defaultValue: `${minutes} phút` })
-  return t('messages.call.minutesSecondsFormat', { minutes, seconds: remaining, defaultValue: `${minutes} phút ${remaining} giây` })
+  if (remaining === 0) return `${minutes} phút`
+  return `${minutes} phút ${remaining} giây`
 }
 
 export function CallMessage({
@@ -51,7 +49,6 @@ export function CallMessage({
   onJoinGroupCall,
   onRecall
 }: CallMessageProps) {
-  const { t } = useTranslation()
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
   const isDark = colorScheme === 'dark'
@@ -88,7 +85,7 @@ export function CallMessage({
           >
             <UserAvatar
               source={message.senderAvatar}
-              name={message.senderName || t('messages.call.member', { defaultValue: 'Thành viên' })}
+              name={message.senderName || 'Thành viên'}
               size='sm'
             />
           </TouchableOpacity>
@@ -111,7 +108,7 @@ export function CallMessage({
             <View style={styles.groupTitleRow}>
               <Ionicons name='people-outline' size={16} color='#2563EB' />
               <Text style={[styles.headerTitle, { color: isDark ? '#E8EAED' : '#111827' }]}>
-                {t('messages.call.groupCall', { defaultValue: 'Cuộc gọi nhóm' })}
+                Cuộc gọi nhóm
               </Text>
             </View>
             {isActive && <View style={styles.pulseDot} />}
@@ -119,21 +116,19 @@ export function CallMessage({
 
           {/* Description */}
           <View style={styles.groupBody}>
-            <View style={[styles.iconWrapper, { backgroundColor: isDark ? '#2A2F36' : '#F3F4F6' }]}>
+            <View style={styles.iconWrapper}>
               <Ionicons
-                name={isVideo ? 'videocam' : 'call'}
-                size={14}
+                name={isVideo ? 'videocam-outline' : 'call-outline'}
+                size={16}
                 color={isActive ? '#10B981' : '#8A8A8A'}
               />
             </View>
             <View style={styles.groupTexts}>
               <Text style={[styles.statusText, { color: isDark ? '#E8EAED' : '#111827' }]}>
-                {isActive
-                  ? t('messages.call.inProgress', { defaultValue: 'Đang diễn ra...' })
-                  : t('messages.call.ended', { defaultValue: 'Đã kết thúc' })}
+                {isActive ? 'Đang diễn ra...' : 'Đã kết thúc'}
               </Text>
               <Text style={[styles.callerName, { color: isDark ? '#A9B7CC' : '#6B7280' }]}>
-                {t('messages.call.startedBy', { name: payload.callerName, defaultValue: `Bắt đầu bởi ${payload.callerName}` })}
+                Bắt đầu bởi {payload.callerName}
               </Text>
             </View>
           </View>
@@ -147,9 +142,7 @@ export function CallMessage({
                 onPress={() => onJoinGroupCall?.(payload!.roomId, payload!.callKind)}
                 style={styles.actionButton}
               >
-                <Text style={styles.actionButtonText}>
-                  {t('messages.call.joinCall', { defaultValue: 'Tham gia cuộc gọi' })}
-                </Text>
+                <Text style={styles.actionButtonText}>Tham gia cuộc gọi</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -164,57 +157,48 @@ export function CallMessage({
 
   const isCaller = meta.callerId === currentUserId
   const action = meta.callAction
-  const callKind = meta.callKind || 'video'
-  const isVideo = callKind === 'video'
 
   let statusText = ''
   let callLabel = ''
   let iconColor = '#10B981'
-  let iconName: keyof typeof Ionicons.glyphMap = isVideo ? 'videocam' : 'call'
   let isOutgoing = false
-
-  const callTypeLabel = isVideo
-    ? t('messages.call.videoCall', { defaultValue: 'Cuộc gọi video' })
-    : t('messages.call.voiceCall', { defaultValue: 'Cuộc gọi thoại' })
 
   switch (action) {
     case 'ended':
-      statusText = isCaller
-        ? t('messages.call.youCalled', { defaultValue: 'Bạn đã gọi' })
-        : t('messages.call.theyCalled', { name: meta.callerName, defaultValue: `${meta.callerName} đã gọi` })
-      callLabel = `${callTypeLabel} - ${formatDuration(meta.durationSeconds, t)}`
+      statusText = isCaller ? 'Bạn đã gọi' : `${meta.callerName} đã gọi`
+      callLabel = `Cuộc gọi video - ${formatDuration(meta.durationSeconds)}`
       iconColor = '#10B981'
       isOutgoing = isCaller
       break
     case 'missed':
       if (isCaller) {
-        statusText = t('messages.call.youCancelled', { defaultValue: 'Bạn đã hủy' })
-        callLabel = callTypeLabel
+        statusText = 'Bạn đã hủy'
+        callLabel = 'Cuộc gọi thoại'
         iconColor = '#EF4444'
         isOutgoing = true
       } else {
-        statusText = t('messages.call.missedCall', { defaultValue: 'Cuộc gọi nhỡ' })
-        callLabel = callTypeLabel
+        statusText = 'Cuộc gọi nhỡ'
+        callLabel = 'Cuộc gọi thoại'
         iconColor = '#EF4444'
         isOutgoing = false
       }
       break
     case 'rejected':
       if (isCaller) {
-        statusText = t('messages.call.theyRejected', { name: meta.receiverName, defaultValue: `${meta.receiverName} từ chối` })
-        callLabel = callTypeLabel
+        statusText = `${meta.receiverName} từ chối`
+        callLabel = 'Cuộc gọi video'
         iconColor = '#8A8A8A'
         isOutgoing = true
       } else {
-        statusText = t('messages.call.youRejected', { defaultValue: 'Bạn đã từ chối' })
-        callLabel = callTypeLabel
+        statusText = 'Bạn đã từ chối'
+        callLabel = 'Cuộc gọi video'
         iconColor = '#8A8A8A'
         isOutgoing = false
       }
       break
     default:
-      statusText = callTypeLabel
-      callLabel = callTypeLabel
+      statusText = 'Cuộc gọi video'
+      callLabel = 'Cuộc gọi video'
       iconColor = '#2563EB'
       isOutgoing = isCaller
   }
@@ -253,14 +237,14 @@ export function CallMessage({
 
         {/* Call Info Row */}
         <View style={styles.privateBody}>
-          <View style={[styles.arrowWrapper, { backgroundColor: isDark ? '#2A2F36' : (iconColor === '#EF4444' ? '#FEF2F2' : (iconColor === '#8A8A8A' ? '#F3F4F6' : '#ECFDF5')) }]}>
+          <View style={[styles.arrowWrapper, { backgroundColor: isDark ? '#2A2F36' : '#F3F4F6' }]}>
             <Ionicons
-              name={iconName}
-              size={15}
+              name={(isOutgoing ? 'arrow-up-forward' : 'arrow-down-backward') as any}
+              size={13}
               color={iconColor}
             />
           </View>
-          <Text style={[styles.privateLabel, { color: isDark ? '#A9B7CC' : '#6B7280', fontSize: 13, fontWeight: '500' }]} numberOfLines={1}>
+          <Text style={[styles.privateLabel, { color: isDark ? '#A9B7CC' : '#6B7280' }]} numberOfLines={1}>
             {callLabel}
           </Text>
         </View>
@@ -268,15 +252,13 @@ export function CallMessage({
         {/* Recall Button */}
         {onRecall && (
           <View>
-            <View style={[styles.divider, { backgroundColor: isDark ? '#3a3a3a' : '#F3F4F6', marginHorizontal: 12 }]} />
+            <View style={[styles.divider, { backgroundColor: isDark ? '#3a3a3a' : '#E5E7EB' }]} />
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={() => onRecall(targetUserId)}
               style={styles.actionButton}
             >
-              <Text style={styles.actionButtonText}>
-                {t('messages.call.recall', { defaultValue: 'Gọi lại' })}
-              </Text>
+              <Text style={styles.actionButtonText}>Gọi lại</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -340,16 +322,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingBottom: 10,
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: 10,
     marginTop: 4
   },
   iconWrapper: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center'
+    marginTop: 2
   },
   groupTexts: {
     flexDirection: 'column',

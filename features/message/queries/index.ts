@@ -54,6 +54,5 @@ export {
 	useRejectJoinRequest,
 	useCancelMyJoinRequest,
 	useBlockMemberFromGroup,
-	useUnblockMemberFromGroup,
-	useUpdateMessageExpirationMutation
+	useUnblockMemberFromGroup
 } from './use-mutations'

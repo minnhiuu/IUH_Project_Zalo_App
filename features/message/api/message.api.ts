@@ -296,10 +296,5 @@ export const messageApi = {
   getMediaMessages: (conversationId: string, types: string[] = ['IMAGE', 'VIDEO'], page: number = 0, size: number = 50) =>
     http.get<ApiResponse<PageResponse<MessageResponse[]>>>(
       `${API_ENDPOINTS.MESSAGE.MEDIA(conversationId)}?types=${types.join(',')}&page=${page}&size=${size}`
-    ),
-
-  updateMessageExpiration: (conversationId: string, expirationDays: number) =>
-    http.patch<ApiResponse<ConversationResponse>>(API_ENDPOINTS.MESSAGE.UPDATE_EXPIRATION(conversationId), {
-      days: expirationDays
-    })
+    )
 }
