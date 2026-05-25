@@ -602,6 +602,14 @@
         "self": "You created the group",
         "actor": "{{actor}} created the group"
       }
+    },
+    "disappearing": {
+      "deleteIn": {
+        "days": "Disappears in {{days}} days {{hours}} hours",
+        "hours": "Disappears in {{hours}} hours {{minutes}} minutes",
+        "minutes": "Disappears in {{minutes}} minutes",
+        "soon": "Disappearing soon"
+      }
     }
   },
   "contacts": {
