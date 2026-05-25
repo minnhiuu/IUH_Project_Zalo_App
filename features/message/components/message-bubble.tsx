@@ -9,7 +9,8 @@ import {
   Animated,
   ScrollView,
   ActivityIndicator,
-  TextInput
+  TextInput,
+  Text as RNText
 } from 'react-native'
 import { Image as ExpoImage } from 'expo-image'
 import { Ionicons } from '@expo/vector-icons'
@@ -66,6 +67,7 @@ interface MessageBubbleProps {
   onRecall?: (receiverId: string) => void
   showHighlightBackground?: boolean
   highlightKeyword?: string | null
+  onOpenExpirationModal?: () => void
 }
 
 export function MessageBubble({
@@ -94,7 +96,8 @@ export function MessageBubble({
   onJoinGroupCall,
   onRecall,
   showHighlightBackground = false,
-  highlightKeyword = null
+  highlightKeyword = null,
+  onOpenExpirationModal
 }: MessageBubbleProps) {
   const { t } = useTranslation()
   const router = useRouter()
@@ -436,6 +439,17 @@ export function MessageBubble({
         systemText = isActorMe ? `${t('message.you', { defaultValue: 'Bạn' })} đã rời nhóm` : `${actorName} đã rời nhóm`
       } else if (message.type === MessageType.JOIN) {
         systemText = `${actorName} đã tham gia nhóm`
+      } else if (action === 'UPDATE_EXPIRATION') {
+        const days = Number(meta.days || payload.days || payload.expirationDays || 0)
+        if (days > 0) {
+          systemText = isActorMe
+            ? t('message.system.update_expiration.selfEnable', { days, defaultValue: `Bạn đặt thời gian tự xóa là ${days} ngày` })
+            : t('message.system.update_expiration.actorEnable', { actor: actorName, days, defaultValue: `${actorName} đặt thời gian tự xóa là ${days} ngày` })
+        } else {
+          systemText = isActorMe
+            ? t('message.system.update_expiration.selfDisable', { defaultValue: 'Bạn ngừng Tin nhắn tự xóa' })
+            : t('message.system.update_expiration.actorDisable', { actor: actorName, defaultValue: `${actorName} ngừng Tin nhắn tự xóa` })
+        }
       } else {
         systemText = 'Tin nhắn hệ thống'
       }
@@ -470,44 +484,61 @@ export function MessageBubble({
       action === 'REFRESH_JOIN_LINK'
 
     return (
-      <View style={{ alignItems: 'center', marginVertical: 4, paddingHorizontal: 16 }}>
-        <View
-          style={{
-            backgroundColor: isDark ? '#2B3340' : '#F7FAFC',
-            borderRadius: 999,
-            paddingHorizontal: 6,
-            paddingVertical: 3,
-            maxWidth: '100%',
-            borderWidth: isDark ? 0 : 1,
-            borderColor: '#E5EBF1',
-            flexDirection: 'row',
-            alignItems: 'center'
-          }}
-        >
-          <View style={{ flexDirection: 'row', marginRight: 5 }}>
+      <View style={{ alignItems: 'center', marginVertical: 6, width: '100%' }}>
+        {action === 'UPDATE_EXPIRATION' && (
+          <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, marginBottom: 8, marginTop: 4, width: '100%' }}>
+            <View style={{ flex: 1, height: 1, backgroundColor: isDark ? '#4B5563' : '#9CA3AF' }} />
+            <Text style={{ marginHorizontal: 8, fontSize: 11, color: isDark ? '#9CA3AF' : '#8A8F94', fontWeight: '600', textTransform: 'uppercase' }}>
+              {Number(meta.days || payload.days || payload.expirationDays || 0) > 0
+                ? t('message.disappearing.dividerEnabled', { defaultValue: 'TIN NHẮN TỰ XÓA' })
+                : t('message.disappearing.dividerDisabled', { defaultValue: 'NGỪNG TIN NHẮN TỰ XÓA' })}
+            </Text>
+            <View style={{ flex: 1, height: 1, backgroundColor: isDark ? '#4B5563' : '#9CA3AF' }} />
+          </View>
+        )}
+        <View style={{ paddingHorizontal: 16, width: '100%', alignItems: 'center' }}>
+          <View
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: 999,
+              paddingHorizontal: 10,
+              paddingVertical: 3,
+              maxWidth: '90%',
+              flexDirection: 'row',
+              alignItems: 'center',
+              shadowColor: '#000',
+              shadowOffset: { width: 0, height: 1 },
+              shadowOpacity: 0.1,
+              shadowRadius: 2,
+              elevation: 2,
+              borderWidth: 0.5,
+              borderColor: '#E5EBF1'
+            }}
+          >
+          <View style={{ flexDirection: 'row', marginRight: 6 }}>
             {leadingAvatarItems.map((item, idx) => (
               <View
                 key={`${item.id}-${idx}`}
                 style={{
                   marginLeft: idx === 0 ? 0 : -6,
-                  borderWidth: 1,
-                  borderColor: isDark ? '#2B3340' : '#FFFFFF',
+                  borderWidth: 1.5,
+                  borderColor: '#FFFFFF',
                   borderRadius: 99,
-                  transform: [{ scale: 0.84 }]
                 }}
               >
                 <UserAvatar source={item.avatar || undefined} name={item.name} size='xs' />
               </View>
             ))}
           </View>
-          {showPencil && <Text style={{ marginRight: 3, color: '#22A06B', fontSize: 9 }}>✎</Text>}
-          <Text
+          {showPencil && <Text style={{ marginRight: 4, color: '#22A06B', fontSize: 11 }}>✎</Text>}
+          <RNText
             style={{
               fontSize: 9.5,
-              color: isDark ? '#C8D1DE' : '#6B7280',
+              color: '#4B5563',
               textAlign: 'left',
               fontWeight: '500',
-              flexShrink: 1
+              flexShrink: 1,
+              lineHeight: 14
             }}
             numberOfLines={2}
           >
@@ -523,16 +554,25 @@ export function MessageBubble({
               const normalized = systemText.startsWith(`${prefix} `) ? systemText.slice(prefix.length + 1) : systemText
 
               return (
-                <>
-                  <Text style={{ fontWeight: '700', fontSize: 10, color: isDark ? '#E0E8F4' : '#475569' }}>
+                <RNText>
+                  <RNText style={{ fontWeight: '700', color: '#111827' }}>
                     {`${prefix} `}
-                  </Text>
+                  </RNText>
                   {normalized}
-                </>
+                  {action === 'UPDATE_EXPIRATION' && (
+                    <RNText>
+                      {'. '}
+                      <RNText style={{ color: '#0068FF', fontWeight: '500' }} onPress={onOpenExpirationModal}>
+                        {t('message.disappearing.changeSettings', { defaultValue: 'Thay đổi cài đặt' })}
+                      </RNText>
+                    </RNText>
+                  )}
+                </RNText>
               )
             })()}
-          </Text>
+          </RNText>
         </View>
+      </View>
       </View>
     )
   }
@@ -1104,14 +1144,15 @@ export function MessageBubble({
 
   const actionRows = buildActionRows(message, isOwn, isDark, isPinned, t)
   const deliveryStatusNode = renderDeliveryStatus()
-  const incomingLeftSlotWidth = 44
+  const incomingLeftSlotWidth = 36
+  const isExpiring = !!(message as any).expiredAt
 
   return (
     <View
       style={{
         flexDirection: 'row',
         justifyContent: isOwn ? 'flex-end' : 'flex-start',
-        paddingHorizontal: 12,
+        paddingHorizontal: isOwn ? 12 : 4,
         paddingVertical: isHighlighted ? 6 : 0,
         marginBottom: isHighlighted ? 0 : 4,
         marginHorizontal: 4,
@@ -1200,7 +1241,7 @@ export function MessageBubble({
             <TouchableOpacity activeOpacity={0.8} onLongPress={openSheet} delayLongPress={300}>
               <View
                 style={{
-                  backgroundColor: isBusinessCardMessage ? 'transparent' : hasMediaContent ? mediaBubbleBg : bubbleBg,
+                  backgroundColor: isBusinessCardMessage ? 'transparent' : (hasMediaContent ? mediaBubbleBg : bubbleBg),
                   borderRadius: isBusinessCardMessage ? 0 : 16,
                   borderTopRightRadius: isBusinessCardMessage ? 0 : isOwn ? 4 : 16,
                   borderTopLeftRadius: isBusinessCardMessage ? 0 : isOwn ? 16 : 4,
@@ -1214,10 +1255,13 @@ export function MessageBubble({
                   paddingVertical: isBusinessCardMessage ? 0 : hasMediaContent ? 0 : 10,
                   borderWidth: isBusinessCardMessage
                     ? 0
-                    : !isOwn && !isDark && !isRevoked && !(hasMediaContent && !hasRealCaption)
-                      ? 0.5
-                      : 0,
-                  borderColor: '#E5E7EB',
+                    : (isExpiring && !hasMediaContent)
+                      ? 1.5
+                      : (!isOwn && !isDark && !isRevoked && !(hasMediaContent && !hasRealCaption)
+                        ? 0.5
+                        : 0),
+                  borderStyle: (isExpiring && !hasMediaContent) ? 'dashed' : 'solid',
+                  borderColor: (isExpiring && !hasMediaContent) ? (isOwn ? (isDark ? '#36A7FF' : '#99C8FF') : (isDark ? '#4B5563' : '#D1D5DB')) : '#E5E7EB',
                   overflow: hasMediaContent ? 'hidden' : 'visible'
                 }}
               >
@@ -1335,7 +1379,32 @@ export function MessageBubble({
               alignItems: 'center'
             }}
           >
-            {showTime && <Text style={{ fontSize: 10.5, color: timeColor }}>{formatTime(message.createdAt)}</Text>}
+            {showTime && (
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                {!!(message as any).expiredAt && (() => {
+                  const diff = new Date((message as any).expiredAt).getTime() - Date.now()
+                  let remainingText = ''
+                  if (diff > 0) {
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+                    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24)
+                    const minutes = Math.floor((diff / 1000 / 60) % 60)
+                    if (days > 0) remainingText = t('messages.disappearing.deleteIn.days', { days, hours })
+                    else if (hours > 0) remainingText = t('messages.disappearing.deleteIn.hours', { hours, minutes })
+                    else remainingText = t('messages.disappearing.deleteIn.minutes', { minutes: Math.max(minutes, 1) })
+                  } else {
+                    remainingText = t('messages.disappearing.deleteIn.soon')
+                  }
+                  return (
+                    <TouchableOpacity activeOpacity={0.7} onPress={() => Toast.show({ type: 'info', text1: remainingText, position: 'bottom' })}>
+                      <View style={{ position: 'relative' }}>
+                        <Ionicons name='time-outline' size={12} color={timeColor} style={{ opacity: 0.8 }} />
+                      </View>
+                    </TouchableOpacity>
+                  )
+                })()}
+                <Text style={{ fontSize: 10.5, color: timeColor }}>{formatTime(message.createdAt)}</Text>
+              </View>
+            )}
             {!!deliveryStatusNode && deliveryStatusNode}
           </View>
         )}

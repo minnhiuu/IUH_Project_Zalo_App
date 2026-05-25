@@ -19,9 +19,11 @@ import {
   useClearConversationHistory,
   useDisbandGroup,
   useLeaveGroup,
-  useUpdateGroupName
+  useUpdateGroupName,
+  useUpdateMessageExpirationMutation
 } from '@/features/message/queries'
 import Toast from 'react-native-toast-message'
+import { ExpirationTimeModal } from './expiration-time-modal'
 
 const DIVIDER_COLOR_LIGHT = '#F0F0F0'
 const DIVIDER_COLOR_DARK = 'rgba(255,255,255,0.07)'
@@ -93,6 +95,8 @@ export default function MessageOptionsScreen() {
   const { mutate: updateGroupName } = useUpdateGroupName()
   const [renameVisible, setRenameVisible] = useState(false)
   const [renameValue, setRenameValue] = useState('')
+  const [expirationModalVisible, setExpirationModalVisible] = useState(false)
+  const { mutate: updateExpiration, isPending: isExpirationPending } = useUpdateMessageExpirationMutation()
 
   const { data: myProfile } = useMyProfile()
   const { data: allConversations = [] } = useConversations(0, 100, true)
@@ -120,6 +124,29 @@ export default function MessageOptionsScreen() {
   const groupMembersCount = activeConversation?.members?.length || 0
   const groupLinkEnabled =
     !!activeConversation?.joinLinkToken || activeConversation?.settings?.joinByLinkEnabled === true
+  const currentExpirationDays = (activeConversation as any)?.messageExpirationDays ?? null
+
+  const expirationStatusText = (() => {
+    if (!currentExpirationDays) return t('messages.disappearing.statusNever')
+    return t('messages.disappearing.statusDays', { days: currentExpirationDays })
+  })()
+
+  const handleSaveExpiration = (days: number) => {
+    if (!conversationId) return
+    updateExpiration(
+      { conversationId, expirationDays: days },
+      {
+        onSuccess: () => {
+          setExpirationModalVisible(false)
+          Toast.show({
+            type: 'success',
+            text1: t('messages.disappearing.toast.success'),
+            visibilityTime: 2000
+          })
+        }
+      }
+    )
+  }
 
   const quickActions = useMemo(
     () => [
@@ -578,6 +605,20 @@ export default function MessageOptionsScreen() {
                 onPress={() => {}}
                 isDark={isDark}
               />
+              <MenuItemRow
+                icon='timer-outline'
+                label={t('messages.disappearing.statusLabel')}
+                onPress={() => setExpirationModalVisible(true)}
+                isDark={isDark}
+                rightNode={
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Text style={{ color: groupPalette.subText, fontSize: 12 }}>
+                      {expirationStatusText}
+                    </Text>
+                    <Ionicons name='chevron-forward' size={16} color={isDark ? '#3E444A' : '#C7C7CC'} />
+                  </View>
+                }
+              />
             </View>
 
             <View style={{ marginTop: 8, backgroundColor: groupPalette.card }}>
@@ -729,6 +770,20 @@ export default function MessageOptionsScreen() {
                 label={t('profile.chatOptions.sharedJournal')}
                 onPress={() => {}}
                 isDark={isDark}
+              />
+              <MenuItemRow
+                icon='timer-outline'
+                label={t('messages.disappearing.statusLabel')}
+                onPress={() => setExpirationModalVisible(true)}
+                isDark={isDark}
+                rightNode={
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Text style={{ color: isDark ? '#8C97A3' : '#6B7280', fontSize: 12 }}>
+                      {expirationStatusText}
+                    </Text>
+                    <Ionicons name='chevron-forward' size={16} color={isDark ? '#3E444A' : '#C7C7CC'} />
+                  </View>
+                }
               />
             </View>
 
@@ -912,6 +967,14 @@ export default function MessageOptionsScreen() {
         onClose={() => setBlockModalVisible(false)}
         isBlocked={!!blockDetails}
         currentPreference={blockDetails?.preference}
+      />
+
+      <ExpirationTimeModal
+        visible={expirationModalVisible}
+        onClose={() => setExpirationModalVisible(false)}
+        currentDays={currentExpirationDays}
+        onSave={handleSaveExpiration}
+        isPending={isExpirationPending}
       />
     </View>
   )
