@@ -147,8 +147,7 @@ export const API_ENDPOINTS = {
       `/messages/conversations/${conversationId}/block/${targetUserId}`,
     BLOCKED_MEMBERS: (conversationId: string) => `/messages/conversations/${conversationId}/blocked-members`,
     BLOCK_CANDIDATES: (conversationId: string) => `/messages/conversations/${conversationId}/block-candidates`,
-    MY_GROUPS: '/messages/conversations/groups/mine',
-    UPDATE_EXPIRATION: (conversationId: string) => `/messages/conversations/${conversationId}/expiration`
+    MY_GROUPS: '/messages/conversations/groups/mine'
   },
   FILE: {
     UPLOAD: '/files/upload',

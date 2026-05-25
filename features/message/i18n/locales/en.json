@@ -398,38 +398,6 @@
       "create_group": {
         "self": "You created the group",
         "actor": "{{actor}} created the group"
-      },
-      "update_expiration": {
-        "selfEnable": "You set disappearing messages to {{days}} days",
-        "actorEnable": "{{actor}} set disappearing messages to {{days}} days",
-        "selfDisable": "You turned off disappearing messages",
-        "actorDisable": "{{actor}} turned off disappearing messages"
-      }
-    },
-    "disappearing": {
-      "title": "Disappearing messages",
-      "description": "When enabled, new messages will be automatically deleted after the selected time period",
-      "never": "Never",
-      "oneDay": "1 day",
-      "sevenDays": "7 days",
-      "fourteenDays": "14 days",
-      "save": "SAVE",
-      "cancel": "CANCEL",
-      "statusLabel": "Disappearing messages",
-      "statusNever": "Off",
-      "statusDays": "{{days}} days",
-      "dividerEnabled": "DISAPPEARING MESSAGES",
-      "dividerDisabled": "DISAPPEARING MESSAGES OFF",
-      "changeSettings": "Change settings",
-      "deleteIn": {
-        "days": "Deletes in {{days}}d {{hours}}h",
-        "hours": "Deletes in {{hours}}h {{minutes}}m",
-        "minutes": "Deletes in {{minutes}}m",
-        "soon": "Deleting soon"
-      },
-      "toast": {
-        "success": "Disappearing messages updated",
-        "error": "Failed to update disappearing messages"
       }
     }
   }
