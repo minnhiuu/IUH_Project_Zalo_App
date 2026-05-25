@@ -228,6 +228,18 @@ export function getSystemMessageText(
         ? safeT('messages.system.revoke.self', { defaultValue: 'Bạn đã thu hồi một tin nhắn' })
         : safeT('messages.system.revoke.actor', { actor: actorName, defaultValue: `${actorName} đã thu hồi một tin nhắn` })
 
+    case 'UPDATE_EXPIRATION': {
+      const days = Number(meta.days || payload.days || payload.expirationDays || 0)
+      if (days > 0) {
+        return isActorMe
+          ? safeT('message.system.update_expiration.selfEnable', { days, defaultValue: `Bạn đã đặt thời gian tự xóa là ${days} ngày` })
+          : safeT('message.system.update_expiration.actorEnable', { actor: actorName, days, defaultValue: `${actorName} đã đặt thời gian tự xóa là ${days} ngày` })
+      }
+      return isActorMe
+        ? safeT('message.system.update_expiration.selfDisable', { defaultValue: 'Bạn đã ngừng Tin nhắn tự xóa' })
+        : safeT('message.system.update_expiration.actorDisable', { actor: actorName, defaultValue: `${actorName} đã ngừng Tin nhắn tự xóa` })
+    }
+
     default:
       if (message.type === MessageType.CALL) {
          return safeT('messages.system.call', { defaultValue: '[Cuộc gọi]' })

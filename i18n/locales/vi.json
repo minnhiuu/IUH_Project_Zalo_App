@@ -619,6 +619,14 @@
         "self": "Bạn đã tạo nhóm",
         "actor": "{{actor}} đã tạo nhóm"
       }
+    },
+    "disappearing": {
+      "deleteIn": {
+        "days": "Tự động xóa sau {{days}} ngày {{hours}} giờ",
+        "hours": "Tự động xóa sau {{hours}} giờ {{minutes}} phút",
+        "minutes": "Tự động xóa sau {{minutes}} phút",
+        "soon": "Sắp xóa"
+      }
     }
   },
   "contacts": {

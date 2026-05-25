@@ -35,7 +35,8 @@ import {
   MessageListSkeleton,
   ForwardMessageModal,
   GroupChatIntro,
-  EditPinnedMessagesModal
+  EditPinnedMessagesModal,
+  ExpirationTimeModal
 } from '@/features/message/components'
 import type { FileAsset, BusinessCardAsset } from '@/features/message/components'
 import {
@@ -46,7 +47,8 @@ import {
   usePinnedMessages,
   usePinMessage,
   useUnpinMessage,
-  useConversationParticipants
+  useConversationParticipants,
+  useUpdateMessageExpirationMutation
 } from '@/features/message/queries'
 import { useNavigateSearch } from '@/features/search/queries'
 import { SearchNavigationBar } from '@/features/search/components/messages/search-navigation-bar'
@@ -242,6 +244,27 @@ export default function ChatScreen() {
   const [showPinnedPanel, setShowPinnedPanel] = useState(false)
   const [isEditPinnedModalOpen, setIsEditPinnedModalOpen] = useState(false)
   const [pendingScrollId, setPendingScrollId] = useState<string | null>(null)
+
+  const [expirationModalVisible, setExpirationModalVisible] = useState(false)
+  const { mutate: updateExpiration, isPending: isExpirationPending } = useUpdateMessageExpirationMutation()
+  const currentExpirationDays = (resolvedConversation as any)?.messageExpirationDays ?? null
+
+  const handleSaveExpiration = useCallback((days: number) => {
+    if (!conversationId) return
+    updateExpiration(
+      { conversationId, expirationDays: days },
+      {
+        onSuccess: () => {
+          setExpirationModalVisible(false)
+          Toast.show({
+            type: 'success',
+            text1: t('messages.disappearing.toast.success', { defaultValue: 'Cập nhật thời gian tự xóa thành công' }),
+            visibilityTime: 2000
+          })
+        }
+      }
+    )
+  }, [conversationId, updateExpiration, t])
 
   // Search Mode
   const [isSearchMode, setIsSearchMode] = useState(!!params.searchKeyword || params.isSearchMode === 'true')
@@ -1192,9 +1215,10 @@ export default function ChatScreen() {
               // In inverted list, index 0 = newest (bottom), nextMsg = older (above).
               // Show avatar on the topmost message of a consecutive group (the oldest one)
               // OR if there is a date separator (time gap > 30 mins)
+              // OR if the next older message is a system message (this message starts a new visual block)
               const showAvatar =
-                !isOwn && (!nextMsg || nextMsg.senderId !== item.senderId || showDateSep)
-              const showTime = !prevMsg || prevMsg.senderId !== item.senderId
+                !isOwn && (!nextMsg || nextMsg.senderId !== item.senderId || showDateSep || nextMsg.type === MessageType.SYSTEM || nextMsg.type === MessageType.JOIN || nextMsg.type === MessageType.LEAVE)
+              const showTime = !prevMsg || prevMsg.senderId !== item.senderId || prevMsg.type === MessageType.SYSTEM || prevMsg.type === MessageType.JOIN || prevMsg.type === MessageType.LEAVE
 
               return (
                 <View>
@@ -1228,6 +1252,7 @@ export default function ChatScreen() {
                     showHighlightBackground={item.id === highlightBackgroundMessageId || (!!item.clientMessageId && item.clientMessageId === highlightBackgroundMessageId)}
                     onPin={handlePinMessage}
                     highlightKeyword={item.id === highlightedMessageId ? internalSearchQuery || searchKeyword : null}
+                    onOpenExpirationModal={() => setExpirationModalVisible(true)}
                     onOpenMessageOptions={() => {
                       const targetId = isGroupConversation ? conversationId : partnerId
                       router.push({
@@ -1393,6 +1418,14 @@ export default function ChatScreen() {
           closePinnedPanel()
           scrollToMessage(msgId)
         }}
+      />
+
+      <ExpirationTimeModal
+        visible={expirationModalVisible}
+        onClose={() => setExpirationModalVisible(false)}
+        currentDays={currentExpirationDays}
+        onSave={handleSaveExpiration}
+        isPending={isExpirationPending}
       />
     </View>
   )
