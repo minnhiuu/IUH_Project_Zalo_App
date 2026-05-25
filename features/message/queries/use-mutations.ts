@@ -658,3 +658,16 @@ export const useUnblockMemberFromGroup = () => {
     onError: (error: Error) => handleErrorApi({ error })
   })
 }
+
+export const useUpdateMessageExpirationMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, expirationDays }: { conversationId: string; expirationDays: number }) =>
+      messageApi.updateMessageExpiration(conversationId, expirationDays),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+      queryClient.invalidateQueries({ queryKey: messageKeys.messages(variables.conversationId) })
+    },
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
