@@ -52,7 +52,7 @@ export const useLoginMutation = () => {
 
     onError: (error: Error) => {
       setError(error.message)
-      handleErrorApi({ error })
+      handleErrorApi({ error, showToast: false })
     },
 
     onSettled: () => {
@@ -91,7 +91,7 @@ export const useRegisterMutation = () => {
 
     onError: (error: Error) => {
       setError(error.message)
-      handleErrorApi({ error })
+      handleErrorApi({ error, showToast: false })
     },
 
     onSettled: () => {

@@ -1,4 +1,16 @@
 {
+  "reaction": {
+    "title": "Reactions",
+    "all": "All",
+    "empty": "No one",
+    "me": "(You)"
+  },
+  "message": {
+    "mediaStorage": {
+      "typeFile": "File type",
+      "searchFile": "Search file..."
+    }
+  },
   "common": {
     "loading": "Loading...",
     "error": "An error occurred",
@@ -27,7 +39,7 @@
   },
   "auth": {
     "welcome": {
-      "title": "Zalo",
+      "title": "BondHub",
       "subtitle": "Stable video calls\nGreat conversations",
       "loginButton": "Login",
       "registerButton": "Create new account",
@@ -59,8 +71,8 @@
       "or": "Or",
       "loginWithPassword": "LOGIN WITH PASSWORD",
       "loginWithoutPassword": "LOGIN WITHOUT PASSWORD",
-      "loginWithFacebook": "Login with Facebook",
-      "qrInstruction": "Scan QR code to login Zalo on this device",
+      "loginWithFacebook": "",
+      "qrInstruction": "Scan QR code to login BondHub on this device",
       "otpSent": "OTP sent",
       "checkPhone": "Please check your email"
     },
@@ -87,7 +99,7 @@
       "termsOfService": "Terms of Service",
       "and": "and",
       "privacyPolicy": "Privacy Policy",
-      "ofZalo": "of Zalo"
+      "ofZalo": "of BondHub"
     },
     "otp": {
       "title": "Verify OTP",
@@ -217,7 +229,7 @@
         "subtitle": "Customize interface and language"
       },
       "about": {
-        "title": "About Zalo",
+        "title": "About BondHub",
         "subtitle": "Version and app information"
       },
       "support": {
@@ -239,7 +251,7 @@
       "notLinked": "Not linked",
       "securityCheck": "Security check",
       "securityCheckSubtitle": "3 security issues to resolve",
-      "lockZalo": "Lock Zalo",
+      "lockZalo": "Lock BondHub",
       "off": "Off",
       "twoFactor": "Two-factor authentication",
       "twoFactorSubtitle": "Enhance account security",
@@ -309,6 +321,14 @@
       "onlyMe": "Only me",
       "allowViewAndComment": "Allow viewing and commenting",
       "blockAndHide": "Block and hide",
+      "nameSearchVisibility": "Find me by name",
+      "phoneSearchVisibility": "Find me by phone number",
+      "searchVisibility": {
+        "public": "Everyone",
+        "friendsOfFriends": "Friends of friends",
+        "friendsOnly": "Friends only",
+        "none": "Nobody"
+      },
       "manageFriendSources": "Manage search and friend sources",
       "friendSourceByPhone": "Phone number",
       "friendSourceByQr": "QR code",
@@ -333,7 +353,7 @@
     "dataOnDevice": {
       "totalUsed": "Total used",
       "percentOfPhone": "{{percent}}% of phone storage",
-      "zaloData": "Zalo data",
+      "zaloData": "BondHub data",
       "zCloudDescription": "Free up phone storage by saving photos and videos to zCloud for free",
       "learnMore": "Learn more",
       "cache": "Cache",
@@ -472,8 +492,8 @@
     },
     "about": {
       "version": "Version {{version}}",
-      "description": "Zalo is a free messaging and calling app that helps you connect with friends and family easily and quickly.",
-      "copyright": "© 2024 Zalo. All rights reserved."
+      "description": "BondHub is a free messaging and calling app that helps you connect with friends and family easily and quickly.",
+      "copyright": "© 2024 BondHub. All rights reserved."
     },
     "support": {
       "faq": "Frequently asked questions",
@@ -500,7 +520,7 @@
   "tabs": {
     "messages": "Messages",
     "contacts": "Contacts",
-    "discover": "Discover",
+    "discover": "Reels",
     "timeline": "Timeline",
     "profile": "Profile"
   },
@@ -515,7 +535,74 @@
     "seen": "Seen",
     "sent": "Sent",
     "group": "Group",
-    "members": "members"
+    "members": "members",
+    "you": "You",
+    "user": "User",
+    "messageRevoked": "Message has been revoked",
+    "messageType": {
+      "image": "[Image]",
+      "file": "[File]",
+      "video": "[Video]",
+      "voice": "[Voice message]"
+    },
+    "pinned": {
+      "title": "Pinned messages",
+      "editTitle": "Edit pinned list",
+      "editSubtitle": "Drag to reorder pins.",
+      "done": "Done",
+      "edit": "Edit",
+      "collapse": "Collapse",
+      "expand": "Expand",
+      "noPinned": "No pinned messages",
+      "attachment": "[Attachment]",
+      "from": "Message from {{name}}"
+    },
+    "system": {
+      "default": "[Notification]",
+      "call": "[Call]",
+      "revoke": {
+        "self": "You revoked a message",
+        "actor": "{{actor}} revoked a message"
+      },
+      "join": {
+        "self": "You joined the group",
+        "actor": "{{actor}} joined the group"
+      },
+      "andOthers": "and {{count}} others",
+      "pin": {
+        "self": "You pinned a message",
+        "actor": "{{actor}} pinned a message"
+      },
+      "unpin": {
+        "self": "You unpinned a message",
+        "actor": "{{actor}} unpinned a message"
+      },
+      "add": {
+        "self": "You added {{targets}} to the group",
+        "actor": "{{actor}} added {{targets}} to the group"
+      },
+      "remove": {
+        "self_target": "You were removed from the group by {{actor}}",
+        "self_actor": "You removed {{target}} from the group",
+        "actor": "{{actor}} removed {{target}} from the group"
+      },
+      "leave": {
+        "self": "You left the group",
+        "actor": "{{actor}} left the group"
+      },
+      "update_name": {
+        "self": "You renamed the group to {{name}}",
+        "actor": "{{actor}} renamed the group to {{name}}"
+      },
+      "update_avatar": {
+        "self": "You changed the group avatar",
+        "actor": "{{actor}} changed the group avatar"
+      },
+      "create_group": {
+        "self": "You created the group",
+        "actor": "{{actor}} created the group"
+      }
+    }
   },
   "contacts": {
     "title": "Contacts",
@@ -576,7 +663,7 @@
     "title": "Discover",
     "search": "Search",
     "services": {
-      "video": "Zalo Video",
+      "video": "BondHub Video",
       "gameCenter": "Game Center",
       "miniApp": "Mini App",
       "shop": "Shop",
@@ -617,12 +704,12 @@
     "menu": {
       "zCloud": "zCloud",
       "zCloudDesc": "Cloud storage for your data",
-      "zStyle": "zStyle – Stand out on Zalo",
-      "zStyleDesc": "Wallpapers and music for Zalo calls",
+      "zStyle": "zStyle – Stand out on BondHub",
+      "zStyleDesc": "Wallpapers and music for BondHub calls",
       "myDocs": "My Documents",
       "myDocsDesc": "Save important messages",
       "storage": "Device storage",
-      "storageDesc": "Manage your Zalo data",
+      "storageDesc": "Manage your BondHub data",
       "qrWallet": "QR Wallet",
       "qrWalletDesc": "Store and display important QR codes",
       "accountSecurity": "Account and security",
@@ -721,5 +808,12 @@
       "fullNameRequired": "Full name is required",
       "dobInvalid": "Date of birth must be in the past or present"
     }
+  },
+  "search": {
+    "resultOrdinal": "Result {{index}} of {{total}}",
+    "noResults": "No messages found",
+    "from": "From:",
+    "youWithName": "You ({{name}})",
+    "noSenderResults": "No senders found"
   }
 }

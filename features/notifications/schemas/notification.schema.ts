@@ -6,6 +6,11 @@ export const NotificationGroupResponseSchema = z.object({
   referenceId: z.string().nullable(),
   title: z.string(),
   body: z.string(),
+  translations: z.record(z.string(), z.object({
+    title: z.string(),
+    body: z.string()
+  })).optional(),
+  silent: z.boolean().optional(),
   actorIds: z.array(z.string()),
   actorCount: z.number(),
   read: z.boolean(),
@@ -37,7 +42,17 @@ export type NotificationFlatHistoryResponse = z.infer<typeof NotificationFlatHis
 
 export const UserNotificationStateResponseSchema = z.object({
   unreadCount: z.number(),
+  uniqueActorCount: z.number().optional(),
+  unreadActorIds: z.array(z.string()).optional(),
   lastCheckedAt: z.string().nullable()
 })
 
 export type UserNotificationStateResponse = z.infer<typeof UserNotificationStateResponseSchema>
+
+export interface NotificationCleanupData {
+  action: 'DELETE'
+  referenceId: string
+  type: string
+}
+
+export type NotificationSocketMessage = NotificationGroupResponse | NotificationCleanupData

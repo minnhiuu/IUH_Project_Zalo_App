@@ -162,6 +162,12 @@ const http = axios.create({
 // Request interceptor
 http.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
+    const isFormData = typeof FormData !== 'undefined' && config.data instanceof FormData
+    if (isFormData && config.headers) {
+      delete (config.headers as any)['Content-Type']
+      delete (config.headers as any)['content-type']
+    }
+
     const isAuthEndpoint =
       config.url?.includes('/auth/login') ||
       config.url?.includes('/auth/refresh') ||
@@ -219,6 +225,10 @@ http.interceptors.response.use(
       originalRequest?.url?.includes('/auth/register') ||
       originalRequest?.url?.includes('/auth/refresh')
 
+    const isFileUploadRequest =
+      originalRequest?.url?.includes('/files/upload') ||
+      originalRequest?.url?.includes('/api/files/upload')
+
     // Handle 401 - try to refresh token
     if (error.response?.status === 401 && !originalRequest._retry) {
       if (originalRequest.url?.includes('/auth/refresh')) {
@@ -253,12 +263,15 @@ http.interceptors.response.use(
         }
         return http(originalRequest)
       } catch (refreshError) {
+        if (isFileUploadRequest) {
+          return Promise.reject(error)
+        }
         await handleUnauthorizedSession()
         return Promise.reject(refreshError)
       }
     }
 
-    if (error.response?.status === 401 && !isAuthRequest) {
+    if (error.response?.status === 401 && !isAuthRequest && !isFileUploadRequest) {
       await handleUnauthorizedSession()
     }
 

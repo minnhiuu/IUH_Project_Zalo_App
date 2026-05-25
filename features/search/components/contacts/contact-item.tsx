@@ -1,10 +1,11 @@
 import React from 'react'
-import { SearchResultItem, ContactItemType } from '../core/search-result-item'
+import { SearchResultItem } from '../core/search-result-item'
+import { ConversationSearchResponse } from '../../schemas'
 
 interface ContactItemProps {
-  item: ContactItemType
+  item: ConversationSearchResponse
   searchQuery: string
-  onPress: (item: ContactItemType) => void
+  onPress: (item: ConversationSearchResponse) => void
 }
 
 export function ContactItem({ item, searchQuery, onPress }: ContactItemProps) {

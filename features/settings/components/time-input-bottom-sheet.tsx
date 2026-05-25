@@ -32,7 +32,7 @@ export function TimeInputBottomSheet({
   const displayHour = String(hour).padStart(2, '0')
   const displayMinute = String(minute).padStart(2, '0')
 
-  const HOUR_OPTIONS = Array.from({ length: 24 }, (_, idx) => idx + 1)
+  const HOUR_OPTIONS = Array.from({ length: 24 }, (_, idx) => idx)
   const MINUTE_OPTIONS = Array.from({ length: 60 }, (_, idx) => idx)
 
   return (
