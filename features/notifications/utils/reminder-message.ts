@@ -11,6 +11,7 @@ export type ReminderNotificationPayload = {
   remindAt?: string
   isTriggerMessage?: boolean
   hasTriggered?: boolean
+  deleteNotice?: boolean
 }
 
 const parseString = (value: unknown): string | undefined => {
@@ -45,7 +46,8 @@ const normalizePayload = (raw?: Record<string, unknown>): ReminderNotificationPa
     triggeredAt: parseString(raw.triggeredAt) || parseString(payloadObj.triggeredAt),
     remindAt: parseString(raw.remindAt) || parseString(payloadObj.remindAt),
     isTriggerMessage: parseBoolean(raw.isTriggerMessage) ?? parseBoolean(payloadObj.isTriggerMessage),
-    hasTriggered: parseBoolean(raw.hasTriggered) ?? parseBoolean(payloadObj.hasTriggered)
+    hasTriggered: parseBoolean(raw.hasTriggered) ?? parseBoolean(payloadObj.hasTriggered),
+    deleteNotice: parseBoolean(raw.deleteNotice) ?? parseBoolean(payloadObj.deleteNotice)
   }
 }
 
@@ -68,6 +70,7 @@ export const injectReminderMessage = (
   const isTriggerMessage = payload.isTriggerMessage === true
   const resolvedTriggeredAt = isTriggerMessage ? payload.triggeredAt || payload.remindAt : payload.triggeredAt
   const hasTriggered = payload.hasTriggered === true || isTriggerMessage
+  const isDeleteNotice = payload.deleteNotice === true
 
   const content = payload.message || payload.title || 'Nhac nho'
   const createdAt = resolvedTriggeredAt || payload.remindAt || new Date().toISOString()
@@ -101,7 +104,8 @@ export const injectReminderMessage = (
         remindAt: payload.remindAt,
         conversationId: payload.conversationId,
         isTriggerMessage,
-        hasTriggered
+        hasTriggered,
+        deleteNotice: payload.deleteNotice
       }
     }
   }
@@ -110,7 +114,7 @@ export const injectReminderMessage = (
     if (!oldData) return oldData
     const updatedPages = oldData.pages.map((page: any) => {
       const updatedData = page.data.map((item: MessageResponse) => {
-        if (!isTriggerMessage) return item
+        if (!isTriggerMessage && !isDeleteNotice) return item
         if (item.id !== payload.reminderId && item.clientMessageId !== payload.reminderId) return item
         const meta = (item.metadata || {}) as any
         const metaPayload = (meta.payload || {}) as Record<string, unknown>
@@ -123,7 +127,9 @@ export const injectReminderMessage = (
               ...metaPayload,
               triggeredAt: resolvedTriggeredAt,
               remindAt: payload.remindAt,
-              hasTriggered: true
+              hasTriggered: true,
+              deleteAction: isDeleteNotice ? true : (metaPayload as any).deleteAction,
+              deleteNotice: false
             }
           }
         }
@@ -131,6 +137,10 @@ export const injectReminderMessage = (
 
       return { ...page, data: updatedData }
     })
+
+    if (isDeleteNotice) {
+      return { ...oldData, pages: updatedPages }
+    }
 
     const firstPage = updatedPages[0]
     const alreadyExists = firstPage.data.some((m: MessageResponse) => m.id === message.id)

@@ -21,10 +21,23 @@ import { UserAvatar } from '@/components/common/user-avatar'
 import { useTranslation } from 'react-i18next'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { Colors } from '@/constants/theme'
-import { MessageStatus, MessageType, type MessageResponse, type ConversationMemberResponse } from '../schemas'
+import {
+  MessageStatus,
+  MessageType,
+  ReminderTarget,
+  RepeatType,
+  type MessageResponse,
+  type ConversationMemberResponse
+} from '../schemas'
 import { ReminderModal } from './reminder-modal'
 import { useAuthStore } from '@/store'
-import { useToggleReaction, useRemoveAllMyReactions, useCreateReminder } from '../queries/use-mutations'
+import {
+  useToggleReaction,
+  useRemoveAllMyReactions,
+  useCreateReminder,
+  useUpdateReminder,
+  useDeleteReminder
+} from '../queries/use-mutations'
 import { useJoinGroupByLink, useJoinPreview } from '../queries'
 import { messageApi } from '../api/message.api'
 import { normalizeDateTime } from '../utils/date-utils'
@@ -95,11 +108,15 @@ export function MessageBubble({
   const [showActions, setShowActions] = useState(false)
   const [showReminderModal, setShowReminderModal] = useState(false)
   const [showReminderDetail, setShowReminderDetail] = useState(false)
+  const [showReminderEditModal, setShowReminderEditModal] = useState(false)
+  const [showReminderActionSheet, setShowReminderActionSheet] = useState(false)
   const currentUser = useAuthStore((s) => s.user)
   const currentUserId = currentUser?.id || ''
   const { mutate: toggleReactionMutate } = useToggleReaction()
   const { mutate: removeReactionsMutate } = useRemoveAllMyReactions()
   const { mutate: createReminder } = useCreateReminder()
+  const { mutate: updateReminder } = useUpdateReminder()
+  const { mutate: deleteReminder } = useDeleteReminder()
   const [groupLinkPreviewOpen, setGroupLinkPreviewOpen] = useState(false)
   const [activeGroupLinkToken, setActiveGroupLinkToken] = useState<string | null>(null)
   const [activeGroupLinkPayload, setActiveGroupLinkPayload] = useState<{
@@ -188,6 +205,26 @@ export function MessageBubble({
   const emojiScale = useRef(new Animated.Value(0)).current
 
   const isRevoked = message.status === MessageStatus.REVOKED
+  const reminderPayloadForEdit = ((message.metadata as any)?.payload || {}) as Record<string, unknown>
+  const reminderIdForEdit = String(
+    reminderPayloadForEdit.reminderId ||
+      (reminderPayloadForEdit as any).reminder_id ||
+      (reminderPayloadForEdit as any).referenceId ||
+      ''
+  )
+  const reminderMessageIdForEdit = String(reminderPayloadForEdit.messageId || '')
+  const reminderTitleForEdit = String(reminderPayloadForEdit.title || reminderPayloadForEdit.message || '')
+  const reminderRemindAtForEdit = String(reminderPayloadForEdit.remindAt || '')
+  const reminderRepeatTypeForEdit = Object.values(RepeatType).includes(
+    String(reminderPayloadForEdit.repeatType) as RepeatType
+  )
+    ? (String(reminderPayloadForEdit.repeatType) as RepeatType)
+    : RepeatType.NONE
+  const reminderRemindForForEdit = Object.values(ReminderTarget).includes(
+    String(reminderPayloadForEdit.remindFor) as ReminderTarget
+  )
+    ? (String(reminderPayloadForEdit.remindFor) as ReminderTarget)
+    : ReminderTarget.BOTH
 
   if (message.type === MessageType.SYSTEM || message.type === MessageType.JOIN || message.type === MessageType.LEAVE) {
     const meta = (message.metadata || {}) as Record<string, any>
@@ -424,6 +461,10 @@ export function MessageBubble({
     const reminderRemindAtRaw = String(payload.remindAt || '')
     const isTriggerMessage = Boolean(payload.isTriggerMessage)
     const hasTriggered = Boolean(payload.hasTriggered)
+    const isEditAction = Boolean(payload.editAction)
+    const isDeleteAction = Boolean(payload.deleteAction)
+    const isDeleteNotice = Boolean(payload.deleteNotice)
+    const reminderId = String(payload.reminderId || (payload as any).reminder_id || (payload as any).referenceId || '')
     const reminderTimeRaw = reminderRemindAtRaw || reminderTriggeredAtRaw
     const reminderTime = (() => {
       if (!reminderTimeRaw) return null
@@ -498,14 +539,39 @@ export function MessageBubble({
       t('message.reminder.defaultTitle', { defaultValue: 'Nhắc hẹn' })
 
     if (action === 'REMINDER') {
+      if (isDeleteNotice) {
+        return null
+      }
       const reminderIntro = isActorMe
         ? 'Bạn đã tạo một nhắc hẹn'
         : `${actorName} đã tạo một nhắc hẹn`
+      const reminderEditIntro = isActorMe
+        ? 'Bạn đã sửa một nhắc hẹn'
+        : `${actorName} đã sửa một nhắc hẹn`
+      const reminderDeleteIntro = isActorMe
+        ? 'Bạn xóa nhắc hẹn'
+        : `${actorName} đã xóa nhắc hẹn`
       const reminderPlaceholder = t('message.reminder.placeholder', { defaultValue: '???' })
       const reminderOpenCalendar = t('message.reminder.openCalendar', { defaultValue: 'Mở lịch' })
       const reminderDisplayTitle = reminderTitle?.trim() ? reminderTitle : reminderPlaceholder
-      const reminderHeaderText = isTriggerMessage ? 'Đến giờ nhắc hẹn' : reminderIntro
-      const reminderLineIntro = isTriggerMessage ? 'Đã tới giờ nhắc hẹn' : reminderIntro
+      const reminderHeaderText = isTriggerMessage
+        ? 'Đến giờ nhắc hẹn'
+        : isEditAction
+          ? reminderEditIntro
+          : reminderIntro
+      const reminderLineIntro = isTriggerMessage
+        ? 'Đã tới giờ nhắc hẹn'
+        : isDeleteAction
+          ? reminderDeleteIntro
+          : isEditAction
+            ? reminderEditIntro
+            : reminderIntro
+      const reminderRepeatType = Object.values(RepeatType).includes(String(payload.repeatType) as RepeatType)
+        ? (String(payload.repeatType) as RepeatType)
+        : RepeatType.NONE
+      const reminderRemindFor = Object.values(ReminderTarget).includes(String(payload.remindFor) as ReminderTarget)
+        ? (String(payload.remindFor) as ReminderTarget)
+        : ReminderTarget.BOTH
 
       const reminderBanner = (
         <View
@@ -587,20 +653,90 @@ export function MessageBubble({
           transparent
           onRequestClose={() => setShowReminderDetail(false)}
         >
-          <Pressable
-            style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.6)' }}
-            onPress={() => setShowReminderDetail(false)}
-          />
-          <View
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: isDark ? '#111827' : '#FFFFFF'
-            }}
-          >
+          <View style={{ flex: 1 }}>
+            <Pressable
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0,0,0,0.6)'
+              }}
+              onPress={() => setShowReminderDetail(false)}
+            />
+            <View
+              style={{
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: isDark ? '#111827' : '#FFFFFF'
+              }}
+            >
+              {showReminderActionSheet && (
+                <>
+                  <Pressable
+                    style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      backgroundColor: 'rgba(0,0,0,0.25)',
+                      zIndex: 1
+                    }}
+                    onPress={() => setShowReminderActionSheet(false)}
+                  />
+                  <View
+                    style={{
+                      position: 'absolute',
+                      top: 96,
+                      left: 16,
+                      right: 16,
+                      backgroundColor: '#FFFFFF',
+                      borderRadius: 12,
+                      overflow: 'hidden',
+                      zIndex: 2
+                    }}
+                  >
+                    <TouchableOpacity
+                      onPress={() => {
+                        setShowReminderActionSheet(false)
+                        setShowReminderEditModal(true)
+                      }}
+                      style={{ paddingHorizontal: 18, paddingVertical: 14 }}
+                    >
+                      <Text style={{ fontSize: 16, color: '#111827' }}>Sửa</Text>
+                    </TouchableOpacity>
+                    <View style={{ height: 1, backgroundColor: '#E5E7EB' }} />
+                    <TouchableOpacity
+                      onPress={() => {
+                        setShowReminderActionSheet(false)
+                        const targetReminderId = reminderId || reminderIdForEdit
+                        if (!targetReminderId) {
+                          Alert.alert('Lỗi', 'Không tìm thấy nhắc hẹn để xóa.')
+                          return
+                        }
+                        Alert.alert('Xóa nhắc hẹn', 'Bạn có chắc muốn xóa nhắc hẹn này?', [
+                          { text: 'Hủy', style: 'cancel' },
+                          {
+                            text: 'Xóa',
+                            style: 'destructive',
+                            onPress: () => {
+                              deleteReminder({ reminderId: targetReminderId, conversationId: message.conversationId })
+                            }
+                          }
+                        ])
+                      }}
+                      style={{ paddingHorizontal: 18, paddingVertical: 14 }}
+                    >
+                      <Text style={{ fontSize: 16, color: '#EF4444' }}>Xóa</Text>
+                    </TouchableOpacity>
+                  </View>
+                </>
+              )}
             <View
               style={{
                 paddingTop: 48,
@@ -620,8 +756,12 @@ export function MessageBubble({
                 Chi tiết nhắc hẹn
               </Text>
               <View style={{ flexDirection: 'row', gap: 12 }}>
-                <Ionicons name='pencil' size={22} color={isDark ? '#E5E7EB' : '#111827'} />
-                <Ionicons name='ellipsis-horizontal' size={22} color={isDark ? '#E5E7EB' : '#111827'} />
+                <TouchableOpacity onPress={() => setShowReminderEditModal(true)}>
+                  <Ionicons name='pencil' size={22} color={isDark ? '#E5E7EB' : '#111827'} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setShowReminderActionSheet(true)}>
+                  <Ionicons name='ellipsis-horizontal' size={22} color={isDark ? '#E5E7EB' : '#111827'} />
+                </TouchableOpacity>
               </View>
             </View>
 
@@ -681,12 +821,14 @@ export function MessageBubble({
               </TouchableOpacity>
             </View>
           </View>
+          </View>
         </Modal>
       )
 
       const shouldShowTriggerBanner = isTriggerMessage && isWithinTriggerWindow
-      const shouldShowCreateBanner = !isTriggerMessage && !hasTriggered
-      const shouldShowBanner = shouldShowTriggerBanner || shouldShowCreateBanner
+      const shouldShowCreateBanner = !isTriggerMessage && !isEditAction && !isDeleteAction && !hasTriggered
+      const shouldShowEditBanner = isEditAction && !isTriggerMessage
+      const shouldShowBanner = shouldShowTriggerBanner || shouldShowCreateBanner || shouldShowEditBanner
 
       return (
         <View style={{ alignItems: 'center', marginVertical: 6, paddingHorizontal: 16 }}>
@@ -1984,6 +2126,42 @@ export function MessageBubble({
             remindFor: data.remindFor,
             repeatType: data.repeatType
           })
+        }}
+      />
+      <ReminderModal
+        visible={showReminderEditModal}
+        sourceMessage={null}
+        initialValues={{
+          title: reminderTitleForEdit,
+          remindAt: reminderRemindAtForEdit,
+          repeatType: reminderRepeatTypeForEdit,
+          remindFor: reminderRemindForForEdit
+        }}
+        startInAdvanced
+        submitLabel='Xong'
+        onClose={() => setShowReminderEditModal(false)}
+        onSubmit={(data) => {
+          if (!message.conversationId || !reminderIdForEdit) {
+            Alert.alert(
+              t('common.error', { defaultValue: 'Lỗi' }),
+              t('message.reminder.missingConversation', { defaultValue: 'Không tìm thấy cuộc trò chuyện.' })
+            )
+            return
+          }
+
+          updateReminder({
+            reminderId: reminderIdForEdit,
+            request: {
+              title: data.title,
+              conversationId: message.conversationId,
+              messageId: reminderMessageIdForEdit || undefined,
+              remindAt: data.remindAt,
+              remindFor: data.remindFor,
+              repeatType: data.repeatType
+            }
+          })
+          setShowReminderEditModal(false)
+          setShowReminderDetail(false)
         }}
       />
     </View>

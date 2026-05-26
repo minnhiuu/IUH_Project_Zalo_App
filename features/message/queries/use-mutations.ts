@@ -77,6 +77,99 @@ export const useCreateReminder = () => {
   })
 }
 
+export const useUpdateReminder = () => {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ reminderId, request }: { reminderId: string; request: ReminderRequest }) =>
+      messageApi.updateReminder(reminderId, request),
+    onSuccess: (_response, variables) => {
+      const conversationId = variables.request.conversationId
+      if (conversationId) {
+        queryClient.invalidateQueries({ queryKey: messageKeys.messages(conversationId) })
+        queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+      }
+
+      Toast.show({
+        type: 'success',
+        text1: t('message.reminder.updateSuccess', { defaultValue: 'Đã cập nhật nhắc hẹn' }),
+        visibilityTime: 2000
+      })
+    },
+    onError: (error: Error) => {
+      handleErrorApi({ error })
+      Toast.show({
+        type: 'error',
+        text1: t('message.reminder.updateFailed', { defaultValue: 'Cập nhật nhắc hẹn thất bại' }),
+        visibilityTime: 2000
+      })
+    }
+  })
+}
+
+export const useDeleteReminder = () => {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ reminderId }: { reminderId: string; conversationId?: string | null }) =>
+      messageApi.deleteReminder(reminderId),
+    onSuccess: (_response, variables) => {
+      const conversationId = variables.conversationId || null
+      if (conversationId) {
+        queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
+          if (!oldData) return oldData
+
+          const updatedPages = oldData.pages.map((page: any) => {
+            const updatedData = page.data.map((item: MessageResponse) => {
+              const meta = (item.metadata || {}) as Record<string, unknown>
+              if (String(meta.action || '') !== 'REMINDER') return item
+              const payload = (meta.payload || {}) as Record<string, unknown>
+              const reminderId = String(
+                payload.reminderId || (payload as any).reminder_id || (payload as any).referenceId || ''
+              )
+              if (!reminderId || reminderId !== variables.reminderId) return item
+
+              return {
+                ...item,
+                metadata: {
+                  ...meta,
+                  payload: {
+                    ...payload,
+                    deleteAction: true,
+                    hasTriggered: true
+                  }
+                }
+              }
+            })
+
+            return { ...page, data: updatedData }
+          })
+
+          return { ...oldData, pages: updatedPages }
+        })
+      }
+
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+      Toast.show({
+        type: 'success',
+        text1: t('message.reminder.deleteSuccess', { defaultValue: 'Đã xóa nhắc hẹn' }),
+        visibilityTime: 2000
+      })
+    },
+    onError: (error: Error) => {
+
+      handleErrorApi({ error })
+      Toast.show({
+        type: 'error',
+        text1: t('message.reminder.deleteFailed', { defaultValue: 'Xóa nhắc hẹn thất bại' }),
+        visibilityTime: 2000
+      })
+    }
+  })
+}
+
 export const useMarkAsRead = () => {
   const queryClient = useQueryClient()
 

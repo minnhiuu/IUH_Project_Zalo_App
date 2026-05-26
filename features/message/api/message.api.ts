@@ -266,6 +266,9 @@ export const messageApi = {
   getRemindersByConversation: (conversationId: string) =>
     http.get<ApiResponse<ReminderResponse[]>>(API_ENDPOINTS.MESSAGE.REMINDERS_BY_CONVERSATION(conversationId)),
 
+  updateReminder: (reminderId: string, request: ReminderRequest) =>
+    http.put<ApiResponse<ReminderResponse>>(API_ENDPOINTS.MESSAGE.REMINDER_UPDATE(reminderId), request),
+
   deleteReminder: (reminderId: string) =>
     http.delete<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.REMINDER_DELETE(reminderId)),
 

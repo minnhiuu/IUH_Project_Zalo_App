@@ -13,6 +13,14 @@ import { MessageResponse, ReminderTarget, RepeatType } from '../schemas'
 interface ReminderModalProps {
   visible: boolean
   sourceMessage: MessageResponse | null
+  initialValues?: {
+    title?: string
+    remindFor?: ReminderTarget
+    remindAt?: string
+    repeatType?: RepeatType
+  }
+  startInAdvanced?: boolean
+  submitLabel?: string
   onClose: () => void
   onSubmit: (reminderData: {
     title: string
@@ -22,7 +30,15 @@ interface ReminderModalProps {
   }) => void
 }
 
-export function ReminderModal({ visible, sourceMessage, onClose, onSubmit }: ReminderModalProps) {
+export function ReminderModal({
+  visible,
+  sourceMessage,
+  initialValues,
+  startInAdvanced,
+  submitLabel,
+  onClose,
+  onSubmit
+}: ReminderModalProps) {
   const { t } = useTranslation()
   const colorScheme = useColorScheme() ?? 'light'
   const colors = Colors[colorScheme]
@@ -35,6 +51,23 @@ export function ReminderModal({ visible, sourceMessage, onClose, onSubmit }: Rem
   const [date, setDate] = useState(new Date())
   const [viewMode, setViewMode] = useState<'quick' | 'advanced' | 'repeatOptions'>('quick')
   const [repeatType, setRepeatType] = useState<RepeatType>(RepeatType.NONE)
+
+  React.useEffect(() => {
+    if (!visible) return
+    setViewMode(startInAdvanced ? 'advanced' : 'quick')
+    const nextTitle = initialValues?.title ?? defaultTitle
+    setTitle(nextTitle)
+    setRemindFor(initialValues?.remindFor ?? ReminderTarget.BOTH)
+    setRepeatType(initialValues?.repeatType ?? RepeatType.NONE)
+    if (initialValues?.remindAt) {
+      const parsed = new Date(initialValues.remindAt)
+      if (!Number.isNaN(parsed.getTime())) {
+        setDate(parsed)
+        return
+      }
+    }
+    setDate(new Date())
+  }, [visible, initialValues, defaultTitle, startInAdvanced])
 
   const repeatOptions: Array<{ label: string; value: RepeatType }> = [
     { label: 'Không lặp lại', value: RepeatType.NONE },
@@ -167,7 +200,9 @@ export function ReminderModal({ visible, sourceMessage, onClose, onSubmit }: Rem
             </Text>
           </TouchableOpacity>
           <TouchableOpacity className='flex-1 py-3 rounded-full bg-[#0084FF]' onPress={handleSubmit}>
-            <Text className='text-white text-center font-medium'>Tạo nhắc hẹn</Text>
+            <Text className='text-white text-center font-medium'>
+              {submitLabel || t('message.reminder.createAction', { defaultValue: 'Tạo nhắc hẹn' })}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -188,7 +223,7 @@ export function ReminderModal({ visible, sourceMessage, onClose, onSubmit }: Rem
           <Ionicons name='close' size={24} color={isDark ? '#FFF' : '#000'} />
         </TouchableOpacity>
         <Text className='text-lg font-medium' style={{ color: isDark ? '#FFF' : '#000' }}>
-          Tạo nhắc hẹn mới
+          {submitLabel ? 'Sửa nhắc hẹn' : 'Tạo nhắc hẹn mới'}
         </Text>
         <TouchableOpacity onPress={handleSubmit} className='p-2'>
           <Text className='text-[#0084FF] font-medium text-base'>Xong</Text>

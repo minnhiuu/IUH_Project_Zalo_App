@@ -145,7 +145,8 @@ export const API_ENDPOINTS = {
     MY_GROUPS: '/messages/conversations/groups/mine',
     REMINDERS: '/messages/api/v1/reminders',
     REMINDERS_BY_CONVERSATION: (conversationId: string) => `/messages/api/v1/reminders/conversations/${conversationId}`,
-    REMINDER_DELETE: (reminderId: string) => `/messages/api/v1/reminders/${reminderId}`
+    REMINDER_DELETE: (reminderId: string) => `/messages/api/v1/reminders/${reminderId}`,
+    REMINDER_UPDATE: (reminderId: string) => `/messages/api/v1/reminders/${reminderId}`
   },
   FILE: {
     UPLOAD: '/files/upload',
