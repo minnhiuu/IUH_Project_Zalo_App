@@ -1,8 +1,7 @@
 import { Ionicons } from '@expo/vector-icons'
-import { ScrollView } from 'react-native'
+import { ScrollView, Image, TouchableOpacity } from 'react-native'
 import { useTranslation } from 'react-i18next'
 import { Header, Text, Box, VStack, HStack, Divider } from '@/components/ui'
-import { Pressable } from '@/components/ui/pressable'
 import { SEMANTIC } from '@/constants/theme'
 
 interface Service {
@@ -10,58 +9,69 @@ interface Service {
   title: string
   subtitle: string
   icon: string
+  iconColor: string
   badge?: string | number
+  rightImage?: string
 }
 
 const SERVICES: Service[] = [
   {
     id: '1',
     title: 'Zalo Video',
-    subtitle: '16 �i?m ph�o hoa ��m Giao th?a ?...',
-    icon: 'play-circle',
-    badge: 'red'
+    subtitle: '[Xem nhiều] Ăn hàng 5K ở chợ',
+    icon: 'play',
+    iconColor: '#F54254',
+    badge: 'red',
+    rightImage: 'https://picsum.photos/id/1025/100/100'
   },
   {
     id: '2',
-    title: 'Trang tin t?ng h?p',
+    title: 'Trang tin tổng hợp',
     subtitle: '',
-    icon: 'newspaper'
+    icon: 'newspaper-outline',
+    iconColor: '#EA4335'
   },
   {
     id: '3',
     title: 'Game Center',
-    subtitle: 'Tam Qu?c ��ng Kh?i, Ti�n Ngh?ch',
-    icon: 'game-controller'
+    subtitle: 'Tam Quốc Động Khởi, Tiên Nghịch',
+    icon: 'game-controller-outline',
+    iconColor: '#FBBC05'
   },
   {
     id: '4',
-    title: 'D?ch v? �?i s?ng',
-    subtitle: 'N?p �i?n tho?i, Tra h�a ��n, ...',
-    icon: 'calendar'
+    title: 'Dịch vụ đời sống',
+    subtitle: 'Nạp điện thoại, Tra hóa đơn, ...',
+    icon: 'home-outline',
+    iconColor: '#34A853'
   },
   {
     id: '5',
-    title: 'Ti?n �ch t�i ch�nh',
-    subtitle: 'Vay TPBank, M? th? VIB, Gi� v�ng, ...',
-    icon: 'wallet'
+    title: 'Tiện ích tài chính',
+    subtitle: 'Vay TPBank, Mở thẻ VIB, Giá vàng, ...',
+    icon: 'apps-outline',
+    iconColor: '#EA4335'
   },
   {
     id: '6',
-    title: 'T?m vi?c',
-    subtitle: 'Tuy?n d?ng v� t?m vi?c l�m g?n b?n',
-    icon: 'briefcase'
+    title: 'Tìm việc',
+    subtitle: 'Tuyển dụng và tìm việc làm gần bạn',
+    icon: 'briefcase-outline',
+    iconColor: '#4285F4'
   },
   {
     id: '7',
-    title: 'Tr? l? C�ng D�n S?',
-    subtitle: 'AI h?i ��p th? t?c h�nh ch�nh c�ng',
-    icon: 'cube'
+    title: 'Trợ lý Công Dân Số',
+    subtitle: 'AI hỏi đáp thủ tục hành chính công',
+    icon: 'business-outline',
+    iconColor: '#4285F4'
   },
   {
     id: '8',
     title: 'Mini App',
     subtitle: '',
-    icon: 'flash'
+    icon: 'flash-outline',
+    iconColor: '#4285F4'
   }
 ]
 
@@ -77,7 +87,8 @@ export default function DiscoverScreen() {
       <ScrollView style={{ flex: 1 }}>
         {SERVICES.map((service, index) => (
           <VStack key={service.id} space='xs'>
-            <Pressable
+            <TouchableOpacity
+              activeOpacity={0.7}
               style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 16 }}
             >
               {/* Icon */}
@@ -85,14 +96,12 @@ export default function DiscoverScreen() {
                 style={{
                   width: 48,
                   height: 48,
-                  backgroundColor: '#e0f2fe',
-                  borderRadius: 8,
                   alignItems: 'center',
                   justifyContent: 'center',
                   marginRight: 12
                 }}
               >
-                <Ionicons name={service.icon as any} size={28} color='#0068FF' />
+                <Ionicons name={service.icon as any} size={28} color={service.iconColor} />
               </Box>
 
               {/* Content */}
@@ -105,16 +114,25 @@ export default function DiscoverScreen() {
                     <Box style={{ width: 8, height: 8, backgroundColor: '#ef4444', borderRadius: 4 }} />
                   )}
                 </HStack>
-                {service.subtitle && (
+                {service.subtitle ? (
                   <Text style={{ color: '#6b7280', marginTop: 4 }} size='sm' numberOfLines={1}>
                     {service.subtitle}
                   </Text>
-                )}
+                ) : null}
               </VStack>
 
-              {/* Arrow */}
-              <Ionicons name='chevron-forward' size={20} color={SEMANTIC.iconMuted} />
-            </Pressable>
+              {/* Right Side */}
+              <HStack space='sm' style={{ alignItems: 'center' }}>
+                {service.rightImage && (
+                  <Image
+                    source={{ uri: service.rightImage }}
+                    style={{ width: 44, height: 44, borderRadius: 8, marginLeft: 8 }}
+                  />
+                )}
+                {/* Arrow */}
+                <Ionicons name='chevron-forward' size={20} color={SEMANTIC.iconMuted} />
+              </HStack>
+            </TouchableOpacity>
 
             {/* Divider */}
             {index < SERVICES.length - 1 && <Divider style={{ marginLeft: 64 }} />}

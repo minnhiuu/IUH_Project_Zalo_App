@@ -94,6 +94,7 @@ interface ChatInputBarProps {
   isLocked?: boolean
   lockPlaceholder?: string
   members?: any[]
+  isAiMode?: boolean
 }
 
 export function ChatInputBar({
@@ -112,7 +113,8 @@ export function ChatInputBar({
   onSendBusinessCards,
   isLocked = false,
   lockPlaceholder,
-  members = []
+  members = [],
+  isAiMode
 }: ChatInputBarProps) {
   const { t } = useTranslation()
   const hasText = value.trim().length > 0
@@ -131,8 +133,12 @@ export function ChatInputBar({
   const [selectedMentions, setSelectedMentions] = useState<{name: string, userId: string}[]>([])
   const inputRef = useRef<TextInput>(null)
   React.useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardDidShow', () => setIsKeyboardVisible(true))
-    const hideSub = Keyboard.addListener('keyboardDidHide', () => setIsKeyboardVisible(false))
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide'
+    
+    const showSub = Keyboard.addListener(showEvent, () => setIsKeyboardVisible(true))
+    const hideSub = Keyboard.addListener(hideEvent, () => setIsKeyboardVisible(false))
+    
     return () => {
       showSub.remove()
       hideSub.remove()
@@ -459,7 +465,7 @@ export function ChatInputBar({
   const cardModalSubText = isDark ? '#9AA3AF' : '#6B7280'
 
   return (
-    <View style={{ backgroundColor: isDark ? '#15181D' : '#fff', paddingBottom: insets.bottom }}>
+    <View style={{ backgroundColor: isDark ? '#15181D' : '#fff', paddingBottom: isKeyboardVisible ? 0 : insets.bottom }}>
       {/* Reply preview bar */}
       {replyTo && (
         <View
@@ -652,9 +658,11 @@ export function ChatInputBar({
         }}
       >
         {/* Sticker button */}
-        <TouchableOpacity style={{ paddingHorizontal: 6, paddingVertical: 4 }}>
-          <Ionicons name='happy-outline' size={29} color={isDark ? '#7E8793' : '#667085'} />
-        </TouchableOpacity>
+        {!isAiMode && (
+          <TouchableOpacity style={{ paddingHorizontal: 6, paddingVertical: 4 }}>
+            <Ionicons name='happy-outline' size={29} color={isDark ? '#7E8793' : '#667085'} />
+          </TouchableOpacity>
+        )}
 
         {mentionQuery !== null && members.length > 0 && (
           <View style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, zIndex: 10 }}>
@@ -706,15 +714,19 @@ export function ChatInputBar({
           </TouchableOpacity>
         ) : (
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={() => setShowMoreActions((v) => !v)}>
-              <Ionicons name='ellipsis-horizontal' size={22} color={showMoreActions ? BRAND.blue : colors.icon} />
-            </TouchableOpacity>
-            <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={handlePickFile}>
-              <Ionicons name='document-attach-outline' size={24} color={colors.icon} />
-            </TouchableOpacity>
-            <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={handlePickImage} disabled={isUploading}>
-              <Ionicons name='image-outline' size={24} color={isUploading ? colors.textSecondary : colors.icon} />
-            </TouchableOpacity>
+            {!isAiMode && (
+              <>
+                <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={() => setShowMoreActions((v) => !v)}>
+                  <Ionicons name='ellipsis-horizontal' size={22} color={showMoreActions ? BRAND.blue : colors.icon} />
+                </TouchableOpacity>
+                <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={handlePickFile}>
+                  <Ionicons name='document-attach-outline' size={24} color={colors.icon} />
+                </TouchableOpacity>
+                <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={handlePickImage} disabled={isUploading}>
+                  <Ionicons name='image-outline' size={24} color={isUploading ? colors.textSecondary : colors.icon} />
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         )}
       </View>

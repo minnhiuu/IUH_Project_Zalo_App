@@ -39,6 +39,12 @@ import { GroupLinkCard } from './group/group-link-card'
 import { BusinessCardMessage } from './business-card-message'
 import { CallMessage } from './call-message'
 import Toast from 'react-native-toast-message'
+import { BONDHUB_AI } from '@/constants/system'
+import { AiMessageBubble } from './ai-message-bubble'
+import { useAiStreamingStore } from '../hooks/ai-streaming-registry'
+import { parseAiSuggestions, parseAiQuestion, AI_SUGGESTION_EVENT } from '../utils/ai-parser'
+import { DeviceEventEmitter } from 'react-native'
+import { AiSuggestionChips } from './ai-suggestion-chips'
 
 interface MessageBubbleProps {
   message: MessageResponse
@@ -126,6 +132,8 @@ export function MessageBubble({
     groupLinkPreviewOpen && !!activeGroupLinkToken
   )
 
+  const aiStream = useAiStreamingStore(message.conversationId)
+
   useEffect(() => {
     Animated.timing(highlightAnim, {
       toValue: isHighlighted ? 1 : 0,
@@ -133,6 +141,15 @@ export function MessageBubble({
       useNativeDriver: false
     }).start()
   }, [isHighlighted])
+
+  const isAiMessage = message.senderId === BONDHUB_AI.userId && message.type !== 'SYSTEM'
+  const aiRawContent = isAiMessage 
+    ? ((aiStream?.isStreaming && aiStream?.messageId === message.id) ? aiStream.content : message.content || '')
+    : ''
+  const { cleanContent, suggestions } = isAiMessage ? parseAiSuggestions(aiRawContent) : { cleanContent: message.content || '', suggestions: [] }
+  const { cleanContent: finalContent, isClarification } = isAiMessage ? parseAiQuestion(cleanContent) : { cleanContent: message.content || '', isClarification: false }
+  
+  const displayContent = isAiMessage ? finalContent : message.content
 
   const removeAccents = useCallback((value: string) => {
     return value
@@ -1130,7 +1147,7 @@ export function MessageBubble({
       )
     }
 
-    return renderHighlightedText(message.content, highlightKeyword, { fontSize: 15, color: textColor, lineHeight: 21 })
+    return renderHighlightedText(displayContent || message.content, highlightKeyword, { fontSize: 15, color: textColor, lineHeight: 21 })
   }
 
   const reactions = message.reactions || {}

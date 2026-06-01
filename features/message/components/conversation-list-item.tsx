@@ -12,6 +12,7 @@ import { MessageStatus } from '../schemas'
 import { formatPreview } from '../utils/chat-preview'
 import { parseMessageDate } from '../utils/date-utils'
 import { getSystemMessageText } from '../utils/system-message'
+import { stripAiControlTags } from '../utils/ai-parser'
 import { useAuthStore } from '@/store'
 
 import * as Haptics from 'expo-haptics'
@@ -221,7 +222,7 @@ export function ConversationListItem({ conversation, onPress, onLongPress }: Con
 
   const preview = formatPreview(
     {
-      content: lastMessageContent,
+      content: stripAiControlTags(lastMessageContent),
       isFromMe: conversation.isLastMessageFromMe ?? isFromMe,
       isGroup: conversation.isGroup,
       senderName: conversation.isLastMessageFromMe ? '' : incomingSenderName,
