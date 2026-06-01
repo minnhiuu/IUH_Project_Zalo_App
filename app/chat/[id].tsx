@@ -36,9 +36,11 @@ import {
   ForwardMessageModal,
   GroupChatIntro,
   EditPinnedMessagesModal,
-  ExpirationTimeModal
+  ExpirationTimeModal,
+  AiChatWindow
 } from '@/features/message/components'
 import type { FileAsset, BusinessCardAsset } from '@/features/message/components'
+import { BONDHUB_AI } from '@/constants/system'
 import {
   useInfiniteMessages,
   usePartnerConversation,
@@ -636,10 +638,11 @@ export default function ChatScreen() {
     }
   }, [conversationId])
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback((parsedText?: string) => {
     if (!conversationId) return
 
-    const trimmedContent = inputText.trim()
+    const textToSend = typeof parsedText === 'string' ? parsedText : inputText
+    const trimmedContent = textToSend.trim()
     const replyPayload = replyTo
       ? {
           messageId: replyTo.id,
@@ -970,6 +973,18 @@ export default function ChatScreen() {
     )
   }, [t])
 
+  const currentConversation = activeConversation || partnerConversation
+
+  if (partnerId === BONDHUB_AI.userId && currentConversation) {
+    return (
+      <View style={{ flex: 1, backgroundColor: chatBg }}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <StatusBar style={isSearchMode ? 'dark' : isDark ? 'light' : 'dark'} />
+        <AiChatWindow conversation={currentConversation as any} />
+      </View>
+    )
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: chatBg }}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -1287,6 +1302,7 @@ export default function ChatScreen() {
             onClearAttachments={handleClearPendingAttachments}
             isUploading={isUploading}
             onSendBusinessCards={handleSendBusinessCards}
+            members={effectiveMembers}
           />
         )}
 

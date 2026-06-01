@@ -34,11 +34,17 @@ import { MessageReactionBar, EMOJIS } from './message-reaction-bar'
 import { SeenMembersModal } from './seen-members-modal'
 import { useQueryClient, type InfiniteData } from '@tanstack/react-query'
 import { messageKeys } from '../queries/keys'
-import { parseBusinessCardContent, parseGroupLinkContent, parseGroupLinkToken } from '../utils'
+import { parseBusinessCardContent, parseGroupLinkContent, parseGroupLinkToken, parseMentionsForRender } from '../utils'
 import { GroupLinkCard } from './group/group-link-card'
 import { BusinessCardMessage } from './business-card-message'
 import { CallMessage } from './call-message'
 import Toast from 'react-native-toast-message'
+import { BONDHUB_AI } from '@/constants/system'
+import { AiMessageBubble } from './ai-message-bubble'
+import { useAiStreamingStore } from '../hooks/ai-streaming-registry'
+import { parseAiSuggestions, parseAiQuestion, AI_SUGGESTION_EVENT } from '../utils/ai-parser'
+import { DeviceEventEmitter } from 'react-native'
+import { AiSuggestionChips } from './ai-suggestion-chips'
 
 interface MessageBubbleProps {
   message: MessageResponse
@@ -126,6 +132,8 @@ export function MessageBubble({
     groupLinkPreviewOpen && !!activeGroupLinkToken
   )
 
+  const aiStream = useAiStreamingStore(message.conversationId)
+
   useEffect(() => {
     Animated.timing(highlightAnim, {
       toValue: isHighlighted ? 1 : 0,
@@ -133,6 +141,15 @@ export function MessageBubble({
       useNativeDriver: false
     }).start()
   }, [isHighlighted])
+
+  const isAiMessage = message.senderId === BONDHUB_AI.userId && message.type !== 'SYSTEM'
+  const aiRawContent = isAiMessage 
+    ? ((aiStream?.isStreaming && aiStream?.messageId === message.id) ? aiStream.content : message.content || '')
+    : ''
+  const { cleanContent, suggestions } = isAiMessage ? parseAiSuggestions(aiRawContent) : { cleanContent: message.content || '', suggestions: [] }
+  const { cleanContent: finalContent, isClarification } = isAiMessage ? parseAiQuestion(cleanContent) : { cleanContent: message.content || '', isClarification: false }
+  
+  const displayContent = isAiMessage ? finalContent : message.content
 
   const removeAccents = useCallback((value: string) => {
     return value
@@ -144,48 +161,63 @@ export function MessageBubble({
   const renderHighlightedText = useCallback(
     (content: string | null | undefined, keyword: string | null | undefined, style: any) => {
       const value = content || ''
-      const normalizedKeyword = keyword ? removeAccents(keyword.trim()) : ''
-      if (!value || !normalizedKeyword) {
-        return <Text style={style}>{value}</Text>
-      }
-
-      const normalizedContent = removeAccents(value)
-      const parts: React.ReactNode[] = []
-      let lastIndex = 0
-      let matchIndex = normalizedContent.indexOf(normalizedKeyword)
-
-      if (matchIndex === -1) {
-        return <Text style={style}>{value}</Text>
-      }
-
-      while (matchIndex !== -1) {
-        if (matchIndex > lastIndex) {
-          parts.push(value.substring(lastIndex, matchIndex))
+      const parts = parseMentionsForRender(value)
+      
+      const renderPart = (text: string, isMention: boolean, key: string) => {
+        let baseStyle = style
+        if (isMention) {
+          baseStyle = { ...style, color: isDark ? '#36A7FF' : '#0068FF', fontWeight: '600' }
         }
 
-        const endIndex = matchIndex + normalizedKeyword.length
-        parts.push(
-          <Text
-            key={`${matchIndex}-${endIndex}`}
-            style={{
-              backgroundColor: isDark ? 'rgba(234,179,8,0.55)' : '#FDE68A',
-              color: isDark ? '#FFFFFF' : '#111827',
-              borderRadius: 2
-            }}
-          >
-            {value.substring(matchIndex, endIndex)}
-          </Text>
-        )
+        const normalizedKeyword = keyword ? removeAccents(keyword.trim()) : ''
+        if (!text || !normalizedKeyword) {
+          return <Text key={key} style={baseStyle}>{text}</Text>
+        }
 
-        lastIndex = endIndex
-        matchIndex = normalizedContent.indexOf(normalizedKeyword, lastIndex)
+        const normalizedContent = removeAccents(text)
+        const highlightedParts: React.ReactNode[] = []
+        let lastIndex = 0
+        let matchIndex = normalizedContent.indexOf(normalizedKeyword)
+
+        if (matchIndex === -1) {
+          return <Text key={key} style={baseStyle}>{text}</Text>
+        }
+
+        while (matchIndex !== -1) {
+          if (matchIndex > lastIndex) {
+            highlightedParts.push(text.substring(lastIndex, matchIndex))
+          }
+
+          const endIndex = matchIndex + normalizedKeyword.length
+          highlightedParts.push(
+            <Text
+              key={`${matchIndex}-${endIndex}`}
+              style={{
+                backgroundColor: isDark ? 'rgba(234,179,8,0.55)' : '#FDE68A',
+                color: isDark ? '#FFFFFF' : '#111827',
+                borderRadius: 2
+              }}
+            >
+              {text.substring(matchIndex, endIndex)}
+            </Text>
+          )
+
+          lastIndex = endIndex
+          matchIndex = normalizedContent.indexOf(normalizedKeyword, lastIndex)
+        }
+
+        if (lastIndex < text.length) {
+          highlightedParts.push(text.substring(lastIndex))
+        }
+
+        return <Text key={key} style={baseStyle}>{highlightedParts}</Text>
       }
 
-      if (lastIndex < value.length) {
-        parts.push(value.substring(lastIndex))
-      }
-
-      return <Text style={style}>{parts}</Text>
+      return (
+        <Text style={style}>
+          {parts.map((p, i) => renderPart(p.text, p.isMention, String(i)))}
+        </Text>
+      )
     },
     [isDark, removeAccents]
   )
@@ -1115,7 +1147,7 @@ export function MessageBubble({
       )
     }
 
-    return renderHighlightedText(message.content, highlightKeyword, { fontSize: 15, color: textColor, lineHeight: 21 })
+    return renderHighlightedText(displayContent || message.content, highlightKeyword, { fontSize: 15, color: textColor, lineHeight: 21 })
   }
 
   const reactions = message.reactions || {}
