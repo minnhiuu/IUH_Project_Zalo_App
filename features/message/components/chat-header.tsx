@@ -13,7 +13,7 @@ import { parseMessageDate } from '../utils/date-utils'
 
 interface ChatHeaderProps {
   name: string
-  avatar?: string | null
+  avatar?: any
   subtitle?: string
   isOnline?: boolean
   lastSeenAt?: string | null
@@ -23,7 +23,9 @@ interface ChatHeaderProps {
   onCall?: () => void
   onVideoCall?: () => void
   onMenu?: () => void
+  onReload?: () => void
   isGroup?: boolean
+  isAiMode?: boolean
   isSearchMode?: boolean
   searchQuery?: string
   setSearchQuery?: (query: string) => void
@@ -49,7 +51,9 @@ export function ChatHeader({
   onCall,
   onVideoCall,
   onMenu,
+  onReload,
   isGroup,
+  isAiMode,
   isSearchMode,
   searchQuery,
   setSearchQuery,
@@ -67,13 +71,21 @@ export function ChatHeader({
   const colorScheme = useColorScheme() ?? 'light'
   const isDark = colorScheme === 'dark'
 
-  const headerGradient = (isSearchMode
+  const headerGradient = (isAiMode
     ? isDark
-      ? ['#1F2937', '#1F2937']
-      : ['#FFFFFF', '#FFFFFF']
-    : isDark
-      ? HEADER.gradientColorsDark
-      : HEADER.gradientColors) as any
+      ? ['#09090b', '#09090b'] // zinc-950
+      : ['#eef0f1', '#eef0f1']
+    : isSearchMode
+      ? isDark
+        ? ['#1F2937', '#1F2937']
+        : ['#FFFFFF', '#FFFFFF']
+      : isDark
+        ? HEADER.gradientColorsDark
+        : HEADER.gradientColors) as any
+
+  const iconColor = isAiMode ? (isDark ? '#FFFFFF' : '#333333') : '#fff'
+  const textColor = isAiMode ? (isDark ? '#FFFFFF' : '#111827') : '#fff'
+  const subtextColor = isAiMode ? '#3b82f6' : 'rgba(255,255,255,0.75)'
 
   const getStatusText = () => {
     if (subtitle) return subtitle
@@ -189,7 +201,7 @@ export function ChatHeader({
             ) : (
               <>
                 <TouchableOpacity onPress={onBack ?? (() => router.back())} style={{ paddingRight: 10 }}>
-                  <Ionicons name='chevron-back' size={24} color='#fff' />
+                  <Ionicons name='chevron-back' size={24} color={iconColor} />
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -202,11 +214,14 @@ export function ChatHeader({
                 >
                   <UserAvatar source={avatar} name={name} size='sm' showOnline={isOnline !== undefined} isOnline={isOnline} />
                   <View style={{ marginLeft: 10, flex: 1 }}>
-                    <Text style={{ fontSize: 17, fontWeight: '600', color: '#fff' }} numberOfLines={1}>
+                    <Text style={{ fontSize: 17, fontWeight: '600', color: textColor }} numberOfLines={1}>
                       {name}
                     </Text>
                     {statusText ? (
-                      <Text style={{ fontSize: 12, color: 'rgba(255,255,255,0.75)', marginTop: 1 }}>{statusText}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 1 }}>
+                        {isAiMode && <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: '#3b82f6', marginRight: 4 }} />}
+                        <Text style={{ fontSize: 12, color: subtextColor }}>{statusText}</Text>
+                      </View>
                     ) : null}
                   </View>
                 </TouchableOpacity>
@@ -214,24 +229,29 @@ export function ChatHeader({
                 {isGroup ? (
                   onSearchPress ? (
                     <TouchableOpacity onPress={onSearchPress} style={{ padding: 8 }}>
-                      <Ionicons name='search-outline' size={24} color='#fff' />
+                      <Ionicons name='search-outline' size={24} color={iconColor} />
                     </TouchableOpacity>
                   ) : null
                 ) : (
                   onCall ? (
                     <TouchableOpacity onPress={onCall} style={{ padding: 8 }}>
-                      <Ionicons name='call-outline' size={24} color='#fff' />
+                      <Ionicons name='call-outline' size={24} color={iconColor} />
                     </TouchableOpacity>
                   ) : null
                 )}
                 {onVideoCall ? (
                   <TouchableOpacity onPress={onVideoCall} style={{ padding: 8 }}>
-                    <Ionicons name='videocam-outline' size={24} color='#fff' />
+                    <Ionicons name='videocam-outline' size={24} color={iconColor} />
+                  </TouchableOpacity>
+                ) : null}
+                {onReload ? (
+                  <TouchableOpacity onPress={onReload} style={{ padding: 8 }}>
+                    <Ionicons name='reload-outline' size={24} color={iconColor} />
                   </TouchableOpacity>
                 ) : null}
                 {onMenu ? (
                   <TouchableOpacity onPress={onMenu} style={{ padding: 8 }}>
-                    <Ionicons name='menu-outline' size={24} color='#fff' />
+                    <Ionicons name='menu-outline' size={24} color={iconColor} />
                   </TouchableOpacity>
                 ) : null}
               </>

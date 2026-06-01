@@ -77,21 +77,27 @@ export function CallMessage({
       <View
         style={[
           styles.container,
-          { justifyContent: isOwn ? 'flex-end' : 'flex-start' }
+          {
+            justifyContent: isOwn ? 'flex-end' : 'flex-start',
+            paddingHorizontal: isOwn ? 12 : 4,
+            marginHorizontal: 4
+          }
         ]}
       >
         {!isOwn && (
-          <TouchableOpacity
-            activeOpacity={0.7}
-            onPress={() => message.senderId && onAvatarPress?.(message.senderId)}
-            style={styles.avatarContainer}
-          >
-            <UserAvatar
-              source={message.senderAvatar}
-              name={message.senderName || t('messages.call.member', { defaultValue: 'Thành viên' })}
-              size='sm'
-            />
-          </TouchableOpacity>
+          <View style={styles.leftSlot}>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => message.senderId && onAvatarPress?.(message.senderId)}
+              style={styles.avatarContainer}
+            >
+              <UserAvatar
+                source={message.senderAvatar}
+                name={message.senderName || t('messages.call.member', { defaultValue: 'Thành viên' })}
+                size='sm'
+              />
+            </TouchableOpacity>
+          </View>
         )}
         <View
           style={[
@@ -225,10 +231,18 @@ export function CallMessage({
     <View
       style={[
         styles.container,
-        { justifyContent: isOwn ? 'flex-end' : 'flex-start' }
+        {
+          justifyContent: isOwn ? 'flex-end' : 'flex-start',
+          paddingHorizontal: isOwn ? 12 : 4,
+          marginHorizontal: 4
+        }
       ]}
     >
-      {!isOwn && <View style={styles.avatarPlaceholder} />}
+      {!isOwn && (
+        <View style={styles.leftSlot}>
+          <View style={styles.avatarPlaceholder} />
+        </View>
+      )}
       <View
         style={[
           styles.card,
@@ -288,18 +302,19 @@ export function CallMessage({
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    width: '100%',
-    paddingHorizontal: 12,
     marginVertical: 4,
-    alignItems: 'flex-end'
+    alignItems: 'flex-start'
+  },
+  leftSlot: {
+    width: 36,
+    alignItems: 'flex-start',
+    justifyContent: 'flex-start'
   },
   avatarContainer: {
-    marginRight: 8,
-    width: 36,
-    height: 36
+    marginRight: 4
   },
   avatarPlaceholder: {
-    width: 44 // 36px size + 8px margin
+    width: 36
   },
   card: {
     borderRadius: 16,
