@@ -72,7 +72,7 @@ const connectSingleton = async (user: any, queryClient: any) => {
           if (!('action' in data) && !data.silent) {
             import('expo-constants').then((ConstantsMod) => {
               const Constants = ConstantsMod.default || ConstantsMod
-              if (Constants.appOwnership === 'expo') {
+              if (Constants.executionEnvironment === 'storeClient') {
                 console.log('[NotificationSocket] Skipping Notifee in Expo Go')
                 return
               }

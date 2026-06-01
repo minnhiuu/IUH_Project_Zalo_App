@@ -26,6 +26,7 @@ import * as DocumentPicker from 'expo-document-picker'
 import { MessageType, type MessageResponse } from '../schemas'
 import { UserAvatar } from '@/components/common/user-avatar'
 import { useMyFriends } from '@/features/friend/queries'
+import { MentionDropdown } from './mention-dropdown'
 
 export type FileAsset = { uri: string; mimeType: string; fileName: string }
 export type BusinessCardAsset = {
@@ -92,6 +93,7 @@ interface ChatInputBarProps {
   onSendBusinessCards?: (cards: BusinessCardAsset[]) => void
   isLocked?: boolean
   lockPlaceholder?: string
+  members?: any[]
 }
 
 export function ChatInputBar({
@@ -109,7 +111,8 @@ export function ChatInputBar({
   isUploading = false,
   onSendBusinessCards,
   isLocked = false,
-  lockPlaceholder
+  lockPlaceholder,
+  members = []
 }: ChatInputBarProps) {
   const { t } = useTranslation()
   const hasText = value.trim().length > 0
@@ -124,6 +127,9 @@ export function ChatInputBar({
   const [selectedBusinessCardIds, setSelectedBusinessCardIds] = useState<string[]>([])
   const [includePhone, setIncludePhone] = useState(true)
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null)
+  const [selectedMentions, setSelectedMentions] = useState<{name: string, userId: string}[]>([])
+  const inputRef = useRef<TextInput>(null)
   React.useEffect(() => {
     const showSub = Keyboard.addListener('keyboardDidShow', () => setIsKeyboardVisible(true))
     const hideSub = Keyboard.addListener('keyboardDidHide', () => setIsKeyboardVisible(false))
@@ -132,6 +138,51 @@ export function ChatInputBar({
       hideSub.remove()
     }
   }, [])
+
+  const handleTextChange = (text: string) => {
+    onChangeText(text)
+    
+    // Detect mention trigger
+    const cursorMatches = text.match(/(?:^|\s)@([^\s]*)$/)
+    if (cursorMatches) {
+      setMentionQuery(cursorMatches[1])
+    } else {
+      setMentionQuery(null)
+    }
+  }
+
+  const handleMentionSelect = (member: any) => {
+    const name = member.isAll ? 'All' : (member.fullName || member.name)
+    const userId = member.userId || member.id
+    
+    // Replace the last @query with @name
+    const match = value.match(/(?:^|\s)@([^\s]*)$/)
+    if (match) {
+      const matchIndex = match.index === 0 ? 0 : (match.index || 0) + 1
+      const newText = value.substring(0, matchIndex) + '@' + name + ' '
+      onChangeText(newText)
+      
+      if (!selectedMentions.find(m => m.userId === userId)) {
+        setSelectedMentions([...selectedMentions, { name, userId }])
+      }
+    }
+    setMentionQuery(null)
+    setTimeout(() => {
+      inputRef.current?.focus()
+    }, 100)
+  }
+
+  const handleSendPress = () => {
+    let parsedText = value
+    if (selectedMentions.length > 0) {
+      selectedMentions.forEach(mention => {
+        const regex = new RegExp(`@${mention.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g')
+        parsedText = parsedText.replace(regex, `@<mention>${mention.name}</mention>`)
+      })
+    }
+    setSelectedMentions([])
+    ;(onSend as any)(parsedText !== value ? parsedText : undefined)
+  }
 
   const { data: friends = [] } = useMyFriends(0, 300, showBusinessCardModal)
   const friendListRef = useRef<FlatList<any>>(null)
@@ -605,10 +656,23 @@ export function ChatInputBar({
           <Ionicons name='happy-outline' size={29} color={isDark ? '#7E8793' : '#667085'} />
         </TouchableOpacity>
 
+        {mentionQuery !== null && members.length > 0 && (
+          <View style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, zIndex: 10 }}>
+            <MentionDropdown
+              members={members}
+              query={mentionQuery}
+              showAllMention={members.length > 0}
+              onSelect={handleMentionSelect}
+              onClose={() => setMentionQuery(null)}
+            />
+          </View>
+        )}
+
         {/* Text Input */}
         <TextInput
+          ref={inputRef}
           value={isLocked ? '' : value}
-          onChangeText={onChangeText}
+          onChangeText={handleTextChange}
           placeholder={isLocked ? lockPlaceholder || placeholder : placeholder}
           placeholderTextColor={isDark ? '#666' : '#9ca3af'}
           multiline
@@ -637,7 +701,7 @@ export function ChatInputBar({
             <Ionicons name='lock-closed-outline' size={30} color={isDark ? '#7E8793' : '#667085'} />
           </TouchableOpacity>
         ) : hasText || hasAttachments ? (
-          <TouchableOpacity onPress={onSend} style={{ padding: 6, marginBottom: 2 }}>
+          <TouchableOpacity onPress={handleSendPress} style={{ padding: 6, marginBottom: 2 }}>
             <Ionicons name='send' size={24} color={isUploading ? colors.textSecondary : BRAND.blue} />
           </TouchableOpacity>
         ) : (

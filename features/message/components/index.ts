@@ -1,4 +1,5 @@
 export { MessageBubble } from './message-bubble'
+export * from './mention-dropdown'
 export { CallMessage } from './call-message'
 export { ChatInputBar } from './chat-input-bar'
 export type { FileAsset, BusinessCardAsset } from './chat-input-bar'

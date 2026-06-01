@@ -636,10 +636,11 @@ export default function ChatScreen() {
     }
   }, [conversationId])
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback((parsedText?: string) => {
     if (!conversationId) return
 
-    const trimmedContent = inputText.trim()
+    const textToSend = typeof parsedText === 'string' ? parsedText : inputText
+    const trimmedContent = textToSend.trim()
     const replyPayload = replyTo
       ? {
           messageId: replyTo.id,
@@ -1287,6 +1288,7 @@ export default function ChatScreen() {
             onClearAttachments={handleClearPendingAttachments}
             isUploading={isUploading}
             onSendBusinessCards={handleSendBusinessCards}
+            members={effectiveMembers}
           />
         )}
 

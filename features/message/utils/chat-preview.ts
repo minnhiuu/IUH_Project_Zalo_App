@@ -1,6 +1,7 @@
 import { MessageType, MessageStatus } from '../schemas/message.schema'
 import { parseBusinessCardContent } from './business-card'
 import { parseGroupLinkContent } from './group-link'
+import { stripMentionsForPreview } from './mention'
 
 interface PreviewData {
   content?: string | null
@@ -36,6 +37,7 @@ export const formatPreview = (
   }
 
   let displayContent = typeof data.content === 'string' ? data.content : ''
+  displayContent = stripMentionsForPreview(displayContent)
   if (displayContent.startsWith('[GROUP_CALL]::')) {
     try {
       const payload = JSON.parse(displayContent.slice('[GROUP_CALL]::'.length))
