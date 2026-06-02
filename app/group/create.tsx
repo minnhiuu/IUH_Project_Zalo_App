@@ -48,35 +48,35 @@ export default function CreateGroupScreen() {
 
   const palette = isDark
     ? {
-        bg: '#171B22',
-        panel: '#171B22',
-        text: '#F1F5F9',
-        subText: '#9AA5B5',
-        border: '#2B313B',
-        searchBg: '#242A34',
-        searchText: '#DDE3EC',
-        tabActive: '#E8EDF4',
-        tabInactive: '#8E99A8',
-        primary: '#2A7FFF',
-        primaryDisabled: '#4C647F',
-        bottomBar: '#1A1F28',
-        avatarBg: '#2B313C'
-      }
+      bg: '#171B22',
+      panel: '#171B22',
+      text: '#F1F5F9',
+      subText: '#9AA5B5',
+      border: '#2B313B',
+      searchBg: '#242A34',
+      searchText: '#DDE3EC',
+      tabActive: '#E8EDF4',
+      tabInactive: '#8E99A8',
+      primary: '#2A7FFF',
+      primaryDisabled: '#4C647F',
+      bottomBar: '#1A1F28',
+      avatarBg: '#2B313C'
+    }
     : {
-        bg: '#FFFFFF',
-        panel: '#FFFFFF',
-        text: '#111827',
-        subText: '#6B7280',
-        border: '#E5E7EB',
-        searchBg: '#F3F4F7',
-        searchText: '#111827',
-        tabActive: '#1F2937',
-        tabInactive: '#7B8794',
-        primary: '#1977F3',
-        primaryDisabled: '#9FC4F8',
-        bottomBar: '#FFFFFF',
-        avatarBg: '#E6EBEF'
-      }
+      bg: '#FFFFFF',
+      panel: '#FFFFFF',
+      text: '#111827',
+      subText: '#6B7280',
+      border: '#E5E7EB',
+      searchBg: '#F3F4F7',
+      searchText: '#111827',
+      tabActive: '#1F2937',
+      tabInactive: '#7B8794',
+      primary: '#1977F3',
+      primaryDisabled: '#9FC4F8',
+      bottomBar: '#FFFFFF',
+      avatarBg: '#E6EBEF'
+    }
 
   const [groupName, setGroupName] = useState('')
   const [search, setSearch] = useState('')
@@ -166,9 +166,7 @@ export default function CreateGroupScreen() {
   }, [displayMembers])
 
   const toggleMember = (memberId: string) => {
-    setSelectedIds((prev) =>
-      prev.includes(memberId) ? prev.filter((id) => id !== memberId) : [...prev, memberId]
-    )
+    setSelectedIds((prev) => (prev.includes(memberId) ? prev.filter((id) => id !== memberId) : [...prev, memberId]))
   }
 
   const onPickAvatar = async () => {
@@ -222,7 +220,7 @@ export default function CreateGroupScreen() {
           const linkRes = await generateJoinLinkMutation.mutateAsync(createdConversationId)
           const joinLinkToken = linkRes.data.data
           const joinLinkUrl = buildGroupLinkUrl(joinLinkToken)
-          
+
           for (const strangerId of strangerIds) {
             try {
               // Get or create 1-1 conversation with stranger
@@ -296,8 +294,8 @@ export default function CreateGroupScreen() {
   const renderSelectedUser = ({ item }: { item: SearchMemberResponse }) => (
     <View style={styles.selectedItem}>
       <UserAvatar source={item.avatar || undefined} name={item.fullName} size='lg' />
-      <TouchableOpacity 
-        style={styles.removeSelectedBtn} 
+      <TouchableOpacity
+        style={styles.removeSelectedBtn}
         onPress={() => toggleMember(item.userId)}
       >
         <Ionicons name='close-circle' size={20} color='rgba(0,0,0,0.3)' />
@@ -307,8 +305,8 @@ export default function CreateGroupScreen() {
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: palette.bg }]}>
-      <KeyboardAvoidingView 
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'} 
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
         <View style={[styles.header, { borderBottomColor: palette.border }]}>
@@ -402,7 +400,7 @@ export default function CreateGroupScreen() {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.selectedListContent}
             />
-            
+
             <TouchableOpacity
               activeOpacity={0.8}
               onPress={onSubmit}

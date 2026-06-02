@@ -53,15 +53,14 @@ export function MessagesTab({
     />
   )
 
-  const filterHeader =
-    onFiltersChange ? (
-      <MessageFilterChips
-        filters={filters}
-        onFiltersChange={onFiltersChange}
-        labels={{ link: t('search.filters.link'), file: t('search.filters.file') }}
-        className='px-4 pb-3 bg-background'
-      />
-    ) : undefined
+  const filterHeader = onFiltersChange ? (
+    <MessageFilterChips
+      filters={filters}
+      onFiltersChange={onFiltersChange}
+      labels={{ link: t('search.filters.link'), file: t('search.filters.file') }}
+      className='px-4 pb-3 bg-background'
+    />
+  ) : undefined
 
   const emptyComponent =
     hasActiveFilters && onFiltersChange ? (

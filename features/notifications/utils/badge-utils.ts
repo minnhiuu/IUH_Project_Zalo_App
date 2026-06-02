@@ -20,6 +20,8 @@ export const getBadgeConfig = (type: string) => {
       return { icon: 'gift' as const, color: '#ec4899' }
     case 'CALL':
       return { icon: 'call' as const, color: '#22c55e' }
+    case 'REMINDER':
+      return { icon: 'alarm' as const, color: '#ef4444' }
     case 'POST_COMMENT':
     case 'COMMENT_REPLY':
       return { icon: 'chatbubble-ellipses' as const, color: '#22c55e' }

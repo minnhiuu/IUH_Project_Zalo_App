@@ -78,9 +78,9 @@ export function StoryViewerModal({ visible, groups, initialGroupIndex, onClose }
     currentStory?.media?.[0] ??
     (rawCurrentStory?.mediaUrl
       ? {
-        url: rawCurrentStory.mediaUrl,
-        type: (rawCurrentStory.mediaType ?? '').toUpperCase() === 'VIDEO' ? 'VIDEO' : 'IMAGE'
-      }
+          url: rawCurrentStory.mediaUrl,
+          type: (rawCurrentStory.mediaType ?? '').toUpperCase() === 'VIDEO' ? 'VIDEO' : 'IMAGE'
+        }
       : null)
   const isVideoStory = currentMedia?.type === 'VIDEO'
   const normalizeMediaUrl = (url?: string | null) => {
@@ -308,7 +308,10 @@ export function StoryViewerModal({ visible, groups, initialGroupIndex, onClose }
     >
       <View className='flex-1 bg-black'>
         <View className='flex-1 bg-black'>
-          <View pointerEvents='none' style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, backgroundColor: '#000', zIndex: 40 }} />
+          <View
+            pointerEvents='none'
+            style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 2, backgroundColor: '#000', zIndex: 40 }}
+          />
 
           {currentMedia && currentMediaUrl ? (
             currentMedia.type === 'VIDEO' ? (
@@ -394,7 +397,10 @@ export function StoryViewerModal({ visible, groups, initialGroupIndex, onClose }
               <Text className='text-white font-semibold ml-3'>{currentGroup.authorName}</Text>
             </View>
 
-            <TouchableOpacity onPress={onClose} className='w-9 h-9 rounded-full bg-black/30 items-center justify-center'>
+            <TouchableOpacity
+              onPress={onClose}
+              className='w-9 h-9 rounded-full bg-black/30 items-center justify-center'
+            >
               <X size={18} color='white' />
             </TouchableOpacity>
           </View>

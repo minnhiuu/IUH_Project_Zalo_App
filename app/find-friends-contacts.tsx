@@ -20,9 +20,7 @@ export default function FindFriendsFromContactsScreen() {
   const [refreshing, setRefreshing] = useState(false)
 
   // Deduplicate by userId to avoid React key conflicts
-  const suggestions = rawSuggestions.filter(
-    (s, i, arr) => arr.findIndex((x) => x.userId === s.userId) === i
-  )
+  const suggestions = rawSuggestions.filter((s, i, arr) => arr.findIndex((x) => x.userId === s.userId) === i)
 
   // Auto-sync on mount (respects 24h interval)
   useEffect(() => {
@@ -137,10 +135,7 @@ export default function FindFriendsFromContactsScreen() {
   return (
     <View style={{ flex: 1, backgroundColor: colors.backgroundSecondary }}>
       {/* Shared Header with SafeArea */}
-      <Header
-        title={t('friend.contact.title')}
-        showBackButton
-      />
+      <Header title={t('friend.contact.title')} showBackButton />
 
       {/* Sync status banner */}
       {syncing && (
@@ -155,9 +150,7 @@ export default function FindFriendsFromContactsScreen() {
           }}
         >
           <ActivityIndicator size='small' color={BRAND.blue} />
-          <Text style={{ fontSize: 13, color: BRAND.blue, fontWeight: '500' }}>
-            {t('friend.contact.syncing')}
-          </Text>
+          <Text style={{ fontSize: 13, color: BRAND.blue, fontWeight: '500' }}>{t('friend.contact.syncing')}</Text>
         </View>
       )}
 
@@ -194,9 +187,7 @@ export default function FindFriendsFromContactsScreen() {
       {isLoading && !syncing ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           <ActivityIndicator size='large' color={colors.tint} />
-          <Text style={{ color: colors.textSecondary, marginTop: 12, fontSize: 14 }}>
-            {t('friend.loading')}
-          </Text>
+          <Text style={{ color: colors.textSecondary, marginTop: 12, fontSize: 14 }}>{t('friend.loading')}</Text>
         </View>
       ) : suggestions.length === 0 ? (
         renderEmpty()
@@ -233,9 +224,7 @@ export default function FindFriendsFromContactsScreen() {
               </TouchableOpacity>
             </View>
           }
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={BRAND.blue} />
-          }
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor={BRAND.blue} />}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ flexGrow: 1 }}
         />

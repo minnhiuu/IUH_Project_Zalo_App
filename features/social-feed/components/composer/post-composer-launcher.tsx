@@ -8,11 +8,7 @@ interface PostComposerLauncherProps {
   onPress?: () => void
 }
 
-export function PostComposerLauncher({
-  userAvatar,
-  userName,
-  onPress
-}: PostComposerLauncherProps) {
+export function PostComposerLauncher({ userAvatar, userName, onPress }: PostComposerLauncherProps) {
   const { text } = useSocialText()
 
   return (
@@ -22,15 +18,9 @@ export function PostComposerLauncher({
         className='bg-gray-100 rounded-full p-3 flex-row items-center gap-3 border border-blue-200 mx-4'
         activeOpacity={0.7}
       >
-        <UserAvatar 
-          source={userAvatar || undefined}
-          name={userName || 'User'}
-          size='md'
-        />
+        <UserAvatar source={userAvatar || undefined} name={userName || 'User'} size='md' />
 
-        <Text className='flex-1 text-gray-600 text-sm'>
-          {text.launcher.prompt}
-        </Text>
+        <Text className='flex-1 text-gray-600 text-sm'>{text.launcher.prompt}</Text>
       </TouchableOpacity>
     </View>
   )

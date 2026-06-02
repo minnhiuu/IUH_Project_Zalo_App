@@ -135,19 +135,9 @@ export function MediaSection({ media, onMediaPress }: MediaSectionProps) {
   if (media.length === 2) {
     return (
       <View style={{ flexDirection: 'row' }}>
-        <MediaTile
-          item={media[0]}
-          index={0}
-          onPress={() => onMediaPress?.(0)}
-          style={{ width: cell, height: cell }}
-        />
+        <MediaTile item={media[0]} index={0} onPress={() => onMediaPress?.(0)} style={{ width: cell, height: cell }} />
         <View style={{ width: gap }} />
-        <MediaTile
-          item={media[1]}
-          index={1}
-          onPress={() => onMediaPress?.(1)}
-          style={{ width: cell, height: cell }}
-        />
+        <MediaTile item={media[1]} index={1} onPress={() => onMediaPress?.(1)} style={{ width: cell, height: cell }} />
       </View>
     )
   }

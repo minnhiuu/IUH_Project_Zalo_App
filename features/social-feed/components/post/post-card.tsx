@@ -76,15 +76,13 @@ export function PostCard({
   const isCurrentUserPost = Boolean(currentUserId && post.authorId && currentUserId === post.authorId)
   const isSameNameAsCurrentUser = Boolean(
     !isCurrentUserPost &&
-      currentUserName &&
-      post.authorName &&
-      currentUserName.trim().toLowerCase() === post.authorName.trim().toLowerCase()
+    currentUserName &&
+    post.authorName &&
+    currentUserName.trim().toLowerCase() === post.authorName.trim().toLowerCase()
   )
   const shouldUseCurrentUserProfile = isCurrentUserPost || isSameNameAsCurrentUser
   const displayAuthorName = shouldUseCurrentUserProfile ? currentUserName || post.authorName : post.authorName
-  const displayAuthorAvatar = shouldUseCurrentUserProfile
-    ? currentUserAvatar || post.authorAvatar
-    : post.authorAvatar
+  const displayAuthorAvatar = shouldUseCurrentUserProfile ? currentUserAvatar || post.authorAvatar : post.authorAvatar
   const isShareDisabled = isCurrentUserPost
 
   return (
@@ -99,12 +97,8 @@ export function PostCard({
             className='mr-3'
           />
           <View className='flex-1'>
-            <Text className='text-base font-semibold text-gray-900'>
-              {displayAuthorName}
-            </Text>
-            {post.postType === 'SHARE' && (
-              <Text className='text-xs text-gray-500'>{text.post.sharedAPost}</Text>
-            )}
+            <Text className='text-base font-semibold text-gray-900'>{displayAuthorName}</Text>
+            {post.postType === 'SHARE' && <Text className='text-xs text-gray-500'>{text.post.sharedAPost}</Text>}
             <View className='flex-row items-center gap-1 mt-0.5'>
               <Text className='text-xs text-gray-500'>{postedAtLabel}</Text>
               <Text className='text-xs text-gray-500'>• {visibilityLabel}</Text>
@@ -117,9 +111,7 @@ export function PostCard({
       </View>
 
       {/* Content */}
-      <Text className='text-sm text-gray-800 mb-3 leading-5'>
-        {post.content}
-      </Text>
+      <Text className='text-sm text-gray-800 mb-3 leading-5'>{post.content}</Text>
 
       {/* Media */}
       {post.media && post.media.length > 0 && (
@@ -138,13 +130,9 @@ export function PostCard({
               size='sm'
               className='mr-2'
             />
-            <Text className='text-sm font-semibold text-gray-800'>
-              {post.sharedPost.authorName}
-            </Text>
+            <Text className='text-sm font-semibold text-gray-800'>{post.sharedPost.authorName}</Text>
           </View>
-          <Text className='text-sm text-gray-700 mb-2'>
-            {post.sharedPost.content}
-          </Text>
+          <Text className='text-sm text-gray-700 mb-2'>{post.sharedPost.content}</Text>
           {post.sharedPost.media && post.sharedPost.media.length > 0 && (
             <MediaSection
               media={post.sharedPost.media}
@@ -171,17 +159,11 @@ export function PostCard({
               ))}
             </View>
           )}
-          <Text className='text-xs text-gray-500'>
-            {post.reactions > 0 && `${post.reactions} reactions`}
-          </Text>
+          <Text className='text-xs text-gray-500'>{post.reactions > 0 && `${post.reactions} reactions`}</Text>
         </TouchableOpacity>
         <View className='flex-row gap-4'>
-          {post.comments > 0 && (
-            <Text className='text-xs text-gray-500'>{post.comments} comments</Text>
-          )}
-          {post.shares > 0 && (
-            <Text className='text-xs text-gray-500'>{post.shares} shares</Text>
-          )}
+          {post.comments > 0 && <Text className='text-xs text-gray-500'>{post.comments} comments</Text>}
+          {post.shares > 0 && <Text className='text-xs text-gray-500'>{post.shares} shares</Text>}
         </View>
       </View>
 

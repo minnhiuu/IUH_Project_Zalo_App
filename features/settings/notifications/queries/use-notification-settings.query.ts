@@ -2,7 +2,11 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { isAxiosError } from 'axios'
 import Toast from 'react-native-toast-message'
 import { useTranslation } from 'react-i18next'
-import { getNotificationSettings, normalizeNotificationSettings, updateNotificationSettings } from '../api/notification-settings.api'
+import {
+  getNotificationSettings,
+  normalizeNotificationSettings,
+  updateNotificationSettings
+} from '../api/notification-settings.api'
 import { settingsKeys } from '../../queries/keys'
 import { getCurrentSettings, mergePatch, refreshSettingsQueries } from '../../queries/shared/settings-mutation.utils'
 import type { NotificationSettings, UserSettings } from '../../schemas'
@@ -46,7 +50,9 @@ export const useUpdateNotificationSettingsMutation = () => {
       if (previousMySettings) {
         queryClient.setQueryData<UserSettings>(settingsKeys.me(), {
           ...previousMySettings,
-          notificationSettings: normalizeNotificationSettings(mergePatch(previousMySettings.notificationSettings, patch))
+          notificationSettings: normalizeNotificationSettings(
+            mergePatch(previousMySettings.notificationSettings, patch)
+          )
         })
       }
 

@@ -167,7 +167,8 @@ const mapPostToSocialPost = (post: BackendPostResponse): SocialPost => {
           type: mediaType === 'VIDEO' ? 'VIDEO' : 'IMAGE'
         } as const
       })
-      .filter((item): item is { url: string; type: 'IMAGE' | 'VIDEO' } => Boolean(item)) ?? []) ||
+      .filter((item): item is { url: string; type: 'IMAGE' | 'VIDEO' } => Boolean(item)) ??
+      []) ||
     []
 
   if (media.length === 0) {
@@ -175,10 +176,7 @@ const mapPostToSocialPost = (post: BackendPostResponse): SocialPost => {
     if (fallbackUrl) {
       media.push({
         url: fallbackUrl,
-        type:
-          (legacyPost.mediaType ?? '').toUpperCase() === 'VIDEO' || Boolean(legacyPost.videoUrl)
-            ? 'VIDEO'
-            : 'IMAGE'
+        type: (legacyPost.mediaType ?? '').toUpperCase() === 'VIDEO' || Boolean(legacyPost.videoUrl) ? 'VIDEO' : 'IMAGE'
       })
     }
   }
@@ -305,14 +303,12 @@ const parseStoryGroups = (payload: unknown): StoryGroup[] => {
     return []
   }
 
-  const hasGroupedShape = items.some(
-    (item) => Boolean(item && typeof item === 'object' && 'stories' in (item as Record<string, unknown>))
+  const hasGroupedShape = items.some((item) =>
+    Boolean(item && typeof item === 'object' && 'stories' in (item as Record<string, unknown>))
   )
 
   if (hasGroupedShape) {
-    return (items as BackendStoryGroup[])
-      .map(mapBackendGroupToStoryGroup)
-      .filter((group) => group.stories.length > 0)
+    return (items as BackendStoryGroup[]).map(mapBackendGroupToStoryGroup).filter((group) => group.stories.length > 0)
   }
 
   const storyPosts = (items as BackendPostResponse[])
@@ -345,12 +341,7 @@ export const getInfiniteSocialFeedPostsQueryOptions = (size = 20) =>
     getNextPageParam: (lastPage) => lastPage.nextPage
   })
 
-export const getSocialFeedCommentsQueryOptions = (
-  postId: string,
-  page = 0,
-  size = 20,
-  sortBy = 'NEWEST'
-) =>
+export const getSocialFeedCommentsQueryOptions = (postId: string, page = 0, size = 20, sortBy = 'NEWEST') =>
   queryOptions({
     queryKey: socialFeedCommentKeys.list(postId, page, size, sortBy),
     queryFn: async () => {

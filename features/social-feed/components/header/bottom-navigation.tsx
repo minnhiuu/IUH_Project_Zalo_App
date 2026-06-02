@@ -42,19 +42,13 @@ export function BottomNavigation({
             activeOpacity={0.7}
           >
             <Icon size={24} color={isActive ? '#3b82f6' : '#999'} />
-            <Text
-              className={`text-xs mt-1 font-medium ${
-                isActive ? 'text-blue-600' : 'text-gray-600'
-              }`}
-            >
+            <Text className={`text-xs mt-1 font-medium ${isActive ? 'text-blue-600' : 'text-gray-600'}`}>
               {tab.label}
             </Text>
 
             {badgeCount > 0 && (
               <View className='absolute top-0 right-3 bg-red-500 rounded-full w-5 h-5 items-center justify-center'>
-                <Text className='text-white text-xs font-bold'>
-                  {badgeCount > 9 ? '9+' : badgeCount}
-                </Text>
+                <Text className='text-white text-xs font-bold'>{badgeCount > 9 ? '9+' : badgeCount}</Text>
               </View>
             )}
           </TouchableOpacity>

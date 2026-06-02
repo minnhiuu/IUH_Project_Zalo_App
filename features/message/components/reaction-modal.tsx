@@ -109,7 +109,9 @@ export function ReactionModal({
               borderBottomColor: borderColor
             }}
           >
-            <Text style={{ fontSize: 16, fontWeight: '600', color: textPrimary }}>{t('reaction.title', 'Biểu cảm')}</Text>
+            <Text style={{ fontSize: 16, fontWeight: '600', color: textPrimary }}>
+              {t('reaction.title', 'Biểu cảm')}
+            </Text>
             <TouchableOpacity onPress={onClose} hitSlop={8}>
               <Ionicons name='close' size={20} color={textSecondary} />
             </TouchableOpacity>
@@ -152,8 +154,7 @@ export function ReactionModal({
                     style={{
                       paddingHorizontal: 8,
                       paddingVertical: 10,
-                      backgroundColor:
-                        selectedEmoji === emoji ? (isDark ? '#1A3A5C' : '#EFF6FF') : 'transparent',
+                      backgroundColor: selectedEmoji === emoji ? (isDark ? '#1A3A5C' : '#EFF6FF') : 'transparent',
                       flexDirection: 'row',
                       alignItems: 'center',
                       justifyContent: 'space-between'
@@ -179,9 +180,7 @@ export function ReactionModal({
                   const name = isMe
                     ? currentUserName || member?.fullName || item.userId
                     : member?.fullName || item.userId
-                  const avatar = isMe
-                    ? currentUserAvatar || member?.avatar || null
-                    : member?.avatar || null
+                  const avatar = isMe ? currentUserAvatar || member?.avatar || null : member?.avatar || null
 
                   return (
                     <View
@@ -196,14 +195,12 @@ export function ReactionModal({
                     >
                       <UserAvatar source={avatar} name={name} size='sm' />
                       <View style={{ flex: 1 }}>
-                        <Text
-                          style={{ fontSize: 14, fontWeight: '500', color: textPrimary }}
-                          numberOfLines={1}
-                        >
+                        <Text style={{ fontSize: 14, fontWeight: '500', color: textPrimary }} numberOfLines={1}>
                           {name}
                           {isMe && (
                             <Text style={{ color: textSecondary, fontWeight: '400', fontSize: 13 }}>
-                              {' '}{t('reaction.me', '(Bạn)')}
+                              {' '}
+                              {t('reaction.me', '(Bạn)')}
                             </Text>
                           )}
                         </Text>
@@ -213,16 +210,12 @@ export function ReactionModal({
                           <View key={e} style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <Text style={{ fontSize: 18 }}>{e}</Text>
                             {selectedEmoji !== null && count > 1 && (
-                              <Text style={{ fontSize: 11, color: textSecondary, marginLeft: 1 }}>
-                                {count}
-                              </Text>
+                              <Text style={{ fontSize: 11, color: textSecondary, marginLeft: 1 }}>{count}</Text>
                             )}
                           </View>
                         ))}
                         {selectedEmoji === null && item.userTotal > 1 && (
-                          <Text style={{ fontSize: 11, color: textSecondary, marginLeft: 2 }}>
-                            {item.userTotal}
-                          </Text>
+                          <Text style={{ fontSize: 11, color: textSecondary, marginLeft: 2 }}>{item.userTotal}</Text>
                         )}
                       </View>
                     </View>

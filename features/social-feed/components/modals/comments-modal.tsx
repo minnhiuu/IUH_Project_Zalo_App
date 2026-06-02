@@ -9,11 +9,7 @@ interface CommentsModalProps {
   onClose: () => void
 }
 
-export function CommentsModal({
-  visible,
-  post,
-  onClose
-}: CommentsModalProps) {
+export function CommentsModal({ visible, post, onClose }: CommentsModalProps) {
   const [commentText, setCommentText] = useState('')
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
 
@@ -27,7 +23,7 @@ export function CommentsModal({
       content: 'Bài viết hay quá! 👍',
       timestamp: '2 giờ',
       likes: 5,
-      replies: 2,
+      replies: 2
     },
     {
       id: '2',
@@ -36,23 +32,16 @@ export function CommentsModal({
       content: 'Quá tuyệt vời!',
       timestamp: '1 giờ',
       likes: 3,
-      replies: 1,
-    },
+      replies: 1
+    }
   ]
 
   return (
-    <Modal
-      visible={visible}
-      animationType='slide'
-      onRequestClose={onClose}
-      transparent={false}
-    >
+    <Modal visible={visible} animationType='slide' onRequestClose={onClose} transparent={false}>
       <View className='flex-1 bg-black'>
         {/* Header */}
         <View className='flex-row items-center justify-between p-4 border-b border-zinc-800'>
-          <Text className='text-white font-bold text-lg'>
-            Bình luận ({post.comments})
-          </Text>
+          <Text className='text-white font-bold text-lg'>Bình luận ({post.comments})</Text>
           <TouchableOpacity onPress={onClose}>
             <X size={24} color='white' />
           </TouchableOpacity>
@@ -67,12 +56,8 @@ export function CommentsModal({
               <View className='flex-row gap-3'>
                 <View className='w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-blue-600' />
                 <View className='flex-1'>
-                  <Text className='text-white font-semibold text-sm'>
-                    {item.author}
-                  </Text>
-                  <Text className='text-zinc-300 text-sm mt-1'>
-                    {item.content}
-                  </Text>
+                  <Text className='text-white font-semibold text-sm'>{item.author}</Text>
+                  <Text className='text-zinc-300 text-sm mt-1'>{item.content}</Text>
                   <View className='flex-row gap-4 mt-2'>
                     <TouchableOpacity className='flex-row items-center gap-1'>
                       <ThumbsUp size={14} color='#a1a1a1' />
@@ -80,9 +65,7 @@ export function CommentsModal({
                     </TouchableOpacity>
                     <TouchableOpacity className='flex-row items-center gap-1'>
                       <Reply size={14} color='#a1a1a1' />
-                      <Text className='text-zinc-500 text-xs'>
-                        Trả lời ({item.replies})
-                      </Text>
+                      <Text className='text-zinc-500 text-xs'>Trả lời ({item.replies})</Text>
                     </TouchableOpacity>
                     <Text className='text-zinc-500 text-xs'>{item.timestamp}</Text>
                   </View>
@@ -118,9 +101,7 @@ export function CommentsModal({
             />
             <TouchableOpacity
               disabled={!commentText.trim()}
-              className={`p-2 ${
-                commentText.trim() ? 'opacity-100' : 'opacity-50'
-              }`}
+              className={`p-2 ${commentText.trim() ? 'opacity-100' : 'opacity-50'}`}
             >
               <Text className='text-blue-500 font-bold'>Gửi</Text>
             </TouchableOpacity>

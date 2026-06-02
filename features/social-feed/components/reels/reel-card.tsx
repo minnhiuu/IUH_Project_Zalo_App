@@ -70,9 +70,7 @@ export function ReelCard({
   const shouldUseCurrentUserProfile = isCurrentUserPost || isSameNameAsCurrentUser
 
   const displayAuthorName = shouldUseCurrentUserProfile ? currentUserName || reel.authorName : reel.authorName
-  const displayAuthorAvatar = shouldUseCurrentUserProfile
-    ? currentUserAvatar || reel.authorAvatar
-    : reel.authorAvatar
+  const displayAuthorAvatar = shouldUseCurrentUserProfile ? currentUserAvatar || reel.authorAvatar : reel.authorAvatar
 
   const resolvedAvatar = toAbsoluteMediaUri(displayAuthorAvatar)
   const displayName = displayAuthorName?.trim() || 'Người dùng'
@@ -103,10 +101,7 @@ export function ReelCard({
   }
 
   return (
-    <View
-      className='w-full bg-black'
-      style={{ height: height ?? undefined }}
-    >
+    <View className='w-full bg-black' style={{ height: height ?? undefined }}>
       {videoUrl ? (
         <Pressable
           onPress={handleTogglePause}
@@ -169,11 +164,7 @@ export function ReelCard({
               activeOpacity={0.75}
               hitSlop={{ top: 10, bottom: 10, left: 20, right: 20 }}
             >
-              <Heart
-                size={26}
-                color={isLiked ? '#ef4444' : 'white'}
-                fill={isLiked ? '#ef4444' : 'transparent'}
-              />
+              <Heart size={26} color={isLiked ? '#ef4444' : 'white'} fill={isLiked ? '#ef4444' : 'transparent'} />
               <Text className='text-white text-xs mt-1'>{likeCount}</Text>
             </TouchableOpacity>
 
@@ -193,11 +184,7 @@ export function ReelCard({
               activeOpacity={0.75}
               hitSlop={{ top: 10, bottom: 10, left: 20, right: 20 }}
             >
-              <Bookmark
-                size={26}
-                color={isSaved ? '#facc15' : 'white'}
-                fill={isSaved ? '#facc15' : 'transparent'}
-              />
+              <Bookmark size={26} color={isSaved ? '#facc15' : 'white'} fill={isSaved ? '#facc15' : 'transparent'} />
               <Text className={`text-xs mt-1 ${isSaved ? 'text-yellow-400 font-bold' : 'text-white'}`}>
                 {isSaved ? 'Đã lưu' : 'Lưu'}
               </Text>

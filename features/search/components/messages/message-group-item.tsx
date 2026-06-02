@@ -112,7 +112,10 @@ export function MessageGroupResult({
   const participantNames = item.participantNames?.filter((name): name is string => !!name?.trim()) ?? []
   const directParticipantTitle = participantNames.find((name) => name.trim() !== currentUserName)
   const fallbackTitle = item.isGroup ? participantNames.join(', ') : directParticipantTitle
-  const title = (item.isGroup ? item.title : directParticipantTitle || item.title) || fallbackTitle || t('search.unknownConversation')
+  const title =
+    (item.isGroup ? item.title : directParticipantTitle || item.title) ||
+    fallbackTitle ||
+    t('search.unknownConversation')
   const preview = item.previewHighlights || item.previewContent || ''
   const time = formatSearchTime(item.lastMatchedAt)
   const matchCount = item.matchCount > 99 ? '99+' : item.matchCount

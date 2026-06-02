@@ -4,6 +4,7 @@ import '../global.css'
 import i18n from '@/i18n'
 // Load feature-level i18n bundles (side-effect: registers translations)
 import '@/features/friend/i18n'
+import '@/features/message/i18n'
 import '@/features/search/i18n'
 import '@/features/message/i18n'
 import { SEMANTIC } from '@/constants/theme'

@@ -99,16 +99,20 @@ export default function GroupApprovalScreen() {
             <TouchableOpacity onPress={() => router.back()} style={{ paddingRight: 10 }}>
               <Ionicons name='chevron-back' size={24} color='#fff' />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>{t('message.groupApproval.title', { defaultValue: 'Duyệt thành viên' })}</Text>
+            <Text style={styles.headerTitle}>
+              {t('message.groupApproval.title', { defaultValue: 'Duyệt thành viên' })}
+            </Text>
           </View>
         </SafeAreaView>
       </LinearGradient>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 22 }}>
-        <Text style={[styles.sectionTitle, { color: palette.title }]}>{t('message.groupApproval.settingsTitle', { defaultValue: 'Cài đặt' })}</Text>
+        <Text style={[styles.sectionTitle, { color: palette.title }]}>
+          {t('message.groupApproval.settingsTitle', { defaultValue: 'Cài đặt' })}
+        </Text>
 
         <View style={{ backgroundColor: palette.card }}>
-          <View style={[styles.approvalSettingRow, { borderBottomColor: palette.divider }]}> 
+          <View style={[styles.approvalSettingRow, { borderBottomColor: palette.divider }]}>
             <View style={{ flex: 1, paddingRight: 8 }}>
               <Text style={{ fontSize: 17, color: palette.text, marginBottom: 2 }}>
                 {t('message.groupApproval.toggleTitle', { defaultValue: 'Duyệt thành viên' })}
@@ -132,7 +136,9 @@ export default function GroupApprovalScreen() {
           </View>
         </View>
 
-        <Text style={[styles.sectionTitle, { color: palette.title }]}>{t('message.groupApproval.optionsTitle', { defaultValue: 'Tùy chọn xét duyệt' })}</Text>
+        <Text style={[styles.sectionTitle, { color: palette.title }]}>
+          {t('message.groupApproval.optionsTitle', { defaultValue: 'Tùy chọn xét duyệt' })}
+        </Text>
         <View style={{ backgroundColor: palette.card, paddingHorizontal: 16, paddingVertical: 14 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
             <Text style={{ fontSize: 16, color: palette.text }}>{t('message.groupApproval.questionLabel', { defaultValue: 'Câu hỏi:' })}</Text>
@@ -185,11 +191,13 @@ export default function GroupApprovalScreen() {
             </View>
           ) : requests.length === 0 ? (
             <View style={{ paddingHorizontal: 16, paddingVertical: 16 }}>
-              <Text style={{ color: palette.sub }}>{t('message.groupApproval.emptyRequests', { defaultValue: 'Chưa có yêu cầu tham gia' })}</Text>
+              <Text style={{ color: palette.sub }}>
+                {t('message.groupApproval.emptyRequests', { defaultValue: 'Chưa có yêu cầu tham gia' })}
+              </Text>
             </View>
           ) : (
             requests.map((req) => (
-              <View key={req.id} style={[styles.requestRow, { borderBottomColor: palette.divider }]}> 
+              <View key={req.id} style={[styles.requestRow, { borderBottomColor: palette.divider }]}>
                 <UserAvatar source={req.avatar || undefined} name={req.fullName} size='xl' />
                 <View style={{ flex: 1, marginLeft: 12 }}>
                   <Text style={{ color: palette.text, fontSize: 16, fontWeight: '500' }}>{req.fullName}</Text>

@@ -51,7 +51,7 @@ export function PostComposer({
   const isVideoOnly = mediaMode === 'video'
   const mediaLabel = isVideoOnly ? 'Video' : t('composer.media', 'Ảnh/Video')
   const mediaIcon = isVideoOnly ? 'videocam' : 'images'
-  
+
   const createPostMutation = useCreateSocialPostMutation()
 
   const pickMedia = async () => {
@@ -97,7 +97,7 @@ export function PostComposer({
 
     try {
       setIsUploading(true)
-      
+
       let mediaObjects: Array<{ url: string; type: string }> = []
       if (media.length > 0) {
         const uploadResults = await fileApi.uploadBatchWithPresigned(media)
@@ -127,14 +127,14 @@ export function PostComposer({
   }
 
   return (
-    <View className="bg-white p-4 border-b border-gray-100 mb-2">
-      <View className="flex-row items-center mb-4">
-        <UserAvatar source={currentUserAvatar || undefined} name={currentUserName || 'Bạn'} size="md" />
-        <View className="flex-1 ml-3 bg-gray-50 rounded-2xl px-4 py-2 min-h-[44px] justify-center">
+    <View className='bg-white p-4 border-b border-gray-100 mb-2'>
+      <View className='flex-row items-center mb-4'>
+        <UserAvatar source={currentUserAvatar || undefined} name={currentUserName || 'Bạn'} size='md' />
+        <View className='flex-1 ml-3 bg-gray-50 rounded-2xl px-4 py-2 min-h-[44px] justify-center'>
           <TextInput
             placeholder={t('composer.prompt_placeholder', 'Hôm nay của bạn thế nào?')}
-            placeholderTextColor="#9CA3AF"
-            className="text-gray-800 text-[16px]"
+            placeholderTextColor='#9CA3AF'
+            className='text-gray-800 text-[16px]'
             value={content}
             onChangeText={setContent}
             multiline
@@ -145,38 +145,34 @@ export function PostComposer({
       </View>
 
       {/* Visibility Control */}
-      <View className="mb-4 bg-gray-50 rounded-lg p-3">
+      <View className='mb-4 bg-gray-50 rounded-lg p-3'>
         <VisibilityDropdown value={visibility} onChange={setVisibility} />
       </View>
 
-      {media.length > 0 && (
-        <View className="mb-4">
-          {renderMediaGrid(media, removeMedia, setPreviewIndex)}
-        </View>
-      )}
+      {media.length > 0 && <View className='mb-4'>{renderMediaGrid(media, removeMedia, setPreviewIndex)}</View>}
 
-      <View className="flex-row items-center justify-between pt-2 border-t border-gray-50">
-        <View className="flex-row items-center space-x-6">
-          <TouchableOpacity onPress={pickMedia} className="flex-row items-center" disabled={isUploading}>
-            <Ionicons name={mediaIcon as any} size={22} color="#10B981" />
-            <Text className="ml-2 text-gray-600 font-medium">{mediaLabel}</Text>
+      <View className='flex-row items-center justify-between pt-2 border-t border-gray-50'>
+        <View className='flex-row items-center space-x-6'>
+          <TouchableOpacity onPress={pickMedia} className='flex-row items-center' disabled={isUploading}>
+            <Ionicons name={mediaIcon as any} size={22} color='#10B981' />
+            <Text className='ml-2 text-gray-600 font-medium'>{mediaLabel}</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity className="flex-row items-center ml-4" disabled={isUploading}>
-            <Ionicons name="happy-outline" size={22} color="#F59E0B" />
-            <Text className="ml-2 text-gray-600 font-medium">{t('composer.feeling', 'Cảm xúc')}</Text>
+
+          <TouchableOpacity className='flex-row items-center ml-4' disabled={isUploading}>
+            <Ionicons name='happy-outline' size={22} color='#F59E0B' />
+            <Text className='ml-2 text-gray-600 font-medium'>{t('composer.feeling', 'Cảm xúc')}</Text>
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={handlePost}
           disabled={isUploading || (!content.trim() && media.length === 0)}
-          className={`px-5 py-2 rounded-full ${(!content.trim() && media.length === 0) ? 'bg-blue-200' : 'bg-blue-500'}`}
+          className={`px-5 py-2 rounded-full ${!content.trim() && media.length === 0 ? 'bg-blue-200' : 'bg-blue-500'}`}
         >
           {isUploading ? (
-            <ActivityIndicator size="small" color="white" />
+            <ActivityIndicator size='small' color='white' />
           ) : (
-            <Text className="text-white font-bold">{t('composer.post', 'Đăng')}</Text>
+            <Text className='text-white font-bold'>{t('composer.post', 'Đăng')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -184,7 +180,7 @@ export function PostComposer({
       <Modal
         visible={previewIndex !== null}
         transparent
-        animationType="fade"
+        animationType='fade'
         onRequestClose={() => setPreviewIndex(null)}
       >
         <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.9)' }}>
@@ -220,11 +216,7 @@ export function PostComposer({
                       useNativeControls
                     />
                   ) : (
-                    <Image
-                      source={{ uri: item.uri }}
-                      style={{ width: '100%', height: '100%' }}
-                      resizeMode="contain"
-                    />
+                    <Image source={{ uri: item.uri }} style={{ width: '100%', height: '100%' }} resizeMode='contain' />
                   )}
                 </View>
               )}
@@ -233,7 +225,7 @@ export function PostComposer({
               onPress={() => setPreviewIndex(null)}
               style={{ position: 'absolute', top: 40, right: 16, padding: 8 }}
             >
-              <Ionicons name="close" size={28} color="white" />
+              <Ionicons name='close' size={28} color='white' />
             </TouchableOpacity>
           </View>
         </View>
@@ -270,7 +262,7 @@ const renderMediaGrid = (
         backgroundColor: '#E5E7EB'
       }}
     >
-      <Image source={{ uri: item.uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+      <Image source={{ uri: item.uri }} style={{ width: '100%', height: '100%' }} resizeMode='cover' />
       <TouchableOpacity
         onPress={() => onRemove(index)}
         style={{
@@ -282,7 +274,7 @@ const renderMediaGrid = (
           padding: 4
         }}
       >
-        <Ionicons name="close" size={14} color="white" />
+        <Ionicons name='close' size={14} color='white' />
       </TouchableOpacity>
       {item.type === 'VIDEO' && (
         <View
@@ -294,7 +286,7 @@ const renderMediaGrid = (
             backgroundColor: 'rgba(0,0,0,0.15)'
           }}
         >
-          <Ionicons name="play" size={26} color="white" />
+          <Ionicons name='play' size={26} color='white' />
         </View>
       )}
     </TouchableOpacity>
