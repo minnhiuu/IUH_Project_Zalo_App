@@ -1,14 +1,5 @@
 import React, { useState } from 'react'
-import {
-  View,
-  TouchableOpacity,
-  FlatList,
-  Image,
-  Modal,
-  Dimensions,
-  ActivityIndicator,
-  Linking
-} from 'react-native'
+import { View, TouchableOpacity, FlatList, Image, Modal, Dimensions, ActivityIndicator, Linking } from 'react-native'
 import { Video, ResizeMode } from 'expo-av'
 import { Ionicons } from '@expo/vector-icons'
 import { Text } from '@/components/ui/text'
@@ -92,7 +83,14 @@ export function MediaStorageView({ conversationId }: MediaStorageViewProps) {
   const getFileBadgeLabel = (fileName: string) => {
     const ext = (fileName.split('.').pop() || '').toUpperCase()
     if (!ext) return 'FILE'
-    const map: Record<string, string> = { DOC: 'WORD', DOCX: 'WORD', XLS: 'EXCEL', XLSX: 'EXCEL', PPT: 'PPT', PPTX: 'PPT' }
+    const map: Record<string, string> = {
+      DOC: 'WORD',
+      DOCX: 'WORD',
+      XLS: 'EXCEL',
+      XLSX: 'EXCEL',
+      PPT: 'PPT',
+      PPTX: 'PPT'
+    }
     return map[ext] || ext
   }
 
@@ -104,11 +102,19 @@ export function MediaStorageView({ conversationId }: MediaStorageViewProps) {
         activeOpacity={0.8}
         style={{ width: GRID_ITEM_SIZE, height: GRID_ITEM_SIZE }}
       >
-        <Image
-          source={{ uri: item.att.url }}
-          style={{ width: '100%', height: '100%' }}
-          resizeMode='cover'
-        />
+        {isVideo ? (
+          <Video
+            source={{ uri: item.att.url }}
+            style={{ width: '100%', height: '100%' }}
+            resizeMode={ResizeMode.COVER}
+            shouldPlay={false}
+            isLooping={false}
+            isMuted
+            useNativeControls={false}
+          />
+        ) : (
+          <Image source={{ uri: item.att.url }} style={{ width: '100%', height: '100%' }} resizeMode='cover' />
+        )}
         {isVideo && (
           <View
             style={{
@@ -162,15 +168,10 @@ export function MediaStorageView({ conversationId }: MediaStorageViewProps) {
           <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>{badgeLabel}</Text>
         </View>
         <View style={{ flex: 1 }}>
-          <Text
-            style={{ fontSize: 14, fontWeight: '500', color: colors.text }}
-            numberOfLines={2}
-          >
+          <Text style={{ fontSize: 14, fontWeight: '500', color: colors.text }} numberOfLines={2}>
             {fileName}
           </Text>
-          {!!sizeMB && (
-            <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>{sizeMB}</Text>
-          )}
+          {!!sizeMB && <Text style={{ fontSize: 12, color: colors.textSecondary, marginTop: 2 }}>{sizeMB}</Text>}
         </View>
         <Ionicons name='download-outline' size={20} color={colors.textSecondary} />
       </TouchableOpacity>
@@ -278,24 +279,22 @@ export function MediaStorageView({ conversationId }: MediaStorageViewProps) {
             style={{ backgroundColor: isDark ? '#15181D' : '#fff' }}
           />
         )
+      ) : // Links tab
+      linkMessages.length === 0 ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Ionicons name='link-outline' size={48} color={colors.textSecondary} />
+          <Text style={{ color: colors.textSecondary, marginTop: 12 }}>
+            {t('message.storage.noLinks', { defaultValue: 'Chưa có liên kết nào' })}
+          </Text>
+        </View>
       ) : (
-        // Links tab
-        linkMessages.length === 0 ? (
-          <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Ionicons name='link-outline' size={48} color={colors.textSecondary} />
-            <Text style={{ color: colors.textSecondary, marginTop: 12 }}>
-              {t('message.storage.noLinks', { defaultValue: 'Chưa có liên kết nào' })}
-            </Text>
-          </View>
-        ) : (
-          <FlatList
-            data={linkMessages}
-            keyExtractor={(item, i) => item.id || String(i)}
-            renderItem={renderLinkItem}
-            showsVerticalScrollIndicator={false}
-            style={{ backgroundColor: isDark ? '#15181D' : '#fff' }}
-          />
-        )
+        <FlatList
+          data={linkMessages}
+          keyExtractor={(item, i) => item.id || String(i)}
+          renderItem={renderLinkItem}
+          showsVerticalScrollIndicator={false}
+          style={{ backgroundColor: isDark ? '#15181D' : '#fff' }}
+        />
       )}
 
       {/* Lightbox modal */}

@@ -110,14 +110,11 @@ export const socialFeedApi = {
       params: { page, size }
     }),
 
-  getPostById: (postId: string) =>
-    axiosInstance.get<ApiResponse<BackendPostResponse>>(`/posts/${postId}`),
+  getPostById: (postId: string) => axiosInstance.get<ApiResponse<BackendPostResponse>>(`/posts/${postId}`),
 
-  createPost: (data: CreatePostRequest) =>
-    axiosInstance.post<ApiResponse<BackendPostResponse>>('/posts', data),
+  createPost: (data: CreatePostRequest) => axiosInstance.post<ApiResponse<BackendPostResponse>>('/posts', data),
 
-  recordStoryView: (postId: string) =>
-    axiosInstance.post<ApiResponse<void>>(`/interactions/posts/${postId}/view`),
+  recordStoryView: (postId: string) => axiosInstance.post<ApiResponse<void>>(`/interactions/posts/${postId}/view`),
 
   getMyPosts: (page = 0, size = 20) =>
     axiosInstance.get<ApiResponse<PageResponse<BackendPostResponse>>>('/posts/me', {

@@ -222,7 +222,6 @@ export default function ContactsScreen() {
             <Text style={{ fontSize: 16, fontWeight: '500', color: colors.text }}>
               {t('friend.contact.findFromContacts')}
             </Text>
-
           </View>
           {contactSuggestions.length > 0 && (
             <View

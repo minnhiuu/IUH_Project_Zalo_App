@@ -12,17 +12,23 @@ import {
   KeyboardAvoidingView,
   Platform
 } from 'react-native'
-import { Heart, MessageCircle, Share2, MoreHorizontal, Send, Image as ImageIcon, Video as VideoIcon, Plus, ThumbsUp } from 'lucide-react-native'
+import {
+  Heart,
+  MessageCircle,
+  Share2,
+  MoreHorizontal,
+  Send,
+  Image as ImageIcon,
+  Video as VideoIcon,
+  Plus,
+  ThumbsUp
+} from 'lucide-react-native'
 import { Image as ExpoImage } from 'expo-image'
 import { useEffect, useMemo, useState } from 'react'
 import { useQueries, useQueryClient } from '@tanstack/react-query'
 import { Video, ResizeMode } from 'expo-av'
 import { useRouter } from 'expo-router'
-import {
-  useInfiniteSocialFeedPosts,
-  useSocialFeedComments,
-  useSocialStories
-} from '../queries/use-queries'
+import { useInfiniteSocialFeedPosts, useSocialFeedComments, useSocialStories } from '../queries/use-queries'
 import { useQuery } from '@tanstack/react-query'
 import { getSocialFeedCommentRepliesQueryOptions } from '../queries/options'
 import {
@@ -130,23 +136,23 @@ export function SocialFeedPage() {
   const currentUserAvatarFromProfile = useMemo(() => {
     const profile = myProfile as
       | ({
-        avatar?: string | null
-        avatarUrl?: string | null
-        photoUrl?: string | null
-        profileAvatar?: string | null
-        imageUrl?: string | null
-      } & Record<string, unknown>)
+          avatar?: string | null
+          avatarUrl?: string | null
+          photoUrl?: string | null
+          profileAvatar?: string | null
+          imageUrl?: string | null
+        } & Record<string, unknown>)
       | null
       | undefined
 
     const profileById = myProfileById as
       | ({
-        avatar?: string | null
-        avatarUrl?: string | null
-        photoUrl?: string | null
-        profileAvatar?: string | null
-        imageUrl?: string | null
-      } & Record<string, unknown>)
+          avatar?: string | null
+          avatarUrl?: string | null
+          photoUrl?: string | null
+          profileAvatar?: string | null
+          imageUrl?: string | null
+        } & Record<string, unknown>)
       | null
       | undefined
 
@@ -190,12 +196,12 @@ export function SocialFeedPage() {
   const unresolvedAuthorIds = useMemo<string[]>(() => {
     const ids = new Set<string>()
 
-      ; (comments as SocialFeedComment[]).forEach((comment: SocialFeedComment) => {
-        if (!comment.authorId || comment.authorId === currentUserId) return
-        if (!comment.authorAvatar || comment.authorName === 'Unknown user') {
-          ids.add(comment.authorId)
-        }
-      })
+    ;(comments as SocialFeedComment[]).forEach((comment: SocialFeedComment) => {
+      if (!comment.authorId || comment.authorId === currentUserId) return
+      if (!comment.authorAvatar || comment.authorName === 'Unknown user') {
+        ids.add(comment.authorId)
+      }
+    })
 
     return Array.from(ids)
   }, [comments, currentUserId])
@@ -416,12 +422,11 @@ export function SocialFeedPage() {
     .map((group) => {
       const isCurrentUserGroup = Boolean(currentUserId && group.authorId === currentUserId)
       const fallbackProfile = group.authorId ? storyAuthorProfileMap.get(group.authorId) : undefined
-      const resolvedAuthorName =
-        isCurrentUserGroup
-          ? currentUserName || group.authorName
-          : group.authorName && group.authorName !== 'Unknown user'
-            ? group.authorName
-            : fallbackProfile?.fullName || group.authorName
+      const resolvedAuthorName = isCurrentUserGroup
+        ? currentUserName || group.authorName
+        : group.authorName && group.authorName !== 'Unknown user'
+          ? group.authorName
+          : fallbackProfile?.fullName || group.authorName
       const resolvedAuthorAvatar = isCurrentUserGroup
         ? currentUserAvatarFromProfile || group.authorAvatar || null
         : group.authorAvatar || fallbackProfile?.avatar || null
@@ -456,23 +461,23 @@ export function SocialFeedPage() {
   const currentUserAvatarDebug = useMemo(() => {
     const profile = myProfile as
       | ({
-        avatar?: string | null
-        avatarUrl?: string | null
-        photoUrl?: string | null
-        profileAvatar?: string | null
-        imageUrl?: string | null
-      } & Record<string, unknown>)
+          avatar?: string | null
+          avatarUrl?: string | null
+          photoUrl?: string | null
+          profileAvatar?: string | null
+          imageUrl?: string | null
+        } & Record<string, unknown>)
       | null
       | undefined
 
     const profileById = myProfileById as
       | ({
-        avatar?: string | null
-        avatarUrl?: string | null
-        photoUrl?: string | null
-        profileAvatar?: string | null
-        imageUrl?: string | null
-      } & Record<string, unknown>)
+          avatar?: string | null
+          avatarUrl?: string | null
+          photoUrl?: string | null
+          profileAvatar?: string | null
+          imageUrl?: string | null
+        } & Record<string, unknown>)
       | null
       | undefined
 
@@ -487,12 +492,7 @@ export function SocialFeedPage() {
     const avatarFromAuthStore = authStoreUser?.avatar || null
 
     const avatarFromMyProfile =
-      profile?.avatar ||
-      profile?.avatarUrl ||
-      profile?.photoUrl ||
-      profile?.profileAvatar ||
-      profile?.imageUrl ||
-      null
+      profile?.avatar || profile?.avatarUrl || profile?.photoUrl || profile?.profileAvatar || profile?.imageUrl || null
 
     const normalizeId = (value?: string | null) => {
       if (!value) return ''
@@ -506,17 +506,13 @@ export function SocialFeedPage() {
 
     const avatarFromStoriesById = normalizedCurrentUserId
       ? stories.find((group) => normalizeId(group.authorId) === normalizedCurrentUserId)?.authorAvatar ||
-      stories
-        .flatMap((group) => group.stories)
-        .find((story) => normalizeId(story.authorId) === normalizedCurrentUserId)?.authorAvatar ||
-      null
+        stories
+          .flatMap((group) => group.stories)
+          .find((story) => normalizeId(story.authorId) === normalizedCurrentUserId)?.authorAvatar ||
+        null
       : null
 
-    const selectedAvatar =
-      currentUserAvatarFromProfile ||
-      avatarFromPostsById ||
-      avatarFromStoriesById ||
-      null
+    const selectedAvatar = currentUserAvatarFromProfile || avatarFromPostsById || avatarFromStoriesById || null
 
     const selectedSource = currentUserAvatarFromProfile
       ? avatarFromUserById
@@ -539,21 +535,11 @@ export function SocialFeedPage() {
       avatarFromPostsById,
       avatarFromStoriesById
     }
-  }, [
-    myProfile,
-    myProfileById,
-    authStoreUser?.avatar,
-    currentUserAvatarFromProfile,
-    stories,
-    posts,
-    currentUserId
-  ])
+  }, [myProfile, myProfileById, authStoreUser?.avatar, currentUserAvatarFromProfile, stories, posts, currentUserId])
 
   const currentUserAvatar = currentUserAvatarDebug.selectedAvatar
   const isReelsTab = activeTab === 'reels'
-  const [reelContainerHeight, setReelContainerHeight] = useState(
-    Math.max(1, Dimensions.get('window').height - 56)
-  )
+  const [reelContainerHeight, setReelContainerHeight] = useState(Math.max(1, Dimensions.get('window').height - 56))
 
   const handlePostComposerClose = () => {
     setShowComposer(false)
@@ -631,7 +617,9 @@ export function SocialFeedPage() {
         const entries = await Promise.all(
           REACTION_TYPES.map(async (reactionType) => {
             const response = await commentApi.searchReactions('POST', reactionType)
-            const postReactions = (response.data?.data ?? []).filter((reaction) => reaction.targetId === reactionTargetPost.id)
+            const postReactions = (response.data?.data ?? []).filter(
+              (reaction) => reaction.targetId === reactionTargetPost.id
+            )
 
             const profiles = await Promise.all(
               postReactions.map(async (reaction) => {
@@ -870,9 +858,7 @@ export function SocialFeedPage() {
           }}
           ListFooterComponent={
             <View style={{ height: 60, justifyContent: 'center' }}>
-              {isFetchingNextPage ? (
-                <Text className='text-center text-gray-500'>Đang tải thêm bài viết...</Text>
-              ) : null}
+              {isFetchingNextPage ? <Text className='text-center text-gray-500'>Đang tải thêm bài viết...</Text> : null}
             </View>
           }
           ListEmptyComponent={
@@ -884,11 +870,7 @@ export function SocialFeedPage() {
         />
       )}
 
-      <Modal
-        visible={showComposer}
-        animationType='slide'
-        onRequestClose={handlePostComposerClose}
-      >
+      <Modal visible={showComposer} animationType='slide' onRequestClose={handlePostComposerClose}>
         <View className='flex-1 bg-white pt-12'>
           <View className='px-4 pb-3 border-b border-gray-100 flex-row items-center justify-between'>
             <Text className='text-lg font-semibold text-gray-900'>Đăng bài mới</Text>
@@ -917,11 +899,7 @@ export function SocialFeedPage() {
         onRequestClose={handleCloseComments}
       >
         <View className='flex-1 justify-end bg-black/40'>
-          <TouchableOpacity
-            className='absolute inset-0'
-            activeOpacity={1}
-            onPress={handleCloseComments}
-          />
+          <TouchableOpacity className='absolute inset-0' activeOpacity={1} onPress={handleCloseComments} />
           <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             className='bg-white rounded-t-3xl h-[90%]'
@@ -1036,8 +1014,9 @@ export function SocialFeedPage() {
                       <TouchableOpacity
                         key={reactionType}
                         onPress={() => setSelectedReactionType(reactionType)}
-                        className={`px-4 py-2 rounded-full flex-row items-center ${isActive ? 'bg-gray-100 border border-gray-200' : 'bg-transparent'
-                          }`}
+                        className={`px-4 py-2 rounded-full flex-row items-center ${
+                          isActive ? 'bg-gray-100 border border-gray-200' : 'bg-transparent'
+                        }`}
                       >
                         <Text className='text-2xl mr-2'>{REACTION_EMOJIS[reactionType]}</Text>
                         <Text className='text-gray-700 font-medium'>{count}</Text>
@@ -1082,12 +1061,7 @@ export function SocialFeedPage() {
         </View>
       </Modal>
 
-      <Modal
-        visible={showMediaViewer}
-        animationType='fade'
-        transparent
-        onRequestClose={handleCloseMediaViewer}
-      >
+      <Modal visible={showMediaViewer} animationType='fade' transparent onRequestClose={handleCloseMediaViewer}>
         <View className='flex-1 bg-black'>
           <View className='px-4 pt-12 pb-3 flex-row items-center justify-end'>
             <TouchableOpacity onPress={handleCloseMediaViewer} className='px-3 py-1'>
@@ -1205,24 +1179,16 @@ function SocialCommentItem({
   return (
     <View className={`px-4 py-2 ${isReply ? 'ml-10 mt-1 border-l border-gray-200 pl-3' : 'mt-1'}`}>
       <View className='flex-row items-start'>
-        <UserAvatar
-          source={displayAvatar}
-          name={displayName}
-          size={isReply ? 'sm' : 'md'}
-        />
+        <UserAvatar source={displayAvatar} name={displayName} size={isReply ? 'sm' : 'md'} />
 
         <View className='ml-3 flex-1'>
           <View className='bg-gray-100 self-start px-3 py-2 rounded-2xl max-w-[95%]'>
-            <Text className='font-bold text-gray-900 text-[14px]'>
-              {displayName}
-            </Text>
+            <Text className='font-bold text-gray-900 text-[14px]'>{displayName}</Text>
             <Text className='text-gray-800 mt-0.5 text-[15px]'>{item.content}</Text>
           </View>
 
           <View className='flex-row items-center mt-1.5 ml-1'>
-            <Text className='text-gray-500 text-[11px] mr-4'>
-              {formatRelativeTime(item.createdAt) || 'Vừa xong'}
-            </Text>
+            <Text className='text-gray-500 text-[11px] mr-4'>{formatRelativeTime(item.createdAt) || 'Vừa xong'}</Text>
             <TouchableOpacity className='mr-5 flex-row items-center' onPress={() => onLike(item)}>
               <ThumbsUp
                 size={14}
@@ -1230,7 +1196,9 @@ function SocialCommentItem({
                 fill={item.currentUserReaction === 'LIKE' ? '#2563eb' : 'transparent'}
               />
               {item.reactions > 0 && (
-                <Text className={`ml-1 text-[11px] font-medium ${item.currentUserReaction === 'LIKE' ? 'text-blue-600' : 'text-gray-500'}`}>
+                <Text
+                  className={`ml-1 text-[11px] font-medium ${item.currentUserReaction === 'LIKE' ? 'text-blue-600' : 'text-gray-500'}`}
+                >
                   {item.reactions}
                 </Text>
               )}
@@ -1248,14 +1216,9 @@ function SocialCommentItem({
           </View>
 
           {item.replyCount > 0 && !isExpanded && (
-            <TouchableOpacity
-              onPress={onToggleExpand}
-              className='mt-2 ml-1 flex-row items-center'
-            >
+            <TouchableOpacity onPress={onToggleExpand} className='mt-2 ml-1 flex-row items-center'>
               <View className='w-6 h-[1px] bg-gray-300 mr-2' />
-              <Text className='text-gray-500 font-bold text-[12px]'>
-                Xem {item.replyCount} phản hồi
-              </Text>
+              <Text className='text-gray-500 font-bold text-[12px]'>Xem {item.replyCount} phản hồi</Text>
             </TouchableOpacity>
           )}
 
@@ -1280,10 +1243,7 @@ function SocialCommentItem({
                 ))
               )}
               {item.replyCount > 0 && (
-                <TouchableOpacity
-                  onPress={onToggleExpand}
-                  className='mt-2 ml-1'
-                >
+                <TouchableOpacity onPress={onToggleExpand} className='mt-2 ml-1'>
                   <Text className='text-gray-500 font-bold text-[12px]'>Ẩn phản hồi</Text>
                 </TouchableOpacity>
               )}

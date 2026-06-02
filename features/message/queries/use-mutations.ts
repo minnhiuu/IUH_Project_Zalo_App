@@ -6,8 +6,10 @@ import { messageApi } from '../api/message.api'
 import { messageKeys } from './keys'
 import { notificationApi } from '@/features/notifications/api/notification.api'
 import { handleErrorApi } from '@/utils/error-handler'
-import type { MessageSendRequest, ConversationResponse, MessageResponse } from '../schemas'
+import type { MessageSendRequest, ConversationResponse, MessageResponse, ReminderRequest } from '../schemas'
 import type { InfiniteData } from '@tanstack/react-query'
+import { injectReminderMessage } from '@/features/notifications/utils/reminder-message'
+import { useAuthStore } from '@/store'
 
 const invalidateGroupConversationScopes = (queryClient: ReturnType<typeof useQueryClient>, conversationId: string) => {
   queryClient.invalidateQueries({ queryKey: messageKeys.messages(conversationId) })
@@ -26,6 +28,144 @@ export const useSendMessage = () => {
     // to avoid duplicate messages from both WS event + refetch
     onError: (error: Error) => {
       handleErrorApi({ error })
+    }
+  })
+}
+
+export const useCreateReminder = () => {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+  const currentUser = useAuthStore((s) => s.user)
+
+  return useMutation({
+    mutationFn: (request: ReminderRequest) => messageApi.createReminder(request),
+    onSuccess: (response) => {
+      const data = response.data.data
+      if (data?.conversationId && data?.id) {
+        injectReminderMessage(
+          queryClient,
+          {
+            conversationId: data.conversationId,
+            reminderId: data.id,
+            message: data.title,
+            title: data.title,
+            remindAt: data.remindAt,
+            isTriggerMessage: false
+          },
+          {
+            id: currentUser?.id || null,
+            name: currentUser?.fullName || 'Người dùng',
+            avatar: currentUser?.avatar || null
+          }
+        )
+      }
+
+      Toast.show({
+        type: 'success',
+        text1: t('message.reminder.createSuccess', { defaultValue: 'Đã tạo nhắc hẹn' }),
+        visibilityTime: 2000
+      })
+    },
+    onError: (error: Error) => {
+      handleErrorApi({ error })
+      Toast.show({
+        type: 'error',
+        text1: t('message.reminder.createFailed', { defaultValue: 'Tạo nhắc hẹn thất bại' }),
+        visibilityTime: 2000
+      })
+    }
+  })
+}
+
+export const useUpdateReminder = () => {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ reminderId, request }: { reminderId: string; request: ReminderRequest }) =>
+      messageApi.updateReminder(reminderId, request),
+    onSuccess: (_response, variables) => {
+      const conversationId = variables.request.conversationId
+      if (conversationId) {
+        queryClient.invalidateQueries({ queryKey: messageKeys.messages(conversationId) })
+        queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+      }
+
+      Toast.show({
+        type: 'success',
+        text1: t('message.reminder.updateSuccess', { defaultValue: 'Đã cập nhật nhắc hẹn' }),
+        visibilityTime: 2000
+      })
+    },
+    onError: (error: Error) => {
+      handleErrorApi({ error })
+      Toast.show({
+        type: 'error',
+        text1: t('message.reminder.updateFailed', { defaultValue: 'Cập nhật nhắc hẹn thất bại' }),
+        visibilityTime: 2000
+      })
+    }
+  })
+}
+
+export const useDeleteReminder = () => {
+  const { t } = useTranslation()
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ reminderId }: { reminderId: string; conversationId?: string | null }) =>
+      messageApi.deleteReminder(reminderId),
+    onSuccess: (_response, variables) => {
+      const conversationId = variables.conversationId || null
+      if (conversationId) {
+        queryClient.setQueryData(messageKeys.messages(conversationId), (oldData: InfiniteData<any> | undefined) => {
+          if (!oldData) return oldData
+
+          const updatedPages = oldData.pages.map((page: any) => {
+            const updatedData = page.data.map((item: MessageResponse) => {
+              const meta = (item.metadata || {}) as Record<string, unknown>
+              if (String(meta.action || '') !== 'REMINDER') return item
+              const payload = (meta.payload || {}) as Record<string, unknown>
+              const reminderId = String(
+                payload.reminderId || (payload as any).reminder_id || (payload as any).referenceId || ''
+              )
+              if (!reminderId || reminderId !== variables.reminderId) return item
+
+              return {
+                ...item,
+                metadata: {
+                  ...meta,
+                  payload: {
+                    ...payload,
+                    deleteAction: true,
+                    hasTriggered: true
+                  }
+                }
+              }
+            })
+
+            return { ...page, data: updatedData }
+          })
+
+          return { ...oldData, pages: updatedPages }
+        })
+      }
+
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+      Toast.show({
+        type: 'success',
+        text1: t('message.reminder.deleteSuccess', { defaultValue: 'Đã xóa nhắc hẹn' }),
+        visibilityTime: 2000
+      })
+    },
+    onError: (error: Error) => {
+
+      handleErrorApi({ error })
+      Toast.show({
+        type: 'error',
+        text1: t('message.reminder.deleteFailed', { defaultValue: 'Xóa nhắc hẹn thất bại' }),
+        visibilityTime: 2000
+      })
     }
   })
 }
@@ -314,7 +454,6 @@ export const useRemoveAllMyReactions = () => {
   })
 }
 
-
 export const usePinMessage = () => {
   const queryClient = useQueryClient()
 
@@ -473,8 +612,17 @@ export const useUpdateGroupName = () => {
 export const useUpdateGroupAvatar = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ conversationId, uri, mimeType, fileName }: { conversationId: string; uri: string; mimeType: string; fileName: string }) =>
-      messageApi.updateGroupAvatar(conversationId, uri, mimeType, fileName),
+    mutationFn: ({
+      conversationId,
+      uri,
+      mimeType,
+      fileName
+    }: {
+      conversationId: string
+      uri: string
+      mimeType: string
+      fileName: string
+    }) => messageApi.updateGroupAvatar(conversationId, uri, mimeType, fileName),
     onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
     onError: (error: Error) => handleErrorApi({ error })
   })
@@ -520,8 +668,15 @@ export const useAddMembersToGroup = () => {
 export const useRemoveMemberFromGroup = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({ conversationId, targetUserId, blockFromGroup }: { conversationId: string; targetUserId: string; blockFromGroup?: boolean }) =>
-      messageApi.removeMemberFromGroup(conversationId, targetUserId, blockFromGroup),
+    mutationFn: ({
+      conversationId,
+      targetUserId,
+      blockFromGroup
+    }: {
+      conversationId: string
+      targetUserId: string
+      blockFromGroup?: boolean
+    }) => messageApi.removeMemberFromGroup(conversationId, targetUserId, blockFromGroup),
     onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
     onError: (error: Error) => handleErrorApi({ error })
   })

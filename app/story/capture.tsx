@@ -29,7 +29,6 @@ import { captureRef } from 'react-native-view-shot'
 import { fileApi } from '@/features/social-feed/api'
 import { useCreateSocialPostMutation } from '@/features/social-feed/queries/use-mutations'
 
-
 type CaptureMode = 'PHOTO' | 'VIDEO'
 type StoryVisibility = 'ALL' | 'FRIEND' | 'ONLY_ME'
 
@@ -227,11 +226,7 @@ export default function StoryCaptureScreen() {
     })
   }
 
-  const createStoryFromUri = async (
-    uri: string,
-    type: 'IMAGE' | 'VIDEO',
-    visibilityValue: StoryVisibility
-  ) => {
+  const createStoryFromUri = async (uri: string, type: 'IMAGE' | 'VIDEO', visibilityValue: StoryVisibility) => {
     try {
       setIsUploading(true)
       console.log('[StoryUpload] start', {
@@ -429,19 +424,15 @@ export default function StoryCaptureScreen() {
   const handlePickFromLibrary = async () => {
     const mediaPermission = await ImagePicker.requestMediaLibraryPermissionsAsync()
     if (mediaPermission.status !== 'granted') {
-      Alert.alert(
-        'Cần quyền thư viện',
-        'Vui lòng cấp quyền truy cập ảnh để chọn từ album.',
-        [
-          { text: 'Để sau', style: 'cancel' },
-          {
-            text: 'Mở cài đặt',
-            onPress: () => {
-              void Linking.openSettings()
-            }
+      Alert.alert('Cần quyền thư viện', 'Vui lòng cấp quyền truy cập ảnh để chọn từ album.', [
+        { text: 'Để sau', style: 'cancel' },
+        {
+          text: 'Mở cài đặt',
+          onPress: () => {
+            void Linking.openSettings()
           }
-        ]
-      )
+        }
+      ])
       return
     }
 
@@ -571,7 +562,11 @@ export default function StoryCaptureScreen() {
                 <Ionicons name='happy-outline' size={24} color='#fff' />
               </TouchableOpacity>
               {draft.type === 'IMAGE' && (
-                <TouchableOpacity style={styles.iconButton} onPress={handleCropImage} disabled={isUploading || isEditingImage}>
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={handleCropImage}
+                  disabled={isUploading || isEditingImage}
+                >
                   {isEditingImage ? (
                     <ActivityIndicator size='small' color='#fff' />
                   ) : (
@@ -580,7 +575,11 @@ export default function StoryCaptureScreen() {
                 </TouchableOpacity>
               )}
               {selectedOverlayId ? (
-                <TouchableOpacity style={styles.iconButton} onPress={handleRemoveSelectedOverlay} disabled={isUploading}>
+                <TouchableOpacity
+                  style={styles.iconButton}
+                  onPress={handleRemoveSelectedOverlay}
+                  disabled={isUploading}
+                >
                   <Ionicons name='trash-outline' size={22} color='#fff' />
                 </TouchableOpacity>
               ) : null}
@@ -589,11 +588,19 @@ export default function StoryCaptureScreen() {
 
           <View style={styles.previewBottomRow}>
             <View style={styles.previewBottomLeftActions}>
-              <TouchableOpacity style={styles.previewBottomAction} onPress={() => setShowVisibilityModal(true)} disabled={isUploading}>
+              <TouchableOpacity
+                style={styles.previewBottomAction}
+                onPress={() => setShowVisibilityModal(true)}
+                disabled={isUploading}
+              >
                 <Ionicons name='person-add-outline' size={20} color='#fff' />
                 <Text style={styles.previewBottomActionText}>Quyền xem</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={styles.previewBottomAction} onPress={handleSaveDraftToLibrary} disabled={isUploading}>
+              <TouchableOpacity
+                style={styles.previewBottomAction}
+                onPress={handleSaveDraftToLibrary}
+                disabled={isUploading}
+              >
                 <Ionicons name='download-outline' size={20} color='#fff' />
                 <Text style={styles.previewBottomActionText}>Tải về</Text>
               </TouchableOpacity>
@@ -636,12 +643,7 @@ export default function StoryCaptureScreen() {
           </View>
         </Modal>
 
-        <Modal
-          visible={showTextModal}
-          transparent
-          animationType='fade'
-          onRequestClose={() => setShowTextModal(false)}
-        >
+        <Modal visible={showTextModal} transparent animationType='fade' onRequestClose={() => setShowTextModal(false)}>
           <View style={styles.modalOverlayCenter}>
             <View style={styles.captionModalCard}>
               <Text style={styles.captionModalTitle}>Thêm chữ</Text>
@@ -779,8 +781,16 @@ export default function StoryCaptureScreen() {
               />
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.sideActionButton} onPress={handlePickFromLibrary} disabled={isUploading || isRecording}>
-              {isUploading ? <ActivityIndicator size='small' color='#fff' /> : <Ionicons name='images-outline' size={26} color='#fff' />}
+            <TouchableOpacity
+              style={styles.sideActionButton}
+              onPress={handlePickFromLibrary}
+              disabled={isUploading || isRecording}
+            >
+              {isUploading ? (
+                <ActivityIndicator size='small' color='#fff' />
+              ) : (
+                <Ionicons name='images-outline' size={26} color='#fff' />
+              )}
             </TouchableOpacity>
           </View>
         </View>

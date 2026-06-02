@@ -8,12 +8,7 @@ interface QuickActionsProps {
   onTextPress?: () => void
 }
 
-export function QuickActions({
-  onPhotoPress,
-  onVideoPress,
-  onAlbumPress,
-  onTextPress
-}: QuickActionsProps) {
+export function QuickActions({ onPhotoPress, onVideoPress, onAlbumPress, onTextPress }: QuickActionsProps) {
   return (
     <ScrollView
       horizontal

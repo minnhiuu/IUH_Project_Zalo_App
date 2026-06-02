@@ -147,7 +147,7 @@ export function ChatHeader({
                         activeOpacity={0.7}
                         style={{
                           maxWidth: 160,
-                          marginLeft: 4,
+                          marginLeft: 4
                         }}
                       >
                         <Text style={{ fontSize: 17, color: '#0A84FF' }} numberOfLines={1}>
@@ -212,7 +212,13 @@ export function ChatHeader({
                     else if (userId) router.push(`/other-profile/${userId}` as any)
                   }}
                 >
-                  <UserAvatar source={avatar} name={name} size='sm' showOnline={isOnline !== undefined} isOnline={isOnline} />
+                  <UserAvatar
+                    source={avatar}
+                    name={name}
+                    size='sm'
+                    showOnline={isOnline !== undefined}
+                    isOnline={isOnline}
+                  />
                   <View style={{ marginLeft: 10, flex: 1 }}>
                     <Text style={{ fontSize: 17, fontWeight: '600', color: textColor }} numberOfLines={1}>
                       {name}

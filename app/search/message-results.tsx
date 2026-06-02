@@ -48,8 +48,11 @@ export default function SearchMessageResultsScreen() {
   const conversationId = params.conversationId || ''
   const keyword = params.keyword || ''
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteSearchConversationMessages(conversationId, keyword, filters)
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteSearchConversationMessages(
+    conversationId,
+    keyword,
+    filters
+  )
 
   const items = data?.pages.flatMap((page) => page.data) ?? []
   const hasActiveFilters = filters.length > 0

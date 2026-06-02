@@ -12,7 +12,7 @@ import { renderHtmlText } from '../utils/render-utils'
  */
 function NotificationToastComponent({ text1, text2, props, onPress }: ToastConfigParams<any>) {
   const { colors, isDark } = useTheme()
-  
+
   // Extract metadata from props
   const actorAvatar = props?.actorAvatar
   const actorName = props?.actorName || text1
@@ -35,38 +35,26 @@ function NotificationToastComponent({ text1, text2, props, onPress }: ToastConfi
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.08,
-            shadowRadius: 8,
+            shadowRadius: 8
           },
           android: {
-            elevation: 4,
-          },
+            elevation: 4
+          }
         }),
-        marginTop: Platform.OS === 'ios' ? 0 : 8,
+        marginTop: Platform.OS === 'ios' ? 0 : 8
       }}
     >
       {/* Avatar Section (Simplified) */}
       <View>
-        <UserAvatar
-          source={actorAvatar}
-          name={actorName}
-          size='md'
-        />
+        <UserAvatar source={actorAvatar} name={actorName} size='md' />
       </View>
 
       {/* Content Section */}
       <View className='flex-1 ml-3'>
-        <Text 
-          className='font-bold text-[14px]'
-          style={{ color: colors.text }}
-          numberOfLines={1}
-        >
+        <Text className='font-bold text-[14px]' style={{ color: colors.text }} numberOfLines={1}>
           {text1}
         </Text>
-        <Text 
-          className='text-[13px] mt-0.5'
-          style={{ color: colors.textSecondary }}
-          numberOfLines={2}
-        >
+        <Text className='text-[13px] mt-0.5' style={{ color: colors.textSecondary }} numberOfLines={2}>
           {renderHtmlText(text2 || '', { fontSize: 13, color: colors.textSecondary })}
         </Text>
       </View>

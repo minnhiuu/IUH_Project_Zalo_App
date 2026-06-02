@@ -292,7 +292,8 @@ export function ForwardMessageModal({
                 overflow: 'hidden'
               }}
             >
-              {(sourceMessage?.type === MessageType.IMAGE || sourceMessage?.type === MessageType.VIDEO) && sourceMessage.attachments?.[0]?.url ? (
+              {(sourceMessage?.type === MessageType.IMAGE || sourceMessage?.type === MessageType.VIDEO) &&
+              sourceMessage.attachments?.[0]?.url ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', padding: 8, gap: 10 }}>
                   <View style={{ width: 48, height: 48, borderRadius: 6, overflow: 'hidden', backgroundColor: '#111' }}>
                     <ExpoImage
@@ -311,21 +312,32 @@ export function ForwardMessageModal({
                     {sourceMessage.type === MessageType.IMAGE ? '📷 Hình ảnh' : '🎬 Video'}
                   </Text>
                 </View>
-              ) : sourceMessage?.type === MessageType.FILE && sourceMessage.attachments?.[0] ? (() => {
-                const att = sourceMessage.attachments[0]
-                const fileName = att.originalFileName || att.fileName || 'file'
-                const { badgeColor, label } = getFileInfo(fileName)
-                return (
-                  <View style={{ flexDirection: 'row', alignItems: 'center', padding: 8, gap: 10 }}>
-                    <View style={{ width: 40, height: 44, borderRadius: 6, backgroundColor: badgeColor, alignItems: 'center', justifyContent: 'center' }}>
-                      <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>{label}</Text>
+              ) : sourceMessage?.type === MessageType.FILE && sourceMessage.attachments?.[0] ? (
+                (() => {
+                  const att = sourceMessage.attachments[0]
+                  const fileName = att.originalFileName || att.fileName || 'file'
+                  const { badgeColor, label } = getFileInfo(fileName)
+                  return (
+                    <View style={{ flexDirection: 'row', alignItems: 'center', padding: 8, gap: 10 }}>
+                      <View
+                        style={{
+                          width: 40,
+                          height: 44,
+                          borderRadius: 6,
+                          backgroundColor: badgeColor,
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <Text style={{ color: '#fff', fontSize: 9, fontWeight: '700' }}>{label}</Text>
+                      </View>
+                      <Text style={{ color: isDark ? '#F9FAFB' : '#111827', fontSize: 13, flex: 1 }} numberOfLines={2}>
+                        {fileName}
+                      </Text>
                     </View>
-                    <Text style={{ color: isDark ? '#F9FAFB' : '#111827', fontSize: 13, flex: 1 }} numberOfLines={2}>
-                      {fileName}
-                    </Text>
-                  </View>
-                )
-              })() : (
+                  )
+                })()
+              ) : (
                 <View style={{ height: 44, justifyContent: 'center', paddingHorizontal: 12 }}>
                   <Text style={{ color: isDark ? '#F9FAFB' : '#111827', fontSize: 13 }} numberOfLines={1}>
                     {sourceMessage?.content || t('message.forward.notePlaceholder', { defaultValue: 'Nhập tin nhắn' })}

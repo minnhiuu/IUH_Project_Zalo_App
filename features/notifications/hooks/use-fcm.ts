@@ -11,14 +11,16 @@ import { friendApi } from '@/features/friend/api/friend.api'
 import { useTranslation } from 'react-i18next'
 import i18n from '@/i18n'
 import { secureStorage } from '@/utils/storageUtils'
+import { useQueryClient } from '@tanstack/react-query'
+import { injectReminderMessage } from '../utils/reminder-message'
 
-const isChatNotification = (type?: string) => type === 'MESSAGE_DIRECT' || type === 'MESSAGE_GROUP'
+const isChatNotification = (type?: string) =>
+  type === 'MESSAGE_DIRECT' || type === 'MESSAGE_GROUP' || type === 'REMINDER'
 const isExpoGo = Constants.appOwnership === 'expo'
 type NotificationsModule = typeof import('expo-notifications')
 type NotifeeModule = typeof import('@notifee/react-native')
 type NotificationSubscription = { remove: () => void }
 type AppNotification = Parameters<Parameters<NotificationsModule['addNotificationReceivedListener']>[0]>[0]
-
 
 function resolveNotificationRecordId(data?: Record<string, unknown>) {
   return String(data?.notificationId || data?.id || data?.referenceId || data?.requestId || '')
@@ -43,7 +45,6 @@ async function registerNotificationCategories(Notifications: NotificationsModule
     }
   ])
 }
-
 
 let notificationHandlerRegistered = false
 
@@ -108,6 +109,7 @@ async function setupNotificationHandler(Notifications: NotificationsModule) {
 
 export const useFcm = () => {
   const router = useRouter()
+  const queryClient = useQueryClient()
   const { user } = useAuth()
   const { i18n: i18nInstance } = useTranslation()
   const { fcmToken: storedFcmToken, setFcmToken: setFcmTokenStore } = useNotificationStore()
@@ -147,6 +149,8 @@ export const useFcm = () => {
       }
 
       const conversationId = String(rawData.conversationId || rawData.conversation_id || '')
+      const reminderId = String(rawData.reminderId || rawData.reminder_id || '')
+      const messageId = String(rawData.messageId || rawData.message_id || '')
 
       if (isChatNotification(type) || conversationId) {
         // Fallback: if we have conversationId but type is missing or generic, treat as chat
@@ -164,7 +168,12 @@ export const useFcm = () => {
             id: targetId,
             conversationId: targetId,
             name: String(rawData.conversationName || rawData.groupName || rawData.title || rawData.customTitle || ''),
-            avatar: String(rawData.conversationAvatar || rawData.actorAvatar || '')
+            avatar: String(rawData.conversationAvatar || rawData.actorAvatar || ''),
+            aroundMessageId: messageId || undefined,
+            reminderId: reminderId || undefined,
+            reminderMessage: String(rawData.message || rawData.body || ''),
+            reminderTitle: String(rawData.title || ''),
+            reminderTriggeredAt: String(rawData.triggeredAt || '')
           }
         })
         return
@@ -245,6 +254,16 @@ export const useFcm = () => {
 
       notificationListener.current = Notifications.addNotificationReceivedListener((notification) => {
         setNotification(notification)
+
+        const data = notification.request.content.data as Record<string, string>
+        if (data?.type === 'REMINDER') {
+          injectReminderMessage(queryClient, {
+            ...data,
+            remindAt: (data as any).remindAt,
+            triggeredAt: (data as any).triggeredAt,
+            isTriggerMessage: true
+          })
+        }
       })
 
       responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {

@@ -8,15 +8,7 @@ type NotificationSettingsWithDeviceMap = NotificationSettings & {
 }
 
 export const DEFAULT_DND_TIMEZONE = 'GMT+07:00'
-export const DEFAULT_DND_ACTIVE_DAYS = [
-  'MONDAY',
-  'TUESDAY',
-  'WEDNESDAY',
-  'THURSDAY',
-  'FRIDAY',
-  'SATURDAY',
-  'SUNDAY'
-]
+export const DEFAULT_DND_ACTIVE_DAYS = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY']
 
 export const normalizeNotificationSettings = (settings: NotificationSettings): NotificationSettings => {
   const { notificationSettingsByDeviceId: _ignoredDeviceMap, ...publicSettings } =
@@ -29,9 +21,7 @@ export const normalizeNotificationSettings = (settings: NotificationSettings): N
       dndStartTime: settings.doNotDisturb?.dndStartTime ?? '22:00',
       dndEndTime: settings.doNotDisturb?.dndEndTime ?? '07:00',
       dndTimezone: DEFAULT_DND_TIMEZONE,
-      activeDays: settings.doNotDisturb?.activeDays?.length
-        ? settings.doNotDisturb.activeDays
-        : DEFAULT_DND_ACTIVE_DAYS
+      activeDays: settings.doNotDisturb?.activeDays?.length ? settings.doNotDisturb.activeDays : DEFAULT_DND_ACTIVE_DAYS
     }
   }
 }

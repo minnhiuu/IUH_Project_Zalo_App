@@ -50,7 +50,10 @@ export default function GroupLinkScreen() {
     generateJoinLink(conversationId, {
       onSuccess: async () => {
         await refetchConversations()
-        Toast.show({ type: 'success', text1: t('message.groupLink.createdSuccess', { defaultValue: 'Tạo link thành công' }) })
+        Toast.show({
+          type: 'success',
+          text1: t('message.groupLink.createdSuccess', { defaultValue: 'Tạo link thành công' })
+        })
       }
     })
   }
@@ -60,7 +63,10 @@ export default function GroupLinkScreen() {
     refreshJoinLink(conversationId, {
       onSuccess: async () => {
         await refetchConversations()
-        Toast.show({ type: 'success', text1: t('message.groupLink.refreshedSuccess', { defaultValue: 'Đã làm mới link nhóm' }) })
+        Toast.show({
+          type: 'success',
+          text1: t('message.groupLink.refreshedSuccess', { defaultValue: 'Đã làm mới link nhóm' })
+        })
       }
     })
   }
@@ -163,7 +169,11 @@ export default function GroupLinkScreen() {
             </TouchableOpacity>
             <Text style={styles.headerTitle}>{t('message.groupOptions.groupLink')}</Text>
             <TouchableOpacity onPress={() => setShowMenu((v) => !v)} disabled={!hasLink || !canManageLink}>
-              <Ionicons name='ellipsis-horizontal' size={24} color={hasLink && canManageLink ? '#fff' : 'rgba(255,255,255,0.4)'} />
+              <Ionicons
+                name='ellipsis-horizontal'
+                size={24}
+                color={hasLink && canManageLink ? '#fff' : 'rgba(255,255,255,0.4)'}
+              />
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -190,8 +200,18 @@ export default function GroupLinkScreen() {
               <View style={[styles.groupAvatar, { backgroundColor: palette.soft }]}>
                 <Ionicons name='people' size={34} color='#98A1AE' />
               </View>
-              <Text style={{ marginTop: 10, fontSize: 19 / 1.2, fontWeight: '700', color: palette.text }}>{groupName}</Text>
-              <Text style={{ marginTop: 8, fontSize: 15 / 1.2, color: palette.subText, textAlign: 'center', lineHeight: 21 }}>
+              <Text style={{ marginTop: 10, fontSize: 19 / 1.2, fontWeight: '700', color: palette.text }}>
+                {groupName}
+              </Text>
+              <Text
+                style={{
+                  marginTop: 8,
+                  fontSize: 15 / 1.2,
+                  color: palette.subText,
+                  textAlign: 'center',
+                  lineHeight: 21
+                }}
+              >
                 {t('message.groupLink.inviteDescription', {
                   defaultValue: 'Mời mọi người tham gia nhóm bằng mã QR hoặc link dưới đây:'
                 })}
@@ -201,20 +221,53 @@ export default function GroupLinkScreen() {
                 <QRCode value={linkUrl} size={250} color='#000' backgroundColor='#fff' ecl='H' />
               </View>
 
-              <View style={{ marginTop: 8, backgroundColor: isDark ? '#223248' : '#E7EEF8', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 }}>
+              <View
+                style={{
+                  marginTop: 8,
+                  backgroundColor: isDark ? '#223248' : '#E7EEF8',
+                  borderRadius: 10,
+                  paddingHorizontal: 10,
+                  paddingVertical: 6
+                }}
+              >
                 <Text style={{ color: '#1E6ED8', fontSize: 14, fontWeight: '700' }}>{linkUrl}</Text>
               </View>
             </View>
 
-            <View style={{ width: '100%', marginTop: 8, flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 16 }}>
-              <ActionButton icon='copy-outline' label={t('message.groupLink.copyLink', { defaultValue: 'Sao chép link' })} onPress={onCopyLink} palette={palette} />
-              <ActionButton icon='share-social-outline' label={t('message.groupLink.shareLink', { defaultValue: 'Chia sẻ link' })} onPress={onShareLink} palette={palette} />
-              <ActionButton icon='download-outline' label={t('message.groupLink.saveQr', { defaultValue: 'Lưu mã QR' })} onPress={onSaveQr} palette={palette} />
+            <View
+              style={{
+                width: '100%',
+                marginTop: 8,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                paddingHorizontal: 16
+              }}
+            >
+              <ActionButton
+                icon='copy-outline'
+                label={t('message.groupLink.copyLink', { defaultValue: 'Sao chép link' })}
+                onPress={onCopyLink}
+                palette={palette}
+              />
+              <ActionButton
+                icon='share-social-outline'
+                label={t('message.groupLink.shareLink', { defaultValue: 'Chia sẻ link' })}
+                onPress={onShareLink}
+                palette={palette}
+              />
+              <ActionButton
+                icon='download-outline'
+                label={t('message.groupLink.saveQr', { defaultValue: 'Lưu mã QR' })}
+                onPress={onSaveQr}
+                palette={palette}
+              />
             </View>
 
             <View style={{ flex: 1 }} />
-            <View style={[styles.bottomToast, { backgroundColor: palette.toastBtn }]}> 
-              <Text style={{ color: '#fff', fontSize: 14 }}>{t('message.groupLink.createdSuccess', { defaultValue: 'Tạo link thành công' })}</Text>
+            <View style={[styles.bottomToast, { backgroundColor: palette.toastBtn }]}>
+              <Text style={{ color: '#fff', fontSize: 14 }}>
+                {t('message.groupLink.createdSuccess', { defaultValue: 'Tạo link thành công' })}
+              </Text>
             </View>
             <SafeAreaView edges={['bottom']} style={{ backgroundColor: palette.bg }} />
           </>
@@ -229,12 +282,30 @@ export default function GroupLinkScreen() {
               </View>
             </View>
 
-            <Text style={{ color: palette.subText, textAlign: 'center', fontSize: 18 / 1.2, lineHeight: 25, marginBottom: 28 }}>
+            <Text
+              style={{
+                color: palette.subText,
+                textAlign: 'center',
+                fontSize: 18 / 1.2,
+                lineHeight: 25,
+                marginBottom: 28
+              }}
+            >
               {t('message.groupLink.description')}
             </Text>
 
-            <LinearGradient colors={['#1D86ED', '#22A8F3']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.ctaBtn}>
-              <TouchableOpacity style={styles.ctaBtnInner} activeOpacity={0.85} onPress={onCreateLink} disabled={isGenerating}>
+            <LinearGradient
+              colors={['#1D86ED', '#22A8F3']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.ctaBtn}
+            >
+              <TouchableOpacity
+                style={styles.ctaBtnInner}
+                activeOpacity={0.85}
+                onPress={onCreateLink}
+                disabled={isGenerating}
+              >
                 <Text style={styles.ctaText}>
                   {isGenerating
                     ? t('message.groupLink.generating', { defaultValue: 'Đang tạo...' })
@@ -313,7 +384,16 @@ function ActionButton({
 }) {
   return (
     <TouchableOpacity activeOpacity={0.82} onPress={onPress} style={{ alignItems: 'center', width: '31%' }}>
-      <View style={{ width: 54, height: 54, borderRadius: 27, backgroundColor: palette.actionBg, alignItems: 'center', justifyContent: 'center' }}>
+      <View
+        style={{
+          width: 54,
+          height: 54,
+          borderRadius: 27,
+          backgroundColor: palette.actionBg,
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}
+      >
         <Ionicons name={icon} size={24} color={palette.actionIcon} />
       </View>
       <Text style={{ marginTop: 7, color: palette.subText, fontSize: 13, textAlign: 'center' }}>{label}</Text>

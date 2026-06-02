@@ -22,9 +22,7 @@ function normalizePhone(raw: string): string {
 function extractPhoneContacts(contacts: Contacts.Contact[]): ContactEntry[] {
   const entries: ContactEntry[] = []
   for (const contact of contacts) {
-    const phones = (contact.phoneNumbers || [])
-      .map((p) => normalizePhone(p.number || ''))
-      .filter((p) => p.length >= 9)
+    const phones = (contact.phoneNumbers || []).map((p) => normalizePhone(p.number || '')).filter((p) => p.length >= 9)
 
     if (phones.length === 0) continue
 

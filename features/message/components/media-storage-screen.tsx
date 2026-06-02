@@ -1,11 +1,16 @@
 // Helper để lấy fallback tiếng Việt cho từng giá trị time filter
 function getTimeLabel(value: string, t: any): string {
   switch (value) {
-    case 'yesterday': return t('message.storage.yesterday', 'Yesterday')
-    case 'lastWeek': return t('message.storage.lastWeek', 'Last week')
-    case 'lastMonth': return t('message.storage.lastMonth', 'Last month')
-    case 'custom': return t('message.storage.custom', 'Custom...')
-    default: return t('message.storage.time', 'Time')
+    case 'yesterday':
+      return t('message.storage.yesterday', 'Yesterday')
+    case 'lastWeek':
+      return t('message.storage.lastWeek', 'Last week')
+    case 'lastMonth':
+      return t('message.storage.lastMonth', 'Last month')
+    case 'custom':
+      return t('message.storage.custom', 'Custom...')
+    default:
+      return t('message.storage.time', 'Time')
   }
 }
 import { useTranslation } from 'react-i18next'
@@ -67,20 +72,28 @@ interface FilterState {
 function getTimeRange(tf: TimeFilter, customFrom: Date | null, customTo: Date | null): { from: Date; to: Date } | null {
   const now = new Date()
   if (tf === 'yesterday') {
-    const from = new Date(now); from.setDate(from.getDate() - 1); from.setHours(0, 0, 0, 0)
-    const to = new Date(from); to.setHours(23, 59, 59, 999)
+    const from = new Date(now)
+    from.setDate(from.getDate() - 1)
+    from.setHours(0, 0, 0, 0)
+    const to = new Date(from)
+    to.setHours(23, 59, 59, 999)
     return { from, to }
   }
   if (tf === 'lastWeek') {
-    const from = new Date(now); from.setDate(from.getDate() - 7); from.setHours(0, 0, 0, 0)
+    const from = new Date(now)
+    from.setDate(from.getDate() - 7)
+    from.setHours(0, 0, 0, 0)
     return { from, to: now }
   }
   if (tf === 'lastMonth') {
-    const from = new Date(now); from.setMonth(from.getMonth() - 1); from.setHours(0, 0, 0, 0)
+    const from = new Date(now)
+    from.setMonth(from.getMonth() - 1)
+    from.setHours(0, 0, 0, 0)
     return { from, to: now }
   }
   if (tf === 'custom' && customFrom && customTo) {
-    const to = new Date(customTo); to.setHours(23, 59, 59, 999)
+    const to = new Date(customTo)
+    to.setHours(23, 59, 59, 999)
     return { from: customFrom, to }
   }
   return null
@@ -102,7 +115,9 @@ function applyCommonFilters(messages: MessageResponse[], filter: FilterState): M
   return items
 }
 
-function useSenderOptions(conversationId: string): { label: string; name: string; value: string; avatar?: string | null; isMe?: boolean }[] {
+function useSenderOptions(
+  conversationId: string
+): { label: string; name: string; value: string; avatar?: string | null; isMe?: boolean }[] {
   const queryClient = useQueryClient()
   const me = useAuthStore((s) => s.user)
   return useMemo(() => {
@@ -116,9 +131,18 @@ function useSenderOptions(conversationId: string): { label: string; name: string
     }
     const others = (conv?.members ?? [])
       .filter((m) => m.userId !== me?.id)
-      .map((m) => ({ label: m.fullName || m.userId, name: m.fullName || m.userId, value: m.userId, avatar: m.avatar, isMe: false }))
+      .map((m) => ({
+        label: m.fullName || m.userId,
+        name: m.fullName || m.userId,
+        value: m.userId,
+        avatar: m.avatar,
+        isMe: false
+      }))
     if (!me) return others
-    return [{ label: `${me.fullName} (Bạn)`, name: me.fullName, value: me.id, avatar: me.avatar ?? null, isMe: true }, ...others]
+    return [
+      { label: `${me.fullName} (Bạn)`, name: me.fullName, value: me.id, avatar: me.avatar ?? null, isMe: true },
+      ...others
+    ]
   }, [conversationId, queryClient, me])
 }
 
@@ -160,9 +184,20 @@ function DatePickerModal({
   return (
     <Modal transparent animationType='fade' visible={visible} onRequestClose={onCancel}>
       <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' }} onPress={onCancel}>
-        <Pressable style={{ backgroundColor: '#1C1F24', borderTopLeftRadius: 16, borderTopRightRadius: 16, overflow: 'hidden' }}>
+        <Pressable
+          style={{ backgroundColor: '#1C1F24', borderTopLeftRadius: 16, borderTopRightRadius: 16, overflow: 'hidden' }}
+        >
           {/* Header */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 0.5, borderBottomColor: '#2A3340' }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 16,
+              paddingVertical: 14,
+              borderBottomWidth: 0.5,
+              borderBottomColor: '#2A3340'
+            }}
+          >
             <TouchableOpacity onPress={onCancel} style={{ flex: 1 }}>
               <Text style={{ fontSize: 15, color: '#8899A6' }}>{t('common.close', 'Đóng')}</Text>
             </TouchableOpacity>
@@ -179,7 +214,9 @@ function DatePickerModal({
             locale='vi-VN'
             minimumDate={minimumDate}
             maximumDate={maximumDate || new Date()}
-            onChange={(_, d) => { if (d) setTemp(d) }}
+            onChange={(_, d) => {
+              if (d) setTemp(d)
+            }}
             style={{ backgroundColor: '#1C1F24', height: 200 }}
             textColor='#DFE2E7'
           />
@@ -217,7 +254,11 @@ function SharedFilterBar({
   const activeTime = TIME_OPTIONS.find((t) => t.value === filter.timeFilter)
 
   const clearFilter = (key: keyof FilterState) =>
-    setFilter((prev) => ({ ...prev, [key]: null, ...(key === 'timeFilter' ? { customFrom: null, customTo: null } : {}) }))
+    setFilter((prev) => ({
+      ...prev,
+      [key]: null,
+      ...(key === 'timeFilter' ? { customFrom: null, customTo: null } : {})
+    }))
 
   return (
     <View style={{ paddingHorizontal: 12, paddingVertical: 8, gap: 6 }}>
@@ -226,31 +267,79 @@ function SharedFilterBar({
         {/* Sender chip */}
         {senderOptions.length > 0 && (
           <TouchableOpacity
-            onPress={() => { setSenderOpen((v) => !v); setTimeOpen(false) }}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: filter.senderId ? chipActive : chipBg, borderWidth: filter.senderId ? 0 : 1, borderColor }}
+            onPress={() => {
+              setSenderOpen((v) => !v)
+              setTimeOpen(false)
+            }}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 5,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 20,
+              backgroundColor: filter.senderId ? chipActive : chipBg,
+              borderWidth: filter.senderId ? 0 : 1,
+              borderColor
+            }}
           >
-            <Ionicons name='person-outline' size={13} color={filter.senderId ? '#fff' : (isDark ? '#B0B8C1' : '#374151')} />
-            <Text style={{ fontSize: 13, color: filter.senderId ? '#fff' : (isDark ? '#B0B8C1' : '#374151') }}>
-              {activeSender ? (activeSender.isMe ? t('common.me', 'Me') : activeSender.label) : t('message.storage.sender', 'Sender')}
+            <Ionicons
+              name='person-outline'
+              size={13}
+              color={filter.senderId ? '#fff' : isDark ? '#B0B8C1' : '#374151'}
+            />
+            <Text style={{ fontSize: 13, color: filter.senderId ? '#fff' : isDark ? '#B0B8C1' : '#374151' }}>
+              {activeSender
+                ? activeSender.isMe
+                  ? t('common.me', 'Me')
+                  : activeSender.label
+                : t('message.storage.sender', 'Sender')}
             </Text>
-            {filter.senderId
-              ? <TouchableOpacity onPress={() => clearFilter('senderId')} hitSlop={8}><Ionicons name='close' size={13} color='#fff' /></TouchableOpacity>
-              : <Ionicons name='chevron-down' size={12} color={isDark ? '#666' : '#94A3B8'} />}
+            {filter.senderId ? (
+              <TouchableOpacity onPress={() => clearFilter('senderId')} hitSlop={8}>
+                <Ionicons name='close' size={13} color='#fff' />
+              </TouchableOpacity>
+            ) : (
+              <Ionicons name='chevron-down' size={12} color={isDark ? '#666' : '#94A3B8'} />
+            )}
           </TouchableOpacity>
         )}
 
         {/* Time chip */}
         <TouchableOpacity
-          onPress={() => { setTimeOpen((v) => !v); setSenderOpen(false) }}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: filter.timeFilter ? chipActive : chipBg, borderWidth: filter.timeFilter ? 0 : 1, borderColor }}
+          onPress={() => {
+            setTimeOpen((v) => !v)
+            setSenderOpen(false)
+          }}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 5,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: 20,
+            backgroundColor: filter.timeFilter ? chipActive : chipBg,
+            borderWidth: filter.timeFilter ? 0 : 1,
+            borderColor
+          }}
         >
-          <Ionicons name='calendar-outline' size={13} color={filter.timeFilter ? '#fff' : (isDark ? '#B0B8C1' : '#374151')} />
-            <Text style={{ fontSize: 13, color: filter.timeFilter ? '#fff' : (isDark ? '#B0B8C1' : '#374151') }}>
-              {activeTime ? String(t(activeTime.label, getTimeLabel(activeTime.value || '', t))) : t('message.storage.time', 'Time')}
-            </Text>
-          {filter.timeFilter
-            ? <TouchableOpacity onPress={() => clearFilter('timeFilter')} hitSlop={8}><Ionicons name='close' size={13} color='#fff' /></TouchableOpacity>
-            : <Ionicons name='chevron-down' size={12} color={isDark ? '#666' : '#94A3B8'} />}
+          <Ionicons
+            name='calendar-outline'
+            size={13}
+            color={filter.timeFilter ? '#fff' : isDark ? '#B0B8C1' : '#374151'}
+          />
+          <Text style={{ fontSize: 13, color: filter.timeFilter ? '#fff' : isDark ? '#B0B8C1' : '#374151' }}>
+            {activeTime
+              ? String(t(activeTime.label, getTimeLabel(activeTime.value || '', t)))
+              : t('message.storage.time', 'Time')}
+          </Text>
+          {filter.timeFilter ? (
+            <TouchableOpacity onPress={() => clearFilter('timeFilter')} hitSlop={8}>
+              <Ionicons name='close' size={13} color='#fff' />
+            </TouchableOpacity>
+          ) : (
+            <Ionicons name='chevron-down' size={12} color={isDark ? '#666' : '#94A3B8'} />
+          )}
         </TouchableOpacity>
       </View>
 
@@ -260,11 +349,30 @@ function SharedFilterBar({
           {senderOptions.map((s) => (
             <TouchableOpacity
               key={s.value}
-              onPress={() => { setFilter((prev) => ({ ...prev, senderId: s.value })); setSenderOpen(false) }}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 11, borderBottomWidth: 0.5, borderBottomColor: borderColor }}
+              onPress={() => {
+                setFilter((prev) => ({ ...prev, senderId: s.value }))
+                setSenderOpen(false)
+              }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 10,
+                paddingHorizontal: 14,
+                paddingVertical: 11,
+                borderBottomWidth: 0.5,
+                borderBottomColor: borderColor
+              }}
             >
               <UserAvatar source={s.avatar} name={s.name} size='sm' />
-              <Text style={{ flex: 1, fontSize: 14, color: filter.senderId === s.value ? chipActive : (isDark ? '#DFE2E7' : '#111827') }}>{s.label}</Text>
+              <Text
+                style={{
+                  flex: 1,
+                  fontSize: 14,
+                  color: filter.senderId === s.value ? chipActive : isDark ? '#DFE2E7' : '#111827'
+                }}
+              >
+                {s.label}
+              </Text>
               {filter.senderId === s.value && <Ionicons name='checkmark' size={16} color={chipActive} />}
             </TouchableOpacity>
           ))}
@@ -278,13 +386,35 @@ function SharedFilterBar({
             <TouchableOpacity
               key={opt.value}
               onPress={() => {
-                setFilter((prev) => ({ ...prev, timeFilter: opt.value, customFrom: prev.customFrom, customTo: prev.customTo }))
+                setFilter((prev) => ({
+                  ...prev,
+                  timeFilter: opt.value,
+                  customFrom: prev.customFrom,
+                  customTo: prev.customTo
+                }))
                 if (opt.value !== 'custom') setTimeOpen(false)
               }}
-              style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 14, paddingVertical: 11, borderBottomWidth: 0.5, borderBottomColor: borderColor }}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 14,
+                paddingVertical: 11,
+                borderBottomWidth: 0.5,
+                borderBottomColor: borderColor
+              }}
             >
-              <Text style={{ flex: 1, fontSize: 14, color: filter.timeFilter === opt.value ? chipActive : (isDark ? '#DFE2E7' : '#111827') }}>{String(t(opt.label, getTimeLabel(opt.value || '', t)))}</Text>
-              {filter.timeFilter === opt.value && opt.value !== 'custom' && <Ionicons name='checkmark' size={16} color={chipActive} />}
+              <Text
+                style={{
+                  flex: 1,
+                  fontSize: 14,
+                  color: filter.timeFilter === opt.value ? chipActive : isDark ? '#DFE2E7' : '#111827'
+                }}
+              >
+                {String(t(opt.label, getTimeLabel(opt.value || '', t)))}
+              </Text>
+              {filter.timeFilter === opt.value && opt.value !== 'custom' && (
+                <Ionicons name='checkmark' size={16} color={chipActive} />
+              )}
             </TouchableOpacity>
           ))}
         </View>
@@ -295,20 +425,54 @@ function SharedFilterBar({
         <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
           <TouchableOpacity
             onPress={() => setDatePickerType('from')}
-            style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: chipBg, borderRadius: 10, borderWidth: 1, borderColor }}
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              paddingHorizontal: 10,
+              paddingVertical: 8,
+              backgroundColor: chipBg,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor
+            }}
           >
             <Ionicons name='calendar-outline' size={14} color={isDark ? '#B0B8C1' : '#374151'} />
-            <Text style={{ fontSize: 13, color: filter.customFrom ? (isDark ? '#DFE2E7' : '#111827') : (isDark ? '#555' : '#94A3B8') }}>
-              {filter.customFrom ? filter.customFrom.toLocaleDateString('vi-VN') : t('message.storage.fromDate', 'Từ ngày')}
+            <Text
+              style={{
+                fontSize: 13,
+                color: filter.customFrom ? (isDark ? '#DFE2E7' : '#111827') : isDark ? '#555' : '#94A3B8'
+              }}
+            >
+              {filter.customFrom
+                ? filter.customFrom.toLocaleDateString('vi-VN')
+                : t('message.storage.fromDate', 'Từ ngày')}
             </Text>
           </TouchableOpacity>
           <Text style={{ color: isDark ? '#666' : '#94A3B8' }}>→</Text>
           <TouchableOpacity
             onPress={() => setDatePickerType('to')}
-            style={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 8, backgroundColor: chipBg, borderRadius: 10, borderWidth: 1, borderColor }}
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 6,
+              paddingHorizontal: 10,
+              paddingVertical: 8,
+              backgroundColor: chipBg,
+              borderRadius: 10,
+              borderWidth: 1,
+              borderColor
+            }}
           >
             <Ionicons name='calendar-outline' size={14} color={isDark ? '#B0B8C1' : '#374151'} />
-            <Text style={{ fontSize: 13, color: filter.customTo ? (isDark ? '#DFE2E7' : '#111827') : (isDark ? '#555' : '#94A3B8') }}>
+            <Text
+              style={{
+                fontSize: 13,
+                color: filter.customTo ? (isDark ? '#DFE2E7' : '#111827') : isDark ? '#555' : '#94A3B8'
+              }}
+            >
               {filter.customTo ? filter.customTo.toLocaleDateString('vi-VN') : t('message.storage.toDate', 'Đến ngày')}
             </Text>
           </TouchableOpacity>
@@ -319,7 +483,11 @@ function SharedFilterBar({
       <DatePickerModal
         visible={!!datePickerType}
         value={datePickerType === 'from' ? filter.customFrom : filter.customTo}
-        title={datePickerType === 'from' ? t('message.storage.pickFrom', 'Chọn ngày bắt đầu') : t('message.storage.pickTo', 'Chọn ngày kết thúc')}
+        title={
+          datePickerType === 'from'
+            ? t('message.storage.pickFrom', 'Chọn ngày bắt đầu')
+            : t('message.storage.pickTo', 'Chọn ngày kết thúc')
+        }
         minimumDate={datePickerType === 'to' ? filter.customFrom || undefined : undefined}
         maximumDate={datePickerType === 'from' ? filter.customTo || new Date() : new Date()}
         onConfirm={(d) => {
@@ -367,6 +535,30 @@ function groupByDate(messages: MessageResponse[]): { dateLabel: string; items: M
     map.get(label)!.push(m)
   }
   return [...map.entries()].map(([dateLabel, items]) => ({ dateLabel, items }))
+}
+
+type MediaGridItem = {
+  key: string
+  url: string
+  isVideo: boolean
+  createdAt: string | null
+}
+
+function groupMediaItemsByDate(items: MediaGridItem[]): { dateLabel: string; items: MediaGridItem[] }[] {
+  const map = new Map<string, MediaGridItem[]>()
+  for (const item of items) {
+    if (!item.createdAt) continue
+    const normalized = normalizeDateTime(item.createdAt)
+    if (!normalized) continue
+    const d = new Date(normalized)
+    const day = d.getDate()
+    const month = d.getMonth() + 1
+    const year = d.getFullYear()
+    const label = `Ngày ${day} tháng ${month}, ${year}`
+    if (!map.has(label)) map.set(label, [])
+    map.get(label)!.push(item)
+  }
+  return [...map.entries()].map(([dateLabel, groupedItems]) => ({ dateLabel, items: groupedItems }))
 }
 
 function getExtColor(ext: string): string {
@@ -417,7 +609,10 @@ function LightboxModal({
 
         {/* Prev */}
         {idx > 0 && (
-          <Pressable style={{ position: 'absolute', left: 8, top: '50%', zIndex: 10, padding: 12 }} onPress={() => setIdx((i) => i - 1)}>
+          <Pressable
+            style={{ position: 'absolute', left: 8, top: '50%', zIndex: 10, padding: 12 }}
+            onPress={() => setIdx((i) => i - 1)}
+          >
             <Ionicons name='chevron-back' size={32} color='rgba(255,255,255,0.8)' />
           </Pressable>
         )}
@@ -437,12 +632,23 @@ function LightboxModal({
 
         {/* Next */}
         {idx < items.length - 1 && (
-          <Pressable style={{ position: 'absolute', right: 8, top: '50%', zIndex: 10, padding: 12 }} onPress={() => setIdx((i) => i + 1)}>
+          <Pressable
+            style={{ position: 'absolute', right: 8, top: '50%', zIndex: 10, padding: 12 }}
+            onPress={() => setIdx((i) => i + 1)}
+          >
             <Ionicons name='chevron-forward' size={32} color='rgba(255,255,255,0.8)' />
           </Pressable>
         )}
 
-        <Text style={{ position: 'absolute', bottom: 32, alignSelf: 'center', color: 'rgba(255,255,255,0.6)', fontSize: 13 }}>
+        <Text
+          style={{
+            position: 'absolute',
+            bottom: 32,
+            alignSelf: 'center',
+            color: 'rgba(255,255,255,0.6)',
+            fontSize: 13
+          }}
+        >
           {idx + 1} / {items.length}
         </Text>
       </View>
@@ -451,39 +657,50 @@ function LightboxModal({
 }
 
 // ── MediaTab ─────────────────────────────────────────────────────
-function MediaTab({
-  conversationId,
-  isDark
-}: {
-  conversationId: string
-  isDark: boolean
-}) {
+function MediaTab({ conversationId, isDark }: { conversationId: string; isDark: boolean }) {
   const { data, isLoading } = useMediaMessages(conversationId, ['IMAGE', 'VIDEO'], 0, 100)
   const messages = data ?? []
-  const [filter, setFilter] = useState<FilterState>({ senderId: null, timeFilter: null, customFrom: null, customTo: null })
+  const [filter, setFilter] = useState<FilterState>({
+    senderId: null,
+    timeFilter: null,
+    customFrom: null,
+    customTo: null
+  })
   const [lightboxIdx, setLightboxIdx] = useState<number | null>(null)
 
   const filtered = useMemo(() => applyCommonFilters(messages, filter), [messages, filter])
-  const grouped = useMemo(() => groupByDate(filtered), [filtered])
+  const mediaItems = useMemo<MediaGridItem[]>(() => {
+    const result: MediaGridItem[] = []
+    for (const message of filtered) {
+      const attachments = message.attachments ?? []
+      if (!attachments.length) continue
 
-  // Both images and videos go into lightbox
-  const allItems = useMemo(() => {
-    const result: { url: string; isVideo: boolean }[] = []
-    for (const { items } of grouped) {
-      for (const m of items) {
-        const att = m.attachments?.[0]
-        const isVideo = m.type === MessageType.VIDEO || att?.contentType?.startsWith('video/')
-        if (att?.url) result.push({ url: att.url, isVideo: !!isVideo })
+      for (let i = 0; i < attachments.length; i++) {
+        const attachment = attachments[i]
+        if (!attachment?.url) continue
+        result.push({
+          key: `${message.id}-${attachment.key || i}`,
+          url: attachment.url,
+          isVideo: message.type === MessageType.VIDEO || attachment.contentType?.startsWith('video/'),
+          createdAt: message.createdAt
+        })
       }
     }
     return result
-  }, [grouped])
+  }, [filtered])
 
-  const urlToImageIdx = useMemo(() => {
+  const grouped = useMemo(() => groupMediaItemsByDate(mediaItems), [mediaItems])
+
+  // Both images and videos go into lightbox
+  const allItems = useMemo(() => {
+    return mediaItems.map((item) => ({ url: item.url, isVideo: item.isVideo }))
+  }, [mediaItems])
+
+  const keyToImageIdx = useMemo(() => {
     const map = new Map<string, number>()
-    allItems.forEach((item, i) => map.set(item.url, i))
+    mediaItems.forEach((item, i) => map.set(item.key, i))
     return map
-  }, [allItems])
+  }, [mediaItems])
 
   // Prefetch all images so lightbox opens instantly
   React.useEffect(() => {
@@ -507,26 +724,33 @@ function MediaTab({
         {grouped.length === 0 ? (
           <View style={{ alignItems: 'center', paddingTop: 40 }}>
             <Ionicons name='images-outline' size={48} color={isDark ? '#444' : '#CBD5E1'} />
-            <Text style={{ color: isDark ? '#666' : '#94A3B8', marginTop: 12, fontSize: 15 }}>{t('message.storage.emptyMedia', 'Chưa có ảnh hoặc video')}</Text>
+            <Text style={{ color: isDark ? '#666' : '#94A3B8', marginTop: 12, fontSize: 15 }}>
+              {t('message.storage.emptyMedia', 'Chưa có ảnh hoặc video')}
+            </Text>
           </View>
         ) : (
           grouped.map(({ dateLabel, items }) => (
             <View key={dateLabel} style={{ marginBottom: 16 }}>
-              <Text style={{ fontSize: 13, fontWeight: '600', color: isDark ? '#8899A6' : '#64748B', marginHorizontal: 12, marginBottom: 4, marginTop: 12 }}>
+              <Text
+                style={{
+                  fontSize: 13,
+                  fontWeight: '600',
+                  color: isDark ? '#8899A6' : '#64748B',
+                  marginHorizontal: 12,
+                  marginBottom: 4,
+                  marginTop: 12
+                }}
+              >
                 {dateLabel}
               </Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-                {items.map((m, i) => {
-                  const att = m.attachments?.[0]
-                  const isVideo = m.type === MessageType.VIDEO || att?.contentType?.startsWith('video/')
-                  const url = att?.url || ''
+                {items.map((item, i) => {
                   return (
                     <TouchableOpacity
-                      key={`${m.id}-${i}`}
+                      key={item.key}
                       activeOpacity={0.85}
                       onPress={() => {
-                        if (!url) return
-                        const idx = urlToImageIdx.get(url)
+                        const idx = keyToImageIdx.get(item.key)
                         if (idx !== undefined) setLightboxIdx(idx)
                       }}
                       style={{
@@ -536,12 +760,39 @@ function MediaTab({
                         marginBottom: CELL_GAP
                       }}
                     >
-                      {isVideo ? (
-                        <View style={{ width: '100%', height: '100%', backgroundColor: '#111', alignItems: 'center', justifyContent: 'center' }}>
-                          <Ionicons name='play-circle' size={40} color='rgba(255,255,255,0.85)' />
+                      {item.isVideo ? (
+                        <View style={{ width: '100%', height: '100%', backgroundColor: '#111' }}>
+                          <Video
+                            source={{ uri: item.url }}
+                            style={{ width: '100%', height: '100%' }}
+                            resizeMode={ResizeMode.COVER}
+                            shouldPlay={false}
+                            isLooping={false}
+                            isMuted
+                            useNativeControls={false}
+                          />
+                          <View
+                            style={{
+                              position: 'absolute',
+                              top: 0,
+                              left: 0,
+                              right: 0,
+                              bottom: 0,
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              backgroundColor: 'rgba(0,0,0,0.18)'
+                            }}
+                          >
+                            <Ionicons name='play-circle' size={40} color='rgba(255,255,255,0.9)' />
+                          </View>
                         </View>
                       ) : (
-                        <ExpoImage source={{ uri: url }} style={{ width: '100%', height: '100%' }} contentFit='cover' cachePolicy='memory-disk' />
+                        <ExpoImage
+                          source={{ uri: item.url }}
+                          style={{ width: '100%', height: '100%' }}
+                          contentFit='cover'
+                          cachePolicy='memory-disk'
+                        />
                       )}
                     </TouchableOpacity>
                   )
@@ -558,20 +809,19 @@ function MediaTab({
 }
 
 // ── FilesTab ─────────────────────────────────────────────────────
-function FilesTab({
-  conversationId,
-  isDark
-}: {
-  conversationId: string
-  isDark: boolean
-}) {
+function FilesTab({ conversationId, isDark }: { conversationId: string; isDark: boolean }) {
   const { data, isLoading } = useMediaMessages(conversationId, ['FILE'], 0, 100)
   const messages = data ?? []
 
   const [fileSearch, setFileSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
   const [typeMenuOpen, setTypeMenuOpen] = useState(false)
-  const [filter, setFilter] = useState<FilterState>({ senderId: null, timeFilter: null, customFrom: null, customTo: null })
+  const [filter, setFilter] = useState<FilterState>({
+    senderId: null,
+    timeFilter: null,
+    customFrom: null,
+    customTo: null
+  })
 
   const filtered = useMemo(() => {
     let items = applyCommonFilters(messages, filter)
@@ -611,133 +861,218 @@ function FilesTab({
     <>
       <SharedFilterBar conversationId={conversationId} filter={filter} setFilter={setFilter} isDark={isDark} />
       <ScrollView contentContainerStyle={{ padding: 12, paddingBottom: 24 }}>
-      {/* Search */}
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: inputBg, borderRadius: 10, paddingHorizontal: 10, marginBottom: 10 }}>
-        <Ionicons name='search-outline' size={16} color={isDark ? '#666' : '#94A3B8'} />
-        <TextInput
-          value={fileSearch}
-          onChangeText={setFileSearch}
-          placeholder={t('message.mediaStorage.searchFile', 'Tìm kiếm file...')}
-          placeholderTextColor={isDark ? '#555' : '#94A3B8'}
-          style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, fontSize: 14, color: isDark ? '#E8EAED' : '#111827' }}
-        />
-      </View>
-
-      {/* Type filter */}
-      <View style={{ flexDirection: 'row', marginBottom: 12, gap: 8 }}>
-        <TouchableOpacity
-          onPress={() => setTypeMenuOpen((v) => !v)}
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, borderWidth: 1, borderColor }}
+        {/* Search */}
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            backgroundColor: inputBg,
+            borderRadius: 10,
+            paddingHorizontal: 10,
+            marginBottom: 10
+          }}
         >
-          <Text style={{ fontSize: 13, color: isDark ? '#B0B8C1' : '#374151' }}>{typeFilter || t('message.mediaStorage.typeFile', 'Loại file')}</Text>
-          <Ionicons name='chevron-down' size={13} color={isDark ? '#666' : '#94A3B8'} />
-        </TouchableOpacity>
-        {typeFilter && (
+          <Ionicons name='search-outline' size={16} color={isDark ? '#666' : '#94A3B8'} />
+          <TextInput
+            value={fileSearch}
+            onChangeText={setFileSearch}
+            placeholder={t('message.mediaStorage.searchFile', 'Tìm kiếm file...')}
+            placeholderTextColor={isDark ? '#555' : '#94A3B8'}
+            style={{
+              flex: 1,
+              paddingVertical: 10,
+              paddingHorizontal: 8,
+              fontSize: 14,
+              color: isDark ? '#E8EAED' : '#111827'
+            }}
+          />
+        </View>
+
+        {/* Type filter */}
+        <View style={{ flexDirection: 'row', marginBottom: 12, gap: 8 }}>
           <TouchableOpacity
-            onPress={() => setTypeFilter(null)}
-            style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20, backgroundColor: '#0068FF20' }}
+            onPress={() => setTypeMenuOpen((v) => !v)}
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              gap: 4,
+              paddingHorizontal: 12,
+              paddingVertical: 6,
+              borderRadius: 20,
+              borderWidth: 1,
+              borderColor
+            }}
           >
-            <Text style={{ fontSize: 13, color: '#0068FF' }}>{typeFilter}</Text>
-            <Ionicons name='close' size={13} color='#0068FF' />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Type dropdown */}
-      {typeMenuOpen && (
-        <View style={{ backgroundColor: cardBg, borderRadius: 12, borderWidth: 1, borderColor, marginBottom: 12, overflow: 'hidden' }}>
-          {FILE_TYPE_FILTERS.map(({ label }) => (
-            <TouchableOpacity
-              key={label}
-              onPress={() => { setTypeFilter(typeFilter === label ? null : label); setTypeMenuOpen(false) }}
-              style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 0.5, borderBottomColor: borderColor }}
-            >
-              <Text style={{ flex: 1, fontSize: 14, color: typeFilter === label ? '#0068FF' : (isDark ? '#DFE2E7' : '#111827') }}>
-                {label}
-              </Text>
-              {typeFilter === label && <Ionicons name='checkmark' size={16} color='#0068FF' />}
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-
-      {grouped.length === 0 ? (
-        <View style={{ alignItems: 'center', paddingTop: 40 }}>
-          <Ionicons name='document-outline' size={48} color={isDark ? '#444' : '#CBD5E1'} />
-          <Text style={{ color: isDark ? '#666' : '#94A3B8', marginTop: 12, fontSize: 15 }}>{t('message.storage.emptyFile', 'Chưa có file')}</Text>
-        </View>
-      ) : (
-        grouped.map(({ dateLabel, items }) => (
-          <View key={dateLabel} style={{ marginBottom: 16 }}>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: isDark ? '#8899A6' : '#64748B', marginBottom: 8 }}>
-              {dateLabel}
+            <Text style={{ fontSize: 13, color: isDark ? '#B0B8C1' : '#374151' }}>
+              {typeFilter || t('message.mediaStorage.typeFile', 'Loại file')}
             </Text>
-            {items.map((m) => {
-              const att = m.attachments?.[0]
-              const fileName = att?.originalFileName || att?.fileName || 'File'
-              const ext = fileName.split('.').pop()?.toUpperCase() || ''
-              const extLower = ext.toLowerCase()
-              const isArchive = ['zip', 'rar', '7z'].includes(extLower)
-              const size = att?.size
-              const url = att?.url || ''
+            <Ionicons name='chevron-down' size={13} color={isDark ? '#666' : '#94A3B8'} />
+          </TouchableOpacity>
+          {typeFilter && (
+            <TouchableOpacity
+              onPress={() => setTypeFilter(null)}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 4,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: 20,
+                backgroundColor: '#0068FF20'
+              }}
+            >
+              <Text style={{ fontSize: 13, color: '#0068FF' }}>{typeFilter}</Text>
+              <Ionicons name='close' size={13} color='#0068FF' />
+            </TouchableOpacity>
+          )}
+        </View>
 
-              const handlePress = async () => {
-                if (!url) return
-                if (isArchive) {
-                  try {
-                    const safeFileName = fileName.replace(/[\\/:*?"<>|]/g, '_')
-                    const destination = new File(Paths.cache, `${Date.now()}-${safeFileName}`)
-                    const downloaded = await File.downloadFileAsync(url, destination, { idempotent: true })
-                    await Share.share({ url: downloaded.uri, title: safeFileName, message: safeFileName })
-                  } catch {
-                    Alert.alert('Không thể tải file', 'Vui lòng thử lại sau.')
-                  }
-                } else {
-                  WebBrowser.openBrowserAsync(buildPreviewUrl(url, extLower))
-                }
-              }
-
-              return (
-                <TouchableOpacity
-                  key={m.id}
-                  activeOpacity={0.7}
-                  onPress={handlePress}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 10, paddingHorizontal: 12, backgroundColor: cardBg, borderRadius: 10, marginBottom: 8 }}
+        {/* Type dropdown */}
+        {typeMenuOpen && (
+          <View
+            style={{
+              backgroundColor: cardBg,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor,
+              marginBottom: 12,
+              overflow: 'hidden'
+            }}
+          >
+            {FILE_TYPE_FILTERS.map(({ label }) => (
+              <TouchableOpacity
+                key={label}
+                onPress={() => {
+                  setTypeFilter(typeFilter === label ? null : label)
+                  setTypeMenuOpen(false)
+                }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderBottomWidth: 0.5,
+                  borderBottomColor: borderColor
+                }}
+              >
+                <Text
+                  style={{
+                    flex: 1,
+                    fontSize: 14,
+                    color: typeFilter === label ? '#0068FF' : isDark ? '#DFE2E7' : '#111827'
+                  }}
                 >
-                  <View style={{ width: 44, height: 44, borderRadius: 10, backgroundColor: getExtColor(ext), alignItems: 'center', justifyContent: 'center' }}>
-                    <Text style={{ fontSize: 10, fontWeight: '700', color: '#fff', letterSpacing: 0.5 }}>{getExtLabel(ext)}</Text>
-                  </View>
-                  <View style={{ flex: 1, minWidth: 0 }}>
-                    <Text numberOfLines={1} style={{ fontSize: 14, fontWeight: '500', color: isDark ? '#DFE2E7' : '#111827' }}>
-                      {fileName}
-                    </Text>
-                    <Text style={{ fontSize: 12, color: isDark ? '#666' : '#94A3B8', marginTop: 2 }}>
-                      {size ? formatFileSize(size) : ''}{size && m.createdAt ? ' · ' : ''}{m.createdAt ? formatDate(normalizeDateTime(m.createdAt) || m.createdAt) : ''}
-                    </Text>
-                  </View>
-                  <Ionicons name='download-outline' size={20} color={isDark ? '#666' : '#94A3B8'} />
-                </TouchableOpacity>
-              )
-            })}
+                  {label}
+                </Text>
+                {typeFilter === label && <Ionicons name='checkmark' size={16} color='#0068FF' />}
+              </TouchableOpacity>
+            ))}
           </View>
-        ))
-      )}
-    </ScrollView>
+        )}
+
+        {grouped.length === 0 ? (
+          <View style={{ alignItems: 'center', paddingTop: 40 }}>
+            <Ionicons name='document-outline' size={48} color={isDark ? '#444' : '#CBD5E1'} />
+            <Text style={{ color: isDark ? '#666' : '#94A3B8', marginTop: 12, fontSize: 15 }}>
+              {t('message.storage.emptyFile', 'Chưa có file')}
+            </Text>
+          </View>
+        ) : (
+          grouped.map(({ dateLabel, items }) => (
+            <View key={dateLabel} style={{ marginBottom: 16 }}>
+              <Text style={{ fontSize: 13, fontWeight: '600', color: isDark ? '#8899A6' : '#64748B', marginBottom: 8 }}>
+                {dateLabel}
+              </Text>
+              {items.map((m) => {
+                const att = m.attachments?.[0]
+                const fileName = att?.originalFileName || att?.fileName || 'File'
+                const ext = fileName.split('.').pop()?.toUpperCase() || ''
+                const extLower = ext.toLowerCase()
+                const isArchive = ['zip', 'rar', '7z'].includes(extLower)
+                const size = att?.size
+                const url = att?.url || ''
+
+                const handlePress = async () => {
+                  if (!url) return
+                  if (isArchive) {
+                    try {
+                      const safeFileName = fileName.replace(/[\\/:*?"<>|]/g, '_')
+                      const destination = new File(Paths.cache, `${Date.now()}-${safeFileName}`)
+                      const downloaded = await File.downloadFileAsync(url, destination, { idempotent: true })
+                      await Share.share({ url: downloaded.uri, title: safeFileName, message: safeFileName })
+                    } catch {
+                      Alert.alert('Không thể tải file', 'Vui lòng thử lại sau.')
+                    }
+                  } else {
+                    WebBrowser.openBrowserAsync(buildPreviewUrl(url, extLower))
+                  }
+                }
+
+                return (
+                  <TouchableOpacity
+                    key={m.id}
+                    activeOpacity={0.7}
+                    onPress={handlePress}
+                    style={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      gap: 12,
+                      paddingVertical: 10,
+                      paddingHorizontal: 12,
+                      backgroundColor: cardBg,
+                      borderRadius: 10,
+                      marginBottom: 8
+                    }}
+                  >
+                    <View
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 10,
+                        backgroundColor: getExtColor(ext),
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      <Text style={{ fontSize: 10, fontWeight: '700', color: '#fff', letterSpacing: 0.5 }}>
+                        {getExtLabel(ext)}
+                      </Text>
+                    </View>
+                    <View style={{ flex: 1, minWidth: 0 }}>
+                      <Text
+                        numberOfLines={1}
+                        style={{ fontSize: 14, fontWeight: '500', color: isDark ? '#DFE2E7' : '#111827' }}
+                      >
+                        {fileName}
+                      </Text>
+                      <Text style={{ fontSize: 12, color: isDark ? '#666' : '#94A3B8', marginTop: 2 }}>
+                        {size ? formatFileSize(size) : ''}
+                        {size && m.createdAt ? ' · ' : ''}
+                        {m.createdAt ? formatDate(normalizeDateTime(m.createdAt) || m.createdAt) : ''}
+                      </Text>
+                    </View>
+                    <Ionicons name='download-outline' size={20} color={isDark ? '#666' : '#94A3B8'} />
+                  </TouchableOpacity>
+                )
+              })}
+            </View>
+          ))
+        )}
+      </ScrollView>
     </>
   )
 }
 
 // ── LinksTab ─────────────────────────────────────────────────────
-function LinksTab({
-  conversationId,
-  isDark
-}: {
-  conversationId: string
-  isDark: boolean
-}) {
+function LinksTab({ conversationId, isDark }: { conversationId: string; isDark: boolean }) {
   const { data, isLoading } = useMediaMessages(conversationId, ['LINK'], 0, 100)
   const messages = data ?? []
-  const [filter, setFilter] = useState<FilterState>({ senderId: null, timeFilter: null, customFrom: null, customTo: null })
+  const [filter, setFilter] = useState<FilterState>({
+    senderId: null,
+    timeFilter: null,
+    customFrom: null,
+    customTo: null
+  })
   const filtered = useMemo(() => applyCommonFilters(messages, filter), [messages, filter])
 
   const cardBg = isDark ? '#1C1F24' : '#fff'
@@ -758,27 +1093,55 @@ function LinksTab({
       {filtered.length === 0 ? (
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60 }}>
           <Ionicons name='link-outline' size={48} color={isDark ? '#444' : '#CBD5E1'} />
-          <Text style={{ color: isDark ? '#666' : '#94A3B8', marginTop: 12, fontSize: 15 }}>{t('message.storage.emptyLink', 'Chưa có liên kết')}</Text>
+          <Text style={{ color: isDark ? '#666' : '#94A3B8', marginTop: 12, fontSize: 15 }}>
+            {t('message.storage.emptyLink', 'Chưa có liên kết')}
+          </Text>
         </View>
       ) : (
         <ScrollView contentContainerStyle={{ padding: 12, paddingBottom: 24 }}>
           {filtered.map((m) => {
             const url = m.content || ''
             let domain = url
-            try { domain = new URL(url).hostname } catch {}
+            try {
+              domain = new URL(url).hostname
+            } catch {}
             return (
               <TouchableOpacity
                 key={m.id}
                 activeOpacity={0.7}
                 onPress={() => url && Linking.openURL(url)}
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, paddingHorizontal: 12, backgroundColor: cardBg, borderRadius: 10, marginBottom: 8, borderWidth: 0.5, borderColor }}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 12,
+                  paddingVertical: 12,
+                  paddingHorizontal: 12,
+                  backgroundColor: cardBg,
+                  borderRadius: 10,
+                  marginBottom: 8,
+                  borderWidth: 0.5,
+                  borderColor
+                }}
               >
-                <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: '#0068FF20', alignItems: 'center', justifyContent: 'center' }}>
+                <View
+                  style={{
+                    width: 40,
+                    height: 40,
+                    borderRadius: 8,
+                    backgroundColor: '#0068FF20',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
                   <Ionicons name='link' size={20} color='#0068FF' />
                 </View>
                 <View style={{ flex: 1, minWidth: 0 }}>
-                  <Text numberOfLines={1} style={{ fontSize: 14, color: '#0068FF', fontWeight: '500' }}>{domain}</Text>
-                  <Text numberOfLines={2} style={{ fontSize: 12, color: isDark ? '#8899A6' : '#64748B', marginTop: 2 }}>{url}</Text>
+                  <Text numberOfLines={1} style={{ fontSize: 14, color: '#0068FF', fontWeight: '500' }}>
+                    {domain}
+                  </Text>
+                  <Text numberOfLines={2} style={{ fontSize: 12, color: isDark ? '#8899A6' : '#64748B', marginTop: 2 }}>
+                    {url}
+                  </Text>
                 </View>
                 <Ionicons name='open-outline' size={18} color={isDark ? '#666' : '#94A3B8'} />
               </TouchableOpacity>
@@ -816,7 +1179,14 @@ export default function MediaStorageScreen() {
       {/* Header */}
       <LinearGradient colors={headerGradient}>
         <SafeAreaView edges={['top']} style={{ backgroundColor: 'transparent' }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: HEADER.paddingHorizontal, height: HEADER.height }}>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: HEADER.paddingHorizontal,
+              height: HEADER.height
+            }}
+          >
             <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7} style={{ paddingRight: 10 }}>
               <Ionicons name='chevron-back' size={24} color='#fff' />
             </TouchableOpacity>
@@ -828,7 +1198,14 @@ export default function MediaStorageScreen() {
       </LinearGradient>
 
       {/* Tabs */}
-      <View style={{ flexDirection: 'row', backgroundColor: tabBg, borderBottomWidth: 1, borderBottomColor: isDark ? '#1F2937' : '#E5E7EB' }}>
+      <View
+        style={{
+          flexDirection: 'row',
+          backgroundColor: tabBg,
+          borderBottomWidth: 1,
+          borderBottomColor: isDark ? '#1F2937' : '#E5E7EB'
+        }}
+      >
         {TABS.map(({ key, label }) => (
           <TouchableOpacity
             key={key}
@@ -836,11 +1213,27 @@ export default function MediaStorageScreen() {
             activeOpacity={0.7}
             style={{ flex: 1, alignItems: 'center', paddingVertical: 13 }}
           >
-            <Text style={{ fontSize: 14, fontWeight: tab === key ? '600' : '400', color: tab === key ? activeColor : inactiveColor }}>
+            <Text
+              style={{
+                fontSize: 14,
+                fontWeight: tab === key ? '600' : '400',
+                color: tab === key ? activeColor : inactiveColor
+              }}
+            >
               {t(label)}
             </Text>
             {tab === key && (
-              <View style={{ position: 'absolute', bottom: 0, left: 12, right: 12, height: 2, backgroundColor: activeColor, borderRadius: 2 }} />
+              <View
+                style={{
+                  position: 'absolute',
+                  bottom: 0,
+                  left: 12,
+                  right: 12,
+                  height: 2,
+                  backgroundColor: activeColor,
+                  borderRadius: 2
+                }}
+              />
             )}
           </TouchableOpacity>
         ))}
@@ -850,7 +1243,9 @@ export default function MediaStorageScreen() {
       <View style={{ flex: 1 }}>
         {!conversationId ? (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ color: isDark ? '#666' : '#94A3B8' }}>{t('message.storage.notFound', 'Không tìm thấy cuộc trò chuyện')}</Text>
+            <Text style={{ color: isDark ? '#666' : '#94A3B8' }}>
+              {t('message.storage.notFound', 'Không tìm thấy cuộc trò chuyện')}
+            </Text>
           </View>
         ) : tab === 'media' ? (
           <MediaTab conversationId={conversationId} isDark={isDark} />

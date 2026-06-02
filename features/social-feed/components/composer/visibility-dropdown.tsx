@@ -29,21 +29,14 @@ export function VisibilityDropdown({ value, onChange }: VisibilityDropdownProps)
         <Text className='text-2xl'>{current?.icon}</Text>
         <View className='flex-1'>
           <Text className='text-xs text-gray-500'>Quyền riêng tư</Text>
-          <Text className='text-sm font-semibold text-gray-900'>
-            {current?.label}
-          </Text>
+          <Text className='text-sm font-semibold text-gray-900'>{current?.label}</Text>
         </View>
         <View className='px-3 py-2 bg-gray-100 rounded-lg border border-gray-200'>
           <Text className='text-xs font-semibold text-gray-700'>Chọn</Text>
         </View>
       </TouchableOpacity>
 
-      <Modal
-        transparent
-        visible={open}
-        animationType='fade'
-        onRequestClose={() => setOpen(false)}
-      >
+      <Modal transparent visible={open} animationType='fade' onRequestClose={() => setOpen(false)}>
         <Pressable className='flex-1 bg-black/40' onPress={() => setOpen(false)} />
         <View className='absolute left-4 right-4 top-1/3 bg-white rounded-2xl p-4 border border-gray-200'>
           <Text className='text-sm font-semibold text-gray-900 mb-3'>Chọn quyền riêng tư</Text>

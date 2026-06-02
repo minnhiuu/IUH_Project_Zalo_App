@@ -38,9 +38,7 @@ export function parseMessageDate(value: string | number | Date | null | undefine
   }
 
   // No timezone: treat as local time to preserve exact sent hour/minute.
-  const match = normalized.match(
-    /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?$/
-  )
+  const match = normalized.match(/^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?$/)
 
   if (match) {
     const msRaw = match[7] || '0'

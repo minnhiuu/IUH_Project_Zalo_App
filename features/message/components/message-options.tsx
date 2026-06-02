@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { View, TouchableOpacity, ScrollView, Alert, Switch, Modal, TextInput } from 'react-native'
 import { Image as ExpoImage } from 'expo-image'
+import { Video, ResizeMode } from 'expo-av'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter, useLocalSearchParams } from 'expo-router'
 import { useTranslation } from 'react-i18next'
@@ -13,6 +14,7 @@ import { useBlockDetails, useMyProfile, useUserById } from '@/features/users/que
 import { BlockUserModal } from '@/features/users/components/block-user-modal'
 import { useUnfriend } from '@/features/friend/queries/use-mutations'
 import { HEADER } from '@/constants/theme'
+import { MessageType } from '@/features/message/schemas'
 import {
   useConversations,
   useMediaMessages,
@@ -147,6 +149,25 @@ export default function MessageOptionsScreen() {
       }
     )
   }
+
+  const recentMediaItems = useMemo(() => {
+    const result: Array<{ key: string; url: string; isVideo: boolean }> = []
+    for (const message of recentMedia) {
+      const attachments = message.attachments ?? []
+      if (!attachments.length) continue
+
+      for (let i = 0; i < attachments.length; i++) {
+        const attachment = attachments[i]
+        if (!attachment?.url) continue
+        result.push({
+          key: `${message.id}-${attachment.key || i}`,
+          url: attachment.url,
+          isVideo: message.type === MessageType.VIDEO || attachment.contentType?.startsWith('video/')
+        })
+      }
+    }
+    return result
+  }, [recentMedia])
 
   const quickActions = useMemo(
     () => [
@@ -453,22 +474,89 @@ export default function MessageOptionsScreen() {
               <MenuItemRow
                 icon='folder-open-outline'
                 label={t('message.groupOptions.mediaFilesLinks')}
-                onPress={() => {}}
+                onPress={() => {
+                  if (!conversationId) return
+                  router.push({
+                    pathname: '/media-storage' as any,
+                    params: { conversationId, name: groupName }
+                  })
+                }}
                 isDark={isDark}
               />
               <View
                 style={{
                   marginHorizontal: 16,
                   marginBottom: 8,
-                  paddingVertical: 12,
+                  paddingTop: 12,
+                  paddingBottom: 10,
                   borderRadius: 10,
-                  backgroundColor: isDark ? '#252E3A' : '#F4F6F9',
-                  alignItems: 'center'
+                  backgroundColor: isDark ? '#252E3A' : '#F4F6F9'
                 }}
               >
-                <Text style={{ fontSize: 13, color: groupPalette.subText }}>
+                <Text style={{ fontSize: 13, color: groupPalette.subText, textAlign: 'center' }}>
                   {t('message.groupOptions.latestMediaHint')}
                 </Text>
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: 10, paddingHorizontal: 12 }}>
+                  {Array.from({ length: 5 }).map((_, idx) => {
+                    const item = recentMediaItems[idx]
+                    const url = item?.url
+                    return (
+                      <TouchableOpacity
+                        key={idx}
+                        activeOpacity={url ? 0.8 : 1}
+                        onPress={() => {
+                          if (!conversationId) return
+                          router.push({
+                            pathname: '/media-storage' as any,
+                            params: { conversationId, name: groupName }
+                          })
+                        }}
+                        style={{
+                          flex: 1,
+                          aspectRatio: 1,
+                          borderRadius: 8,
+                          overflow: 'hidden',
+                          backgroundColor: isDark ? '#2A2F36' : '#ECEFF3'
+                        }}
+                      >
+                        {url ? (
+                          <>
+                            {item?.isVideo ? (
+                              <Video
+                                source={{ uri: url }}
+                                style={{ width: '100%', height: '100%' }}
+                                resizeMode={ResizeMode.COVER}
+                                shouldPlay={false}
+                                isLooping={false}
+                                isMuted
+                                useNativeControls={false}
+                              />
+                            ) : (
+                              <ExpoImage
+                                source={{ uri: url }}
+                                style={{ width: '100%', height: '100%' }}
+                                contentFit='cover'
+                                cachePolicy='memory-disk'
+                              />
+                            )}
+                            {item?.isVideo && (
+                              <View
+                                style={{
+                                  position: 'absolute',
+                                  inset: 0,
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                              >
+                                <Ionicons name='play-circle' size={22} color='rgba(255,255,255,0.9)' />
+                              </View>
+                            )}
+                          </>
+                        ) : null}
+                      </TouchableOpacity>
+                    )
+                  })}
+                </View>
               </View>
               <MenuItemRow
                 icon='calendar-outline'
@@ -821,8 +909,8 @@ export default function MessageOptionsScreen() {
 
               <View style={{ flexDirection: 'row', gap: 8 }}>
                 {Array.from({ length: 5 }).map((_, idx) => {
-                  const msg = recentMedia[idx]
-                  const url = msg?.attachments?.[0]?.url
+                  const item = recentMediaItems[idx]
+                  const url = item?.url
                   return (
                     <TouchableOpacity
                       key={idx}
@@ -841,13 +929,25 @@ export default function MessageOptionsScreen() {
                     >
                       {url ? (
                         <>
-                          <ExpoImage
-                            source={{ uri: url }}
-                            style={{ width: '100%', height: '100%' }}
-                            contentFit='cover'
-                            cachePolicy='memory-disk'
-                          />
-                          {msg.type === 'VIDEO' && (
+                          {item?.isVideo ? (
+                            <Video
+                              source={{ uri: url }}
+                              style={{ width: '100%', height: '100%' }}
+                              resizeMode={ResizeMode.COVER}
+                              shouldPlay={false}
+                              isLooping={false}
+                              isMuted
+                              useNativeControls={false}
+                            />
+                          ) : (
+                            <ExpoImage
+                              source={{ uri: url }}
+                              style={{ width: '100%', height: '100%' }}
+                              contentFit='cover'
+                              cachePolicy='memory-disk'
+                            />
+                          )}
+                          {item?.isVideo && (
                             <View
                               style={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}
                             >

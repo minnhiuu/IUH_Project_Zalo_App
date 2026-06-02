@@ -13,12 +13,7 @@ interface CommentInputProps {
   isLoading?: boolean
 }
 
-export function CommentInput({
-  onSubmitComment,
-  replyingTo,
-  onCancelReply,
-  isLoading = false
-}: CommentInputProps) {
+export function CommentInput({ onSubmitComment, replyingTo, onCancelReply, isLoading = false }: CommentInputProps) {
   const [content, setContent] = useState('')
   const { text } = useSocialText()
 
@@ -42,9 +37,7 @@ export function CommentInput({
             </Text>
           </View>
           <TouchableOpacity onPress={onCancelReply} className='p-1'>
-            <Text className='text-xs text-blue-600 dark:text-blue-400 font-semibold'>
-              {text.commentInput.cancel}
-            </Text>
+            <Text className='text-xs text-blue-600 dark:text-blue-400 font-semibold'>{text.commentInput.cancel}</Text>
           </TouchableOpacity>
         </View>
       )}

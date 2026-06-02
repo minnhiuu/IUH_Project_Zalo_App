@@ -2,11 +2,14 @@ import { useEffect, useRef, useState, useCallback, useSyncExternalStore } from '
 import { Client } from '@stomp/stompjs'
 import { useQueryClient } from '@tanstack/react-query'
 import { AppState } from 'react-native'
+import Constants from 'expo-constants'
+import Toast from 'react-native-toast-message'
 import { useAuthStore } from '@/store'
 import { getAccessToken } from '@/lib/http'
 import apiConfig from '@/config/apiConfig'
 import { notificationKeys } from '../queries/keys'
 import type { NotificationSocketMessage } from '../schemas/notification.schema'
+import { injectReminderMessage } from '../utils/reminder-message'
 
 // ────────── Singleton state ──────────
 let singletonClient: Client | null = null
@@ -121,6 +124,15 @@ const connectSingleton = async (user: any, queryClient: any) => {
 
           // 3. Display local notification if not silent
           if (!('action' in data) && !data.silent) {
+            if (Constants.appOwnership === 'expo') {
+              const toastTitle = data.title || 'Nhắc nhở'
+              const toastBody = data.body || (data.payload as any)?.message || ''
+              Toast.show({
+                type: 'notification',
+                text1: String(toastTitle),
+                text2: String(toastBody)
+              })
+            }
             import('expo-constants').then((ConstantsMod) => {
               const Constants = ConstantsMod.default || ConstantsMod
               if (Constants.executionEnvironment === 'storeClient') {
@@ -148,6 +160,19 @@ const connectSingleton = async (user: any, queryClient: any) => {
                   console.error('[NotificationSocket] Failed to import notifee handler:', err)
                 })
             }).catch(err => console.error(err))
+          }
+
+          if (!('action' in data) && data.type === 'REMINDER') {
+            injectReminderMessage(queryClient, {
+              ...(data.payload || {}),
+              reminderId: (data.payload as any)?.reminderId || data.referenceId,
+              conversationId: (data.payload as any)?.conversationId,
+              message: (data.payload as any)?.message || data.body,
+              title: (data.payload as any)?.title || data.title,
+              remindAt: (data.payload as any)?.remindAt,
+              triggeredAt: (data.payload as any)?.triggeredAt,
+              isTriggerMessage: true
+            })
           }
 
           // 3. Invalidate caches.

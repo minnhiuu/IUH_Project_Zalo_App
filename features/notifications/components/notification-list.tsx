@@ -91,7 +91,9 @@ export function NotificationList({ filter, highlightNotificationId }: Notificati
       ListEmptyComponent={
         <View className='flex-1 items-center justify-center pt-20 px-8'>
           <Ionicons name='notifications-off-outline' size={64} color={colors.textSecondary} />
-          <Text className='text-lg font-bold mt-4 text-center' style={{ color: colors.textSecondary }}>{t('notification.empty.title')}</Text>
+          <Text className='text-lg font-bold mt-4 text-center' style={{ color: colors.textSecondary }}>
+            {t('notification.empty.title')}
+          </Text>
           <Text className='text-sm mt-2 text-center leading-5' style={{ color: colors.textSecondary }}>
             {t('notification.empty.description')}
           </Text>
@@ -101,7 +103,9 @@ export function NotificationList({ filter, highlightNotificationId }: Notificati
         if (item.itemType === 'header') {
           return (
             <View className='px-4 pt-4 pb-1.5'>
-              <Text className='text-base font-bold' style={{ color: colors.text }}>{item.title}</Text>
+              <Text className='text-base font-bold' style={{ color: colors.text }}>
+                {item.title}
+              </Text>
             </View>
           )
         }

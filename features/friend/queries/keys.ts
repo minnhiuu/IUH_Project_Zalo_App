@@ -18,7 +18,8 @@ export const friendKeys = {
   suggestions: () => [...friendKeys.all, 'suggestions'] as const,
   unifiedSuggestions: (page: number = 0, size: number = 20) =>
     [...friendKeys.suggestions(), 'unified', page, size] as const,
-  graphSuggestions: (page: number = 0, size: number = 20) => [...friendKeys.suggestions(), 'graph', page, size] as const,
+  graphSuggestions: (page: number = 0, size: number = 20) =>
+    [...friendKeys.suggestions(), 'graph', page, size] as const,
   contactSuggestions: (page: number = 0, size: number = 20) =>
     [...friendKeys.suggestions(), 'contacts', page, size] as const
 }

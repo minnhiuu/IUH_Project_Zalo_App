@@ -37,7 +37,11 @@ function Row({
     <TouchableOpacity
       activeOpacity={onPress ? 0.7 : 1}
       onPress={onPress}
-      style={[styles.row, noMinHeight && styles.rowNoMinHeight, { backgroundColor: palette.card, borderBottomColor: palette.divider }]}
+      style={[
+        styles.row,
+        noMinHeight && styles.rowNoMinHeight,
+        { backgroundColor: palette.card, borderBottomColor: palette.divider }
+      ]}
     >
       <View style={{ flex: 1 }}>
         <Text style={{ color: palette.text, fontSize: 17 }}>{label}</Text>
@@ -66,7 +70,12 @@ function SwitchRow({
   return (
     <View style={[styles.switchRow, { backgroundColor: palette.card, borderBottomColor: palette.divider }]}>
       <Text style={{ color: palette.text, fontSize: 17, lineHeight: 24, flex: 1, paddingRight: 14 }}>{label}</Text>
-      <Switch value={value} onValueChange={onValueChange} trackColor={{ false: '#CBD5E1', true: '#2996F3' }} thumbColor='#fff' />
+      <Switch
+        value={value}
+        onValueChange={onValueChange}
+        trackColor={{ false: '#CBD5E1', true: '#2996F3' }}
+        thumbColor='#fff'
+      />
     </View>
   )
 }
@@ -163,7 +172,14 @@ export default function GroupSettingsScreen() {
       default:
         return true
     }
-  }, [permissionSheetKey, memberCanChangeInfo, memberCanCreateNotes, memberCanCreatePolls, memberCanPinMessages, memberCanSendMessages])
+  }, [
+    permissionSheetKey,
+    memberCanChangeInfo,
+    memberCanCreateNotes,
+    memberCanCreatePolls,
+    memberCanPinMessages,
+    memberCanSendMessages
+  ])
 
   const applyPermissionSelection = (allowAll: boolean) => {
     if (!permissionSheetKey) return
@@ -216,7 +232,9 @@ export default function GroupSettingsScreen() {
       <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 20 }}>
         {!isExplicitMember ? (
           <>
-            <Text style={[styles.sectionTitle, { color: palette.title }]}>{t('message.groupSettings.messageSetup')}</Text>
+            <Text style={[styles.sectionTitle, { color: palette.title }]}>
+              {t('message.groupSettings.messageSetup')}
+            </Text>
             <View style={{ backgroundColor: palette.card }}>
               <SwitchRow
                 label={t('message.groupSettings.highlightFromManagers')}
@@ -238,7 +256,9 @@ export default function GroupSettingsScreen() {
               />
             </View>
 
-            <Text style={[styles.sectionTitle, { color: palette.title }]}>{t('message.groupSettings.memberSection')}</Text>
+            <Text style={[styles.sectionTitle, { color: palette.title }]}>
+              {t('message.groupSettings.memberSection')}
+            </Text>
             <View style={{ backgroundColor: palette.card }}>
               <Row
                 label={t('message.groupSettings.manageMembers')}
@@ -250,7 +270,11 @@ export default function GroupSettingsScreen() {
               />
               <Row
                 label={t('message.groupSettings.approveMembers')}
-                subLabel={membershipApprovalEnabled ? t('message.groupSettings.approveStatusOn') : t('message.groupSettings.approveStatusOff')}
+                subLabel={
+                  membershipApprovalEnabled
+                    ? t('message.groupSettings.approveStatusOn')
+                    : t('message.groupSettings.approveStatusOff')
+                }
                 palette={palette}
                 onPress={() => {
                   const next = !membershipApprovalEnabled
@@ -264,7 +288,9 @@ export default function GroupSettingsScreen() {
                   palette={palette}
                   onPress={() => {
                     if (!resolvedConversationId) return
-                    const candidateCount = (activeConversation?.members || []).filter((m) => m.userId !== currentUserId).length
+                    const candidateCount = (activeConversation?.members || []).filter(
+                      (m) => m.userId !== currentUserId
+                    ).length
                     if (candidateCount <= 0) {
                       Toast.show({ type: 'info', text1: t('message.groupSettings.noTransferCandidate') })
                       return
@@ -281,7 +307,9 @@ export default function GroupSettingsScreen() {
               ) : null}
             </View>
 
-            <Text style={[styles.sectionTitle, { color: palette.title }]}>{t('message.groupSettings.memberPermissions')}</Text>
+            <Text style={[styles.sectionTitle, { color: palette.title }]}>
+              {t('message.groupSettings.memberPermissions')}
+            </Text>
             <View style={{ backgroundColor: palette.card }}>
               <Row
                 label={t('message.groupSettings.permissionEditInfo')}
@@ -316,34 +344,52 @@ export default function GroupSettingsScreen() {
             </View>
 
             {isOwner ? (
-        <View style={{ backgroundColor: palette.card, marginTop: 12 }}>
-          <TouchableOpacity
-            activeOpacity={0.7}
-            style={[styles.row, { borderBottomWidth: 0, borderBottomColor: 'transparent' }]}
-            onPress={() => {
-              if (!resolvedConversationId) return
-              disbandGroup(resolvedConversationId, {
-                onSuccess: () => {
-                  Toast.show({ type: 'success', text1: t('message.groupSettings.disbandSuccess') })
-                  router.replace('/(tabs)' as any)
-                }
-              })
-            }}
-          >
-            <Text style={{ color: palette.danger, fontSize: 17 }}>{t('message.groupSettings.disbandGroup')}</Text>
-          </TouchableOpacity>
-        </View>
+              <View style={{ backgroundColor: palette.card, marginTop: 12 }}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  style={[styles.row, { borderBottomWidth: 0, borderBottomColor: 'transparent' }]}
+                  onPress={() => {
+                    if (!resolvedConversationId) return
+                    disbandGroup(resolvedConversationId, {
+                      onSuccess: () => {
+                        Toast.show({ type: 'success', text1: t('message.groupSettings.disbandSuccess') })
+                        router.replace('/(tabs)' as any)
+                      }
+                    })
+                  }}
+                >
+                  <Text style={{ color: palette.danger, fontSize: 17 }}>{t('message.groupSettings.disbandGroup')}</Text>
+                </TouchableOpacity>
+              </View>
             ) : null}
           </>
         ) : (
-          <View style={{ marginTop: 12, marginHorizontal: 12, borderRadius: 10, padding: 14, backgroundColor: palette.card }}>
-            <Text style={{ color: palette.subText, fontSize: 14 }}>{t('message.groupSettings.memberHiddenNotice')}</Text>
+          <View
+            style={{
+              marginTop: 12,
+              marginHorizontal: 12,
+              borderRadius: 10,
+              padding: 14,
+              backgroundColor: palette.card
+            }}
+          >
+            <Text style={{ color: palette.subText, fontSize: 14 }}>
+              {t('message.groupSettings.memberHiddenNotice')}
+            </Text>
           </View>
         )}
       </ScrollView>
 
-      <Modal transparent visible={!!permissionSheetKey} animationType='fade' onRequestClose={() => setPermissionSheetKey(null)}>
-        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' }} onPress={() => setPermissionSheetKey(null)}>
+      <Modal
+        transparent
+        visible={!!permissionSheetKey}
+        animationType='fade'
+        onRequestClose={() => setPermissionSheetKey(null)}
+      >
+        <Pressable
+          style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' }}
+          onPress={() => setPermissionSheetKey(null)}
+        >
           <Pressable
             onPress={() => {}}
             style={{
@@ -357,7 +403,15 @@ export default function GroupSettingsScreen() {
             <View style={{ alignItems: 'center', marginBottom: 10 }}>
               <View style={{ width: 44, height: 5, borderRadius: 999, backgroundColor: palette.subText + '55' }} />
             </View>
-            <Text style={{ fontSize: 21 / 1.2, fontWeight: '700', color: palette.text, textAlign: 'center', marginBottom: 8 }}>
+            <Text
+              style={{
+                fontSize: 21 / 1.2,
+                fontWeight: '700',
+                color: palette.text,
+                textAlign: 'center',
+                marginBottom: 8
+              }}
+            >
               {permissionSheetTitle}
             </Text>
 
@@ -373,7 +427,9 @@ export default function GroupSettingsScreen() {
                 borderTopColor: palette.divider
               }}
             >
-              <Text style={{ flex: 1, color: palette.text, fontSize: 18 }}>{t('message.groupSettings.permissionAll')}</Text>
+              <Text style={{ flex: 1, color: palette.text, fontSize: 18 }}>
+                {t('message.groupSettings.permissionAll')}
+              </Text>
               {permissionCurrentValue ? <Ionicons name='checkmark' size={22} color='#2087F5' /> : null}
             </TouchableOpacity>
 
@@ -389,7 +445,9 @@ export default function GroupSettingsScreen() {
                 borderTopColor: palette.divider
               }}
             >
-              <Text style={{ flex: 1, color: palette.text, fontSize: 18 }}>{t('message.groupSettings.permissionManagersOnly')}</Text>
+              <Text style={{ flex: 1, color: palette.text, fontSize: 18 }}>
+                {t('message.groupSettings.permissionManagersOnly')}
+              </Text>
               {!permissionCurrentValue ? <Ionicons name='checkmark' size={22} color='#2087F5' /> : null}
             </TouchableOpacity>
           </Pressable>

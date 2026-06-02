@@ -16,34 +16,26 @@ interface ShareModalProps {
 
 type VisibilityType = 'ALL' | 'FRIEND' | 'ONLY_ME'
 
-export function ShareModal({
-  visible,
-  post,
-  onClose
-}: ShareModalProps) {
+export function ShareModal({ visible, post, onClose }: ShareModalProps) {
   const { text } = useSocialText()
   const { data: myProfile } = useMyProfile()
   const { mutateAsync: createPost, isPending } = useCreateSocialPostMutation()
-  
+
   const [caption, setCaption] = useState('')
   const [visibility, setVisibility] = useState<VisibilityType>('ALL')
 
   const visibilityOptions = [
     { id: 'ALL', label: 'Công khai', icon: Globe },
     { id: 'FRIEND', label: 'Bạn bè', icon: Users },
-    { id: 'ONLY_ME', label: 'Riêng tư', icon: Lock },
+    { id: 'ONLY_ME', label: 'Riêng tư', icon: Lock }
   ]
 
   const profileName = myProfile?.fullName?.trim() || 'Bạn'
-  
+
   // If the post is already a share, we share its original post instead
   const isSharingAShare = post?.postType === 'SHARE' && post?.sharedPost
-  const targetShareId =
-    post?.rootPostId ||
-    (isSharingAShare ? post.sharedPost?.postId : post?.id) ||
-    post?.id ||
-    ''
-  
+  const targetShareId = post?.rootPostId || (isSharingAShare ? post.sharedPost?.postId : post?.id) || post?.id || ''
+
   const displayAuthorName = isSharingAShare ? post?.sharedPost?.authorName : post?.authorName
   const displayAuthorAvatar = isSharingAShare ? post?.sharedPost?.authorAvatar : post?.authorAvatar
   const displayContent = isSharingAShare ? post?.sharedPost?.content : post?.content
@@ -51,7 +43,7 @@ export function ShareModal({
 
   const handleShare = async () => {
     if (!post?.id) return
-    
+
     try {
       await createPost({
         postType: 'SHARE',
@@ -73,12 +65,7 @@ export function ShareModal({
   }
 
   return (
-    <Modal
-      visible={visible}
-      animationType='slide'
-      onRequestClose={handleClose}
-      transparent={false}
-    >
+    <Modal visible={visible} animationType='slide' onRequestClose={handleClose} transparent={false}>
       <View className='flex-1 bg-white'>
         {/* Header */}
         <View className='flex-row items-center justify-between p-4 border-b border-gray-200'>
@@ -92,15 +79,9 @@ export function ShareModal({
           {/* User Profile Section */}
           <View className='p-4 border-b border-gray-200'>
             <View className='flex-row items-center gap-3 mb-4'>
-              <UserAvatar
-                source={myProfile?.avatar || undefined}
-                name={profileName}
-                size='md'
-              />
+              <UserAvatar source={myProfile?.avatar || undefined} name={profileName} size='md' />
               <View className='flex-1'>
-                <Text className='text-base font-semibold text-gray-900'>
-                  {profileName}
-                </Text>
+                <Text className='text-base font-semibold text-gray-900'>{profileName}</Text>
               </View>
             </View>
           </View>
@@ -118,9 +99,7 @@ export function ShareModal({
               editable={!isPending}
               className='bg-gray-100 text-gray-900 rounded-lg p-3 min-h-20 text-sm border border-gray-300'
             />
-            <Text className='text-gray-500 text-xs mt-1'>
-              {caption.length}/300
-            </Text>
+            <Text className='text-gray-500 text-xs mt-1'>{caption.length}/300</Text>
           </View>
 
           {/* Visibility Options */}
@@ -139,16 +118,9 @@ export function ShareModal({
                       : 'bg-gray-50 border border-gray-300'
                   }`}
                 >
-                  <Icon
-                    size={20}
-                    color={visibility === option.id ? '#4f46e5' : '#666'}
-                  />
+                  <Icon size={20} color={visibility === option.id ? '#4f46e5' : '#666'} />
                   <Text
-                    className={`text-sm font-medium ${
-                      visibility === option.id
-                        ? 'text-indigo-600'
-                        : 'text-gray-700'
-                    }`}
+                    className={`text-sm font-medium ${visibility === option.id ? 'text-indigo-600' : 'text-gray-700'}`}
                   >
                     {option.label}
                   </Text>
@@ -169,21 +141,12 @@ export function ShareModal({
                     size='sm'
                     className='mr-2'
                   />
-                  <Text className='text-sm font-semibold text-gray-900'>
-                    {displayAuthorName}
-                  </Text>
+                  <Text className='text-sm font-semibold text-gray-900'>{displayAuthorName}</Text>
                 </View>
-                {displayContent && (
-                  <Text className='text-sm text-gray-700 mb-2 leading-5'>
-                    {displayContent}
-                  </Text>
-                )}
+                {displayContent && <Text className='text-sm text-gray-700 mb-2 leading-5'>{displayContent}</Text>}
                 {displayMedia && displayMedia.length > 0 && (
                   <View className='mt-2'>
-                    <MediaSection 
-                      media={displayMedia} 
-                      onMediaPress={() => {}} 
-                    />
+                    <MediaSection media={displayMedia} onMediaPress={() => {}} />
                   </View>
                 )}
               </View>
