@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useSyncExternalStore, useRef } from 'react'
-import { AppState, AppStateStatus } from 'react-native'
+import { AppState, AppStateStatus, DeviceEventEmitter } from 'react-native'
 import { Client } from '@stomp/stompjs'
 import { useQueryClient, type InfiniteData, type QueryClient } from '@tanstack/react-query'
 import { messageKeys } from '../queries/keys'
@@ -12,6 +12,7 @@ import { jwtDecode } from 'jwt-decode'
 import apiConfig from '@/config/apiConfig'
 import { normalizeDateTime, parseMessageDate } from '../utils/date-utils'
 import { parseBusinessCardContent, serializeBusinessCard } from '../utils/business-card'
+import { useCallStore } from '@/store/use-call-store'
 import { MessageStatus, MessageType } from '../schemas'
 import type {
   MessageResponse,
@@ -88,8 +89,41 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
           lastModifiedAt: normalizeDateTime(rawMsg.lastModifiedAt)
         }
 
+        // Intercept Group Call
+        if (typeof msg.content === 'string' && msg.content.startsWith('[GROUP_CALL]::')) {
+          try {
+            const callData = JSON.parse(msg.content.substring(14))
+            const callStore = useCallStore.getState()
+            if (callData.status === 'active' && msg.senderId !== user.id) {
+               if (!callStore.isRinging) {
+                 callStore.setIncomingCall({
+                   sessionId: callData.roomId, // group calls use roomId as sessionId conceptually
+                   roomId: callData.roomId,
+                   callerId: msg.senderId,
+                   callerName: callData.callerName || msg.senderName || 'Unknown',
+                   callerAvatar: msg.senderAvatar,
+                   isGroup: true,
+                   callKind: callData.callKind
+                 })
+               }
+               callStore.setActiveGroupCallId(callData.roomId)
+             } else if (callData.status === 'ended') {
+               if (callStore.incomingCall?.roomId === callData.roomId) {
+                  callStore.clearIncomingCall()
+               }
+               if (callStore.activeGroupCallId === callData.roomId) {
+                  callStore.setActiveGroupCallId(null)
+               }
+               import('react-native').then(rn => rn.DeviceEventEmitter.emit('call-signal', { sessionId: callData.roomId, signal: 'ENDED' }))
+            }
+          } catch(e) {}
+        }
+
         const conversationId = msg.conversationId
         if (!conversationId) return
+
+        // Force cache invalidation to render message cards instantly in real-time
+        queryClient.invalidateQueries({ queryKey: messageKeys.messages(conversationId) })
 
         const isOwnMessage = msg.isFromMe === true || msg.senderId === user.id
 
@@ -185,6 +219,34 @@ const connectSingleton = async (user: any, queryClient: QueryClient) => {
             return oldData
           }
         })
+      })
+
+      // ────────── /queue/call-signals ──────────
+      client.subscribe('/user/queue/call-signals', (payload) => {
+        try {
+          const signal = JSON.parse(payload.body)
+          console.log('[useChatWebSocket] Received call-signal:', signal)
+          DeviceEventEmitter.emit('call-signal', signal)
+          const callStore = useCallStore.getState()
+          if (signal.signal === 'RINGING') {
+             // Optional fallback if websocket sends ringing signal directly
+             callStore.setIncomingCall({
+               sessionId: signal.sessionId,
+               roomId: signal.roomId,
+               callerId: signal.callerId || '',
+               callerName: signal.callerName || 'Cuộc gọi đến',
+               callerAvatar: signal.callerAvatar,
+               isGroup: false,
+               callKind: signal.callKind || 'video'
+             })
+          } else if (['ACCEPTED', 'REJECTED', 'ENDED', 'CANCELLED'].includes(signal.signal)) {
+             if (callStore.incomingCall && String(callStore.incomingCall.sessionId) === String(signal.sessionId)) {
+                callStore.clearIncomingCall()
+             }
+          }
+        } catch(e) {
+          console.log('[Socket] Error parsing call-signals', e)
+        }
       })
 
       // ────────── /queue/presence ──────────

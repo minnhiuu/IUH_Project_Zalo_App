@@ -1,5 +1,5 @@
 import React from 'react'
-import { Text as RNText, TextProps as RNTextProps, TextStyle } from 'react-native'
+import { Text as RNText, TextProps as RNTextProps, TextStyle, Platform } from 'react-native'
 
 type TextSize = '2xs' | 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl'
 
@@ -74,6 +74,7 @@ const Text = React.forwardRef<RNText, ITextProps>(function Text(
   }
 
   const textStyle: TextStyle = {
+    fontFamily: Platform.OS === 'android' ? 'sans-serif' : 'System',
     fontSize: sub ? getFontSize() * 0.75 : getFontSize(),
     ...(bold && { fontWeight: '700' }),
     ...(italic && { fontStyle: 'italic' }),

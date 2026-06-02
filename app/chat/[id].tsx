@@ -66,6 +66,9 @@ import {
 import { parseBusinessCardContent, parseMessageDate, serializeBusinessCard } from '@/features/message/utils'
 import { messageApi } from '@/features/message/api'
 import { userApi } from '@/features/users/api/user.api'
+import { Audio } from 'expo-av'
+import { Camera } from 'expo-camera'
+import { callApi } from '@/features/call/api/call.api'
 
 export default function ChatScreen() {
   const router = useRouter()
@@ -945,33 +948,147 @@ export default function ChatScreen() {
 
   const chatBg = isDark ? '#0D1117' : '#E8ECEF'
 
+  const requestCallPermissions = async () => {
+    const cameraStatus = await Camera.requestCameraPermissionsAsync()
+    const audioStatus = await Audio.requestPermissionsAsync()
+    if (cameraStatus.status !== 'granted' || audioStatus.status !== 'granted') {
+      Alert.alert(
+        'Yêu cầu quyền truy cập',
+        'Vui lòng cấp quyền truy cập Camera và Micro trong cài đặt thiết bị để thực hiện cuộc gọi.'
+      )
+      return false
+    }
+    return true
+  }
+
+  const startCall = useCallback(async (isVideo: boolean) => {
+    const hasPermission = await requestCallPermissions()
+    if (!hasPermission) return
+
+    if (isGroupConversation) {
+      // Group call
+      const gRoomId = `group-call-${conversationId}`
+      const payload = `[GROUP_CALL]::${JSON.stringify({
+        roomId: gRoomId,
+        callKind: isVideo ? 'video' : 'voice',
+        status: 'active',
+        callerName: user?.fullName || 'User'
+      })}`
+      wsSendMessage(conversationId, payload, null, false)
+
+      router.push({
+        pathname: '/call/[id]',
+        params: {
+          id: gRoomId,
+          isGroup: '1',
+          callKind: isVideo ? 'video' : 'audio'
+        }
+      })
+    } else {
+      // 1:1 call
+      if (!partnerId) return
+      try {
+        const response = await callApi.initiate({ receiverId: partnerId, callKind: isVideo ? 'video' : 'voice' })
+        const data = response.data
+        if (data) {
+          router.push({
+            pathname: '/call/[id]',
+            params: {
+              id: data.roomId,
+              sessionId: data.sessionId,
+              callerId: data.callerId,
+              callerName: data.callerName,
+              receiverName: data.receiverName || conversationName,
+              receiverAvatar: data.receiverAvatar || conversationAvatar || '',
+              isGroup: '0',
+              callKind: isVideo ? 'video' : 'audio'
+            }
+          })
+        }
+      } catch (error: any) {
+        console.error('Initiate call failed:', error)
+        if (error?.response?.status === 409) {
+          Toast.show({
+            type: 'error',
+            text1: 'Người dùng đang bận',
+            text2: 'Người nhận hiện đang trong cuộc gọi khác.',
+            position: 'top'
+          })
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: 'Không thể khởi tạo cuộc gọi',
+            text2: 'Vui lòng kiểm tra lại kết nối mạng.',
+            position: 'top'
+          })
+        }
+      }
+    }
+  }, [isGroupConversation, conversationId, user, wsSendMessage, partnerId, router, conversationName, conversationAvatar])
+
   const handleVoiceCall = useCallback(() => {
-    Alert.alert(
-      t('message.call.voiceTitle', { defaultValue: 'Cuộc gọi thoại' }),
-      t('message.call.voiceBody', { defaultValue: 'Chức năng gọi thoại đang được phát triển.' })
-    )
-  }, [t])
+    startCall(false)
+  }, [startCall])
 
   const handleVideoCall = useCallback(() => {
-    Alert.alert(
-      t('message.call.videoTitle', { defaultValue: 'Cuộc gọi video' }),
-      t('message.call.videoBody', { defaultValue: 'Chức năng gọi video đang được phát triển.' })
-    )
-  }, [t])
+    startCall(true)
+  }, [startCall])
 
-  const handleJoinGroupCall = useCallback((roomId: string, callKind: 'voice' | 'video') => {
-    Alert.alert(
-      t('message.call.joinTitle', { defaultValue: 'Tham gia cuộc gọi nhóm' }),
-      t('message.call.joinBody', { defaultValue: 'Chức năng tham gia cuộc gọi nhóm đang được phát triển.' })
-    )
-  }, [t])
+  const handleJoinGroupCall = useCallback(async (roomId: string, callKind: 'voice' | 'video') => {
+    const hasPermission = await requestCallPermissions()
+    if (!hasPermission) return
 
-  const handleRecall = useCallback((receiverId: string) => {
-    Alert.alert(
-      t('message.call.recallTitle', { defaultValue: 'Gọi lại' }),
-      t('message.call.recallBody', { defaultValue: 'Chức năng thực hiện cuộc gọi đang được phát triển.' })
-    )
-  }, [t])
+    router.push({
+      pathname: '/call/[id]',
+      params: {
+        id: roomId,
+        isGroup: '1',
+        callKind: callKind === 'voice' ? 'audio' : 'video'
+      }
+    })
+  }, [router])
+
+  const handleRecall = useCallback(async (receiverId: string) => {
+    const hasPermission = await requestCallPermissions()
+    if (!hasPermission) return
+
+    try {
+      const response = await callApi.initiate({ receiverId, callKind: 'video' })
+      const data = response.data
+      if (data) {
+        router.push({
+          pathname: '/call/[id]',
+          params: {
+            id: data.roomId,
+            sessionId: data.sessionId,
+            callerId: data.callerId,
+            callerName: data.callerName,
+            receiverName: data.receiverName || conversationName,
+            receiverAvatar: data.receiverAvatar || conversationAvatar || '',
+            isGroup: '0',
+            callKind: 'video'
+          }
+        })
+      }
+    } catch (error: any) {
+      console.error('Recall failed:', error)
+      if (error?.response?.status === 409) {
+        Toast.show({
+          type: 'error',
+          text1: 'Người dùng đang bận',
+          text2: 'Người nhận hiện đang trong cuộc gọi khác.',
+          position: 'top'
+        })
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Không thể gọi lại',
+          text2: 'Vui lòng kiểm tra lại kết nối mạng.',
+          position: 'top'
+        })
+      }
+    }
+  }, [router])
 
   const currentConversation = activeConversation || partnerConversation
 

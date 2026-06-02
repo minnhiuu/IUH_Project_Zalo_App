@@ -23,7 +23,7 @@ export function AiWelcomeScreen({ avatarUrl, onSelect }: AiWelcomeScreenProps) {
     <View className="flex-1 items-center justify-center px-6 py-10">
       <View className="w-16 h-16 mb-4">
         <Image
-          source={{ uri: avatarUrl || `https://api.dicebear.com/7.x/identicon/svg?seed=ai-assistant-001` }}
+          source={typeof avatarUrl === 'number' ? avatarUrl : { uri: avatarUrl || `https://api.dicebear.com/7.x/identicon/svg?seed=ai-assistant-001` }}
           className="w-full h-full rounded-full border border-black/5"
           resizeMode="cover"
         />

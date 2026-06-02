@@ -104,7 +104,7 @@ export default function VerifyOTPScreen() {
         // Only call getAndroidId on Android
         const androidModule = Application as any
         if (typeof androidModule.getAndroidId === 'function') {
-          deviceId = androidModule.getAndroidId() || 'android-' + Date.now()
+          deviceId = (await androidModule.getAndroidId()) || 'android-' + Date.now()
         }
       }
     } catch (error) {

@@ -95,8 +95,12 @@ export function UserAvatar({
   className,
   role
 }: UserAvatarProps) {
-  const hasImage = !!source
-  const imageSource = typeof source === 'string' ? { uri: source } : source
+  const isStringUrl = typeof source === 'string' && source.trim().length > 0
+  const isObjectWithUri = typeof source === 'object' && source !== null && 'uri' in source && typeof (source as any).uri === 'string' && (source as any).uri.trim().length > 0
+  const isNumber = typeof source === 'number'
+  const hasValidImage = isStringUrl || isObjectWithUri || isNumber
+
+  const imageSource = isStringUrl ? { uri: source } : source
 
   const getRoleBorderColor = () => {
     if (role === 'OWNER') return 'border-[#FFD700]' // Vàng
@@ -109,7 +113,7 @@ export function UserAvatar({
 
   return (
     <View className={`relative ${className || ''}`}>
-      {hasImage ? (
+      {hasValidImage ? (
         <Image
           source={imageSource as ImageSourcePropType}
           className={`${sizeStyles[size].container} rounded-full bg-gray-200 ${roleBorderWidth} ${getRoleBorderColor()}`}

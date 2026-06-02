@@ -64,7 +64,32 @@
         }
       ],
       "@react-native-community/datetimepicker",
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 24,
+            "extraMavenRepos": [
+              "https://storage.zego.im/maven",
+              "https://maven.aliyun.com/repository/public",
+              "../../node_modules/@notifee/react-native/android/libs"
+            ]
+          }
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Ứng dụng cần quyền camera để thực hiện cuộc gọi video."
+        }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Ứng dụng cần quyền microphone để thực hiện cuộc gọi."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

@@ -126,6 +126,26 @@ export const useFcm = () => {
       console.log('[FCM] Navigating from notification data:', JSON.stringify(rawData))
 
       const type = String(rawData.type || '')
+
+      // Handle CALL notification click -> open incoming call dialog
+      if (type === 'CALL' && rawData.sessionId) {
+        import('@/store/use-call-store').then(({ useCallStore }) => {
+          const callStore = useCallStore.getState()
+          if (!callStore.isRinging) {
+            callStore.setIncomingCall({
+              sessionId: String(rawData.sessionId),
+              roomId: String(rawData.roomId || ''),
+              callerId: String(rawData.callerId || ''),
+              callerName: String(rawData.callerName || rawData.title || 'Cuộc gọi đến'),
+              callerAvatar: String(rawData.callerAvatar || ''),
+              isGroup: rawData.isGroup === '1' || rawData.isGroup === true,
+              callKind: (rawData.callKind as 'audio' | 'video') || 'video'
+            })
+          }
+        })
+        return
+      }
+
       const conversationId = String(rawData.conversationId || rawData.conversation_id || '')
 
       if (isChatNotification(type) || conversationId) {

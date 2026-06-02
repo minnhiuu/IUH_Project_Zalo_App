@@ -27,104 +27,165 @@ function AvatarCell({
   uri,
   label,
   size,
-  left,
-  top
 }: {
   uri?: string | null
   label: string
   size: number
-  left: number
-  top: number
 }) {
+  const colorScheme = useColorScheme() ?? 'light'
+  const isDark = colorScheme === 'dark'
+
+  // Generate background color from name
+  const bgColors = ['#3B82F6', '#EF4444', '#22C55E', '#F59E0B', '#8B5CF6', '#EC4899', '#6366F1', '#14B8A6']
+  const colorIndex = label.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0)
+  const bgColor = bgColors[colorIndex % bgColors.length]
+
+  const initials = (() => {
+    const parts = label.trim().split(/\s+/)
+    if (parts.length === 0) return '?'
+    if (parts.length === 1) return parts[0].substring(0, 1).toUpperCase()
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase()
+  })()
+
+  const isValidUri = typeof uri === 'string' && uri.trim().length > 0
+
   return (
     <View
       style={{
-        position: 'absolute',
-        left,
-        top,
         width: size,
         height: size,
         borderRadius: size / 2,
         overflow: 'hidden',
-        alignItems: 'center',
-        justifyContent: 'center'
+        borderWidth: 1.5,
+        borderColor: isDark ? '#1F2937' : '#FFFFFF',
       }}
     >
-      <UserAvatar source={uri} name={label} size='xs' />
+      {isValidUri ? (
+        <ExpoImage
+          source={{ uri }}
+          style={{ width: size, height: size }}
+          contentFit="cover"
+        />
+      ) : (
+        <View
+          style={{
+            width: size,
+            height: size,
+            backgroundColor: bgColor,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <Text style={{ color: '#FFFFFF', fontSize: size * 0.38, fontWeight: '600' }}>
+            {initials}
+          </Text>
+        </View>
+      )}
     </View>
   )
 }
 
 function GroupConversationAvatar({ conversation }: { conversation: ConversationResponse }) {
+  const colorScheme = useColorScheme() ?? 'light'
+  const isDark = colorScheme === 'dark'
   const members = (conversation.members || []).slice(0, 8)
   const count = members.length
-  const visible = members.slice(0, 4)
-  const extra = Math.max(count - 4, 0)
 
-  if (count === 0) {
+  // If group has a custom avatar, use it directly
+  if (conversation.avatar) {
     return <UserAvatar source={conversation.avatar} name={conversation.name || 'Group'} size='xl' />
   }
 
-  if (count < 3) {
+  if (count === 0) {
+    return <UserAvatar source={null} name={conversation.name || 'Group'} size='xl' />
+  }
+
+  if (count < 2) {
     return (
-      <UserAvatar source={visible[0]?.avatar || conversation.avatar} name={conversation.name || 'Group'} size='xl' />
+      <UserAvatar source={members[0]?.avatar || null} name={members[0]?.fullName || conversation.name || 'Group'} size='xl' />
     )
   }
 
-  const threePos = [
-    { left: 13, top: 2, size: 26 },
-    { left: 1, top: 24, size: 26 },
-    { left: 25, top: 24, size: 26 }
-  ]
-  const fourPos = [
-    { left: 1, top: 1, size: 25 },
-    { left: 26, top: 1, size: 25 },
-    { left: 1, top: 26, size: 25 },
-    { left: 26, top: 26, size: 25 }
-  ]
+  const containerSize = 52
 
-  const layout = count === 3 ? threePos : fourPos
-  const renderMembers = count === 3 ? visible.slice(0, 3) : visible.slice(0, 4)
+  // 2 members: side by side, slightly overlapping
+  if (count === 2) {
+    const cellSize = 30
+    return (
+      <View style={{ width: containerSize, height: containerSize, borderRadius: containerSize / 2, overflow: 'hidden', backgroundColor: isDark ? '#1F2937' : '#E5E7EB' }}>
+        <View style={{ position: 'absolute', left: 2, top: (containerSize - cellSize) / 2, zIndex: 2 }}>
+          <AvatarCell uri={members[0]?.avatar} label={members[0]?.fullName || 'U'} size={cellSize} />
+        </View>
+        <View style={{ position: 'absolute', left: 20, top: (containerSize - cellSize) / 2, zIndex: 1 }}>
+          <AvatarCell uri={members[1]?.avatar} label={members[1]?.fullName || 'U'} size={cellSize} />
+        </View>
+      </View>
+    )
+  }
+
+  // 3 members: 1 on top center, 2 on bottom
+  if (count === 3) {
+    const cellSize = 26
+    return (
+      <View style={{ width: containerSize, height: containerSize, borderRadius: containerSize / 2, overflow: 'hidden', backgroundColor: isDark ? '#1F2937' : '#E5E7EB' }}>
+        <View style={{ position: 'absolute', left: (containerSize - cellSize) / 2, top: 1, zIndex: 2 }}>
+          <AvatarCell uri={members[0]?.avatar} label={members[0]?.fullName || 'U'} size={cellSize} />
+        </View>
+        <View style={{ position: 'absolute', left: 2, top: 24, zIndex: 1 }}>
+          <AvatarCell uri={members[1]?.avatar} label={members[1]?.fullName || 'U'} size={cellSize} />
+        </View>
+        <View style={{ position: 'absolute', left: 24, top: 24, zIndex: 1 }}>
+          <AvatarCell uri={members[2]?.avatar} label={members[2]?.fullName || 'U'} size={cellSize} />
+        </View>
+      </View>
+    )
+  }
+
+  // 4+ members: 2x2 grid
+  const cellSize = 24
+  const gap = 2
+  const visible = members.slice(0, 4)
+  const extra = Math.max(count - 4, 0)
 
   return (
-    <View
-      style={{
-        width: 52,
-        height: 52,
-        borderRadius: 26,
-        backgroundColor: 'transparent',
-        overflow: 'hidden',
-        position: 'relative'
-      }}
-    >
-      {renderMembers.map((m, idx) => (
-        <AvatarCell
-          key={`${m.userId}-${idx}`}
-          uri={m.avatar}
-          label={m.fullName || 'U'}
-          size={layout[idx].size}
-          left={layout[idx].left}
-          top={layout[idx].top}
-        />
-      ))}
-      {extra > 0 && (
+    <View style={{ width: containerSize, height: containerSize, borderRadius: containerSize / 2, overflow: 'hidden', backgroundColor: isDark ? '#1F2937' : '#E5E7EB' }}>
+      <View style={{ position: 'absolute', left: 2, top: 2 }}>
+        <AvatarCell uri={visible[0]?.avatar} label={visible[0]?.fullName || 'U'} size={cellSize} />
+      </View>
+      <View style={{ position: 'absolute', left: 26, top: 2 }}>
+        <AvatarCell uri={visible[1]?.avatar} label={visible[1]?.fullName || 'U'} size={cellSize} />
+      </View>
+      <View style={{ position: 'absolute', left: 2, top: 26 }}>
+        <AvatarCell uri={visible[2]?.avatar} label={visible[2]?.fullName || 'U'} size={cellSize} />
+      </View>
+      <View style={{ position: 'absolute', left: 26, top: 26 }}>
+        {visible[3] ? (
+          <AvatarCell uri={visible[3]?.avatar} label={visible[3]?.fullName || 'U'} size={cellSize} />
+        ) : (
+          <View style={{ width: cellSize, height: cellSize, borderRadius: cellSize / 2, backgroundColor: '#6B7280', alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontSize: 10, fontWeight: '700', color: '#FFFFFF' }}>+{extra}</Text>
+          </View>
+        )}
+      </View>
+      {extra > 0 && visible.length >= 4 && (
         <View
           style={{
             position: 'absolute',
-            right: 2,
-            bottom: 2,
-            minWidth: 20,
-            height: 20,
-            borderRadius: 10,
-            paddingHorizontal: 5,
-            backgroundColor: '#0F172A',
-            borderWidth: 1,
-            borderColor: '#FFFFFF',
+            right: 0,
+            bottom: 0,
+            minWidth: 18,
+            height: 18,
+            borderRadius: 9,
+            paddingHorizontal: 4,
+            backgroundColor: '#374151',
+            borderWidth: 1.5,
+            borderColor: isDark ? '#1F2937' : '#FFFFFF',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
+            zIndex: 10,
           }}
         >
-          <Text style={{ fontSize: 10, fontWeight: '700', color: '#FFFFFF' }}>+{extra}</Text>
+          <Text style={{ fontSize: 9, fontWeight: '700', color: '#FFFFFF' }}>+{extra}</Text>
         </View>
       )}
     </View>

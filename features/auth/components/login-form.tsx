@@ -27,18 +27,18 @@ const mapLoginErrorMessage = (rawMessage: string | undefined, status: number | u
   const normalized = (rawMessage || '').toLowerCase()
 
   if (status === 401 || normalized.includes('invalid credentials') || normalized.includes('bad credentials')) {
-    return t('auth.login.invalidCredentials')
+    return t('auth.errors.invalidCredentials')
   }
 
   if (status === 423 || normalized.includes('locked')) {
-    return t('auth.login.accountLocked')
+    return t('auth.errors.accountLocked')
   }
 
   if (status === 429 || normalized.includes('too many')) {
-    return t('auth.login.tooManyAttempts')
+    return t('auth.errors.tooManyAttempts')
   }
 
-  return t('auth.login.serverError')
+  return t('auth.errors.serverError')
 }
 
 const LoginForm: React.FC = () => {
@@ -96,7 +96,7 @@ const LoginForm: React.FC = () => {
         // Only call getAndroidId on Android
         const androidModule = Application as any
         if (typeof androidModule.getAndroidId === 'function') {
-          deviceId = androidModule.getAndroidId() || 'android-' + Date.now()
+          deviceId = (await androidModule.getAndroidId()) || 'android-' + Date.now()
         }
       }
     } catch (error) {

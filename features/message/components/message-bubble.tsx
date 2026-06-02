@@ -132,7 +132,7 @@ export function MessageBubble({
     groupLinkPreviewOpen && !!activeGroupLinkToken
   )
 
-  const aiStream = useAiStreamingStore(message.conversationId)
+  const aiStream = useAiStreamingStore(message.conversationId || '')
 
   useEffect(() => {
     Animated.timing(highlightAnim, {

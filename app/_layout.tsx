@@ -8,6 +8,7 @@ import '@/features/search/i18n'
 import '@/features/message/i18n'
 import { SEMANTIC } from '@/constants/theme'
 import { notificationToastConfig } from '@/features/notifications/components/notification-toast'
+import { IncomingCallDialog } from '@/features/call/components/IncomingCallDialog'
 
 import { DarkTheme, DefaultTheme, ThemeProvider as NavigationThemeProvider } from '@react-navigation/native'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -287,6 +288,7 @@ function ThemeAwareProviders() {
           </AuthGuard>
           <StatusBar style={isDark ? 'light' : 'dark'} />
           <Toast config={combinedToastConfig} position='top' topOffset={Math.round(Dimensions.get('window').height * 0.42)} />
+          <IncomingCallDialog />
         </NavigationThemeProvider>
       </GluestackProvider>
     </View>

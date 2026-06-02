@@ -14,6 +14,7 @@ export interface GroupCallPayload {
   callKind: 'voice' | 'video'
   status: 'active' | 'ended'
   callerName: string
+  durationSeconds?: number
 }
 
 interface CallMetadata {
@@ -108,37 +109,36 @@ export function CallMessage({
                 : (isDark ? '#3a3a3a' : '#E5E7EB'),
               backgroundColor: isOwn
                 ? (isDark ? '#1a3a5c' : '#E5EFFF')
-                : (isDark ? '#2a2a2a' : '#FFFFFF')
+                : (isDark ? '#2a2a2a' : '#FFFFFF'),
+              minWidth: 200,
+              maxWidth: 260
             }
           ]}
         >
-          {/* Header */}
-          <View style={styles.groupHeader}>
-            <View style={styles.groupTitleRow}>
-              <Ionicons name='people-outline' size={16} color='#2563EB' />
-              <Text style={[styles.headerTitle, { color: isDark ? '#E8EAED' : '#111827' }]}>
-                {t('messages.call.groupCall', { defaultValue: 'Cuộc gọi nhóm' })}
-              </Text>
-            </View>
-            {isActive && <View style={styles.pulseDot} />}
+          {/* Status Header */}
+          <View style={styles.privateHeader}>
+            <Text style={[styles.privateStatusText, { color: isDark ? '#E8EAED' : '#111827' }]}>
+              {t('messages.call.groupCall', { defaultValue: 'Cuộc gọi nhóm' })}
+            </Text>
           </View>
 
-          {/* Description */}
-          <View style={styles.groupBody}>
-            <View style={[styles.iconWrapper, { backgroundColor: isDark ? '#2A2F36' : '#F3F4F6' }]}>
+          {/* Call Info Row */}
+          <View style={styles.privateBody}>
+            <View style={[styles.arrowWrapper, { backgroundColor: isDark ? '#2A2F36' : (isActive ? '#ECFDF5' : '#F3F4F6') }]}>
               <Ionicons
                 name={isVideo ? 'videocam' : 'call'}
-                size={14}
+                size={15}
                 color={isActive ? '#10B981' : '#8A8A8A'}
               />
             </View>
-            <View style={styles.groupTexts}>
-              <Text style={[styles.statusText, { color: isDark ? '#E8EAED' : '#111827' }]}>
+            <View style={{ flex: 1, flexDirection: 'column' }}>
+              <Text style={[styles.privateLabel, { color: isDark ? '#E8EAED' : '#111827', fontSize: 13, fontWeight: '600' }]} numberOfLines={1}>
                 {isActive
                   ? t('messages.call.inProgress', { defaultValue: 'Đang diễn ra...' })
                   : t('messages.call.ended', { defaultValue: 'Đã kết thúc' })}
+                {!isActive && payload.durationSeconds ? ` - ${formatDuration(payload.durationSeconds, t)}` : ''}
               </Text>
-              <Text style={[styles.callerName, { color: isDark ? '#A9B7CC' : '#6B7280' }]}>
+              <Text style={[{ color: isDark ? '#A9B7CC' : '#6B7280', fontSize: 11, marginTop: 2 }]} numberOfLines={1}>
                 {t('messages.call.startedBy', { name: payload.callerName, defaultValue: `Bắt đầu bởi ${payload.callerName}` })}
               </Text>
             </View>
@@ -147,7 +147,7 @@ export function CallMessage({
           {/* Join Call Action Button */}
           {isActive && onJoinGroupCall && (
             <View>
-              <View style={[styles.divider, { backgroundColor: isDark ? '#3a3a3a' : '#E5E7EB' }]} />
+              <View style={[styles.divider, { backgroundColor: isDark ? '#3a3a3a' : '#F3F4F6', marginHorizontal: 12 }]} />
               <TouchableOpacity
                 activeOpacity={0.8}
                 onPress={() => onJoinGroupCall?.(payload!.roomId, payload!.callKind)}

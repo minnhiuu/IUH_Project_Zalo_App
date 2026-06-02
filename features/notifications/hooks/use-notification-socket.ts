@@ -68,7 +68,58 @@ const connectSingleton = async (user: any, queryClient: any) => {
             return
           }
 
-          // 2. Display local notification if not silent
+          // 2. Intercept incoming call notifications
+          const type = !('action' in data) ? data.type : undefined
+          const callPayload = !('action' in data) ? data.payload : undefined
+          const sessionId = callPayload?.sessionId || (!('action' in data) && (data as any).sessionId)
+          
+          if (type === 'CALL' && sessionId) {
+            console.log('[NotificationSocket] Intercepted CALL notification', callPayload)
+            import('@/store/use-call-store').then(({ useCallStore }) => {
+              const callStore = useCallStore.getState()
+              if (!callStore.isRinging) {
+                callStore.setIncomingCall({
+                  sessionId: String(sessionId),
+                  roomId: callPayload?.roomId || (!('action' in data) && (data as any).roomId) || '',
+                  callerId: callPayload?.callerId || (!('action' in data) && (data as any).callerId) || '',
+                  callerName: callPayload?.callerName || (!('action' in data) && data.title) || 'Cuộc gọi đến',
+                  callerAvatar: callPayload?.callerAvatar || (!('action' in data) && (data as any).callerAvatar),
+                  isGroup: false,
+                  callKind: callPayload?.callKind || (!('action' in data) && (data as any).callKind) || 'video'
+                })
+              }
+            })
+
+            // Also display a local notification so user sees it if app is backgrounded
+            const callerName = callPayload?.callerName || (!('action' in data) && data.title) || 'Cuộc gọi đến'
+            const callKindLabel = (callPayload?.callKind || 'video') === 'video' ? '📹 Video' : '📞 Thoại'
+            import('expo-constants').then((ConstantsMod) => {
+              const Constants = ConstantsMod.default || ConstantsMod
+              if (Constants.executionEnvironment === 'storeClient') return
+              import('@/tasks/notifee-background-handler')
+                .then((mod) => {
+                  const displayFn = mod.displayChatNotification || (mod.default && mod.default.displayChatNotification)
+                  if (displayFn) {
+                    displayFn({
+                      title: `${callKindLabel} - Cuộc gọi đến`,
+                      body: `${callerName} đang gọi cho bạn`,
+                      type: 'CALL',
+                      sessionId: String(sessionId),
+                      roomId: callPayload?.roomId || '',
+                      callerId: callPayload?.callerId || '',
+                      callerName: callerName,
+                      callerAvatar: callPayload?.callerAvatar || '',
+                      callKind: callPayload?.callKind || 'video',
+                      notificationId: `CALL_${sessionId}`
+                    } as any).catch((err: any) => console.error('[NotificationSocket] Error displaying call notification:', err))
+                  }
+                })
+                .catch(() => {})
+            }).catch(() => {})
+            return // Skip normal notification display since we show ringing UI
+          }
+
+          // 3. Display local notification if not silent
           if (!('action' in data) && !data.silent) {
             import('expo-constants').then((ConstantsMod) => {
               const Constants = ConstantsMod.default || ConstantsMod
