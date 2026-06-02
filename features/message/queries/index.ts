@@ -23,6 +23,9 @@ export {
 export {
   useSendMessage,
   useMarkAsRead,
+  useMarkAsUnread,
+  useTogglePinConversation,
+  useToggleMuteConversation,
   useRevokeMessage,
   useDeleteMessageForMe,
   useToggleReaction,
@@ -51,5 +54,6 @@ export {
   useRejectJoinRequest,
   useCancelMyJoinRequest,
   useBlockMemberFromGroup,
-  useUnblockMemberFromGroup
+  useUnblockMemberFromGroup,
+  useUpdateMessageExpirationMutation
 } from './use-mutations'

@@ -22,21 +22,21 @@ export function GroupMemberPickerItem({ member, subtitle, selected, onPress }: G
       <View
         style={[styles.checkbox, { borderColor: isDark ? '#4E5866' : '#CBD2DB' }, selected && styles.checkboxSelected]}
       >
-        {selected && <Ionicons name='checkmark' size={16} color='#FFFFFF' />}
+        {selected && <Ionicons name='checkmark' size={14} color='#FFFFFF' />}
       </View>
 
-      <UserAvatar source={member.avatar || undefined} name={member.fullName || 'User'} size='xl' />
-
-      <View style={[styles.content, { borderBottomColor: isDark ? '#2D3440' : '#E5E9EF' }]}>
-        <Text style={styles.name} numberOfLines={1}>
-          {member.fullName}
-        </Text>
-        {!!subtitle && (
-          <Text style={styles.subtitle} numberOfLines={1}>
-            {subtitle}
+      <UserAvatar source={member.avatar || undefined} name={member.fullName || 'User'} size='lg' />
+  
+        <View style={[styles.content, { borderBottomColor: isDark ? '#2D3440' : '#E5E9EF' }]}>
+          <Text style={[styles.name, { color: isDark ? '#F1F5F9' : '#1F2937' }]} numberOfLines={1}>
+            {member.fullName}
           </Text>
-        )}
-      </View>
+          {!!subtitle && (
+            <Text style={[styles.subtitle, { color: isDark ? '#9AA5B5' : '#7B8591' }]} numberOfLines={1}>
+              {subtitle}
+            </Text>
+          )}
+        </View>
     </Pressable>
   )
 }
@@ -50,17 +50,18 @@ const styles = StyleSheet.create({
     gap: 12
   },
   checkbox: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 1.2,
     borderColor: '#CBD2DB',
     alignItems: 'center',
     justifyContent: 'center'
   },
   checkboxSelected: {
     borderColor: '#1977F3',
-    backgroundColor: '#1977F3'
+    backgroundColor: '#1977F3',
+    borderWidth: 0
   },
   content: {
     flex: 1,
@@ -70,13 +71,11 @@ const styles = StyleSheet.create({
     paddingTop: 2
   },
   name: {
-    fontSize: 16,
-    color: '#1F2937',
+    fontSize: 15,
     fontWeight: '500'
   },
   subtitle: {
-    marginTop: 2,
-    fontSize: 14,
-    color: '#7B8591'
+    marginTop: 1,
+    fontSize: 12
   }
 })

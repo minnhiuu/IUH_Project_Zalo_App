@@ -237,7 +237,7 @@ type BackendStoryGroup = {
 }
 
 const mapBackendGroupToStoryGroup = (group: BackendStoryGroup): StoryGroup => {
-  const stories = (group.stories ?? []).map(mapPostToSocialPost).filter((story) => story.media.length > 0)
+  const stories = (group.stories ?? []).map(mapPostToSocialPost).filter((story) => (story.media?.length ?? 0) > 0)
   const firstStory = stories[0]
   const author = normalizeAuthorInfo(group.authorInfo ?? group.author ?? group.userInfo ?? group.user)
   const authorName =
@@ -311,7 +311,9 @@ const parseStoryGroups = (payload: unknown): StoryGroup[] => {
     return (items as BackendStoryGroup[]).map(mapBackendGroupToStoryGroup).filter((group) => group.stories.length > 0)
   }
 
-  const storyPosts = (items as BackendPostResponse[]).map(mapPostToSocialPost).filter((story) => story.media.length > 0)
+  const storyPosts = (items as BackendPostResponse[])
+    .map(mapPostToSocialPost)
+    .filter((story) => (story.media?.length ?? 0) > 0)
 
   return groupStoriesByAuthor(storyPosts)
 }
@@ -344,7 +346,7 @@ export const getSocialFeedCommentsQueryOptions = (postId: string, page = 0, size
     queryKey: socialFeedCommentKeys.list(postId, page, size, sortBy),
     queryFn: async () => {
       const response = await commentApi.getRootCommentsByPost(postId, page, size, sortBy)
-      const payload = response.data?.data
+      const payload = response.data?.data as any
       const rawComments = Array.isArray(payload?.data)
         ? payload.data
         : Array.isArray(payload)
@@ -418,7 +420,7 @@ export const getInfiniteMyPostsQueryOptions = (size = 20) =>
     queryFn: async ({ pageParam = 0 }) => {
       const response = await socialFeedApi.getMyPosts(pageParam, size)
       return {
-        posts: (response.data?.data?.content ?? []).map(mapPostToSocialPost),
+        posts: ((response.data?.data as any)?.content ?? []).map(mapPostToSocialPost),
         nextPage: pageParam + 1
       }
     },

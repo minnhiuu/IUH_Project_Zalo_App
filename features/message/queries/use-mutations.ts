@@ -186,15 +186,20 @@ export const useMarkAsRead = () => {
 
       // Optimistic update: set unreadCount to 0
       queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
-        if (!oldData?.data) return oldData
-        return {
-          ...oldData,
-          data: Array.isArray(oldData.data)
-            ? oldData.data.map((conv: ConversationResponse) =>
-                conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
-              )
-            : oldData.data
+        if (!oldData) return oldData
+        const mapFn = (conv: ConversationResponse) =>
+          conv.id === conversationId ? { ...conv, unreadCount: 0 } : conv
+
+        if (Array.isArray(oldData)) {
+          return oldData.map(mapFn)
         }
+        if (oldData?.data && Array.isArray(oldData.data)) {
+          return {
+            ...oldData,
+            data: oldData.data.map(mapFn)
+          }
+        }
+        return oldData
       })
 
       return { previousData }
@@ -207,6 +212,116 @@ export const useMarkAsRead = () => {
         })
       }
       handleErrorApi({ error })
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+    }
+  })
+}
+
+export const useMarkAsUnread = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (conversationId: string) => messageApi.markAsUnread(conversationId),
+    onMutate: async (conversationId) => {
+      await queryClient.cancelQueries({ queryKey: messageKeys.conversations() })
+      const previousData = queryClient.getQueriesData({ queryKey: messageKeys.conversations() })
+
+      queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
+        if (!oldData) return oldData
+        const mapFn = (conv: ConversationResponse) =>
+          conv.id === conversationId ? { ...conv, unreadCount: (conv.unreadCount || 0) + 1 } : conv
+
+        if (Array.isArray(oldData)) return oldData.map(mapFn)
+        if (oldData?.data && Array.isArray(oldData.data)) {
+          return { ...oldData, data: oldData.data.map(mapFn) }
+        }
+        return oldData
+      })
+
+      return { previousData }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data)
+        })
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+    }
+  })
+}
+
+export const useTogglePinConversation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ conversationId, isPinned }: { conversationId: string; isPinned: boolean }) =>
+      isPinned ? messageApi.unpinConversation(conversationId) : messageApi.pinConversation(conversationId),
+    onMutate: async ({ conversationId, isPinned }) => {
+      await queryClient.cancelQueries({ queryKey: messageKeys.conversations() })
+      const previousData = queryClient.getQueriesData({ queryKey: messageKeys.conversations() })
+
+      queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
+        if (!oldData) return oldData
+        const mapFn = (conv: ConversationResponse) =>
+          conv.id === conversationId ? { ...conv, isPinned: !isPinned } : conv
+
+        if (Array.isArray(oldData)) return oldData.map(mapFn)
+        if (oldData?.data && Array.isArray(oldData.data)) {
+          return { ...oldData, data: oldData.data.map(mapFn) }
+        }
+        return oldData
+      })
+
+      return { previousData }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data)
+        })
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+    }
+  })
+}
+
+export const useToggleMuteConversation = () => {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: ({ conversationId, isMuted }: { conversationId: string; isMuted: boolean }) =>
+      isMuted ? messageApi.unmuteConversation(conversationId) : messageApi.muteConversation(conversationId),
+    onMutate: async ({ conversationId, isMuted }) => {
+      await queryClient.cancelQueries({ queryKey: messageKeys.conversations() })
+      const previousData = queryClient.getQueriesData({ queryKey: messageKeys.conversations() })
+
+      queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
+        if (!oldData) return oldData
+        const mapFn = (conv: ConversationResponse) =>
+          conv.id === conversationId ? { ...conv, isMuted: !isMuted } : conv
+
+        if (Array.isArray(oldData)) return oldData.map(mapFn)
+        if (oldData?.data && Array.isArray(oldData.data)) {
+          return { ...oldData, data: oldData.data.map(mapFn) }
+        }
+        return oldData
+      })
+
+      return { previousData }
+    },
+    onError: (_error, _variables, context) => {
+      if (context?.previousData) {
+        context.previousData.forEach(([queryKey, data]) => {
+          queryClient.setQueryData(queryKey, data)
+        })
+      }
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
@@ -379,24 +494,32 @@ export const useClearConversationHistory = () => {
     mutationFn: (conversationId: string) => messageApi.clearConversationHistory(conversationId),
     onSuccess: (_data, conversationId) => {
       queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
-        if (!oldData?.data || !Array.isArray(oldData.data)) return oldData
-        return {
-          ...oldData,
-          data: oldData.data.map((conv: ConversationResponse) =>
-            conv.id === conversationId
-              ? {
-                  ...conv,
-                  unreadCount: 0,
-                  lastMessage: null,
-                  lastMessageId: null,
-                  lastMessageTime: null,
-                  isLastMessageFromMe: null,
-                  lastMessageType: null,
-                  lastMessageStatus: null
-                }
-              : conv
-          )
+        if (!oldData) return oldData
+
+        const mapFn = (conv: ConversationResponse) =>
+          conv.id === conversationId
+            ? {
+                ...conv,
+                unreadCount: 0,
+                lastMessage: null,
+                lastMessageId: null,
+                lastMessageTime: null,
+                isLastMessageFromMe: null,
+                lastMessageType: null,
+                lastMessageStatus: null
+              }
+            : conv
+
+        if (Array.isArray(oldData)) {
+          return oldData.map(mapFn)
         }
+        if (oldData?.data && Array.isArray(oldData.data)) {
+          return {
+            ...oldData,
+            data: oldData.data.map(mapFn)
+          }
+        }
+        return oldData
       })
 
       queryClient.setQueryData(messageKeys.messages(conversationId), {
@@ -429,11 +552,17 @@ export const useDeleteConversation = () => {
     mutationFn: (conversationId: string) => messageApi.deleteConversation(conversationId),
     onSuccess: (_data, conversationId) => {
       queryClient.setQueriesData({ queryKey: messageKeys.conversations() }, (oldData: any) => {
-        if (!oldData?.data || !Array.isArray(oldData.data)) return oldData
-        return {
-          ...oldData,
-          data: oldData.data.filter((conv: ConversationResponse) => conv.id !== conversationId)
+        if (!oldData) return oldData
+        if (Array.isArray(oldData)) {
+          return oldData.filter((conv: ConversationResponse) => conv.id !== conversationId)
         }
+        if (oldData?.data && Array.isArray(oldData.data)) {
+          return {
+            ...oldData,
+            data: oldData.data.filter((conv: ConversationResponse) => conv.id !== conversationId)
+          }
+        }
+        return oldData
       })
       queryClient.removeQueries({ queryKey: messageKeys.messages(conversationId) })
       queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
@@ -515,13 +644,8 @@ export const useDisbandGroup = () => {
 export const useLeaveGroup = () => {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: ({
-      conversationId,
-      transferOwnershipToUserId
-    }: {
-      conversationId: string
-      transferOwnershipToUserId?: string
-    }) => messageApi.leaveGroup(conversationId, { transferOwnershipToUserId }),
+    mutationFn: ({ conversationId, transferOwnershipToUserId }: { conversationId: string; transferOwnershipToUserId?: string }) =>
+      messageApi.leaveGroup(conversationId, { transferTo: transferOwnershipToUserId }),
     onSuccess: (_data, variables) => {
       queryClient.removeQueries({ queryKey: messageKeys.messages(variables.conversationId) })
       queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
@@ -686,6 +810,19 @@ export const useUnblockMemberFromGroup = () => {
     mutationFn: ({ conversationId, targetUserId }: { conversationId: string; targetUserId: string }) =>
       messageApi.unblockMemberFromGroup(conversationId, targetUserId),
     onSuccess: (_data, variables) => invalidateGroupConversationScopes(queryClient, variables.conversationId),
+    onError: (error: Error) => handleErrorApi({ error })
+  })
+}
+
+export const useUpdateMessageExpirationMutation = () => {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ conversationId, expirationDays }: { conversationId: string; expirationDays: number }) =>
+      messageApi.updateMessageExpiration(conversationId, expirationDays),
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: messageKeys.conversations() })
+      queryClient.invalidateQueries({ queryKey: messageKeys.messages(variables.conversationId) })
+    },
     onError: (error: Error) => handleErrorApi({ error })
   })
 }

@@ -85,6 +85,19 @@ export const messageApi = {
     http.get<ApiResponse<ConversationResponse>>(API_ENDPOINTS.MESSAGE.PARTNER_CONVERSATION(partnerId)),
 
   markAsRead: (conversationId: string) => http.put<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.MARK_READ(conversationId)),
+  markAsUnread: (conversationId: string) => http.put<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.MARK_UNREAD(conversationId)),
+
+  pinConversation: (conversationId: string) =>
+    http.post<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.PIN_CONVERSATION(conversationId)),
+
+  unpinConversation: (conversationId: string) =>
+    http.delete<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.PIN_CONVERSATION(conversationId)),
+
+  muteConversation: (conversationId: string) =>
+    http.post<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.MUTE(conversationId)),
+
+  unmuteConversation: (conversationId: string) =>
+    http.delete<ApiResponse<void>>(API_ENDPOINTS.MESSAGE.MUTE(conversationId)),
 
   getUnreadAnchor: (conversationId: string) =>
     http.get<ApiResponse<{ firstUnreadMessageId: string | null; unreadCount: number }>>(
@@ -319,5 +332,10 @@ export const messageApi = {
   ) =>
     http.get<ApiResponse<PageResponse<MessageResponse[]>>>(
       `${API_ENDPOINTS.MESSAGE.MEDIA(conversationId)}?types=${types.join(',')}&page=${page}&size=${size}`
-    )
+    ),
+
+  updateMessageExpiration: (conversationId: string, expirationDays: number) =>
+    http.patch<ApiResponse<ConversationResponse>>(API_ENDPOINTS.MESSAGE.UPDATE_EXPIRATION(conversationId), {
+      days: expirationDays
+    })
 }

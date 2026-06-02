@@ -7,22 +7,45 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  ActivityIndicator
+  ActivityIndicator,
+  Pressable
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
-import Toast from 'react-native-toast-message'
 import { useTranslation } from 'react-i18next'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import * as Application from 'expo-application'
+import { isAxiosError } from 'axios'
 
 import { useLoginMutation } from '../queries'
 import { secureStorage } from '@/utils/storageUtils'
+import { useTheme } from '@/context'
+import { changeLanguage, type LanguageCode } from '@/i18n'
+import { showCenteredToast } from '@/utils/centered-toast'
+
+const mapLoginErrorMessage = (rawMessage: string | undefined, status: number | undefined, t: (key: string) => string) => {
+  const normalized = (rawMessage || '').toLowerCase()
+
+  if (status === 401 || normalized.includes('invalid credentials') || normalized.includes('bad credentials')) {
+    return t('auth.login.invalidCredentials')
+  }
+
+  if (status === 423 || normalized.includes('locked')) {
+    return t('auth.login.accountLocked')
+  }
+
+  if (status === 429 || normalized.includes('too many')) {
+    return t('auth.login.tooManyAttempts')
+  }
+
+  return t('auth.login.serverError')
+}
 
 const LoginForm: React.FC = () => {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const router = useRouter()
-  const { mutate: login, isPending } = useLoginMutation()
+  const { mutateAsync: login, isPending } = useLoginMutation()
+  const { isDark, toggleTheme, colors } = useTheme()
 
   // Form state
   const [activeTab, setActiveTab] = useState<'email' | 'qr'>('email')
@@ -84,13 +107,25 @@ const LoginForm: React.FC = () => {
     // Save deviceId for token refresh later
     await secureStorage.setDeviceId(deviceId)
 
-    login({
-      email: email.trim(),
-      password,
-      deviceId,
-      deviceType: 'MOBILE' // Backend only accepts WEB or MOBILE
-    })
-  }, [validateForm, login, email, password])
+    try {
+      await login({
+        email: email.trim(),
+        password,
+        deviceId,
+        deviceType: 'MOBILE' // Backend only accepts WEB or MOBILE
+      })
+    } catch (error) {
+      const axiosMessage = isAxiosError(error) ? (error.response?.data?.message as string | undefined) : undefined
+      const axiosStatus = isAxiosError(error) ? error.response?.status : undefined
+      const message = mapLoginErrorMessage(axiosMessage, axiosStatus, t)
+
+      showCenteredToast({
+        type: 'error',
+        text1: t('common.error'),
+        text2: message
+      })
+    }
+  }, [validateForm, login, email, password, t])
 
   // Handle login without password (OTP)
   const handleLoginWithoutPassword = useCallback(() => {
@@ -99,12 +134,17 @@ const LoginForm: React.FC = () => {
       return
     }
 
-    Toast.show({
+    showCenteredToast({
       type: 'info',
       text1: t('auth.login.otpSent'),
       text2: t('auth.login.checkPhone')
     })
   }, [email, t])
+
+  const toggleLanguage = useCallback(async () => {
+    const next = (i18n.language === 'vi' ? 'en' : 'vi') as LanguageCode
+    await changeLanguage(next)
+  }, [i18n.language])
 
   // Render Email Tab Content
   const renderEmailTab = () => (
@@ -112,14 +152,14 @@ const LoginForm: React.FC = () => {
       {/* Email Input */}
       <View className='mb-3'>
         <View
-          className={`flex-row items-center bg-gray-100 rounded-full px-4 h-12 ${
+          className={`flex-row items-center bg-muted rounded-full px-4 h-12 ${
             errors.email ? 'border border-red-500' : ''
           }`}
         >
-          <Ionicons name='mail-outline' size={20} color='#666' />
+          <Ionicons name='mail-outline' size={20} color={colors.textSecondary} />
           <TextInput
             placeholder={t('auth.login.emailPlaceholder')}
-            placeholderTextColor='#9ca3af'
+            placeholderTextColor={isDark ? '#9AA3B2' : '#9ca3af'}
             value={email}
             onChangeText={(text) => {
               setEmail(text)
@@ -130,7 +170,7 @@ const LoginForm: React.FC = () => {
             autoComplete='email'
             returnKeyType='next'
             onSubmitEditing={() => passwordRef.current?.focus()}
-            className='flex-1 text-base text-gray-800 ml-3'
+            className='flex-1 text-base text-foreground ml-3'
           />
         </View>
         {errors.email && <Text className='text-red-500 text-xs mt-1 ml-4'>{errors.email}</Text>}
@@ -139,15 +179,15 @@ const LoginForm: React.FC = () => {
       {/* Password Input */}
       <View className='mb-6'>
         <View
-          className={`flex-row items-center bg-gray-100 rounded-full px-4 h-12 ${
+          className={`flex-row items-center bg-muted rounded-full px-4 h-12 ${
             errors.password ? 'border border-red-500' : ''
           }`}
         >
-          <Ionicons name='lock-closed-outline' size={20} color='#666' />
+          <Ionicons name='lock-closed-outline' size={20} color={colors.textSecondary} />
           <TextInput
             ref={passwordRef}
             placeholder={t('auth.login.passwordPlaceholder')}
-            placeholderTextColor='#9ca3af'
+            placeholderTextColor={isDark ? '#9AA3B2' : '#9ca3af'}
             value={password}
             onChangeText={(text) => {
               setPassword(text)
@@ -156,10 +196,10 @@ const LoginForm: React.FC = () => {
             secureTextEntry={!showPassword}
             returnKeyType='done'
             onSubmitEditing={handleLogin}
-            className='flex-1 text-base text-gray-800 ml-3'
+            className='flex-1 text-base text-foreground ml-3'
           />
           <TouchableOpacity onPress={() => setShowPassword(!showPassword)} className='pl-2'>
-            <Text className='text-gray-500 text-sm'>{showPassword ? t('auth.login.hide') : t('auth.login.show')}</Text>
+            <Text className='text-muted-foreground text-sm'>{showPassword ? t('auth.login.hide') : t('auth.login.show')}</Text>
           </TouchableOpacity>
         </View>
         {errors.password && <Text className='text-red-500 text-xs mt-1 ml-4'>{errors.password}</Text>}
@@ -181,18 +221,18 @@ const LoginForm: React.FC = () => {
 
       {/* Divider */}
       <View className='flex-row items-center my-4'>
-        <View className='flex-1 h-px bg-gray-300' />
-        <Text className='mx-4 text-gray-500 text-sm'>{t('auth.login.or')}</Text>
-        <View className='flex-1 h-px bg-gray-300' />
+        <View className='flex-1 h-px bg-border' />
+        <Text className='mx-4 text-muted-foreground text-sm'>{t('auth.login.or')}</Text>
+        <View className='flex-1 h-px bg-border' />
       </View>
 
       {/* Login without Password Button */}
       <TouchableOpacity
         onPress={handleLoginWithoutPassword}
-        className='h-12 rounded-full justify-center items-center border-2 border-gray-800 mb-6'
+        className='h-12 rounded-full justify-center items-center border-2 border-foreground mb-6'
         activeOpacity={0.8}
       >
-        <Text className='text-gray-800 font-bold text-sm'>{t('auth.login.loginWithoutPassword')}</Text>
+        <Text className='text-foreground font-bold text-sm'>{t('auth.login.loginWithoutPassword')}</Text>
       </TouchableOpacity>
 
       {/* Links */}
@@ -204,22 +244,7 @@ const LoginForm: React.FC = () => {
           activeOpacity={0.6}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
-          <Text className='text-[#0068FF] text-sm'>{t('auth.login.forgotPassword')}</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          className='flex-row items-center'
-          onPress={() => {
-            Toast.show({
-              type: 'info',
-              text1: 'Coming soon',
-              text2: 'Facebook login will be available soon'
-            })
-          }}
-          activeOpacity={0.6}
-        >
-          <Ionicons name='logo-facebook' size={18} color='#1877f2' />
-          <Text className='text-[#0068FF] text-sm ml-2'>{t('auth.login.loginWithFacebook')}</Text>
+          <Text className='text-primary text-sm'>{t('auth.login.forgotPassword')}</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -236,7 +261,7 @@ const LoginForm: React.FC = () => {
   )
 
   return (
-    <SafeAreaView className='flex-1 bg-white' edges={['top', 'bottom']}>
+    <SafeAreaView className='flex-1 bg-background' edges={['top', 'bottom']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         className='flex-1'
@@ -248,29 +273,40 @@ const LoginForm: React.FC = () => {
           keyboardShouldPersistTaps='handled'
           contentContainerStyle={{ flexGrow: 1, paddingBottom: 20 }}
         >
+          <View className='flex-row justify-end items-center px-4 pt-3 gap-3'>
+            <Pressable
+              onPress={toggleLanguage}
+              className='px-3 py-1.5 rounded-full border border-border bg-card'
+            >
+              <Text className='text-foreground text-xs font-medium'>{i18n.language === 'vi' ? 'VI' : 'EN'}</Text>
+            </Pressable>
+            <Pressable onPress={toggleTheme} className='w-9 h-9 rounded-full border border-border bg-card items-center justify-center'>
+              <Ionicons name={isDark ? 'sunny-outline' : 'moon-outline'} size={18} color={colors.text} />
+            </Pressable>
+          </View>
+
           {/* Logo */}
-          <View className='items-center pt-8 pb-4'>
+          <View className='items-center pt-4 pb-4'>
             <Text
-              className='text-[#0068FF]'
+              className='text-primary'
               style={{
-                fontSize: 42,
-                fontWeight: 'bold',
-                fontStyle: 'italic'
+                fontSize: 40,
+                fontWeight: '700'
               }}
             >
-              Zalo
+              BondHub
             </Text>
           </View>
 
           {/* Tab Navigation */}
-          <View className='flex-row mx-4 mb-4 border-b border-gray-200'>
+          <View className='flex-row mx-4 mb-4 border-b border-border'>
             <TouchableOpacity
               onPress={() => setActiveTab('email')}
-              className={`flex-1 py-3 ${activeTab === 'email' ? 'border-b-2 border-[#0068FF]' : ''}`}
+              className={`flex-1 py-3 ${activeTab === 'email' ? 'border-b-2 border-primary' : ''}`}
             >
               <Text
                 className={`text-center font-semibold text-xs ${
-                  activeTab === 'email' ? 'text-[#0068FF]' : 'text-gray-500'
+                  activeTab === 'email' ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
                 {t('auth.login.emailTab')}
@@ -279,11 +315,11 @@ const LoginForm: React.FC = () => {
 
             <TouchableOpacity
               onPress={() => setActiveTab('qr')}
-              className={`flex-1 py-3 ${activeTab === 'qr' ? 'border-b-2 border-[#0068FF]' : ''}`}
+              className={`flex-1 py-3 ${activeTab === 'qr' ? 'border-b-2 border-primary' : ''}`}
             >
               <Text
                 className={`text-center font-semibold text-xs ${
-                  activeTab === 'qr' ? 'text-[#0068FF]' : 'text-gray-500'
+                  activeTab === 'qr' ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
                 {t('auth.login.qrTab')}
@@ -296,9 +332,9 @@ const LoginForm: React.FC = () => {
 
           {/* Register Link */}
           <View className='flex-row justify-center items-center py-6 mt-auto'>
-            <Text className='text-gray-600 text-sm'>{t('auth.login.noAccount')}</Text>
+            <Text className='text-muted-foreground text-sm'>{t('auth.login.noAccount')}</Text>
             <TouchableOpacity onPress={() => router.push('/auth/register' as any)}>
-              <Text className='text-[#0068FF] text-sm font-semibold ml-1'>{t('auth.login.register')}</Text>
+              <Text className='text-primary text-sm font-semibold ml-1'>{t('auth.login.register')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

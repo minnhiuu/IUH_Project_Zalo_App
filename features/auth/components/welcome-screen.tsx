@@ -1,5 +1,8 @@
 import React from 'react'
-import { View, Text, TouchableOpacity, StatusBar } from 'react-native'
+import { View, Text, TouchableOpacity, StatusBar, StyleSheet } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
+import { HEADER } from '@/constants/theme'
+import { useTheme } from '@/context/theme-context'
 import { useTranslation } from 'react-i18next'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
@@ -7,6 +10,7 @@ import { useRouter } from 'expo-router'
 export const WelcomeScreen: React.FC = () => {
   const { t, i18n } = useTranslation()
   const router = useRouter()
+  const { isDark } = useTheme()
 
   const handleLogin = () => {
     router.push('/auth/login')
@@ -22,8 +26,13 @@ export const WelcomeScreen: React.FC = () => {
   }
 
   return (
-    <View className='flex-1 bg-[#0068FF]'>
-      <StatusBar barStyle='light-content' backgroundColor='#0068FF' />
+    <View style={{ flex: 1 }}>
+      <LinearGradient
+        colors={isDark ? HEADER.gradientColorsDark : HEADER.gradientColors}
+        style={StyleSheet.absoluteFill}
+      />
+
+      <StatusBar barStyle='light-content' />
 
       <SafeAreaView className='flex-1'>
         {/* Language Selector - Top Right */}
@@ -37,13 +46,12 @@ export const WelcomeScreen: React.FC = () => {
 
         {/* Center Content - Logo & Text */}
         <View className='flex-1 items-center justify-center px-8'>
-          {/* Zalo Logo Box */}
+          {/* BondHub Logo Box */}
           <View className='w-20 h-20 bg-white rounded-2xl items-center justify-center mb-3 shadow-lg'>
-            <Text className='text-[#0068FF] text-4xl font-bold'>Z</Text>
+            <Text className='text-[#0068FF] text-4xl font-bold'>B</Text>
           </View>
-
-          {/* Zalo Text */}
-          <Text className='text-white text-2xl font-semibold mb-6'>Zalo</Text>
+          {/* BondHub Text */}
+          <Text className='text-white text-2xl font-semibold mb-6'>BondHub</Text>
 
           {/* Subtitle */}
           <Text className='text-white text-xl text-center leading-8'>{t('auth.welcome.subtitle')}</Text>

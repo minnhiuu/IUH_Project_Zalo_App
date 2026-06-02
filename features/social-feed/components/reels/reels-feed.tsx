@@ -145,7 +145,7 @@ export function ReelsFeed({ onReactionPress, onCommentPress, onSharePress, itemH
   const windowHeight = Math.max(1, itemHeight ?? Dimensions.get('window').height)
 
   const viewabilityConfig = useRef({ itemVisiblePercentThreshold: 70 }).current
-  const onViewableItemsChanged = useRef(({ viewableItems }: { viewableItems: Array<{ index?: number }> }) => {
+  const onViewableItemsChanged = useRef(({ viewableItems }: any) => {
     if (viewableItems.length === 0) return
     const nextIndex = viewableItems[0]?.index ?? 0
     setActiveIndex(nextIndex)

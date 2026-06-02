@@ -92,6 +92,10 @@ export const API_ENDPOINTS = {
     SEND: (conversationId: string) => `/messages/conversations/${conversationId}/messages`,
     PARTNER_CONVERSATION: (partnerId: string) => `/messages/conversations/partner/${partnerId}`,
     MARK_READ: (conversationId: string) => `/messages/conversations/${conversationId}/read`,
+    MARK_UNREAD: (conversationId: string) => `/messages/conversations/${conversationId}/unread`,
+    PIN_CONVERSATION: (conversationId: string) => `/messages/conversations/${conversationId}/pin`,
+    MUTE: (conversationId: string) => `/messages/conversations/${conversationId}/mute`,
+    HIDE: (conversationId: string) => `/messages/conversations/${conversationId}/hide`,
     UNREAD_ANCHOR: (conversationId: string) => `/messages/conversations/${conversationId}/unread-anchor`,
     PINS: (conversationId: string) => `/messages/conversations/${conversationId}/pins`,
     PIN_MESSAGE: (conversationId: string, messageId: string) =>
@@ -146,7 +150,8 @@ export const API_ENDPOINTS = {
     REMINDERS: '/messages/api/v1/reminders',
     REMINDERS_BY_CONVERSATION: (conversationId: string) => `/messages/api/v1/reminders/conversations/${conversationId}`,
     REMINDER_DELETE: (reminderId: string) => `/messages/api/v1/reminders/${reminderId}`,
-    REMINDER_UPDATE: (reminderId: string) => `/messages/api/v1/reminders/${reminderId}`
+    REMINDER_UPDATE: (reminderId: string) => `/messages/api/v1/reminders/${reminderId}`,
+    UPDATE_EXPIRATION: (conversationId: string) => `/messages/conversations/${conversationId}/expiration`
   },
   FILE: {
     UPLOAD: '/files/upload',

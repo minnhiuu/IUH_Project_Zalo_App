@@ -78,13 +78,12 @@ export function PostDetailModal({ visible, post, onClose }: PostDetailModalProps
         </ScrollView>
 
         {/* Reaction Picker */}
-        {showReactionPicker && (
-          <ReactionPicker
-            onSelect={(reaction) => {
-              setShowReactionPicker(false)
-            }}
-          />
-        )}
+        <ReactionPicker
+          isOpen={showReactionPicker}
+          onSelectReaction={(reaction: any) => {
+            setShowReactionPicker(false)
+          }}
+        />
       </View>
     </Modal>
   )

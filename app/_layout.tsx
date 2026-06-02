@@ -6,6 +6,7 @@ import i18n from '@/i18n'
 import '@/features/friend/i18n'
 import '@/features/message/i18n'
 import '@/features/search/i18n'
+import '@/features/message/i18n'
 import { SEMANTIC } from '@/constants/theme'
 import { notificationToastConfig } from '@/features/notifications/components/notification-toast'
 
@@ -16,16 +17,42 @@ import { StatusBar } from 'expo-status-bar'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 import Toast from 'react-native-toast-message'
+import type { ToastConfigParams } from 'react-native-toast-message'
 import { I18nextProvider } from 'react-i18next'
 import { useEffect } from 'react'
-import { View, Text, ActivityIndicator } from 'react-native'
+import { View, Text, ActivityIndicator, Dimensions } from 'react-native'
 import Constants from 'expo-constants'
+import { useFcm } from '@/features/notifications'
 
 import { GluestackProvider } from '@/components/ui/gluestack-ui-provider'
 import { useAuthStore } from '@/store'
 import { getAccessToken, getRefreshToken, setUnauthorizedHandler } from '@/lib/http'
 import { ThemeProvider, useTheme } from '@/context'
 import { storage } from '@/utils/storageUtils'
+import { CenteredToast, type CenteredToastVariant } from '@/components/common'
+
+const toastConfig = {
+  success: ({ text1, text2 }: ToastConfigParams<Record<string, never>>) => (
+    <CenteredToast title={text1} message={text2 || text1 || ''} variant='none' />
+  ),
+  error: ({ text1, text2 }: ToastConfigParams<Record<string, never>>) => (
+    <CenteredToast title={text1} message={text2 || text1 || ''} variant='error' />
+  ),
+  info: ({ text1, text2 }: ToastConfigParams<Record<string, never>>) => (
+    <CenteredToast title={text1} message={text2 || text1 || ''} variant='none' />
+  ),
+  warning: ({ text1, text2 }: ToastConfigParams<Record<string, never>>) => (
+    <CenteredToast title={text1} message={text2 || text1 || ''} variant='error' />
+  ),
+  centered: ({ text1, text2, props }: ToastConfigParams<{ variant?: CenteredToastVariant }>) => (
+    <CenteredToast title={text1} message={text2 || text1 || ''} variant={props?.variant || 'none'} />
+  )
+}
+
+const combinedToastConfig = {
+  ...toastConfig,
+  ...notificationToastConfig
+}
 
 const isExpoGo = Constants.appOwnership === 'expo'
 
@@ -64,7 +91,7 @@ function SimpleLoadingScreen() {
           fontStyle: 'italic'
         }}
       >
-        Zalo
+        BondHub
       </Text>
       <ActivityIndicator size='large' color='white' style={{ marginTop: 20 }} />
     </View>
@@ -212,48 +239,57 @@ function ThemeAwareProviders() {
   }, [logoutSuccess])
 
   return (
-    <GluestackProvider mode={activeTheme}>
-      <NavigationThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
-        <AuthGuard>
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name='(tabs)' />
-            <Stack.Screen name='auth' />
-            <Stack.Screen name='settings' />
-            <Stack.Screen name='search' />
-            <Stack.Screen name='friend-requests' />
-            <Stack.Screen name='add-friend' />
-            <Stack.Screen name='user-profile/[id]' />
-            <Stack.Screen name='find-friends-contacts' />
-            <Stack.Screen name='message-options' />
-            <Stack.Screen name='media-storage' />
-            <Stack.Screen
-              name='story/capture'
-              options={{
-                presentation: 'fullScreenModal',
-                animation: 'slide_from_bottom',
-                gestureEnabled: false,
-                fullScreenGestureEnabled: false
-              }}
-            />
-            <Stack.Screen
-              name='chat/[id]'
-              options={{
-                animation: 'slide_from_right'
-              }}
-            />
-            <Stack.Screen
-              name='qr/index'
-              options={{
-                presentation: 'modal',
-                animation: 'slide_from_bottom'
-              }}
-            />
-            <Stack.Screen name='qr/confirm' />
-          </Stack>
-        </AuthGuard>
-        <StatusBar style={isDark ? 'light' : 'dark'} />
-        <Toast config={notificationToastConfig} />
-      </NavigationThemeProvider>
-    </GluestackProvider>
+    <View className={isDark ? 'dark' : ''} style={{ flex: 1 }}>
+      <GluestackProvider mode={activeTheme}>
+        <NavigationThemeProvider value={isDark ? DarkTheme : DefaultTheme}>
+          <AuthGuard>
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name='(tabs)' />
+              <Stack.Screen name='auth' />
+              <Stack.Screen name='settings' />
+              <Stack.Screen name='search' />
+              <Stack.Screen name='friend-requests' />
+              <Stack.Screen name='add-friend' />
+              <Stack.Screen
+                name='add-friend/scan'
+                options={{
+                  presentation: 'modal',
+                  animation: 'slide_from_bottom'
+                }}
+              />
+              <Stack.Screen name='user-profile/[id]' />
+              <Stack.Screen name='find-friends-contacts' />
+              <Stack.Screen name='message-options' />
+              <Stack.Screen name='media-storage' />
+              <Stack.Screen
+                name='story/capture'
+                options={{
+                  presentation: 'fullScreenModal',
+                  animation: 'slide_from_bottom',
+                  gestureEnabled: false,
+                  fullScreenGestureEnabled: false
+                }}
+              />
+              <Stack.Screen
+                name='chat/[id]'
+                options={{
+                  animation: 'slide_from_right'
+                }}
+              />
+              <Stack.Screen
+                name='qr/index'
+                options={{
+                  presentation: 'modal',
+                  animation: 'slide_from_bottom'
+                }}
+              />
+              <Stack.Screen name='qr/confirm' />
+            </Stack>
+          </AuthGuard>
+          <StatusBar style={isDark ? 'light' : 'dark'} />
+          <Toast config={combinedToastConfig} position='top' topOffset={Math.round(Dimensions.get('window').height * 0.42)} />
+        </NavigationThemeProvider>
+      </GluestackProvider>
+    </View>
   )
 }

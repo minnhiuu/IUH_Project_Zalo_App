@@ -21,9 +21,11 @@ import {
   useClearConversationHistory,
   useDisbandGroup,
   useLeaveGroup,
-  useUpdateGroupName
+  useUpdateGroupName,
+  useUpdateMessageExpirationMutation
 } from '@/features/message/queries'
 import Toast from 'react-native-toast-message'
+import { ExpirationTimeModal } from './expiration-time-modal'
 
 const DIVIDER_COLOR_LIGHT = '#F0F0F0'
 const DIVIDER_COLOR_DARK = 'rgba(255,255,255,0.07)'
@@ -95,13 +97,23 @@ export default function MessageOptionsScreen() {
   const { mutate: updateGroupName } = useUpdateGroupName()
   const [renameVisible, setRenameVisible] = useState(false)
   const [renameValue, setRenameValue] = useState('')
+  const [expirationModalVisible, setExpirationModalVisible] = useState(false)
+  const { mutate: updateExpiration, isPending: isExpirationPending } = useUpdateMessageExpirationMutation()
 
   const { data: myProfile } = useMyProfile()
-  const { data: userProfile } = useUserById(id as string)
   const { data: allConversations = [] } = useConversations(0, 100, true)
+
+  const partnerUserId = useMemo(() => {
+    if (isFriendString !== 'true') return null
+    const conv = allConversations.find((c) => c.id === conversationId || c.id === id)
+    const partner = conv?.members?.find((m) => m.userId !== myProfile?.id)
+    return partner?.userId || id
+  }, [allConversations, conversationId, id, isFriendString, myProfile])
+
+  const { data: userProfile } = useUserById((isFriendString === 'true' ? partnerUserId : id) as string)
   const isOwner = myProfile?.id === id
   const { data: blockDetails } = useBlockDetails(id as string, !!id)
-  const activeConversation = allConversations.find((c) => c.id === conversationId)
+  const activeConversation = allConversations.find((c) => c.id === conversationId || c.id === id)
   const myGroupRole = String(
     activeConversation?.members?.find((m) => m.userId === myProfile?.id)?.role || 'MEMBER'
   ).toUpperCase()
@@ -112,6 +124,31 @@ export default function MessageOptionsScreen() {
   const groupTitle = isUnnamedGroup ? t('message.groupOptions.setGroupName') : groupName
   const groupAvatar = activeConversation?.avatar || null
   const groupMembersCount = activeConversation?.members?.length || 0
+  const groupLinkEnabled =
+    !!activeConversation?.joinLinkToken || activeConversation?.settings?.joinByLinkEnabled === true
+  const currentExpirationDays = (activeConversation as any)?.messageExpirationDays ?? null
+
+  const expirationStatusText = (() => {
+    if (!currentExpirationDays) return t('messages.disappearing.statusNever')
+    return t('messages.disappearing.statusDays', { days: currentExpirationDays })
+  })()
+
+  const handleSaveExpiration = (days: number) => {
+    if (!conversationId) return
+    updateExpiration(
+      { conversationId, expirationDays: days },
+      {
+        onSuccess: () => {
+          setExpirationModalVisible(false)
+          Toast.show({
+            type: 'success',
+            text1: t('messages.disappearing.toast.success'),
+            visibilityTime: 2000
+          })
+        }
+      }
+    )
+  }
 
   const recentMediaItems = useMemo(() => {
     const result: Array<{ key: string; url: string; isVideo: boolean }> = []
@@ -608,7 +645,11 @@ export default function MessageOptionsScreen() {
                 isDark={isDark}
                 rightNode={
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                    <Text style={{ color: groupPalette.subText, fontSize: 12 }}>{t('message.groupOptions.off')}</Text>
+                    <Text style={{ color: groupPalette.subText, fontSize: 12 }}>
+                      {groupLinkEnabled
+                        ? t('message.groupSettings.approveStatusOn', { defaultValue: 'Đã bật' })
+                        : t('message.groupSettings.approveStatusOff', { defaultValue: 'Đã tắt' })}
+                    </Text>
                     <Ionicons name='chevron-forward' size={16} color={isDark ? '#3E444A' : '#C7C7CC'} />
                   </View>
                 }
@@ -652,6 +693,20 @@ export default function MessageOptionsScreen() {
                 onPress={() => {}}
                 isDark={isDark}
               />
+              <MenuItemRow
+                icon='timer-outline'
+                label={t('messages.disappearing.statusLabel')}
+                onPress={() => setExpirationModalVisible(true)}
+                isDark={isDark}
+                rightNode={
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Text style={{ color: groupPalette.subText, fontSize: 12 }}>
+                      {expirationStatusText}
+                    </Text>
+                    <Ionicons name='chevron-forward' size={16} color={isDark ? '#3E444A' : '#C7C7CC'} />
+                  </View>
+                }
+              />
             </View>
 
             <View style={{ marginTop: 8, backgroundColor: groupPalette.card }}>
@@ -694,27 +749,43 @@ export default function MessageOptionsScreen() {
         ) : (
           <>
             <View style={{ backgroundColor: cardBg, paddingTop: 18, paddingBottom: 16, alignItems: 'center' }}>
-              <View
-                style={{
-                  borderRadius: 56,
-                  padding: 2,
-                  backgroundColor: '#fff',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.2,
-                  shadowRadius: 8,
-                  elevation: 6
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => {
+                  if (partnerUserId) router.push(`/other-profile/${partnerUserId}` as any)
                 }}
+                style={{ alignItems: 'center' }}
               >
-                <UserAvatar
-                  source={userProfile?.avatar || null}
-                  name={(name as string) || userProfile?.fullName || ''}
-                  size='3xl'
-                />
-              </View>
-              <Text style={{ marginTop: 14, fontSize: 22, fontWeight: '700', color: isDark ? '#F8FAFC' : '#111827' }}>
-                {(name as string) || userProfile?.fullName || ''}
-              </Text>
+                <View
+                  style={{
+                    borderRadius: 56,
+                    padding: 2,
+                    backgroundColor: '#fff',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 4 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 8,
+                    elevation: 6
+                  }}
+                >
+                  <UserAvatar
+                    source={userProfile?.avatar || null}
+                    name={(name as string) || userProfile?.fullName || ''}
+                    size='3xl'
+                  />
+                </View>
+                <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginTop: 14 }}>
+                  <Text style={{ fontSize: 22, fontWeight: '700', color: isDark ? '#F8FAFC' : '#111827' }}>
+                    {(name as string) || userProfile?.fullName || ''}
+                  </Text>
+                  <Ionicons
+                    name='chevron-forward'
+                    size={18}
+                    color={isDark ? '#8C97A3' : '#6B7280'}
+                    style={{ marginLeft: 4, marginTop: 2 }}
+                  />
+                </View>
+              </TouchableOpacity>
 
               <View style={{ flexDirection: 'row', marginTop: 18, paddingHorizontal: 10 }}>
                 {quickActions.map((action) => (
@@ -727,27 +798,30 @@ export default function MessageOptionsScreen() {
                       if (action.key === 'search') {
                         openChatSearch()
                       }
+                      if (action.key === 'profile') {
+                        if (partnerUserId) router.push(`/other-profile/${partnerUserId}` as any)
+                      }
                     }}
                   >
                     <View
                       style={{
-                        width: 60,
-                        height: 60,
-                        borderRadius: 30,
+                        width: 46,
+                        height: 46,
+                        borderRadius: 23,
                         backgroundColor: isDark ? '#2A2F36' : '#F3F4F6',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        marginBottom: 8
+                        marginBottom: 6
                       }}
                     >
-                      <Ionicons name={action.icon} size={27} color={isDark ? '#D0D6DD' : '#111827'} />
+                      <Ionicons name={action.icon} size={21} color={isDark ? '#D0D6DD' : '#111827'} />
                     </View>
                     <Text
                       style={{
-                        fontSize: 14,
+                        fontSize: 12,
                         textAlign: 'center',
                         color: isDark ? '#D0D6DD' : '#1F2937',
-                        lineHeight: 18
+                        lineHeight: 16
                       }}
                     >
                       {action.label}
@@ -784,6 +858,20 @@ export default function MessageOptionsScreen() {
                 label={t('profile.chatOptions.sharedJournal')}
                 onPress={() => {}}
                 isDark={isDark}
+              />
+              <MenuItemRow
+                icon='timer-outline'
+                label={t('messages.disappearing.statusLabel')}
+                onPress={() => setExpirationModalVisible(true)}
+                isDark={isDark}
+                rightNode={
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                    <Text style={{ color: isDark ? '#8C97A3' : '#6B7280', fontSize: 12 }}>
+                      {expirationStatusText}
+                    </Text>
+                    <Ionicons name='chevron-forward' size={16} color={isDark ? '#3E444A' : '#C7C7CC'} />
+                  </View>
+                }
               />
             </View>
 
@@ -979,6 +1067,14 @@ export default function MessageOptionsScreen() {
         onClose={() => setBlockModalVisible(false)}
         isBlocked={!!blockDetails}
         currentPreference={blockDetails?.preference}
+      />
+
+      <ExpirationTimeModal
+        visible={expirationModalVisible}
+        onClose={() => setExpirationModalVisible(false)}
+        currentDays={currentExpirationDays}
+        onSave={handleSaveExpiration}
+        isPending={isExpirationPending}
       />
     </View>
   )

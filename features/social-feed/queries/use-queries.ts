@@ -5,6 +5,7 @@ import {
   getSocialFeedPostsQueryOptions,
   getSocialReelsQueryOptions,
   getSocialStoriesQueryOptions,
+  getInfiniteSocialStoriesQueryOptions,
   getInfiniteSocialFeedPostsQueryOptions,
   getInfiniteSocialReelsQueryOptions,
   getInfiniteMyPostsQueryOptions,

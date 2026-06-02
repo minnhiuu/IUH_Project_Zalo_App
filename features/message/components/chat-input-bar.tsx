@@ -26,6 +26,7 @@ import * as DocumentPicker from 'expo-document-picker'
 import { MessageType, type MessageResponse } from '../schemas'
 import { UserAvatar } from '@/components/common/user-avatar'
 import { useMyFriends } from '@/features/friend/queries'
+import { MentionDropdown } from './mention-dropdown'
 
 export type FileAsset = { uri: string; mimeType: string; fileName: string }
 export type BusinessCardAsset = {
@@ -92,6 +93,8 @@ interface ChatInputBarProps {
   onSendBusinessCards?: (cards: BusinessCardAsset[]) => void
   isLocked?: boolean
   lockPlaceholder?: string
+  members?: any[]
+  isAiMode?: boolean
 }
 
 export function ChatInputBar({
@@ -109,7 +112,9 @@ export function ChatInputBar({
   isUploading = false,
   onSendBusinessCards,
   isLocked = false,
-  lockPlaceholder
+  lockPlaceholder,
+  members = [],
+  isAiMode
 }: ChatInputBarProps) {
   const { t } = useTranslation()
   const hasText = value.trim().length > 0
@@ -124,14 +129,66 @@ export function ChatInputBar({
   const [selectedBusinessCardIds, setSelectedBusinessCardIds] = useState<string[]>([])
   const [includePhone, setIncludePhone] = useState(true)
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false)
+  const [mentionQuery, setMentionQuery] = useState<string | null>(null)
+  const [selectedMentions, setSelectedMentions] = useState<{name: string, userId: string}[]>([])
+  const inputRef = useRef<TextInput>(null)
   React.useEffect(() => {
-    const showSub = Keyboard.addListener('keyboardDidShow', () => setIsKeyboardVisible(true))
-    const hideSub = Keyboard.addListener('keyboardDidHide', () => setIsKeyboardVisible(false))
+    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow'
+    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide'
+    
+    const showSub = Keyboard.addListener(showEvent, () => setIsKeyboardVisible(true))
+    const hideSub = Keyboard.addListener(hideEvent, () => setIsKeyboardVisible(false))
+    
     return () => {
       showSub.remove()
       hideSub.remove()
     }
   }, [])
+
+  const handleTextChange = (text: string) => {
+    onChangeText(text)
+    
+    // Detect mention trigger
+    const cursorMatches = text.match(/(?:^|\s)@([^\s]*)$/)
+    if (cursorMatches) {
+      setMentionQuery(cursorMatches[1])
+    } else {
+      setMentionQuery(null)
+    }
+  }
+
+  const handleMentionSelect = (member: any) => {
+    const name = member.isAll ? 'All' : (member.fullName || member.name)
+    const userId = member.userId || member.id
+    
+    // Replace the last @query with @name
+    const match = value.match(/(?:^|\s)@([^\s]*)$/)
+    if (match) {
+      const matchIndex = match.index === 0 ? 0 : (match.index || 0) + 1
+      const newText = value.substring(0, matchIndex) + '@' + name + ' '
+      onChangeText(newText)
+      
+      if (!selectedMentions.find(m => m.userId === userId)) {
+        setSelectedMentions([...selectedMentions, { name, userId }])
+      }
+    }
+    setMentionQuery(null)
+    setTimeout(() => {
+      inputRef.current?.focus()
+    }, 100)
+  }
+
+  const handleSendPress = () => {
+    let parsedText = value
+    if (selectedMentions.length > 0) {
+      selectedMentions.forEach(mention => {
+        const regex = new RegExp(`@${mention.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`, 'g')
+        parsedText = parsedText.replace(regex, `@<mention>${mention.name}</mention>`)
+      })
+    }
+    setSelectedMentions([])
+    ;(onSend as any)(parsedText !== value ? parsedText : undefined)
+  }
 
   const { data: friends = [] } = useMyFriends(0, 300, showBusinessCardModal)
   const friendListRef = useRef<FlatList<any>>(null)
@@ -408,7 +465,7 @@ export function ChatInputBar({
   const cardModalSubText = isDark ? '#9AA3AF' : '#6B7280'
 
   return (
-    <View style={{ backgroundColor: isDark ? '#15181D' : '#fff', paddingBottom: insets.bottom }}>
+    <View style={{ backgroundColor: isDark ? '#15181D' : '#fff', paddingBottom: isKeyboardVisible ? 0 : insets.bottom }}>
       {/* Reply preview bar */}
       {replyTo && (
         <View
@@ -601,14 +658,29 @@ export function ChatInputBar({
         }}
       >
         {/* Sticker button */}
-        <TouchableOpacity style={{ paddingHorizontal: 6, paddingVertical: 4 }}>
-          <Ionicons name='happy-outline' size={29} color={isDark ? '#7E8793' : '#667085'} />
-        </TouchableOpacity>
+        {!isAiMode && (
+          <TouchableOpacity style={{ paddingHorizontal: 6, paddingVertical: 4 }}>
+            <Ionicons name='happy-outline' size={29} color={isDark ? '#7E8793' : '#667085'} />
+          </TouchableOpacity>
+        )}
+
+        {mentionQuery !== null && members.length > 0 && (
+          <View style={{ position: 'absolute', bottom: '100%', left: 0, right: 0, zIndex: 10 }}>
+            <MentionDropdown
+              members={members}
+              query={mentionQuery}
+              showAllMention={members.length > 0}
+              onSelect={handleMentionSelect}
+              onClose={() => setMentionQuery(null)}
+            />
+          </View>
+        )}
 
         {/* Text Input */}
         <TextInput
+          ref={inputRef}
           value={isLocked ? '' : value}
-          onChangeText={onChangeText}
+          onChangeText={handleTextChange}
           placeholder={isLocked ? lockPlaceholder || placeholder : placeholder}
           placeholderTextColor={isDark ? '#666' : '#9ca3af'}
           multiline
@@ -617,13 +689,18 @@ export function ChatInputBar({
             flex: 1,
             fontSize: isLocked ? 17 : 16,
             color: isLocked ? colors.textSecondary : colors.text,
+            textAlign: 'left',
+            textAlignVertical: 'center',
             maxHeight: 100,
-            minHeight: 48,
+            minHeight: 40,
             paddingHorizontal: 14,
-            paddingVertical: 8,
+            paddingTop: Platform.OS === 'ios' ? 10 : 6,
+            paddingBottom: Platform.OS === 'ios' ? 10 : 6,
             backgroundColor: isDark ? '#2A2F36' : '#F2F2F7',
-            borderRadius: 24,
-            marginHorizontal: 6
+            borderRadius: 20,
+            marginHorizontal: 6,
+            justifyContent: 'center',
+            alignSelf: 'center'
           }}
         />
 
@@ -632,20 +709,24 @@ export function ChatInputBar({
             <Ionicons name='lock-closed-outline' size={30} color={isDark ? '#7E8793' : '#667085'} />
           </TouchableOpacity>
         ) : hasText || hasAttachments ? (
-          <TouchableOpacity onPress={onSend} style={{ padding: 6, marginBottom: 2 }}>
+          <TouchableOpacity onPress={handleSendPress} style={{ padding: 6, marginBottom: 2 }}>
             <Ionicons name='send' size={24} color={isUploading ? colors.textSecondary : BRAND.blue} />
           </TouchableOpacity>
         ) : (
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={() => setShowMoreActions((v) => !v)}>
-              <Ionicons name='ellipsis-horizontal' size={22} color={showMoreActions ? BRAND.blue : colors.icon} />
-            </TouchableOpacity>
-            <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={handlePickFile}>
-              <Ionicons name='document-attach-outline' size={24} color={colors.icon} />
-            </TouchableOpacity>
-            <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={handlePickImage} disabled={isUploading}>
-              <Ionicons name='image-outline' size={24} color={isUploading ? colors.textSecondary : colors.icon} />
-            </TouchableOpacity>
+            {!isAiMode && (
+              <>
+                <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={() => setShowMoreActions((v) => !v)}>
+                  <Ionicons name='ellipsis-horizontal' size={22} color={showMoreActions ? BRAND.blue : colors.icon} />
+                </TouchableOpacity>
+                <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={handlePickFile}>
+                  <Ionicons name='document-attach-outline' size={24} color={colors.icon} />
+                </TouchableOpacity>
+                <TouchableOpacity style={{ padding: 6, marginBottom: 2 }} onPress={handlePickImage} disabled={isUploading}>
+                  <Ionicons name='image-outline' size={24} color={isUploading ? colors.textSecondary : colors.icon} />
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         )}
       </View>

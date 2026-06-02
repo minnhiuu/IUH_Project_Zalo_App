@@ -34,9 +34,13 @@ import {
   DateSeparator,
   MessageListSkeleton,
   ForwardMessageModal,
-  GroupChatIntro
+  GroupChatIntro,
+  EditPinnedMessagesModal,
+  ExpirationTimeModal,
+  AiChatWindow
 } from '@/features/message/components'
 import type { FileAsset, BusinessCardAsset } from '@/features/message/components'
+import { BONDHUB_AI } from '@/constants/system'
 import {
   useInfiniteMessages,
   usePartnerConversation,
@@ -45,7 +49,8 @@ import {
   usePinnedMessages,
   usePinMessage,
   useUnpinMessage,
-  useConversationParticipants
+  useConversationParticipants,
+  useUpdateMessageExpirationMutation
 } from '@/features/message/queries'
 import { useNavigateSearch } from '@/features/search/queries'
 import { SearchNavigationBar } from '@/features/search/components/messages/search-navigation-bar'
@@ -123,6 +128,12 @@ export default function ChatScreen() {
 
   const conversationId = directConversationId || partnerConversation?.id || ''
 
+  const { data: conversations = [] } = useConversations(0, 100, true)
+  const activeConversation = useMemo(
+    () => conversations.find((c) => c.id === conversationId),
+    [conversations, conversationId]
+  )
+
   // Messages
   const {
     data: messagesData,
@@ -169,27 +180,53 @@ export default function ChatScreen() {
   const scrollToMessage = useCallback(
     (messageId: string, animated: boolean = true) => {
       const index = messages.findIndex((m) => m.id === messageId || m.clientMessageId === messageId)
-      if (index === -1) return
+      if (index >= 0) {
+        setPendingScrollId(null)
+        setHighlightedMessageId(messageId)
+        setHighlightBackgroundMessageId(messageId)
+        setTimeout(() => setHighlightBackgroundMessageId(null), 3000)
 
-      // Set highlight immediately to ensure visual feedback
-      setHighlightedMessageId(messageId)
-      setHighlightBackgroundMessageId(messageId)
-      setTimeout(() => setHighlightBackgroundMessageId(null), 3000)
-
-      // Use a small delay to ensure the list has finished rendering new items
-      requestAnimationFrame(() => {
-        try {
-          flatListRef.current?.scrollToIndex({
-            index,
-            animated,
-            viewPosition: 0.15 // Bring the message closer to the top of the screen for better visibility
+        // Use a small delay to ensure the list has finished rendering new items
+        requestAnimationFrame(() => {
+          try {
+            flatListRef.current?.scrollToIndex({
+              index,
+              animated,
+              viewPosition: 0.15 // Bring the message closer to the top of the screen for better visibility
+            })
+          } catch (e) {
+            console.warn('[ChatScreen] scrollToIndex failed:', e)
+            try {
+              flatListRef.current?.scrollToOffset({ 
+                offset: index * 100, // Very rough estimate
+                animated 
+              })
+            } catch {
+              // ignore
+            }
+          }
+        })
+      } else {
+        if (hasNextPage && !isFetchingNextPage) {
+          setPendingScrollId(messageId)
+          fetchNextPage()
+          Toast.show({
+            type: 'info',
+            text1: t('message.pinned.loadingMore', { defaultValue: 'Đang tìm tin nhắn cũ hơn...' }),
+            position: 'bottom',
+            visibilityTime: 1500
           })
-        } catch (e) {
-          console.warn('[ChatScreen] scrollToIndex failed:', e)
+        } else {
+          setPendingScrollId(null)
+          Toast.show({
+            type: 'error',
+            text1: t('message.pinned.notFound', { defaultValue: 'Không tìm thấy tin nhắn hoặc tin nhắn quá cũ' }),
+            position: 'bottom'
+          })
         }
-      })
+      }
     },
-    [messages]
+    [messages, hasNextPage, isFetchingNextPage, fetchNextPage, t]
   )
 
   // Mutations
@@ -203,11 +240,6 @@ export default function ChatScreen() {
   const markAsReadMutation = useMarkAsRead()
   const pinMessageMutation = usePinMessage()
   const unpinMessageMutation = useUnpinMessage()
-  const { data: conversations = [] } = useConversations(0, 100, true)
-  const activeConversation = useMemo(
-    () => conversations.find((c) => c.id === conversationId),
-    [conversations, conversationId]
-  )
 
   const resolvedConversation = activeConversation || partnerConversation
   const isGroupConversation = !!resolvedConversation?.isGroup
@@ -245,6 +277,29 @@ export default function ChatScreen() {
   const [highlightedMessageId, setHighlightedMessageId] = useState<string | null>(null)
   const [highlightBackgroundMessageId, setHighlightBackgroundMessageId] = useState<string | null>(null)
   const [showPinnedPanel, setShowPinnedPanel] = useState(false)
+  const [isEditPinnedModalOpen, setIsEditPinnedModalOpen] = useState(false)
+  const [pendingScrollId, setPendingScrollId] = useState<string | null>(null)
+
+  const [expirationModalVisible, setExpirationModalVisible] = useState(false)
+  const { mutate: updateExpiration, isPending: isExpirationPending } = useUpdateMessageExpirationMutation()
+  const currentExpirationDays = (resolvedConversation as any)?.messageExpirationDays ?? null
+
+  const handleSaveExpiration = useCallback((days: number) => {
+    if (!conversationId) return
+    updateExpiration(
+      { conversationId, expirationDays: days },
+      {
+        onSuccess: () => {
+          setExpirationModalVisible(false)
+          Toast.show({
+            type: 'success',
+            text1: t('messages.disappearing.toast.success', { defaultValue: 'Cập nhật thời gian tự xóa thành công' }),
+            visibilityTime: 2000
+          })
+        }
+      }
+    )
+  }, [conversationId, updateExpiration, t])
 
   // Search Mode
   const [isSearchMode, setIsSearchMode] = useState(!!params.searchKeyword || params.isSearchMode === 'true')
@@ -569,6 +624,42 @@ export default function ChatScreen() {
     return () => subscription.remove()
   }, [isSearchMode, handleCancelSearch])
 
+  const activeGroupCall = useMemo(() => {
+    const latestGroupCallMsg = messages.find((m) => m.content?.startsWith('[GROUP_CALL]::'))
+    if (!latestGroupCallMsg) return null
+    try {
+      const payload = JSON.parse(latestGroupCallMsg.content!.slice('[GROUP_CALL]::'.length))
+      if (payload.status === 'active') {
+        return {
+          roomId: payload.roomId,
+          callKind: payload.callKind,
+          callerName: payload.callerName,
+          messageId: latestGroupCallMsg.id
+        }
+      }
+    } catch {
+      // ignore
+    }
+    return null
+  }, [messages])
+
+  // Auto-retry scroll when messages list updates
+  useEffect(() => {
+    if (pendingScrollId) {
+      const index = messages.findIndex((m) => m.id === pendingScrollId || m.clientMessageId === pendingScrollId)
+      if (index >= 0) {
+        // Delay slightly to allow list to render
+        const timer = setTimeout(() => {
+          scrollToMessage(pendingScrollId)
+        }, 100)
+        return () => clearTimeout(timer)
+      } else if (hasNextPage && !isFetchingNextPage) {
+        // Keep fetching if not found yet
+        fetchNextPage()
+      }
+    }
+  }, [messages, pendingScrollId, hasNextPage, isFetchingNextPage, fetchNextPage, scrollToMessage])
+
   const latestOwnMessage = messages.find(
     (msg) => msg.senderId === currentUserId && msg.status !== MessageStatus.REVOKED
   )
@@ -580,10 +671,11 @@ export default function ChatScreen() {
     }
   }, [conversationId])
 
-  const handleSend = useCallback(() => {
+  const handleSend = useCallback((parsedText?: string) => {
     if (!conversationId) return
 
-    const trimmedContent = inputText.trim()
+    const textToSend = typeof parsedText === 'string' ? parsedText : inputText
+    const trimmedContent = textToSend.trim()
     const replyPayload = replyTo
       ? {
           messageId: replyTo.id,
@@ -886,6 +978,46 @@ export default function ChatScreen() {
 
   const chatBg = isDark ? '#0D1117' : '#E8ECEF'
 
+  const handleVoiceCall = useCallback(() => {
+    Alert.alert(
+      t('message.call.voiceTitle', { defaultValue: 'Cuộc gọi thoại' }),
+      t('message.call.voiceBody', { defaultValue: 'Chức năng gọi thoại đang được phát triển.' })
+    )
+  }, [t])
+
+  const handleVideoCall = useCallback(() => {
+    Alert.alert(
+      t('message.call.videoTitle', { defaultValue: 'Cuộc gọi video' }),
+      t('message.call.videoBody', { defaultValue: 'Chức năng gọi video đang được phát triển.' })
+    )
+  }, [t])
+
+  const handleJoinGroupCall = useCallback((roomId: string, callKind: 'voice' | 'video') => {
+    Alert.alert(
+      t('message.call.joinTitle', { defaultValue: 'Tham gia cuộc gọi nhóm' }),
+      t('message.call.joinBody', { defaultValue: 'Chức năng tham gia cuộc gọi nhóm đang được phát triển.' })
+    )
+  }, [t])
+
+  const handleRecall = useCallback((receiverId: string) => {
+    Alert.alert(
+      t('message.call.recallTitle', { defaultValue: 'Gọi lại' }),
+      t('message.call.recallBody', { defaultValue: 'Chức năng thực hiện cuộc gọi đang được phát triển.' })
+    )
+  }, [t])
+
+  const currentConversation = activeConversation || partnerConversation
+
+  if (partnerId === BONDHUB_AI.userId && currentConversation) {
+    return (
+      <View style={{ flex: 1, backgroundColor: chatBg }}>
+        <Stack.Screen options={{ headerShown: false }} />
+        <StatusBar style={isSearchMode ? 'dark' : isDark ? 'light' : 'dark'} />
+        <AiChatWindow conversation={currentConversation as any} />
+      </View>
+    )
+  }
+
   return (
     <View style={{ flex: 1, backgroundColor: chatBg }}>
       <Stack.Screen options={{ headerShown: false }} />
@@ -897,6 +1029,8 @@ export default function ChatScreen() {
         subtitle={groupSubtitle}
         lastSeenAt={lastSeenAt}
         userId={isGroupConversation ? undefined : partnerId}
+        onCall={handleVoiceCall}
+        onVideoCall={handleVideoCall}
         isGroup={isGroupConversation}
         isSearchMode={isSearchMode}
         searchQuery={headerSearchValue}
@@ -993,9 +1127,7 @@ export default function ChatScreen() {
 
       {!!latestPinnedMessage && !isLoading && (
         <View style={{ paddingHorizontal: 10, paddingTop: 6, paddingBottom: 4, backgroundColor: chatBg }}>
-          <TouchableOpacity
-            activeOpacity={0.88}
-            onPress={openPinnedPanel}
+          <View
             style={{
               backgroundColor: '#FFFFFF',
               borderRadius: 12,
@@ -1010,30 +1142,44 @@ export default function ChatScreen() {
               elevation: 3
             }}
           >
-            <View
-              style={{
-                width: 32,
-                height: 32,
-                borderRadius: 16,
-                borderWidth: 1.2,
-                borderColor: '#36A7FF',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginRight: 10
-              }}
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => scrollToMessage(latestPinnedMessage.messageId)}
+              style={{ flex: 1, flexDirection: 'row', alignItems: 'center', paddingVertical: 8 }}
             >
-              <Ionicons name='chatbubble-ellipses-outline' size={17} color='#36A7FF' />
-            </View>
-            <View style={{ flex: 1, paddingVertical: 8 }}>
-              <Text style={{ fontSize: 15, color: '#2B2B2B' }} numberOfLines={1}>
-                {getPinnedPreviewText(latestPinnedMessage)}
-              </Text>
-              <Text style={{ fontSize: 13, color: '#8A8A8A', marginTop: 2 }} numberOfLines={1}>
-                {t('message.pinned.owner', { name: getPinnedOwnerName(latestPinnedMessage) })}
-              </Text>
-            </View>
+              <View
+                style={{
+                  width: 32,
+                  height: 32,
+                  borderRadius: 16,
+                  borderWidth: 1.2,
+                  borderColor: '#36A7FF',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginRight: 10
+                }}
+              >
+                <Ionicons name='chatbubble-ellipses-outline' size={17} color='#36A7FF' />
+              </View>
+
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 15, color: '#2B2B2B' }} numberOfLines={1}>
+                  {getPinnedPreviewText(latestPinnedMessage)}
+                </Text>
+                <Text style={{ fontSize: 13, color: '#8A8A8A', marginTop: 2 }} numberOfLines={1}>
+                  {t('message.pinned.owner', {
+                    defaultValue: 'Tin nhắn của {{name}}',
+                    name: getPinnedOwnerName(latestPinnedMessage)
+                  })}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
             <View style={{ width: 1, height: 38, backgroundColor: '#E4E4E4', marginHorizontal: 12 }} />
-            <View
+
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={openPinnedPanel}
               style={{
                 width: 36,
                 height: 36,
@@ -1045,8 +1191,8 @@ export default function ChatScreen() {
               }}
             >
               <Ionicons name='chevron-down' size={18} color='#7D7D7D' />
-            </View>
-          </TouchableOpacity>
+            </TouchableOpacity>
+          </View>
         </View>
       )}
 
@@ -1110,9 +1256,14 @@ export default function ChatScreen() {
               const isOwn = item.senderId === currentUserId
               const prevMsg = index > 0 ? visibleMessages[index - 1] : null
               const nextMsg = index < visibleMessages.length - 1 ? visibleMessages[index + 1] : null
-              const showAvatar = !isOwn && (!nextMsg || nextMsg.senderId !== item.senderId)
-              const showTime = !prevMsg || prevMsg.senderId !== item.senderId
               const showDateSep = shouldShowDateSeparator(index)
+              // In inverted list, index 0 = newest (bottom), nextMsg = older (above).
+              // Show avatar on the topmost message of a consecutive group (the oldest one)
+              // OR if there is a date separator (time gap > 30 mins)
+              // OR if the next older message is a system message (this message starts a new visual block)
+              const showAvatar =
+                !isOwn && (!nextMsg || nextMsg.senderId !== item.senderId || showDateSep || nextMsg.type === MessageType.SYSTEM || nextMsg.type === MessageType.JOIN || nextMsg.type === MessageType.LEAVE)
+              const showTime = !prevMsg || prevMsg.senderId !== item.senderId || prevMsg.type === MessageType.SYSTEM || prevMsg.type === MessageType.JOIN || prevMsg.type === MessageType.LEAVE
 
               return (
                 <View>
@@ -1121,9 +1272,17 @@ export default function ChatScreen() {
                     message={item}
                     isOwn={isOwn}
                     isPinned={!!item.id && pinnedMessageIds.has(item.id)}
+                    activeGroupCallId={activeGroupCall?.roomId}
+                    onJoinGroupCall={handleJoinGroupCall}
+                    onRecall={handleRecall}
+                    isLatestOwnMessage={
+                      !!latestOwnMessageKey &&
+                      (item.id === latestOwnMessageKey || item.clientMessageId === latestOwnMessageKey)
+                    }
                     showTime={showTime}
                     showAvatar={showAvatar}
-                    showSenderName={isGroupConversation}
+                    showSenderName={isGroupConversation && showAvatar}
+                    isGroupConversation={isGroupConversation}
                     members={effectiveMembers}
                     onAvatarPress={(uid) => router.push(`/user-profile/${uid}` as any)}
                     onReply={handleReply}
@@ -1144,6 +1303,7 @@ export default function ChatScreen() {
                     }
                     onPin={handlePinMessage}
                     highlightKeyword={item.id === highlightedMessageId ? internalSearchQuery || searchKeyword : null}
+                    onOpenExpirationModal={() => setExpirationModalVisible(true)}
                     onOpenMessageOptions={() => {
                       const targetId = isGroupConversation ? conversationId : partnerId
                       router.push({
@@ -1178,6 +1338,7 @@ export default function ChatScreen() {
             onClearAttachments={handleClearPendingAttachments}
             isUploading={isUploading}
             onSendBusinessCards={handleSendBusinessCards}
+            members={effectiveMembers}
           />
         )}
 
@@ -1210,9 +1371,9 @@ export default function ChatScreen() {
             <View style={{ marginHorizontal: 8, backgroundColor: '#FFFFFF', borderRadius: 12, overflow: 'hidden' }}>
               <Text
                 style={{
-                  fontSize: 19,
+                  fontSize: 16,
                   color: '#232323',
-                  fontWeight: '700',
+                  fontWeight: '600',
                   paddingHorizontal: 14,
                   paddingTop: 12,
                   paddingBottom: 10
@@ -1223,7 +1384,7 @@ export default function ChatScreen() {
               <View style={{ height: 1, backgroundColor: '#EBEBEB' }} />
               <Text
                 style={{
-                  fontSize: 18,
+                  fontSize: 15,
                   color: '#8A8F94',
                   textAlign: 'center',
                   paddingVertical: 40,
@@ -1281,10 +1442,43 @@ export default function ChatScreen() {
                   </View>
                 </TouchableOpacity>
               ))}
+
+              {!pinnedMessagesSorted.length && (
+                <Text
+                  style={{
+                    fontSize: 17,
+                    color: '#8A8F94',
+                    textAlign: 'center',
+                    paddingVertical: 14
+                  }}
+                >
+                  {t('message.pinned.empty', { defaultValue: 'Chưa có tin nhắn ghim' })}
+                </Text>
+              )}
             </View>
           </Pressable>
         </Pressable>
       </Modal>
+
+      <EditPinnedMessagesModal
+        visible={isEditPinnedModalOpen}
+        onClose={() => setIsEditPinnedModalOpen(false)}
+        pinnedMessages={pinnedMessagesSorted}
+        conversationId={conversationId}
+        onItemPress={(msgId) => {
+          setIsEditPinnedModalOpen(false)
+          closePinnedPanel()
+          scrollToMessage(msgId)
+        }}
+      />
+
+      <ExpirationTimeModal
+        visible={expirationModalVisible}
+        onClose={() => setExpirationModalVisible(false)}
+        currentDays={currentExpirationDays}
+        onSave={handleSaveExpiration}
+        isPending={isExpirationPending}
+      />
     </View>
   )
 }

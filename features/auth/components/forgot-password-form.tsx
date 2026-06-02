@@ -1,9 +1,32 @@
 import { useState, useRef } from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, Switch } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, Switch, TextInputProps } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useTranslation } from 'react-i18next'
 import { MaterialCommunityIcons } from '@expo/vector-icons'
-import { Input, Button } from '@/components/ui'
+import { Button } from '@/components/ui'
+
+interface CustomInputProps extends TextInputProps {
+  error?: string
+  leftIcon?: React.ReactNode
+  rightIcon?: React.ReactNode
+}
+
+function CustomInput({ error, leftIcon, rightIcon, style, ...props }: CustomInputProps) {
+  return (
+    <View style={styles.inputContainer}>
+      <View style={[styles.inputFieldWrapper, error ? styles.inputFieldError : null]}>
+        {leftIcon}
+        <TextInput
+          style={styles.textInput}
+          placeholderTextColor="#9ca3af"
+          {...props}
+        />
+        {rightIcon}
+      </View>
+      {error ? <Text style={styles.inputErrorText}>{error}</Text> : null}
+    </View>
+  )
+}
 
 import { forgotPasswordRequestSchema, resetPasswordRequestSchema } from '../schemas/auth.schema'
 import { useForgotPasswordMutation, useResetPasswordMutation } from '../queries/use-mutations'
@@ -118,10 +141,10 @@ export function ForgotPasswordForm() {
         {/* Form */}
         {isRequestStep ? (
           <View style={styles.form}>
-            <Input
+            <CustomInput
               placeholder='Email'
               value={requestEmail}
-              onChangeText={(text) => {
+              onChangeText={(text: string) => {
                 setRequestEmail(text)
                 setRequestEmailError('')
               }}
@@ -164,7 +187,7 @@ export function ForgotPasswordForm() {
               <TextInput
                 ref={otpInputRef}
                 value={otp}
-                onChangeText={(text) => {
+                onChangeText={(text: string) => {
                   setOtp(text.replace(/\D/g, '').slice(0, 6))
                   setOtpError('')
                 }}
@@ -177,10 +200,10 @@ export function ForgotPasswordForm() {
             </View>
 
             {/* New Password */}
-            <Input
+            <CustomInput
               placeholder='Vui lòng nhập mật khẩu'
               value={newPassword}
-              onChangeText={(text) => {
+              onChangeText={(text: string) => {
                 setNewPassword(text)
                 setNewPasswordError('')
               }}
@@ -199,10 +222,10 @@ export function ForgotPasswordForm() {
             />
 
             {/* Confirm Password */}
-            <Input
+            <CustomInput
               placeholder='Nhập lại mật khẩu'
               value={confirmPassword}
-              onChangeText={(text) => {
+              onChangeText={(text: string) => {
                 setConfirmPassword(text)
                 setConfirmPasswordError('')
               }}
@@ -393,5 +416,34 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginTop: 4,
     textAlign: 'center'
+  },
+  inputContainer: {
+    width: '100%'
+  },
+  inputFieldWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    height: 48,
+    backgroundColor: '#fff',
+    gap: 8
+  },
+  inputFieldError: {
+    borderColor: '#ef4444'
+  },
+  textInput: {
+    flex: 1,
+    height: '100%',
+    fontSize: 15,
+    color: '#1a1a1a'
+  },
+  inputErrorText: {
+    color: '#ef4444',
+    fontSize: 12,
+    marginTop: 4,
+    marginLeft: 4
   }
 })

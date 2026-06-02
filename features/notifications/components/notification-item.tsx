@@ -33,7 +33,17 @@ export function NotificationItem({ notification, highlighted = false, onMarkAsRe
       onMarkAsRead(notification.id)
     }
 
-    if (isChatNotification(notification.type)) {
+    if (notification.type === 'NEW_DEVICE_LOGIN') {
+      router.push({
+        pathname: '/new-device-login',
+        params: {
+          deviceName: notification.payload?.deviceName as string,
+          ipAddress: notification.payload?.ipAddress as string,
+          loginTime: notification.lastModifiedAt,
+          sessionId: notification.payload.sessionId || '',
+        }
+      })
+    } else if (isChatNotification(notification.type)) {
       const conversationId = (notification.payload?.conversationId || notification.referenceId) as string | undefined
       const reminderId = (notification.payload?.reminderId as string) || undefined
       const messageId = (notification.payload?.messageId as string) || undefined

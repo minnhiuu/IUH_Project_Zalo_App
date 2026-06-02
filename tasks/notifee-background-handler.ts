@@ -9,6 +9,7 @@ import type {
   AndroidBigTextStyle,
   AndroidVisibility
 } from '@notifee/react-native'
+import { stripMentionsForPreview } from '@/features/message/utils/mention'
 
 type NotifeeModule = typeof import('@notifee/react-native')
 
@@ -153,7 +154,8 @@ export async function displayChatNotification(rawData: Record<string, string>) {
     }
   }
   const title = data.customTitle || data.title || ''
-  const body = normalizeBody(data.customBody || data.body || '')
+  const rawBody = data.customBody || data.body || ''
+  const body = normalizeBody(stripMentionsForPreview(rawBody))
 
   if (!title && !body) return
 

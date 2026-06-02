@@ -82,16 +82,33 @@ const connectSingleton = async (user: any, queryClient: any) => {
                 text2: String(toastBody)
               })
             }
-            import('@/tasks/notifee-background-handler').then(({ displayChatNotification }) => {
-              displayChatNotification({
-                ...data.payload,
-                title: data.title,
-                body: data.body,
-                type: data.type,
-                notificationId: data.id,
-                referenceId: data.referenceId
-              } as any).catch((err) => console.error('[NotificationSocket] Error displaying notification:', err))
-            })
+            import('expo-constants').then((ConstantsMod) => {
+              const Constants = ConstantsMod.default || ConstantsMod
+              if (Constants.executionEnvironment === 'storeClient') {
+                console.log('[NotificationSocket] Skipping Notifee in Expo Go')
+                return
+              }
+              
+              import('@/tasks/notifee-background-handler')
+                .then((mod) => {
+                  const displayFn = mod.displayChatNotification || (mod.default && mod.default.displayChatNotification)
+                  if (displayFn) {
+                    displayFn({
+                      ...data.payload,
+                      title: data.title,
+                      body: data.body,
+                      type: data.type,
+                      notificationId: data.id,
+                      referenceId: data.referenceId
+                    } as any).catch((err: any) => console.error('[NotificationSocket] Error displaying notification:', err))
+                  } else {
+                    console.warn('[NotificationSocket] displayChatNotification is not available in the imported module.')
+                  }
+                })
+                .catch((err) => {
+                  console.error('[NotificationSocket] Failed to import notifee handler:', err)
+                })
+            }).catch(err => console.error(err))
           }
 
           if (!('action' in data) && data.type === 'REMINDER') {

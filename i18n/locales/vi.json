@@ -27,7 +27,7 @@
   },
   "auth": {
     "welcome": {
-      "title": "Zalo",
+      "title": "BondHub",
       "subtitle": "Gọi video ổn định\nTrò chuyện thật đã",
       "loginButton": "Đăng nhập",
       "registerButton": "Tạo tài khoản mới",
@@ -59,8 +59,8 @@
       "or": "Hoặc",
       "loginWithPassword": "ĐĂNG NHẬP VỚI MẬT KHẨU",
       "loginWithoutPassword": "ĐĂNG NHẬP KHÔNG DÙNG MẬT KHẨU",
-      "loginWithFacebook": "Đăng nhập bằng Facebook",
-      "qrInstruction": "Quét mã QR để đăng nhập Zalo trên thiết bị này",
+      "loginWithFacebook": "",
+      "qrInstruction": "Quét mã QR để đăng nhập BondHub trên thiết bị này",
       "otpSent": "Đã gửi mã OTP",
       "checkPhone": "Vui lòng kiểm tra email của bạn"
     },
@@ -87,7 +87,7 @@
       "termsOfService": "Điều khoản sử dụng",
       "and": "và",
       "privacyPolicy": "Chính sách bảo mật",
-      "ofZalo": "của Zalo"
+      "ofZalo": "của BondHub"
     },
     "otp": {
       "title": "Xác minh OTP",
@@ -145,7 +145,7 @@
     "qrScanner": {
       "title": "Quét mã QR",
       "permissionTitle": "Quyền sử dụng máy ảnh",
-      "permissionMessage": "Zalo cần quyền sử dụng máy ảnh để quét mã QR",
+      "permissionMessage": "BondHub cần quyền sử dụng máy ảnh để quét mã QR",
       "scanInstruction": "Di chuyển camera đến mã QR để quét",
       "invalidQr": "Mã QR không hợp lệ hoặc đã hết hạn",
       "confirmTitle": "Bạn muốn đăng nhập?",
@@ -245,7 +245,7 @@
         "subtitle": "Tùy chỉnh giao diện và ngôn ngữ"
       },
       "about": {
-        "title": "Thông tin về Zalo",
+        "title": "Thông tin về BondHub",
         "subtitle": "Phiên bản và thông tin ứng dụng"
       },
       "support": {
@@ -267,7 +267,7 @@
       "notLinked": "Chưa liên kết",
       "securityCheck": "Kiểm tra bảo mật",
       "securityCheckSubtitle": "3 vấn đề bảo mật cần xử lý",
-      "lockZalo": "Khoá Zalo",
+      "lockZalo": "Khoá BondHub",
       "off": "Đang tắt",
       "twoFactor": "Bảo mật 2 lớp",
       "twoFactorSubtitle": "Tăng cường bảo mật tài khoản",
@@ -370,7 +370,7 @@
     "dataOnDevice": {
       "totalUsed": "Tổng dung lượng đã sử dụng",
       "percentOfPhone": "{{percent}}% dung lượng điện thoại",
-      "zaloData": "Dữ liệu Zalo",
+      "zaloData": "Dữ liệu BondHub",
       "zCloudDescription": "Giải phóng dung lượng điện thoại bằng cách lưu trữ ảnh, video lên zCloud miễn phí",
       "learnMore": "Tìm hiểu thêm",
       "cache": "Bộ nhớ đệm",
@@ -509,8 +509,8 @@
     },
     "about": {
       "version": "Phiên bản {{version}}",
-      "description": "Zalo là ứng dụng nhắn tin và gọi điện miễn phí, giúp bạn kết nối với bạn bè và người thân một cách dễ dàng và nhanh chóng.",
-      "copyright": "© 2024 Zalo. All rights reserved."
+      "description": "BondHub là ứng dụng nhắn tin và gọi điện miễn phí, giúp bạn kết nối với bạn bè và người thân một cách dễ dàng và nhanh chóng.",
+      "copyright": "© 2024 BondHub. All rights reserved."
     },
     "support": {
       "faq": "Câu hỏi thường gặp",
@@ -552,7 +552,82 @@
     "seen": "Đã xem",
     "sent": "Đã gửi",
     "group": "Nhóm",
-    "members": "thành viên"
+    "members": "thành viên",
+    "you": "Bạn",
+    "user": "Người dùng",
+    "messageRevoked": "Tin nhắn đã bị thu hồi",
+    "messageType": {
+      "image": "[Hình ảnh]",
+      "file": "[File]",
+      "video": "[Video]",
+      "voice": "[Tin nhắn thoại]"
+    },
+    "pinned": {
+      "title": "Danh sách ghim",
+      "editTitle": "Chỉnh sửa danh sách ghim",
+      "editSubtitle": "Kéo thả để sắp xếp thứ tự ghim.",
+      "done": "Xong",
+      "edit": "Chỉnh sửa",
+      "collapse": "Thu gọn",
+      "expand": "Mở rộng",
+      "noPinned": "Chưa có tin nhắn ghim",
+      "attachment": "[Tệp đính kèm]",
+      "from": "Tin nhắn của {{name}}"
+    },
+    "system": {
+      "default": "[Thông báo]",
+      "call": "[Cuộc gọi]",
+      "revoke": {
+        "self": "Bạn đã thu hồi một tin nhắn",
+        "actor": "{{actor}} đã thu hồi một tin nhắn"
+      },
+      "join": {
+        "self": "Bạn đã tham gia nhóm",
+        "actor": "{{actor}} đã tham gia nhóm"
+      },
+      "andOthers": "và {{count}} người khác",
+      "pin": {
+        "self": "Bạn đã ghim tin nhắn",
+        "actor": "{{actor}} đã ghim tin nhắn"
+      },
+      "unpin": {
+        "self": "Bạn đã bỏ ghim tin nhắn",
+        "actor": "{{actor}} đã bỏ ghim tin nhắn"
+      },
+      "add": {
+        "self": "Bạn đã thêm {{targets}} vào nhóm",
+        "actor": "{{actor}} đã thêm {{targets}} vào nhóm"
+      },
+      "remove": {
+        "self_target": "Bạn đã bị {{actor}} mời ra khỏi nhóm",
+        "self_actor": "Bạn đã mời {{target}} ra khỏi nhóm",
+        "actor": "{{actor}} đã mời {{target}} ra khỏi nhóm"
+      },
+      "leave": {
+        "self": "Bạn đã rời nhóm",
+        "actor": "{{actor}} đã rời nhóm"
+      },
+      "update_name": {
+        "self": "Bạn đã đổi tên nhóm thành {{name}}",
+        "actor": "{{actor}} đã đổi tên nhóm thành {{name}}"
+      },
+      "update_avatar": {
+        "self": "Bạn đã thay đổi ảnh đại diện nhóm",
+        "actor": "{{actor}} đã thay đổi ảnh đại diện nhóm"
+      },
+      "create_group": {
+        "self": "Bạn đã tạo nhóm",
+        "actor": "{{actor}} đã tạo nhóm"
+      }
+    },
+    "disappearing": {
+      "deleteIn": {
+        "days": "Tự động xóa sau {{days}} ngày {{hours}} giờ",
+        "hours": "Tự động xóa sau {{hours}} giờ {{minutes}} phút",
+        "minutes": "Tự động xóa sau {{minutes}} phút",
+        "soon": "Sắp xóa"
+      }
+    }
   },
   "contacts": {
     "title": "Danh bạ",
@@ -613,7 +688,7 @@
     "title": "Khám phá",
     "search": "Tìm kiếm",
     "services": {
-      "video": "Zalo Video",
+      "video": "BondHub Video",
       "gameCenter": "Game Center",
       "miniApp": "Mini App",
       "shop": "Shop",
@@ -654,12 +729,12 @@
     "menu": {
       "zCloud": "zCloud",
       "zCloudDesc": "Không gian lưu trữ dữ liệu trên đám mây",
-      "zStyle": "zStyle – Nổi bật trên Zalo",
-      "zStyleDesc": "Hình nền và nhạc cho cuộc gọi Zalo",
+      "zStyle": "zStyle – Nổi bật trên BondHub",
+      "zStyleDesc": "Hình nền và nhạc cho cuộc gọi BondHub",
       "myDocs": "My Documents",
       "myDocsDesc": "Lưu trữ các tin nhắn quan trọng",
       "storage": "Dữ liệu trên máy",
-      "storageDesc": "Quản lý dữ liệu Zalo của bạn",
+      "storageDesc": "Quản lý dữ liệu BondHub của bạn",
       "qrWallet": "Ví QR",
       "qrWalletDesc": "Lưu trữ và xuất trình các mã QR quan trọng",
       "accountSecurity": "Tài khoản và bảo mật",

@@ -1,9 +1,9 @@
 import React from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { I18nextProvider } from 'react-i18next'
-import i18n from '../i18n'
-import { SocialFeedPage } from '../features/social-feed'
-import { ThemeProvider } from '../context/theme-context'
+import i18n from '@/i18n'
+import { SocialFeedPage } from '../screens/social-feed-page'
+import { ThemeProvider } from '@/context'
 
 // Create React Query client
 const queryClient = new QueryClient({

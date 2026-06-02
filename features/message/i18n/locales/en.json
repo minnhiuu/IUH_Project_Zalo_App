@@ -65,6 +65,14 @@
       "title": "Options",
       "clearHistory": "Clear chat history",
       "deleteConversation": "Delete conversation",
+      "markAsUnread": "Mark as unread",
+      "markAsRead": "Mark as read",
+      "pin": "Pin",
+      "unpin": "Unpin",
+      "mute": "Mute notifications",
+      "unmute": "Unmute notifications",
+      "hide": "Hide",
+      "multiSelect": "Select multiple",
       "cancel": "Cancel",
       "clearHistoryTitle": "Clear chat history",
       "clearHistoryMessage": "Are you sure you want to clear this chat history?",
@@ -344,6 +352,93 @@
       "pinFailDesc": "Unable to pin this message",
       "unpinFailTitle": "Unpin failed",
       "unpinFailDesc": "Unable to unpin this message"
+    }
+  },
+  "messages": {
+    "you": "You",
+    "user": "User",
+    "messageRevoked": "Message has been revoked",
+    "messageType": {
+      "image": "[Image]",
+      "video": "[Video]",
+      "file": "[File]"
+    },
+    "system": {
+      "default": "[Notice]",
+      "call": "[Call]",
+      "andOthers": "and {{count}} others",
+      "pin": {
+        "self": "You pinned a message",
+        "actor": "{{actor}} pinned a message"
+      },
+      "unpin": {
+        "self": "You unpinned a message",
+        "actor": "{{actor}} unpinned a message"
+      },
+      "add": {
+        "self": "You added a member",
+        "actor": "{{actor}} added a member"
+      },
+      "remove": {
+        "self": "You removed a member",
+        "actor": "{{actor}} removed a member"
+      },
+      "leave": {
+        "self": "You left the group",
+        "actor": "{{actor}} left the group"
+      },
+      "revoke": {
+        "self": "You revoked a message",
+        "actor": "{{actor}} revoked a message"
+      },
+      "join": {
+        "self": "You joined the group",
+        "actor": "{{actor}} joined the group"
+      },
+      "update_group_name": {
+        "self": "You changed the group name",
+        "actor": "{{actor}} changed the group name"
+      },
+      "update_avatar": {
+        "self": "You changed the group avatar",
+        "actor": "{{actor}} changed the group avatar"
+      },
+      "create_group": {
+        "self": "You created the group",
+        "actor": "{{actor}} created the group"
+      },
+      "update_expiration": {
+        "selfEnable": "You set disappearing messages to {{days}} days",
+        "actorEnable": "{{actor}} set disappearing messages to {{days}} days",
+        "selfDisable": "You turned off disappearing messages",
+        "actorDisable": "{{actor}} turned off disappearing messages"
+      }
+    },
+    "disappearing": {
+      "title": "Disappearing messages",
+      "description": "When enabled, new messages will be automatically deleted after the selected time period",
+      "never": "Never",
+      "oneDay": "1 day",
+      "sevenDays": "7 days",
+      "fourteenDays": "14 days",
+      "save": "SAVE",
+      "cancel": "CANCEL",
+      "statusLabel": "Disappearing messages",
+      "statusNever": "Off",
+      "statusDays": "{{days}} days",
+      "dividerEnabled": "DISAPPEARING MESSAGES",
+      "dividerDisabled": "DISAPPEARING MESSAGES OFF",
+      "changeSettings": "Change settings",
+      "deleteIn": {
+        "days": "Deletes in {{days}}d {{hours}}h",
+        "hours": "Deletes in {{hours}}h {{minutes}}m",
+        "minutes": "Deletes in {{minutes}}m",
+        "soon": "Deleting soon"
+      },
+      "toast": {
+        "success": "Disappearing messages updated",
+        "error": "Failed to update disappearing messages"
+      }
     }
   }
 }

@@ -1,5 +1,5 @@
 // Helper để lấy fallback tiếng Việt cho từng giá trị time filter
-function getTimeLabel(value: string, t: (k: string, d?: string) => string): string {
+function getTimeLabel(value: string, t: any): string {
   switch (value) {
     case 'yesterday':
       return t('message.storage.yesterday', 'Yesterday')
@@ -330,7 +330,7 @@ function SharedFilterBar({
           />
           <Text style={{ fontSize: 13, color: filter.timeFilter ? '#fff' : isDark ? '#B0B8C1' : '#374151' }}>
             {activeTime
-              ? String(t(activeTime.label, getTimeLabel(activeTime.value, t)))
+              ? String(t(activeTime.label, getTimeLabel(activeTime.value || '', t)))
               : t('message.storage.time', 'Time')}
           </Text>
           {filter.timeFilter ? (
@@ -410,7 +410,7 @@ function SharedFilterBar({
                   color: filter.timeFilter === opt.value ? chipActive : isDark ? '#DFE2E7' : '#111827'
                 }}
               >
-                {String(t(opt.label, getTimeLabel(opt.value, t)))}
+                {String(t(opt.label, getTimeLabel(opt.value || '', t)))}
               </Text>
               {filter.timeFilter === opt.value && opt.value !== 'custom' && (
                 <Ionicons name='checkmark' size={16} color={chipActive} />
